@@ -9,6 +9,7 @@
 #include "setting_helper.h"
 #include "dab_tables.h"
 #include "itu_regions.h"
+#include "qt_compat.h"
 
 void DabRadio::_initialize_ensemble_list()
 {
@@ -26,7 +27,7 @@ void DabRadio::_initialize_ensemble_list()
 // This is called by the EnsembleList
 void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo)
 {
-  qDebug() << "Playing channel/FId" << iIdentInfo.fIdOrCh << "with SId" << QString("%1").arg(iIdentInfo.sIdToPlay, 4, 16, QChar('0')) << "file path" << iIdentInfo.absPath;
+  qDebug() << "Playing channel/FId" << iIdentInfo.fIdOrCh << "with SId" << QSL("%1").arg(iIdentInfo.sIdToPlay, 4, 16, QChar('0')) << "file path" << iIdentInfo.absPath;
 
   const bool fIdOrChHasChanged = mChannelDesc.set_ident_info(iIdentInfo);
 
@@ -192,11 +193,11 @@ void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescrip
   sr.S1Fib.audioDataRates = dataRateList.join("|");
 
   QStringList dscTyAppTyList;
-  for (const auto & dscTyAppTy : dscTyAppTySet) dscTyAppTyList.append(QString("%1[%2]").arg(dscTyAppTy >> 16).arg(dscTyAppTy & 0xFFFF));
+  for (const auto & dscTyAppTy : dscTyAppTySet) dscTyAppTyList.append(QSL("%1[%2]").arg(dscTyAppTy >> 16).arg(dscTyAppTy & 0xFFFF));
   sr.S1Fib.dscTyAppTy = dscTyAppTyList.join("|");
   if (sr.S1Fib.dscTyAppTy.isEmpty()) sr.S1Fib.dscTyAppTy = "-";
 
-  sr.S1Fib.numDabDabPlus = QString("%1|%2").arg(numDab, 2, 10, QChar('0')).arg(numDabPlus, 2, 10, QChar('0'));
+  sr.S1Fib.numDabDabPlus = QSL("%1|%2").arg(numDab, 2, 10, QChar('0')).arg(numDabPlus, 2, 10, QChar('0'));
 
   emit signal_fib_data_status(sr); // this fills up the EnsembleList database
 }
@@ -247,7 +248,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
   sr.S0Ws.filePath = fileInfo.absolutePath();
 
   sr.S2MedRun.ensembleName = ensembleName;
-  sr.S2MedRun.ensembleId = QString("%1").arg(EId, 4, 16, QChar('0'));
+  sr.S2MedRun.ensembleId = QSL("%1").arg(EId, 4, 16, QChar('0'));
   sr.S2MedRun.ituCountry = iChannelDesc.deferredData.countryName.value_or("-");
   sr.S2MedRun.mer = std::round(iChannelDesc.deferredData.mer.value_or(iChannelDesc.merLast) * 10) / 10.0;
   sr.S2MedRun.snr = std::round(iChannelDesc.deferredData.snr.value_or(iChannelDesc.snrLast) * 10) / 10.0;

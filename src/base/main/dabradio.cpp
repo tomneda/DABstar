@@ -807,7 +807,7 @@ void DabRadio::_check_for_itu_code()
     const auto & itu = mpItuTables->find_ITU_entry(mChannelDesc.ecc_byte, countryId);
     // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.Country).arg(itu.ITU_Code);
     // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.ITU_Code).arg(itu.Country);
-    mChannelDesc.deferredData.countryName = QString("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
+    mChannelDesc.deferredData.countryName = QSL("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
     ui->lblCountryName->setText(itu.Country);
     // qDebug() << "Ch/FId" << mChannelDesc.get_fId_or_ch() << Qt::hex << Qt::showbase << "with EId" << mChannelDesc.Eid <<  "has ECC byte"  << mChannelDesc.ecc_byte << "with country name" << mChannelDesc.deferredData.countryName.value();
   }
@@ -1204,7 +1204,7 @@ QString DabRadio::_convert_links_to_clickable(const QString & iText) const
       {
         linkStr = word;
       }
-      const QString repl = QString("<a href=\"%1\" style=\"color: #7983FF;\">%2</a>").arg(linkStr, word);
+      const QString repl = QSL("<a href=\"%1\" style=\"color: #7983FF;\">%2</a>").arg(linkStr, word);
 
       // qDebug() << "repl: " << repl << repl.length();
 

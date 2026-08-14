@@ -88,7 +88,7 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
     case 0: _process_Fig0(d); break;
     case 1: _process_Fig1(d); break;
     default:
-      qDebug() << QString("Fig type %1 not handled").arg(figType);
+      qDebug() << QSL("Fig type %1 not handled").arg(figType);
     }
 
     if (mRestartFibDecoding)
@@ -996,12 +996,12 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
     // show not handled FIGs
     for (const auto & extension: mUnhandledFig0Set)
     {
-      qDebug().noquote() << QString("FIG 0/%1 not handled").arg(extension);
+      qDebug().noquote() << QSL("FIG 0/%1 not handled").arg(extension);
     }
 
     for (const auto & extension: mUnhandledFig1Set)
     {
-      qDebug().noquote() << QString("FIG 1/%1 not handled").arg(extension);
+      qDebug().noquote() << QSL("FIG 1/%1 not handled").arg(extension);
     }
   }
 

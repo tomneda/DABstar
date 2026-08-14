@@ -14,6 +14,7 @@
 #include "dabradio.h"
 #include "setting_helper.h"
 #include "service_list_handler.h"
+#include "qt_compat.h"
 #include <QTableView>
 #include <QPainter>
 #include <QHeaderView>
@@ -42,7 +43,7 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
     if (index.column() == ServiceDB::CI_SId)
     {
       const u32 serviceId = index.data().toUInt();
-      const QString hexText = QString("%1").arg(serviceId, 4, 16, QChar('0'));
+      const QString hexText = QSL("%1").arg(serviceId, 4, 16, QChar('0'));
 
       QStyleOptionViewItem opt = option;
       initStyleOption(&opt, index);

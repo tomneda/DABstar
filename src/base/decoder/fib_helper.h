@@ -12,6 +12,7 @@
  */
 #pragma once
 
+#include "qt_compat.h"
 #include <QString>
 #include <chrono>
 

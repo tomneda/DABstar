@@ -33,6 +33,7 @@
 #include "setting_helper.h"
 #include "dabradio.h"
 #include "git_hash.h"
+#include "qt_compat.h"
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
@@ -57,25 +58,25 @@ i32 main(i32 argc, char ** argv)
   qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
   qRegisterMetaType<OfdmDecoder::SLcdData>("OfdmDecoder::SLcdData");
 
-  const QString dBVersionNr = "04"; // to ensure same database version for service list and ensemble list
+  const QString dBVersionNr = QSL("04"); // to ensure same database version for service list and ensemble list
 
-  const QString configPath = QDir::homePath() + "/.config/" APP_NAME "/";
+  const QString configPath = QDir::homePath() + QSL("/.config/" APP_NAME "/");
   if (!QDir().mkpath(configPath))
   {
     qFatal() << "Could not create directory:" << configPath;
     return -1;
   }
 
-  const QString initFileName02 = QDir::toNativeSeparators(configPath +  "settings02.ini");
-  const QString initFileName03 = QDir::toNativeSeparators(configPath +  "settings03.ini");
-  const QString dbServiceListFileName = QDir::toNativeSeparators(configPath + QString("servicelist%1.db").arg(dBVersionNr));
-  const QString dbEnsembleListFileName = QDir::toNativeSeparators(configPath + QString("ensemblelist%1.db").arg(dBVersionNr));
+  const QString initFileName02 = QDir::toNativeSeparators(configPath +  QSL("settings02.ini"));
+  const QString initFileName03 = QDir::toNativeSeparators(configPath +  QSL("settings03.ini"));
+  const QString dbServiceListFileName = QDir::toNativeSeparators(configPath + QSL("servicelist%1.db").arg(dBVersionNr));
+  const QString dbEnsembleListFileName = QDir::toNativeSeparators(configPath + QSL("ensemblelist%1.db").arg(dBVersionNr));
 
   // Default values
   i32 dataPort = 8888;
 
   QCoreApplication::setApplicationName(PRJ_NAME);
-  QCoreApplication::setApplicationVersion(QString(PRJ_VERS) + " Git: " + GITHASH);
+  QCoreApplication::setApplicationVersion(QSL(PRJ_VERS " Git: " GITHASH));
 
 #if defined(HAVE_SOAPY) && defined(_WIN32)
    qputenv("SOAPY_SDR_PLUGIN_PATH", ".");
@@ -142,14 +143,14 @@ i32 main(i32 argc, char ** argv)
     QApplication::setPalette(pal);
   }
 
-  QApplication::setWindowIcon(QIcon(":res/logo/dabstar.png"));
+  QApplication::setWindowIcon(QIcon(QSL(":res/logo/dabstar.png")));
 
   // we changed the setting file name, so inform the user who already used DABstar in a former version
   if (!QFile::exists(initFileName03) && QFile::exists(initFileName02)) // no new file yet but had already the former file?
   {
-    QMessageBox::warning(nullptr, "Warning", "The setting configurations have changed. "
+    QMessageBox::warning(nullptr, QSL("Warning"), QSL("The setting configurations have changed. "
                          "Therefore, some settings need to be re-entered, "
-                         "such as the map coordinates.");
+                         "such as the map coordinates."));
   }
 
   const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbServiceListFileName, dbEnsembleListFileName, dataPort, nullptr));

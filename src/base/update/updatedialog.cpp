@@ -32,6 +32,7 @@
 
 #include "updatedialog.h"
 #include "ui_updatedialog.h"
+#include "qt_compat.h"
 #include <QDesktopServices>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -46,8 +47,8 @@ namespace
   // "[url](...)" or a "[ref]: url" definition) are left alone.
   QString wrap_bare_urls_in_markdown_links(const QString & iMarkdown)
   {
-    static const QRegularExpression sReBareUrl(R"((?<![(<\[])(?<!\]: )\bhttps?://[^\s<>()\[\]]+)");
-    static const QString sTrailingPunctuation(".,;:!?");
+    static const QRegularExpression sReBareUrl(QSL(R"((?<![(<\[])(?<!\]: )\bhttps?://[^\s<>()\[\]]+)"));
+    static const QString sTrailingPunctuation = QSL(".,;:!?");
 
     QString result;
     qsizetype copiedUpTo = 0;
@@ -73,7 +74,7 @@ namespace
       // The link label still shows the plain URL, but its "://" has to be escaped, otherwise the
       // autolink parser kicks in a second time on the label and nests a truncated link inside.
       QString label = url;
-      label.replace("://", "\\://");
+      label.replace(QSL("://"), QSL("\\://"));
 
       result += iMarkdown.mid(copiedUpTo, match.capturedStart() - copiedUpTo);
       result += '[' + label + "](" + url + ')';
@@ -93,9 +94,9 @@ UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes
   ui->setupUi(this);
   
   setModal(true);
-  setWindowTitle("Application update");
+  setWindowTitle(QSL("Application update"));
 
-  const QString tableHtml = QString(
+  const QString tableHtml = QSL(
     "<style>"
     "  td { padding-right: 10px; }"
     "  .version { color: #FFD666; }"
@@ -116,17 +117,17 @@ UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes
   ui->releaseNotes->setOpenExternalLinks(true);
   ui->releaseNotes->moveCursor(QTextCursor::Start);
 
-  ui->btnDeferToNextUpdate->setText("Check again in " + QString::number(updateIntervalDays) + (updateIntervalDays == 1 ? " day" : " days"));
-  ui->btnOpenReleaseSite->setText("Go to release page for download");
+  ui->btnDeferToNextUpdate->setText(QSL("Check again in ") + QString::number(updateIntervalDays) + (updateIntervalDays == 1 ? QSL(" day") : QSL(" days")));
+  ui->btnOpenReleaseSite->setText(QSL("Go to release page for download"));
 
   connect(ui->btnOpenReleaseSite, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui->btnDeferToNextUpdate, &QPushButton::clicked, this, &QDialog::reject);
   connect(ui->btnOpenReleaseSite, &QPushButton::clicked, this, [this, version]()
   {
 #ifdef _WIN32
-    QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/old-dab/DABstar/releases/tag/%1").arg(version)));
+    QDesktopServices::openUrl(QUrl::fromUserInput(QSL("https://github.com/old-dab/DABstar/releases/tag/%1").arg(version)));
 #else
-    QDesktopServices::openUrl(QUrl::fromUserInput(QString("https://github.com/tomneda/DABstar/releases/tag/%1").arg(version)));
+    QDesktopServices::openUrl(QUrl::fromUserInput(QSL("https://github.com/tomneda/DABstar/releases/tag/%1").arg(version)));
 #endif
   });
 

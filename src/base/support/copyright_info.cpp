@@ -13,6 +13,7 @@
 
 #include "copyright_info.h"
 #include "git_hash.h"
+#include "qt_compat.h"
 #include <fftw3.h>
 #include <sndfile.h>
 #include <zlib.h>
@@ -31,21 +32,21 @@
 template <typename T>
 QString hyperlink(const T & iUrl, const bool iIsMail = false)
 {
-  if (iIsMail) return QStringLiteral("<a href=\"mailto:%1\">%1</a>").arg(iUrl);
-  else         return QStringLiteral("<a href=\"%1\">%1</a>").arg(iUrl);
+  if (iIsMail) return QSL("<a href=\"mailto:%1\">%1</a>").arg(iUrl);
+  else         return QSL("<a href=\"%1\">%1</a>").arg(iUrl);
 }
 
 // Create a link to iUrl but show iText (e.g. the library name and version) as the clickable label.
 QString hyperlink_text(const QString & iUrl, const QString & iText)
 {
-  return QStringLiteral("<a href=\"%1\">%2</a>").arg(iUrl, iText);
+  return QSL("<a href=\"%1\">%2</a>").arg(iUrl, iText);
 }
 
 QString get_copyright_text()
 {
 #ifdef HAVE_SSE_OR_AVX
-  QString volkVers = hyperlink_text("https://github.com/gnuradio/volk", QString("Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT)) + "<br/>";
-  QString useVolk = ", Volk";
+  QString volkVers = hyperlink_text(QSL("https://github.com/gnuradio/volk"), QSL("Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT)) + QSL("<br/>");
+  QString useVolk = QSL(", Volk");
 #else
   QString volkVers;
   QString useVolk;
@@ -53,7 +54,7 @@ QString get_copyright_text()
 
 #ifdef __WITH_FDK_AAC__
   int i;
-  QString usedDecoder = ", FDK-AAC";
+  QString usedDecoder = QSL(", FDK-AAC");
   LIB_INFO libInfo[FDK_MODULE_LAST];
   FDKinitLibInfo(libInfo);
   aacDecoder_GetLibInfo(libInfo);
@@ -62,52 +63,52 @@ QString get_copyright_text()
     if (libInfo[i].module_id == FDK_AACDEC) break;
   }
   // QString fdkVers = QString(libInfo[i].title) + " " + QString(libInfo[i].versionStr) + "<br/>";
-  QString fdkVers = hyperlink_text("https://github.com/mstorsjo/fdk-aac", "FDK-AAC " + QString(libInfo[i].versionStr)) + "<br/>";
+  QString fdkVers = hyperlink_text(QSL("https://github.com/mstorsjo/fdk-aac"), QSL("FDK-AAC ") + QString::fromUtf8(libInfo[i].versionStr)) + QSL("<br/>");
   QString faadVers;
 #else
-  QString usedDecoder = ", libfaad";
+  QString usedDecoder = QSL(", libfaad");
   char * faadIdString = nullptr;
   char * faadCopyrightString = nullptr;
   NeAACDecGetVersion(&faadIdString, &faadCopyrightString);
-  QString faadVers = hyperlink_text("https://github.com/knik0/faad2", (faadIdString != nullptr ? "Faad " + QString(faadIdString) : QString("Faad unknown"))) +
+  QString faadVers = hyperlink_text(QSL("https://github.com/knik0/faad2"), (faadIdString != nullptr ? QSL("Faad ") + QString::fromUtf8(faadIdString) : QSL("Faad unknown"))) +
                      // "  (" + (faadCopyrightString != nullptr ? QString(faadCopyrightString) : QString("")) + ")"
-                     + "<br/>";
+                     QSL("<br/>");
   QString fdkVers;
 #endif
 
 #ifdef HAVE_LIQUID
-  QString liquidVers = hyperlink_text("https://github.com/jgaeddert/liquid-dsp", "liquid-dsp " + QString(LIQUID_VERSION)) + "<br/>";
-  QString useLiquid = ", liquid-DSP";
+  QString liquidVers = hyperlink_text(QSL("https://github.com/jgaeddert/liquid-dsp"), QSL("liquid-dsp ") + QSL(LIQUID_VERSION)) + QSL("<br/>");
+  QString useLiquid = QSL(", liquid-DSP");
 #else
   QString liquidVers;
   QString useLiquid;
 #endif
 
-  QString versionText = "<html><head/><body>";
-  versionText += "<h3>" + QString(PRJ_NAME) + " " + PRJ_VERS + "</h3>";
+  QString versionText = QSL("<html><head/><body>");
+  versionText += QSL("<h3>") + QSL(PRJ_NAME) + QSL(" ") + QSL(PRJ_VERS) + QSL("</h3>");
   // __TIMESTAMP__ seems to use the file date not the compile date, so use __DATE__/__TIME__ instead
-  versionText += "<p><b>Built on " + QString(__DATE__) + "&nbsp;&nbsp;" + QString(__TIME__) + "<br/>Commit " + QString(GITHASH) + "</b></p>";
-  versionText += "<p><b>Used libraries with version:</b><br/>" +
-                 hyperlink_text("https://www.qt.io", "Qt " QT_VERSION_STR) + "<br/>" +
+  versionText += QSL("<p><b>Built on ") + QSL(__DATE__) + QSL("&nbsp;&nbsp;") + QSL(__TIME__) + QSL("<br/>Commit ") + QSL(GITHASH) + QSL("</b></p>");
+  versionText += QSL("<p><b>Used libraries with version:</b><br/>") +
+                 hyperlink_text(QSL("https://www.qt.io"), QSL("Qt " QT_VERSION_STR)) + QSL("<br/>") +
                  volkVers +
-                 hyperlink_text("https://www.fftw.org", QString(fftwf_version)) + "<br/>" +
+                 hyperlink_text(QSL("https://www.fftw.org"), QString::fromUtf8(fftwf_version)) + QSL("<br/>") +
                  faadVers +
                  fdkVers +
-                 hyperlink_text("https://github.com/libsndfile/libsndfile", QString(sf_version_string())) + "<br/>" +
+                 hyperlink_text(QSL("https://github.com/libsndfile/libsndfile"), QString::fromUtf8(sf_version_string())) + QSL("<br/>") +
                  liquidVers +
-                 hyperlink_text("https://www.zlib.net", "zlib " + QString(ZLIB_VERSION)) +
-                 "</p>";
-  versionText += "<p>Forked from Qt-DAB in June 2023, then extensively changed, extended and partly reduced, by Thomas Neder "
-                 "(" + hyperlink("https://github.com/tomneda/DABstar") + ").<br/>"
-                 "For Qt-DAB see " + hyperlink("https://github.com/JvanKatwijk/qt-dab") + " by Jan van Katwijk "
-                 "(" + hyperlink("J.vanKatwijk@gmail.com", true) + ").</p>";
-  versionText += "<p>Rights of Qt, FFTW" + usedDecoder + useVolk + useLiquid + ", libsndfile and zlib gratefully acknowledged.<br/>"
-                 "Rights of developers of " + hyperlink_text("https://github.com/old-dab/rtlsdr", "RTLSDR library") + " (using the improved fork from old-dab), "
-                 + hyperlink_text("https://www.sdrplay.com", "SDRplay libraries") + ", "
-                 + hyperlink_text("https://github.com/airspy/airspyone_host", "AIRspy library") + " and others gratefully acknowledged.<br/>"
-                 "Rights of other contributors gratefully acknowledged.</p>";
-  versionText += "<p>Features NewsService Journaline(R) decoder technology by Fraunhofer IIS, Erlangen, Germany.<br/>"
-                 "For more information visit " + hyperlink("http://www.iis.fhg.de/dab") + ".</p>";
-  versionText += "</body></html>";
+                 hyperlink_text(QSL("https://www.zlib.net"), QSL("zlib ") + QSL(ZLIB_VERSION)) +
+                 QSL("</p>");
+  versionText += QSL("<p>Forked from Qt-DAB in June 2023, then extensively changed, extended and partly reduced, by Thomas Neder ") +
+                 QSL("(") + hyperlink(QSL("https://github.com/tomneda/DABstar")) + QSL(").<br/>") +
+                 QSL("For Qt-DAB see ") + hyperlink(QSL("https://github.com/JvanKatwijk/qt-dab")) + QSL(" by Jan van Katwijk ") +
+                 QSL("(") + hyperlink(QSL("J.vanKatwijk@gmail.com"), true) + QSL(").</p>");
+  versionText += QSL("<p>Rights of Qt, FFTW") + usedDecoder + useVolk + useLiquid + QSL(", libsndfile and zlib gratefully acknowledged.<br/>") +
+                 QSL("Rights of developers of ") + hyperlink_text(QSL("https://github.com/old-dab/rtlsdr"), QSL("RTLSDR library")) + QSL(" (using the improved fork from old-dab), ")
+                 + hyperlink_text(QSL("https://www.sdrplay.com"), QSL("SDRplay libraries")) + QSL(", ")
+                 + hyperlink_text(QSL("https://github.com/airspy/airspyone_host"), QSL("AIRspy library")) + QSL(" and others gratefully acknowledged.<br/>") +
+                 QSL("Rights of other contributors gratefully acknowledged.</p>");
+  versionText += QSL("<p>Features NewsService Journaline(R) decoder technology by Fraunhofer IIS, Erlangen, Germany.<br/>") +
+                 QSL("For more information visit ") + hyperlink(QSL("http://www.iis.fhg.de/dab")) + QSL(".</p>");
+  versionText += QSL("</body></html>");
   return versionText;
 }

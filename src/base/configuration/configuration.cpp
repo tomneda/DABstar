@@ -16,6 +16,7 @@
 #include "ui_configuration.h"
 #include "dabradio.h"
 #include "gui_helpers.h"
+#include "qt_compat.h"
 #include <QDir>
 #include <QDoubleValidator>
 #include <QFileDialog>
@@ -176,12 +177,12 @@ void Configuration::_slot_select_base_path()
 
 void Configuration::set_eti_button_emphasized(const bool iEmphasized) const
 {
-  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
   etiButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x5060A0, Qt::white));
 }
 
 void Configuration::set_dump_button_emphasized(const bool iEmphasized) const
 {
-  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
   dumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x4A7898, Qt::white));
 }

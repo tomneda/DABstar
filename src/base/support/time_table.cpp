@@ -23,6 +23,7 @@
 //
 #include "time_table.h"
 #include "dabradio.h"
+#include "qt_compat.h"
 
 TimeTableHandler::TimeTableHandler(DabRadio * radio)
   : QListView(nullptr)
@@ -51,9 +52,9 @@ void TimeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString & the
   timeTableList.append(QString(t) + " -- " + theText);
 
   QString listElement;
-  if (theDescr != "")
+  if (!theDescr.isEmpty())
   {
-    listElement = " \n\t-- " + theDescr;
+    listElement = QSL(" \n\t-- ") + theDescr;
   }
 
   bool tooLong = false;

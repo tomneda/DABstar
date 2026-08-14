@@ -16,6 +16,7 @@
 #include "fib_config_fig0.h"
 #include "fib_config_fig1.h"
 #include "fib_helper.h"
+#include "qt_compat.h"
 #include <QMutex>
 #include <set>
 #include <chrono>
@@ -141,7 +142,7 @@ private:
   bool _check_audio_data_completeness() const; // FIG 0/1, FIG 0/2 and FIG 1/1 are loaded
   bool _check_packet_data_completeness() const;
 
-  template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
+  template<typename T> inline QString hex_str(const T iVal) const { return QSL("0x%1").arg(iVal, 0, 16); }
 
 private slots:
   void _slot_timer_data_consistency_check();

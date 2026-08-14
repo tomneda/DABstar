@@ -132,6 +132,7 @@ HEADERS += \
     src/common/glob_data_types.h \
     src/common/glob_defs.h \
     src/common/openfiledialog.h \
+    src/common/qt_compat.h \
     src/common/ringbuffer.h \
     src/common/setting_helper.cnf.h \
     src/common/setting_helper.h \

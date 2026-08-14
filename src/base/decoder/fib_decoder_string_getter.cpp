@@ -3,8 +3,8 @@
 #include <QTextStream>
 #include <QDebug>
 
-template<typename T> inline QString hex_str(const T iVal) { return QString("0x%1").arg(iVal, 0, 16); }
-template<typename T> inline QString dec_hex_str(const T iVal) { return QString("%1/0x%2").arg(iVal).arg(iVal, 0, 16); }
+template<typename T> inline QString hex_str(const T iVal) { return QSL("0x%1").arg(iVal, 0, 16); }
+template<typename T> inline QString dec_hex_str(const T iVal) { return QSL("%1/0x%2").arg(iVal).arg(iVal, 0, 16); }
 
 QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
 {
@@ -20,45 +20,45 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
    */
   QStringList out;
 
-  out << "H;EnsembleLabel;ShortEnsLabel;EId";
+  out << QSL("H;EnsembleLabel;ShortEnsLabel;EId");
   for (const auto & fig1s0 : mpFibConfigFig1->Fig1s0_EnsembleLabelVec) // should only have one element
   {
-    out << "D;" + fig1s0.Name + ";" + fig1s0.NameShort + ";" + hex_str(fig1s0.EId);
+    out << QSL("D;") + fig1s0.Name + ";" + fig1s0.NameShort + ";" + hex_str(fig1s0.EId);
   }
 
-  out << "E"; // empty line
-  out << "C;Audio services:";
-  out << "H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;BitRate [kbps];DabType;Language;ProgramType";
+  out << QSL("E"); // empty line
+  out << QSL("C;Audio services:");
+  out << QSL("H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;BitRate [kbps];DabType;Language;ProgramType");
 
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio) // skip non-audio elements
     {
-      out << "D;" + _get_audio_data_str(fig0s2);
+      out << QSL("D;") + _get_audio_data_str(fig0s2);
     }
   }
 
-  out << "E"; // empty line
-  out << "C;Primary data services:";
-  out << "H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy";
+  out << QSL("E"); // empty line
+  out << QSL("C;Primary data services:");
+  out << QSL("H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy");
 
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData && fig0s2.PD_Flag == 1) // choose primary packet data elements
     {
-      out << "D;" + _get_packet_data_str(fig0s2);
+      out << QSL("D;") + _get_packet_data_str(fig0s2);
     }
   }
 
-  out << "E"; // empty line
-  out << "C;Secondary data services:";
-  out << "H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy";
+  out << QSL("E"); // empty line
+  out << QSL("C;Secondary data services:");
+  out << QSL("H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy");
 
   for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData && fig0s2.PD_Flag == 0) // choose secondary packet data elements
     {
-      out << "D;" + _get_packet_data_str(fig0s2);
+      out << QSL("D;") + _get_packet_data_str(fig0s2);
     }
   }
 
@@ -71,7 +71,7 @@ QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicServic
   SAudioDataAddOns adao;
   if (!_get_data_for_audio_service(iFig0s2, &ad) || !_get_data_for_audio_service_addon(iFig0s2, &adao))
   {
-    return "-;-;-;-;-;-;-;-;-;-;-;-";
+    return QSL("-;-;-;-;-;-;-;-;-;-;-;-");
   }
 
   QString str;
@@ -99,7 +99,7 @@ QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicServi
   SPacketData pd;
   if (!_get_data_for_packet_service(iFig0s2, 0, &pd))
   {
-    return "Inconsistent data;-;" + hex_str(iFig0s2.get_SId()) + ";-;-;-;-;-;-;-;-;-;";
+    return QSL("Inconsistent data;-;") + hex_str(iFig0s2.get_SId()) + QSL(";-;-;-;-;-;-;-;-;-;");
     // return "-;-;-;-;-;-;-;-;-;-;-;-;";
   }
 

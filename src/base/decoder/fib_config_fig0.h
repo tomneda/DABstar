@@ -14,6 +14,7 @@
 
 #include "glob_data_types.h"
 #include "fib_helper.h"
+#include "qt_compat.h"
 #include <vector>
 #include <QString>
 
@@ -259,7 +260,7 @@ public:
   void print_Fig0s14_SubChannelOrganization(SStatistic & ioS, bool iCollectStatisticsOnly) const;
   void print_Fig0s17_ProgrammeType(SStatistic & ioS, bool iCollectStatisticsOnly) const;
 
-  template<typename T> inline QString hex_str(const T iVal) const { return QString("0x%1").arg(iVal, 0, 16); }
+  template<typename T> inline QString hex_str(const T iVal) const { return QSL("0x%1").arg(iVal, 0, 16); }
 
   Cluster mClusterTable[128];
 };

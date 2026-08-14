@@ -279,42 +279,42 @@ void FibConfigFig0::print_Fig0s2_BasicService_ServiceCompDef(SStatistic & ioS, c
   {
     QStringList l;
     l << print_duration_and_get_statistics(e, ioS);
-    l << QString("PD_Flag %1").arg(e.PD_Flag);
+    l << QSL("PD_Flag %1").arg(e.PD_Flag);
 
     if (e.PD_Flag == 0)
     {
       l << "SId " + hex_str(e.PD0.SId);
-      l << QString("(CountryId %1").arg(e.PD0.CountryId);
-      l << QString("ServRef %1)").arg(e.PD0.ServiceReference);
+      l << QSL("(CountryId %1").arg(e.PD0.CountryId);
+      l << QSL("ServRef %1)").arg(e.PD0.ServiceReference);
     }
     else
     {
       l << "SId " + hex_str(e.PD1.SId);
-      l << QString("(EEC %1").arg(e.PD1.EEC);
-      l << QString("CountryId %1").arg(e.PD1.CountryId);
-      l << QString("ServRef %1)").arg(e.PD1.ServiceReference);
+      l << QSL("(EEC %1").arg(e.PD1.EEC);
+      l << QSL("CountryId %1").arg(e.PD1.CountryId);
+      l << QSL("ServRef %1)").arg(e.PD1.ServiceReference);
     }
 
-    l << QString("NumSC %1").arg(e.NumServiceComp);
-    l << QString("SCIdx %1").arg(e.ServiceComp_C_index);
-    l << QString("TMId %1").arg(e.ServiceComp_C.TMId);
+    l << QSL("NumSC %1").arg(e.NumServiceComp);
+    l << QSL("SCIdx %1").arg(e.ServiceComp_C_index);
+    l << QSL("TMId %1").arg(e.ServiceComp_C.TMId);
 
     if (e.ServiceComp_C.TMId == 0)
     {
-      l << QString("SubChId %1").arg(e.ServiceComp_C.TMId00.SubChId);
-      l << QString("ASCTy %1").arg(e.ServiceComp_C.TMId00.ASCTy);
+      l << QSL("SubChId %1").arg(e.ServiceComp_C.TMId00.SubChId);
+      l << QSL("ASCTy %1").arg(e.ServiceComp_C.TMId00.ASCTy);
     }
     else if (e.ServiceComp_C.TMId == 1)
     {
-      l << QString("SubChId %1").arg(e.ServiceComp_C.TMId01.SubChId);
-      l << QString("DSCTy %1").arg(e.ServiceComp_C.TMId01.DSCTy);
+      l << QSL("SubChId %1").arg(e.ServiceComp_C.TMId01.SubChId);
+      l << QSL("DSCTy %1").arg(e.ServiceComp_C.TMId01.DSCTy);
     }
     else if (e.ServiceComp_C.TMId == 3)
     {
-      l << QString("SCId %1").arg(e.ServiceComp_C.TMId11.SCId);
+      l << QSL("SCId %1").arg(e.ServiceComp_C.TMId11.SCId);
     }
-    l << QString("PS_FLag %1").arg(e.ServiceComp_C.PS_Flag);
-    l << QString("CA_FLag %1").arg(e.ServiceComp_C.CA_Flag);
+    l << QSL("PS_FLag %1").arg(e.ServiceComp_C.PS_Flag);
+    l << QSL("CA_FLag %1").arg(e.ServiceComp_C.CA_Flag);
 
     qInfo().noquote() << l.join(' ');
   }
@@ -407,19 +407,19 @@ void FibConfigFig0::print_Fig0s8_ServiceCompGlobalDef(SStatistic & ioS, const bo
   {
     QStringList l;
     l << print_duration_and_get_statistics(e, ioS);
-    l << QString("PD_Flag %1").arg(e.PD_Flag);
+    l << QSL("PD_Flag %1").arg(e.PD_Flag);
     l << "SId " + hex_str(e.SId);
-    l << QString("Ext_Flag %1").arg(e.Ext_Flag);
-    l << QString("SCIdS %1").arg(e.SCIdS);
-    l << QString("LS_Flag %1").arg(e.LS_Flag);
+    l << QSL("Ext_Flag %1").arg(e.Ext_Flag);
+    l << QSL("SCIdS %1").arg(e.SCIdS);
+    l << QSL("LS_Flag %1").arg(e.LS_Flag);
 
     if (e.LS_Flag == 0) // short form
     {
-      l << QString("SubChId %1").arg(e.SubChId);
+      l << QSL("SubChId %1").arg(e.SubChId);
     }
     else // long form
     {
-      l << QString("SCId %1").arg(e.SCId);
+      l << QSL("SCId %1").arg(e.SCId);
     }
 
     qInfo().noquote() << l.join(' ');
@@ -467,17 +467,17 @@ void FibConfigFig0::print_Fig0s13_UserApplicationInformation(SStatistic & ioS, c
   {
     QStringList l;
     l << print_duration_and_get_statistics(e, ioS);
-    l << QString("PD_Flag %1").arg(e.PD_Flag);
+    l << QSL("PD_Flag %1").arg(e.PD_Flag);
     l << "SId " + hex_str(e.SId);
-    l << QString("SCIdS %1").arg(e.SCIdS);
-    l << QString("NumUserApps %1").arg(e.NumUserApps);
+    l << QSL("SCIdS %1").arg(e.SCIdS);
+    l << QSL("NumUserApps %1").arg(e.NumUserApps);
 
     for (i16 i = 0; i < std::min(e.NumUserApps, (i16)e.UserAppVec.size()); i++)
     {
       const auto & u = e.UserAppVec[i];
-      l << QString("[UserAppType %1").arg(u.UserAppType);
-      l << QString("UserAppDataLength %1").arg(u.UserAppDataLength);
-      l << QString("XPadData %1]").arg(u.XPadData);
+      l << QSL("[UserAppType %1").arg(u.UserAppType);
+      l << QSL("UserAppDataLength %1").arg(u.UserAppDataLength);
+      l << QSL("XPadData %1]").arg(u.XPadData);
     }
     qInfo().noquote() << l.join(' ');
   }

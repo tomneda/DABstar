@@ -16,6 +16,7 @@
 #include "map_http_server.h"
 #include "setting_helper.h"
 #include "compass_direction.h"
+#include "qt_compat.h"
 #include <QDir>
 #include <QComboBox>
 #include <QDateTime>
@@ -29,7 +30,7 @@ Q_LOGGING_CATEGORY(sLogTii, "TiiManager", QtInfoMsg)
 
 static QString tiiNumber(const i32 n)
 {
-  return n < 10 ? QString("0%1").arg(n) : QString::number(n);
+  return n < 10 ? QSL("0%1").arg(n) : QString::number(n);
 }
 
 TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
@@ -221,7 +222,7 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
       {
         if (ownCoordinatesSet)
         {
-          mpCmbTiiList->addItem(QString("%1/%2: %3  %4km  %5  %6m + %7m")
+          mpCmbTiiList->addItem(QSL("%1/%2: %3  %4km  %5  %6m + %7m")
                                 .arg(index + 1)
                                 .arg(mTransmitterIds.size())
                                 .arg(pTr->transmitterName)
@@ -232,7 +233,7 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
         }
         else
         {
-          mpCmbTiiList->addItem(QString("%1/%2: %3 (set map coord. for dist./dir.) %4m + %5m")
+          mpCmbTiiList->addItem(QSL("%1/%2: %3 (set map coord. for dist./dir.) %4m + %5m")
                                 .arg(index + 1)
                                 .arg(mTransmitterIds.size())
                                 .arg(pTr->transmitterName)
@@ -242,7 +243,7 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
       }
       else
       {
-        mpCmbTiiList->addItem(QString("%1/%2: No database entry found for TII %3-%4")
+        mpCmbTiiList->addItem(QSL("%1/%2: No database entry found for TII %3-%4")
                               .arg(index + 1)
                               .arg(mTransmitterIds.size())
                               .arg(tiiNumber(tii.mainId))

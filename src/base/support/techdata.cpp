@@ -37,6 +37,7 @@
 #include "color_selector.h"
 #include "gui_helpers.h"
 #include "setting_helper.h"
+#include "qt_compat.h"
 
 TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   : Ui_technical_data(),
@@ -268,13 +269,13 @@ void TechData::_show_coderate(i32 shortForm, i32 protLevel) const
 
 void TechData::set_audio_dump_button_emphasized(const bool iEmphasized) const
 {
-  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
   audiodumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x408870, Qt::white));
 }
 
 void TechData::set_frame_dump_button_emphasized(const bool iEmphasized) const
 {
-  static const QString sEmphasizedStyle{"background-color: #AE2B05; color: #EEEE00; font-weight: bold;"};
+  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
   framedumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x4A7898, Qt::white));
 }
 

@@ -13,6 +13,7 @@
 
 #include "ensemble_list_db.h"
 #include "glob_enums.h"
+#include "qt_compat.h"
 #include <QFile>
 #include <QTableView>
 #include <QtSql/QSql>
@@ -25,27 +26,27 @@
 #include <QDir>
 #include <utility>
 
-static const QString sTabDeviceEnsList = "TabDeviceEnsList";
-static const QString sTabFileEnsList   = "TabFileEnsList";
+static const QString sTabDeviceEnsList = QSL("TabDeviceEnsList");
+static const QString sTabFileEnsList   = QSL("TabFileEnsList");
 
-static const QString sTeFIdOrCh             = "FIdOrCh";
-static const QString sTeFilePath            = "FilePath";
-static const QString sTeFileName            = "FileName";
-static const QString sTeScanLevel           = "ScanLevel";
-static const QString sTeEnsembleName        = "EnsembleName";
-static const QString sTeEnsembleId          = "EnsembleId";
-static const QString sTeItuCode             = "ItuCode";
-static const QString sTeNumDabDabPlus       = "NumDabDabPlus";
-static const QString sTeDscTyAppTy          = "DscTyAppTy";
-static const QString sTeAudioDataRates      = "AudioDataRates";
-static const QString sTeErrorProtection     = "ErrorProtection";
-static const QString sTeFileLengthMB        = "FileLengthMB";
-static const QString sTeSNR                 = "SNR";
-static const QString sTeMER                 = "MER";
-static const QString sTeBasebandOffset      = "BaseBandOffset";
-static const QString sTeNomFreq             = "NomFreq";
-static const QString sTeDateUtc             = "Date";
-static const QString sTeLastPlayedSId       = "LastPlayedSId";
+static const QString sTeFIdOrCh             = QSL("FIdOrCh");
+static const QString sTeFilePath            = QSL("FilePath");
+static const QString sTeFileName            = QSL("FileName");
+static const QString sTeScanLevel           = QSL("ScanLevel");
+static const QString sTeEnsembleName        = QSL("EnsembleName");
+static const QString sTeEnsembleId          = QSL("EnsembleId");
+static const QString sTeItuCode             = QSL("ItuCode");
+static const QString sTeNumDabDabPlus       = QSL("NumDabDabPlus");
+static const QString sTeDscTyAppTy          = QSL("DscTyAppTy");
+static const QString sTeAudioDataRates      = QSL("AudioDataRates");
+static const QString sTeErrorProtection     = QSL("ErrorProtection");
+static const QString sTeFileLengthMB        = QSL("FileLengthMB");
+static const QString sTeSNR                 = QSL("SNR");
+static const QString sTeMER                 = QSL("MER");
+static const QString sTeBasebandOffset      = QSL("BaseBandOffset");
+static const QString sTeNomFreq             = QSL("NomFreq");
+static const QString sTeDateUtc             = QSL("Date");
+static const QString sTeLastPlayedSId       = QSL("LastPlayedSId");
 
 EnsembleListDB::EnsembleListDB(QString iDbFileName) :
   mDbFileName(std::move(iDbFileName)) // clang-tidy wants it so...

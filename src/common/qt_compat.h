@@ -19,6 +19,11 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QString>
+
+#ifndef QSL
+  #define QSL QStringLiteral
+#endif
 
 /*
  * Qt 6.7 introduced QCheckBox::checkStateChanged(Qt::CheckState) and deprecated QCheckBox::stateChanged(int).

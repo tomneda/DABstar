@@ -16,6 +16,7 @@
 #include "audio_manager.h"
 #include "mot_content_types.h"
 #include "mot_slide_progress.h"
+#include "qt_compat.h"
 #include <QDialog>
 #include <QTextBrowser>
 #include <QVBoxLayout>
@@ -224,11 +225,11 @@ void DabRadio::_initialize_device_selector(SChannelDescriptor & ioChannelDesc) c
 
 void DabRadio::_initialize_version_and_copyright_info()
 {
-  ui->lblVersion->setText(QString("V" + mVersionStr));
+  ui->lblVersion->setText(QSL("V") + mVersionStr);
 
   // A click on the version label or the copyright icon opens a dedicated window with the copyright
   // text, so the contained links become clickable (which is not possible within a tool tip).
-  const QString tip("Click to show version and copyright information");
+  const QString tip(QSL("Click to show version and copyright information"));
   ui->lblVersion->setToolTip(tip);
   ui->lblVersion->setCursor(Qt::PointingHandCursor);
   ui->lblVersion->installEventFilter(this);
@@ -241,7 +242,7 @@ void DabRadio::_show_copyright_window()
 {
   auto * const pDialog = new QDialog(this);
   pDialog->setAttribute(Qt::WA_DeleteOnClose);
-  pDialog->setWindowTitle("Version and Copyright Information");
+  pDialog->setWindowTitle(QSL("Version and Copyright Information"));
   pDialog->resize(870, 470);
 
   auto * const pBrowser = new QTextBrowser(pDialog);

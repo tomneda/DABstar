@@ -279,11 +279,11 @@ void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual
   }
 
   //lcdOfdmSymbNo->display(iOfdmSymbNo);
-  lblTestData1->setText(QString("%1").arg(iTestData1, 0, 'f', 2));
-  lblTestData2->setText(QString("%1").arg(iTestData2, 0, 'f', 2));
-  lblSnr->setText(QString("%1").arg(iSNR, 0, 'f', 1));
-  lblPhaseCorr->setText(QString("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
-  lblModQuality->setText(QString("%1").arg(iModQual, 0, 'f', 1));
+  lblTestData1->setText(QSL("%1").arg(iTestData1, 0, 'f', 2));
+  lblTestData2->setText(QSL("%1").arg(iTestData2, 0, 'f', 2));
+  lblSnr->setText(QSL("%1").arg(iSNR, 0, 'f', 1));
+  lblPhaseCorr->setText(QSL("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
+  lblModQuality->setText(QSL("%1").arg(iModQual, 0, 'f', 1));
 
   if (!mThermoModQualConfigured)
   {
@@ -302,13 +302,13 @@ void SpectrumViewer::show_fic_ber(const f32 ber) const
 {
   if (!myFrame.isHidden())
   {
-    lblBER->setText(QString("%1").arg(ber, 0, 'e', 1));
+    lblBER->setText(QSL("%1").arg(ber, 0, 'e', 1));
   }
 }
 
 void SpectrumViewer::show_nominal_frequency_MHz(const f32 iFreqMHz) const
 {
-  lblNomFrequency->setText(QString("%1").arg(iFreqMHz, 0, 'f', 3));
+  lblNomFrequency->setText(QSL("%1").arg(iFreqMHz, 0, 'f', 3));
 }
 
 void SpectrumViewer::show_freq_corr_rf_Hz(const i32 iFreqCorrRF) const
@@ -323,7 +323,7 @@ void SpectrumViewer::show_freq_corr_bb_Hz(const i32 iFreqCorrBB) const
 
 void SpectrumViewer::show_clock_error(const f32 iClockErr) const
 {
-  lblClockError->setText(QString("%1").arg(iClockErr, 0, 'f', 2));
+  lblClockError->setText(QSL("%1").arg(iClockErr, 0, 'f', 2));
 }
 
 void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const

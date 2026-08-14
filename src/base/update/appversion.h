@@ -32,6 +32,7 @@
 
 #pragma once
 
+#include "qt_compat.h"
 #include <QDebug>
 #include <QRegularExpression>
 #include <QString>
@@ -43,7 +44,7 @@ public:
 
   AppVersion(const QString & verString)
   {
-    static const QRegularExpression verRe("[vV]?(\\d+)\\.(\\d+)\\.(\\d+)(-(\\d+))?");
+    static const QRegularExpression verRe(QSL("[vV]?(\\d+)\\.(\\d+)\\.(\\d+)(-(\\d+))?"));
     QRegularExpressionMatch verMatch = verRe.match(verString);
     if (verMatch.hasMatch())
     {
@@ -71,7 +72,7 @@ public:
   bool operator<=(const AppVersion & other) const { return !(*this > other); }
 
   [[nodiscard]] bool isValid() const { return m_major != 0; }
-  [[nodiscard]] QString toString() const { return QString("V%1.%2.%3").arg(m_major).arg(m_minor).arg(m_patch); }
+  [[nodiscard]] QString toString() const { return QSL("V%1.%2.%3").arg(m_major).arg(m_minor).arg(m_patch); }
 
 private:
   uint m_major = 0;

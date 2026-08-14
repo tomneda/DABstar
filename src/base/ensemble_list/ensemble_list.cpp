@@ -119,7 +119,7 @@ void EnsembleList::_add_channel_entries_to_db() const
     }
   }
 
-  _log_to_result_display(ELogType::INFOACK, QString("Added %1 channels to list").arg(_get_nr_rows_in_table()));
+  _log_to_result_display(ELogType::INFOACK, QSL("Added %1 channels to list").arg(_get_nr_rows_in_table()));
 }
 
 i32 EnsembleList::_get_nr_rows_in_table() const
@@ -220,7 +220,7 @@ void EnsembleList::_log_to_result_display(const ELogType iLogType, const QString
     break;
   }
 
-  ui->teScanResult->append(QString("<span style='color:%1;'>%2%3%4</span>").arg(color).arg(indentStr).arg(preMsg).arg(iMessage.toHtmlEscaped()));
+  ui->teScanResult->append(QSL("<span style='color:%1;'>%2%3%4</span>").arg(color).arg(indentStr).arg(preMsg).arg(iMessage.toHtmlEscaped()));
   ui->teScanResult->moveCursor(QTextCursor::End);
 }
 
@@ -282,18 +282,18 @@ QString EnsembleList::_add_file_to_file_scan_list(const QString & iFileName, con
 
       mpDbHandler->insert_or_update_entry(ed, EnsembleListDB::EDbDataType::InsertKeyAndS0WsData);
 
-      _log_to_result_display(ELogType::INFOACK, QString("File '%1' added to list").arg(fileInfo.fileName()));
+      _log_to_result_display(ELogType::INFOACK, QSL("File '%1' added to list").arg(fileInfo.fileName()));
     }
     else
     {
-      _log_to_result_display(ELogType::INFONACK, QString("File '%1' skipped as already in list").arg(fileInfo.fileName()));
+      _log_to_result_display(ELogType::INFONACK, QSL("File '%1' skipped as already in list").arg(fileInfo.fileName()));
     }
     file.close();
     return fId;
   }
   else
   {
-    _log_to_result_display(ELogType::ERROR2, QString("Could not open file '%1'").arg(fileInfo.fileName()));
+    _log_to_result_display(ELogType::ERROR2, QSL("Could not open file '%1'").arg(fileInfo.fileName()));
   }
 
   return {};
@@ -324,7 +324,7 @@ void EnsembleList::slot_select_fid_or_ch(const QString & iFIdOrCh, const u32 iSI
   }
   else
   {
-    _log_to_result_display(ELogType::ERROR2, QString("'%1' not found in ensemble list").arg(iFIdOrCh));
+    _log_to_result_display(ELogType::ERROR2, QSL("'%1' not found in ensemble list").arg(iFIdOrCh));
   }
 }
 
@@ -443,7 +443,7 @@ void EnsembleList::_stop_scan_process()
 
   _setup_ui_regarding_scan_mode(false);
 
-  _log_to_result_display(ELogType::INFONEUT, QString("Scan stopped: %1 valid ensemble of %2 searched %3 found")
+  _log_to_result_display(ELogType::INFONEUT, QSL("Scan stopped: %1 valid ensemble of %2 searched %3 found")
                                              .arg(mCountScanOk).arg(mCountScanOk + mCountScanFailed)
                                              .arg(_list_mode_str("channels", "files")));
 
@@ -556,7 +556,7 @@ void EnsembleList::_slot_handle_add_files_in_path()
   const QFileInfo fileInfo(startPath);
   if (!fileInfo.exists() || !fileInfo.isDir())
   {
-    _log_to_result_display(ELogType::ERROR2, QString("Path '%1' does not exist or is not a directory").arg(startPath));
+    _log_to_result_display(ELogType::ERROR2, QSL("Path '%1' does not exist or is not a directory").arg(startPath));
     return;
   }
 
@@ -566,7 +566,7 @@ void EnsembleList::_slot_handle_add_files_in_path()
   if (minFileSize < cMinFileSize) minFileSize = cMinFileSize;
   i32 fileCount = 0;
 
-  _log_to_result_display(ELogType::INFOACK, QString("Adding files to list (may take a while) ..."));
+  _log_to_result_display(ELogType::INFOACK, QSL("Adding files to list (may take a while) ..."));
 
   while (it.hasNext())
   {
@@ -575,11 +575,11 @@ void EnsembleList::_slot_handle_add_files_in_path()
     constexpr i32 cMaxFileCount = 10000; // plausibility check to not throttle the system
     if (fileCount++ > cMaxFileCount)
     {
-      _log_to_result_display(ELogType::ERROR2, QString("File folder contains more than %1 files. Is the correct base directory chosen?").arg(cMaxFileCount));
+      _log_to_result_display(ELogType::ERROR2, QSL("File folder contains more than %1 files. Is the correct base directory chosen?").arg(cMaxFileCount));
       return;
     }
   }
-  _log_to_result_display(ELogType::INFOACK, QString("Added %1 files to list").arg(fileCount));
+  _log_to_result_display(ELogType::INFOACK, QSL("Added %1 files to list").arg(fileCount));
 }
 
 void EnsembleList::_slot_handle_add_single_file()
@@ -661,7 +661,7 @@ bool EnsembleList::_get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, const
   if (oIdentInfo.nrPackets == 0)
   {
     assert(mListMode == EListMode::PlayFromFiles);
-    _log_to_result_display(ELogType::WARN, QString("No entries in the list, please add one or more files to the list"));
+    _log_to_result_display(ELogType::WARN, QSL("No entries in the list, please add one or more files to the list"));
     if (mIsScanning) _stop_scan_process();
     return false;
   }
@@ -677,11 +677,11 @@ bool EnsembleList::_get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, const
 
 void EnsembleList::_signal_ident_info(const SIdentInfoEL & iIdentInfo)
 {
-  const QString entryOfStr = (mIsScanning ? QString(" (%1 of %2)").arg(iIdentInfo.curPacketIdx+1).arg(iIdentInfo.nrPackets) : QString());
+  const QString entryOfStr = (mIsScanning ? QSL(" (%1 of %2)").arg(iIdentInfo.curPacketIdx+1).arg(iIdentInfo.nrPackets) : QString());
   const QString scanOrPlayStr = QString(mIsScanning ? "Scanning " : "Playing ");
 
-  _log_to_result_display(ELogType::INFONEUT, scanOrPlayStr + _list_mode_str(QString("channel: %1").arg(iIdentInfo.fIdOrCh),
-                                                                            QString("file: %1").arg(iIdentInfo.absPath)) + entryOfStr);
+  _log_to_result_display(ELogType::INFONEUT, scanOrPlayStr + _list_mode_str(QSL("channel: %1").arg(iIdentInfo.fIdOrCh),
+                                                                            QSL("file: %1").arg(iIdentInfo.absPath)) + entryOfStr);
 
   emit signal_file_or_channel_to_play(iIdentInfo);
 }

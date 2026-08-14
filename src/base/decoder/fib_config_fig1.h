@@ -14,6 +14,7 @@
 
 #include "glob_data_types.h"
 #include "fib_helper.h"
+#include "qt_compat.h"
 #include <vector>
 #include <map>
 #include <QString>
@@ -81,7 +82,7 @@ public:
   using TMapServiceLabel_To_SId_SCIdS = std::map<QString, SSId_SCIdS>; // Key is service name -> SId
   TMapServiceLabel_To_SId_SCIdS serviceLabel_To_SId_SCIdS_Map;
 
-  template<typename T> inline QString hex_str(const T iVal) { return QString("0x%1").arg(iVal, 0, 16); }
+  template<typename T> inline QString hex_str(const T iVal) { return QSL("0x%1").arg(iVal, 0, 16); }
 
   const SFig1s1_ProgrammeServiceLabel * get_Fig1s1_ProgrammeServiceLabel_of_SId(u32 SId) const;
   const SFig1s4_ServiceComponentLabel * get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(u32 SId, i8 SCIdS) const;

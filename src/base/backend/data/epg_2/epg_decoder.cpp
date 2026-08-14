@@ -2612,14 +2612,14 @@ void EpgDecoder::record(progDesc * theElement)
     return;
   }
 
-  if ((theElement->mediumName == QString("")) && (theElement->shortName == QString("")) && (theElement->longName == QString("")))
+  if (theElement->mediumName.isEmpty() && theElement->shortName.isEmpty() && theElement->longName.isEmpty())
   {
     return;
   }
 
   emit signal_set_epg_data(this->SId,
                            theElement->startTime,
-                           theElement->longName != QString("") ? theElement->longName : theElement->mediumName != QString("")
+                           !theElement->longName.isEmpty() ? theElement->longName : !theElement->mediumName.isEmpty()
                                                                                         ? theElement->mediumName
                                                                                         : theElement->shortName,
                            theElement->shortDescription);

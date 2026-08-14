@@ -32,6 +32,7 @@
 #pragma once
 
 #include "glob_defs.h"
+#include "qt_compat.h"
 #include <QString>
 #include <cmath>
 #include <unistd.h>

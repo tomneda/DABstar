@@ -147,7 +147,7 @@ void DabRadio::_start_eti_handler(const SChannelDescriptor & iChannelDesc, SDump
 
   const QString etiFile = mOpenFileDialog.get_eti_file_name(iChannelDesc.ensembleName, iChannelDesc.get_fId_or_ch());
 
-  if (etiFile == QString(""))
+  if (etiFile.isEmpty())
   {
     return;
   }

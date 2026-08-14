@@ -12,6 +12,7 @@
  */
 
 #include "service_db.h"
+#include "qt_compat.h"
 #include <QFile>
 #include <QTableView>
 #include <QtSql/QSql>
@@ -23,15 +24,15 @@
 #include <QCoreApplication>
 #include <utility>
 
-static const QString sTabDeviceList = "TabDeviceList";
-static const QString sTabFilesList  = "TabFilesList";
-// static const QString sTabTempServList   = "TabTempServList";
-static const QString sTabFavList     = "TabFavList";
+static const QString sTabDeviceList = QSL("TabDeviceList");
+static const QString sTabFilesList  = QSL("TabFilesList");
+// static const QString sTabTempServList   = QSL("TabTempServList");
+static const QString sTabFavList     = QSL("TabFavList");
 
-static const QString sTeServiceLabel = "Service";
-static const QString sTeFIdOrCh      = "Channel";
-static const QString sTeServiceId    = "SId";
-static const QString sTeIsFav        = "IsFav";
+static const QString sTeServiceLabel = QSL("Service");
+static const QString sTeFIdOrCh      = QSL("Channel");
+static const QString sTeServiceId    = QSL("SId");
+static const QString sTeIsFav        = QSL("IsFav");
 
 #if 0
 class CustomSqlQueryModel : public QSqlQueryModel

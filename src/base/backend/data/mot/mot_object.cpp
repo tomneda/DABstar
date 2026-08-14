@@ -35,6 +35,7 @@
 #include "mot_object.h"
 #include "dabradio.h"
 #include "bit_extractors.h"
+#include "qt_compat.h"
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtDebugMsg)
@@ -291,7 +292,7 @@ void MotObject::_handle_complete()
 
   if (mName.isEmpty())
   {
-    mName = QString("trid_") + QString::number(mTransportId);
+    mName = QSL("trid_") + QString::number(mTransportId);
     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has no name, using" << mName;
   }
 

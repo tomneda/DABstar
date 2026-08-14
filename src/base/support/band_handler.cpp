@@ -128,7 +128,7 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
   theTable.verticalHeader()->hide();
   theTable.setShowGrid(true);
 #if !defined(_WIN32)
-  if (a_band == QString(""))
+  if (a_band.isEmpty())
   {
     return;
   }
@@ -225,7 +225,7 @@ void BandHandler::setupChannels(QComboBox * s, const EBand iBand)
   {
     theTable.insertRow(i);
     theTable.setItem(i, 0, new QTableWidgetItem(selectedBand[i].channel));
-    theTable.setItem(i, 1, new QTableWidgetItem(QString("+")));
+    theTable.setItem(i, 1, new QTableWidgetItem(QSL("+")));
   }
 }
 
