@@ -91,9 +91,9 @@ void TechData::cleanUp()
   framedumpButton->setEnabled(false);
   audiodumpButton->setEnabled(false);
   slot_show_rs_corrections(0, 0); // call via this method to consider color change
-  frameError_display->setValue(0);
-  rsError_display->setValue(0);
-  aacError_display->setValue(0);
+  frameError_display->set_stage(TrafficLight::EStage::Red);
+  rsError_display->set_stage(TrafficLight::EStage::Red);
+  aacError_display->set_stage(TrafficLight::EStage::Red);
   lblBitrate->setText("0");
   lblStartAddress->setText("0");
   lblLength->setText("0");
@@ -139,50 +139,44 @@ bool TechData::isHidden() const
   return mFrame.isHidden();
 }
 
-void TechData::slot_show_frame_error_bar(i32 e) const
+i32 TechData::_error_to_traffic_light_stage(const i32 iErrorCount)
 {
-  QPalette p = frameError_display->palette();
-  if (100 - 4 * e < 80)
+  if (iErrorCount < 0)
   {
-    p.setColor(QPalette::Highlight, QColor(0xCC3333));
+    return static_cast<i32>(TrafficLight::EStage::Off);
   }
-  else
+  if (iErrorCount == 0)
   {
-    p.setColor(QPalette::Highlight, QColor(0x52A824));
+    return static_cast<i32>(TrafficLight::EStage::Green);
   }
-
-  frameError_display->setPalette(p);
-  frameError_display->setValue(100 - 4 * e);
+  if (iErrorCount == 1)
+  {
+    return static_cast<i32>(TrafficLight::EStage::YellowGreen);
+  }
+  if (iErrorCount <= 3)
+  {
+    return static_cast<i32>(TrafficLight::EStage::Yellow);
+  }
+  if (iErrorCount <= 5)
+  {
+    return static_cast<i32>(TrafficLight::EStage::RedYellow);
+  }
+  return static_cast<i32>(TrafficLight::EStage::Red);
 }
 
-void TechData::slot_show_aac_error_bar(i32 e) const
+void TechData::slot_show_frame_error_bar(const i32 e) const
 {
-  QPalette p = aacError_display->palette();
-  if (100 - 4 * e < 80)  // e is error out of 25 frames so times 4
-  {
-    p.setColor(QPalette::Highlight, QColor(0xCC3333));
-  }
-  else
-  {
-    p.setColor(QPalette::Highlight, QColor(0x52A824));
-  }
-  aacError_display->setPalette(p);
-  aacError_display->setValue(100 - 4 * e);
+  frameError_display->set_stage(_error_to_traffic_light_stage(e));
 }
 
-void TechData::slot_show_rs_error_bar(i32 e) const
+void TechData::slot_show_aac_error_bar(const i32 e) const
 {
-  QPalette p = rsError_display->palette();
-  if (100 - 4 * e < 80)
-  {
-    p.setColor(QPalette::Highlight, QColor(0xCC3333));
-  }
-  else
-  {
-    p.setColor(QPalette::Highlight, QColor(0x52A824));
-  }
-  rsError_display->setPalette(p);
-  rsError_display->setValue(100 - 4 * e);
+  aacError_display->set_stage(_error_to_traffic_light_stage(e));
+}
+
+void TechData::slot_show_rs_error_bar(const i32 e) const
+{
+  rsError_display->set_stage(_error_to_traffic_light_stage(e));
 }
 
 void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
@@ -245,15 +239,13 @@ void TechData::slot_show_language(i32 l) const
   lblLanguage->setText(getLanguage(l));
 }
 
-void TechData::_show_ASCTy(i32 a) const
+void TechData::_show_ASCTy(const i32 a) const
 {
   const bool isDabPlus = (a == 077);
   lblAscTy->setText(isDabPlus ? "DAB+" : "DAB");
   framedumpButton->setText(isDabPlus ? "Dump AAC" : "Dump MP2");
   aacError_display->setEnabled(isDabPlus);
-  aacErrorLabel->setEnabled(isDabPlus);
   rsError_display->setEnabled(isDabPlus);
-  rsErrorLabel->setEnabled(isDabPlus);
 }
 
 void TechData::_show_uep_eep(i32 shortForm, i32 protLevel) const

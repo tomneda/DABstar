@@ -246,6 +246,7 @@ HEADERS += \
     src/base/support/tii_list_display.h \
     src/base/support/time_meas.h \
     src/base/support/time_table.h \
+    src/base/support/traffic_light.h \
     src/base/support/wav_writer.h \
     src/base/support/tii_library/tii_codes.h \
     src/base/support/viterbi_spiral/viterbi_spiral.h \
@@ -370,6 +371,7 @@ SOURCES += \
     src/base/support/techdata.cpp \
     src/base/support/tii_list_display.cpp \
     src/base/support/time_table.cpp \
+    src/base/support/traffic_light.cpp \
     src/base/support/wav_writer.cpp \
     src/base/support/tii_library/tii_codes.cpp \
     src/base/support/viterbi_spiral/viterbi_spiral.cpp \

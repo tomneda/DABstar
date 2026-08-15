@@ -37,6 +37,7 @@
 #include "audio_display.h"
 #include "ringbuffer.h"
 #include "custom_frame.h"
+#include "traffic_light.h"
 #include <QObject>
 #include <QTimer>
 
@@ -66,6 +67,8 @@ private:
   RingBuffer<i16> * mpAudioBuffer;
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
+
+  static i32 _error_to_traffic_light_stage(i32 iErrorCount);
 
   void _show_service_label(const QString &) const;
   void _show_SId(u32) const;

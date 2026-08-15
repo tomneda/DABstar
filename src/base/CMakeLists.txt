@@ -195,6 +195,7 @@ set(${baseLibName}_HDRS
         support/compass_direction.h
         support/time_meas.h
         support/copyright_info.h
+        support/traffic_light.h
         scopes/iqdisplay.h
         scopes/carrier_display.h
         scopes/audio_display.h
@@ -301,6 +302,7 @@ set(${baseLibName}_SRCS
         support/wav_writer.cpp
         support/compass_direction.cpp
         support/copyright_info.cpp
+        support/traffic_light.cpp
         scopes/iqdisplay.cpp
         scopes/carrier_display.cpp
         scopes/audio_display.cpp
