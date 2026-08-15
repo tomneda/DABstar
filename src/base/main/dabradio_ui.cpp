@@ -112,8 +112,21 @@ void DabRadio::_reset_status_info(StatusInfo & ioStatusInfo) const
   _set_status_info_status(ioStatusInfo.SBR, false);
   _set_status_info_status(ioStatusInfo.PS, false);
   _set_status_info_status(ioStatusInfo.Announce, false);
-  _set_status_info_status(ioStatusInfo.RsError, false);
-  _set_status_info_status(ioStatusInfo.CrcError, false);
+}
+
+void DabRadio::_initialize_traffic_lights() const
+{
+  // Update interval evaluation and timeout configuration:
+  // -----------------------------------------------------------------------------------------------------------------
+  // Indicator         | Update Source                     | Nominal Interval   | Max Interval / Jitter      | Timeout
+  // ------------------+-----------------------------------+--------------------+----------------------------+--------
+  // ui->tlFicError    | FicDecoder (signal_fic_status)    | 960 ms (10 frames) | ~1050 - 1300 ms (drop/jit) | 1500 ms
+  // ui->tlAudioBuffer | AudioManager (signal_audio_buffer)| 20 - 120 ms (AU)   | ~150 - 240 ms (concealment)| 1000 ms
+  // ui->tlRsCrcError  | Mp4Processor (signal_show_rs)     | 600 - 4080 ms      | ~4080 - 6000 ms (<=24kbps) | 5000 ms
+  // -----------------------------------------------------------------------------------------------------------------
+  ui->tlFicError->set_timeout(3000, TrafficLight::EStage::Off);    // make timeout bigger that the LED is not flickering while service change
+  ui->tlAudioBuffer->set_timeout(3000, TrafficLight::EStage::Off);
+  ui->tlRsCrcError->set_timeout(5000, TrafficLight::EStage::Off);
 }
 
 void DabRadio::_initialize_ui_elements()
@@ -194,8 +207,6 @@ void DabRadio::_initialize_status_info()
   _add_status_label_elem(mStatusInfo.MOT,         0x7F8CFF, "MOT",         "Multimedia Object Transfer<br>for slide show");
   _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",         "Electronic Program Guide");
   _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "ANN",         "Announcement");
-  _add_status_label_elem(mStatusInfo.RsError,     0xFF5749, "RS",          "Reed Solomon Error occurred");
-  _add_status_label_elem(mStatusInfo.CrcError,    0xFF5749, "CRC",         "CRC Error occurred<p>You will hear audible distortions if this occurs</p>");
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
@@ -291,8 +302,9 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
 
 void DabRadio::_cleanup_ui() const
 {
-  ui->progBarFicError->set_value(0);
-  ui->progBarAudioBuffer->set_value(0);
+  ui->tlFicError->set_stage(TrafficLight::EStage::Red);
+  ui->tlAudioBuffer->set_stage(TrafficLight::EStage::Red);
+  ui->tlRsCrcError->set_stage(TrafficLight::EStage::Red);
 }
 
 void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
@@ -584,23 +596,86 @@ void DabRadio::slot_show_aac_errors(i32 iAacErrors)
   }
 }
 
+TrafficLight::EStage DabRadio::_fic_to_traffic_light_stage(const i32 iSuccessPercent)
+{
+  if (iSuccessPercent < 0)
+  {
+    return TrafficLight::EStage::Off;
+  }
+  if (iSuccessPercent >= 95)
+  {
+    return TrafficLight::EStage::Green;
+  }
+  if (iSuccessPercent >= 85)
+  {
+    return TrafficLight::EStage::YellowGreen;
+  }
+  if (iSuccessPercent >= 65)
+  {
+    return TrafficLight::EStage::Yellow;
+  }
+  if (iSuccessPercent >= 45)
+  {
+    return TrafficLight::EStage::RedYellow;
+  }
+  return TrafficLight::EStage::Red;
+}
+
+TrafficLight::EStage DabRadio::_rs_crc_to_traffic_light_stage(const bool iRsError, const bool iCrcError)
+{
+  if (iCrcError)
+  {
+    return TrafficLight::EStage::Red;
+  }
+  if (iRsError)
+  {
+    return TrafficLight::EStage::Yellow;
+  }
+  return TrafficLight::EStage::Green;
+}
+
 // called from the ficHandler
-void DabRadio::slot_show_fic_status(const f32 iSuccessPercent, const f32 iBER)
+void DabRadio::slot_show_fic_status(const i32 iSuccessPercent, const f32 iBER) const
 {
   if (!mIsChannelRunning.load())
   {
     return;
   }
 
-  if (ui->progBarFicError->get_value() != iSuccessPercent)
-  {
-    ui->progBarFicError->set_value(iSuccessPercent);
-  }
+  ui->tlFicError->set_stage(_fic_to_traffic_light_stage(iSuccessPercent));
 
   if (!mpSpectrumViewer->is_hidden())
   {
     mpSpectrumViewer->show_fic_ber(iBER);
   }
+}
+
+// called from the AudioManager
+void DabRadio::slot_show_audio_buffer_filled_state(i32 iPercent, i32 iQualFillState, i32 iCorrDir) const
+{
+  const bool showRed = (iQualFillState != 0); // the buffer is currently filled to low or too high
+  const bool showYellow = (iCorrDir != 0); // is currently an audio rate adaptioin running?
+
+  TrafficLight::EStage stage;
+
+  if (!showRed && !showYellow)
+  {
+    stage = TrafficLight::EStage::Green;
+  }
+  else if (showRed && showYellow)
+  {
+    stage = TrafficLight::EStage::RedYellow;
+  }
+  else if (!showRed && showYellow)
+  {
+    stage = TrafficLight::EStage::YellowGreen;
+  }
+  else
+  {
+    stage = TrafficLight::EStage::Red;
+  }
+
+  ui->tlAudioBuffer->set_stage(stage);
 }
 
 // called from the PAD handler
@@ -716,19 +791,18 @@ void DabRadio::slot_pad_mot_progress(const i32 iPercent) const
 }
 
 // called from the MP4 decoder
-void DabRadio::slot_show_rs_corrections(const i32 iC, const i32 iEc)
+void DabRadio::slot_show_rs_corrections(const i32 iRsError, const i32 iCrcError)
 {
   if (!mIsChannelRunning)
   {
     return;
   }
 
-  _set_status_info_status(mStatusInfo.RsError, iC > 0);
-  _set_status_info_status(mStatusInfo.CrcError, iEc > 0);
+  ui->tlRsCrcError->set_stage(_rs_crc_to_traffic_light_stage(iRsError > 0, iCrcError > 0));
 
   if (!mpTechDataWidget->isHidden())
   {
-    mpTechDataWidget->slot_show_rs_corrections(iC, iEc);
+    mpTechDataWidget->slot_show_rs_corrections(iRsError, iCrcError);
   }
 }
 

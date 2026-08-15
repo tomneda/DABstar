@@ -243,7 +243,7 @@ void DabRadio::_stop_channel()
 
   ui->lblEnsName->setText("");
   ui->lblCountryName->setText("");
-  ui->progBarFicError->set_value(0);
+  _cleanup_ui();
 
   _enable_ui_elements_for_safety(false);  // hide some buttons
 

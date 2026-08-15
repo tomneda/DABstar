@@ -13,7 +13,7 @@
 
 #include "traffic_light.h"
 #include <QEvent>
-#include <algorithm>
+#include <QTimer>
 
 TrafficLight::TrafficLight(QWidget * const parent)
   : QWidget(parent)
@@ -27,18 +27,34 @@ TrafficLight::TrafficLight(const QString & iText, QWidget * const parent)
   _init_ui(iText);
 }
 
-TrafficLight::TrafficLight(const QString & iText, const i32 iStage, QWidget * const parent)
+TrafficLight::TrafficLight(const QString & iText, const EStage iStage, QWidget * const parent)
   : QWidget(parent)
 {
   _init_ui(iText);
   set_stage(iStage);
 }
 
-TrafficLight::TrafficLight(const i32 iStage, QWidget * const parent)
+TrafficLight::TrafficLight(const EStage iStage, QWidget * const parent)
   : QWidget(parent)
 {
   _init_ui(QString());
   set_stage(iStage);
+}
+
+TrafficLight::TrafficLight(const QString & iText, const EStage iStage, const i32 iTimeoutMs, const EStage iTimeoutStage, QWidget * const parent)
+  : QWidget(parent)
+{
+  _init_ui(iText);
+  set_stage(iStage);
+  set_timeout(iTimeoutMs, iTimeoutStage);
+}
+
+TrafficLight::TrafficLight(const EStage iStage, const i32 iTimeoutMs, const EStage iTimeoutStage, QWidget * const parent)
+  : QWidget(parent)
+{
+  _init_ui(QString());
+  set_stage(iStage);
+  set_timeout(iTimeoutMs, iTimeoutStage);
 }
 
 void TrafficLight::_init_ui(const QString & iText)
@@ -65,7 +81,7 @@ void TrafficLight::_init_ui(const QString & iText)
   _update_display();
 }
 
-const QPixmap & TrafficLight::_get_cached_pixmap(const i32 iStage)
+const QPixmap & TrafficLight::_get_cached_pixmap(const EStage iStage)
 {
   static const QPixmap sPixmaps[cStageCount] = {
     QPixmap{":/res/icons/traffic_light_h_off.svg"},          // 0
@@ -76,11 +92,12 @@ const QPixmap & TrafficLight::_get_cached_pixmap(const i32 iStage)
     QPixmap{":/res/icons/traffic_light_h_green.svg"}         // 5
   };
 
-  if (iStage < 0 || iStage >= cStageCount)
+  const auto stageIdx = static_cast<size_t>(iStage);
+  if (stageIdx >= cStageCount)
   {
     return sPixmaps[0];
   }
-  return sPixmaps[iStage];
+  return sPixmaps[stageIdx];
 }
 
 void TrafficLight::_update_display()
@@ -90,7 +107,7 @@ void TrafficLight::_update_display()
     return;
   }
 
-  const i32 stageToDisplay = isEnabled() ? mStage : static_cast<i32>(EStage::Off);
+  const EStage stageToDisplay = isEnabled() ? mStage : EStage::Off;
   const QPixmap & basePixmap = _get_cached_pixmap(stageToDisplay);
 
   if (!basePixmap.isNull())
@@ -108,20 +125,95 @@ void TrafficLight::_update_display()
   }
 }
 
-void TrafficLight::set_stage(const i32 iStage)
+void TrafficLight::set_stage(const EStage iStage)
 {
-  const i32 clampedStage = std::clamp(iStage, 0, cStageCount - 1);
-  if (mStage != clampedStage)
+  if (mStage != iStage)
   {
-    mStage = clampedStage;
+    mStage = iStage;
     _update_display();
     emit signal_stage_changed(mStage);
   }
+
+  _restart_timer_if_needed();
 }
 
-void TrafficLight::set_stage(const EStage iStage)
+void TrafficLight::set_timeout(const i32 iTimeoutMs, const EStage iTimeoutStage)
 {
-  set_stage(static_cast<i32>(iStage));
+  mTimeoutMs = iTimeoutMs;
+  mTimeoutStage = iTimeoutStage;
+
+  if (mTimeoutMs > 0)
+  {
+    _get_or_create_timer()->setInterval(mTimeoutMs);
+    if (mStage != mTimeoutStage)
+    {
+      mpTimer->start(mTimeoutMs);
+    }
+    else if (mpTimer != nullptr)
+    {
+      mpTimer->stop();
+    }
+  }
+  else if (mpTimer != nullptr)
+  {
+    mpTimer->stop();
+  }
+}
+
+bool TrafficLight::is_timer_active() const
+{
+  return mpTimer != nullptr && mpTimer->isActive();
+}
+
+void TrafficLight::restart_timeout_timer()
+{
+  if (mTimeoutMs > 0 && mStage != mTimeoutStage)
+  {
+    _get_or_create_timer()->start(mTimeoutMs);
+  }
+}
+
+void TrafficLight::stop_timeout_timer()
+{
+  if (mpTimer != nullptr)
+  {
+    mpTimer->stop();
+  }
+}
+
+void TrafficLight::_restart_timer_if_needed()
+{
+  if (mTimeoutMs > 0)
+  {
+    if (mStage != mTimeoutStage)
+    {
+      _get_or_create_timer()->start(mTimeoutMs);
+    }
+    else if (mpTimer != nullptr)
+    {
+      mpTimer->stop();
+    }
+  }
+}
+
+QTimer * TrafficLight::_get_or_create_timer()
+{
+  if (mpTimer == nullptr)
+  {
+    mpTimer = new QTimer(this);
+    mpTimer->setSingleShot(true);
+    connect(mpTimer, &QTimer::timeout, this, &TrafficLight::_slot_timeout);
+  }
+  return mpTimer;
+}
+
+void TrafficLight::_slot_timeout()
+{
+  if (mStage != mTimeoutStage)
+  {
+    set_stage(mTimeoutStage);
+    emit signal_timeout();
+  }
 }
 
 void TrafficLight::set_text(const QString & iText)

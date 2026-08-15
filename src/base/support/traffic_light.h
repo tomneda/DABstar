@@ -34,14 +34,23 @@
 //
 // The widget can be enabled or disabled via standard QWidget::setEnabled().
 // When disabled, all lights are turned off (stage 0 / off graphic).
+//
+// An optional timeout can be configured via set_timeout(). If configured (timeout > 0),
+// a single-shot timer is restarted on every set_stage() call. If no new stage is set
+// before the timeout expires, the traffic light automatically switches to the defined
+// timeout stage (default: Off).
+
+class QTimer;
 
 class TrafficLight : public QWidget
 {
   Q_OBJECT
   Q_PROPERTY(QString text READ get_text WRITE set_text)
-  Q_PROPERTY(int stage READ get_stage WRITE set_stage NOTIFY signal_stage_changed)
+  Q_PROPERTY(EStage stage READ get_stage WRITE set_stage NOTIFY signal_stage_changed)
   Q_PROPERTY(QSize iconSize READ get_icon_size WRITE set_icon_size)
   Q_PROPERTY(Qt::Alignment alignment READ get_alignment WRITE set_alignment)
+  Q_PROPERTY(i32 timeoutMs READ get_timeout_ms WRITE set_timeout_ms)
+  Q_PROPERTY(EStage timeoutStage READ get_timeout_stage WRITE set_timeout_stage)
 
 public:
   enum class EStage : u8
@@ -53,6 +62,7 @@ public:
     YellowGreen = 4, // Yellow + Green
     Green = 5        // Green
   };
+  Q_ENUM(EStage)
 
   static constexpr i32 cStageCount = 6;
   static constexpr i32 cDefaultIconWidth = 48;
@@ -60,18 +70,33 @@ public:
 
   explicit TrafficLight(QWidget * parent = nullptr);
   explicit TrafficLight(const QString & iText, QWidget * parent = nullptr);
-  TrafficLight(const QString & iText, i32 iStage, QWidget * parent = nullptr);
-  explicit TrafficLight(i32 iStage, QWidget * parent = nullptr);
+  TrafficLight(const QString & iText, EStage iStage, QWidget * parent = nullptr);
+  explicit TrafficLight(EStage iStage, QWidget * parent = nullptr);
+  TrafficLight(const QString & iText, EStage iStage, i32 iTimeoutMs, EStage iTimeoutStage, QWidget * parent = nullptr);
+  TrafficLight(EStage iStage, i32 iTimeoutMs, EStage iTimeoutStage, QWidget * parent = nullptr);
   ~TrafficLight() override = default;
 
-  // Stage control (0..5)
-  void set_stage(i32 iStage);
+  // Stage / state control (0..5)
   void set_stage(EStage iStage);
-  void set_value(i32 iValue) { set_stage(iValue); }
-  void set_level(i32 iLevel) { set_stage(iLevel); }
-  [[nodiscard]] i32 get_stage() const { return mStage; }
-  [[nodiscard]] i32 get_value() const { return mStage; }
-  [[nodiscard]] EStage get_stage_enum() const { return static_cast<EStage>(mStage); }
+  void set_state(EStage iStage) { set_stage(iStage); }
+  [[nodiscard]] EStage get_stage() const { return mStage; }
+  [[nodiscard]] EStage get_state() const { return get_stage(); }
+  [[nodiscard]] EStage stage() const { return mStage; }
+
+  // Timeout control
+  void set_timeout(i32 iTimeoutMs, EStage iTimeoutStage = EStage::Off);
+  void set_timeout(std::chrono::milliseconds iTimeout, EStage iTimeoutStage = EStage::Off) { set_timeout(static_cast<i32>(iTimeout.count()), iTimeoutStage); }
+  void set_timeout_ms(i32 iTimeoutMs) { set_timeout(iTimeoutMs, mTimeoutStage); }
+  void set_timeout_ms(std::chrono::milliseconds iTimeout) { set_timeout_ms(static_cast<i32>(iTimeout.count())); }
+  void set_timeout_stage(EStage iTimeoutStage) { set_timeout(mTimeoutMs, iTimeoutStage); }
+  [[nodiscard]] i32 get_timeout_ms() const { return mTimeoutMs; }
+  [[nodiscard]] i32 get_timeout() const { return mTimeoutMs; }
+  [[nodiscard]] EStage get_timeout_stage() const { return mTimeoutStage; }
+  [[nodiscard]] bool has_timeout() const { return mTimeoutMs > 0; }
+  [[nodiscard]] bool is_timer_active() const;
+  void restart_timeout_timer();
+  void stop_timeout_timer();
+  void disable_timeout() { set_timeout(0, mTimeoutStage); }
 
   // Label text on the left (works seamlessly with or without label)
   void set_text(const QString & iText);
@@ -101,29 +126,43 @@ public:
   [[nodiscard]] QSize minimumSizeHint() const override;
 
 public slots:
-  void slot_set_stage(i32 iStage) { set_stage(iStage); }
+  void slot_set_stage(EStage iStage) { set_stage(iStage); }
+  void slot_set_state(EStage iStage) { set_stage(iStage); }
   void slot_set_text(const QString & iText) { set_text(iText); }
   void slot_set_alignment(Qt::Alignment iAlignment) { set_alignment(iAlignment); }
+  void slot_set_timeout(i32 iTimeoutMs) { set_timeout_ms(iTimeoutMs); }
+  void slot_restart_timeout_timer() { restart_timeout_timer(); }
+  void slot_stop_timeout_timer() { stop_timeout_timer(); }
+  void slot_disable_timeout() { disable_timeout(); }
 
 signals:
-  void signal_stage_changed(i32 iStage);
+  void signal_stage_changed(EStage iStage);
+  void signal_timeout();
 
 protected:
   void changeEvent(QEvent * event) override;
 
+private slots:
+  void _slot_timeout();
+
 private:
-  i32 mStage = static_cast<i32>(EStage::Off);
+  EStage mStage = EStage::Off;
   QString mText;
   QSize mIconSize{cDefaultIconWidth, cDefaultIconHeight};
+  i32 mTimeoutMs = 0;
+  EStage mTimeoutStage = EStage::Off;
 
   QHBoxLayout * mpLayout = nullptr;
   QLabel * mpLabel = nullptr;
   QLabel * mpIconLabel = nullptr;
+  QTimer * mpTimer = nullptr;
 
   void _init_ui(const QString & iText);
   void _update_display();
+  void _restart_timer_if_needed();
+  QTimer * _get_or_create_timer();
 
-  static const QPixmap & _get_cached_pixmap(i32 iStage);
+  static const QPixmap & _get_cached_pixmap(EStage iStage);
 };
 
 using TrafficLightWidget = TrafficLight;

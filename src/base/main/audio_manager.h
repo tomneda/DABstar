@@ -42,7 +42,6 @@ public:
     RingBuffer<u8> * pFrameBuffer;
     Configuration * pConfig;
     TechData * pTechDataWidget;
-    LevelMeter * pProgBarAudioBuffer;
     LevelMeter * pLevelMeterLeft;
     LevelMeter * pLevelMeterRight;
     QSlider * pSliderVolume;
@@ -76,7 +75,6 @@ private:
   RingBuffer<u8> * const mpFrameBuffer;
   Configuration * const mpConfig;
   TechData * const mpTechDataWidget;
-  LevelMeter * const mpProgBarAudioBuffer;
   LevelMeter * const mpLevelMeterLeft;
   LevelMeter * const mpLevelMeterRight;
   QSlider * const mpSliderVolume;
@@ -113,6 +111,7 @@ private:
   QString mAudioWavDumpFileName;
 
   f32 mAudioBufferFillFiltered = 0.0f;
+  i32 mAudioQualFillState = 0;
   i32 mAudioFrameCnt = 0;
   mutable uint32_t mAudioDumpTimer = 0;
   mutable uint32_t mFrameDumpTimer = 0;
@@ -152,7 +151,7 @@ signals:
   void signal_set_audio_device(const QByteArray & deviceId);
   void signal_audio_test_tone(bool active);
   void signal_audio_peak_level_delay(i32 delaySteps);
-  void signal_audio_buffer_filled_state(i32 percent);
+  void signal_audio_buffer_filled_state(i32 percent, i32 qualFillState, i32 corrDir);
 
   // Status info updates to DabRadio (DabRadio updates its status labels)
   void signal_sbr_used(bool used);

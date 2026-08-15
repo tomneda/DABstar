@@ -98,14 +98,6 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 
   ui->setupUi(this);
 
-  // ui->progBarFicError->set_stepped(true);
-  ui->progBarFicError->set_color_stops({
-    { 0.0f, 0x00008B }, // Dark Blue
-    { 0.3f, 0x0055AA }, // Medium Blue
-    { 0.7f, 0x008888 }, // Cyan
-    { 0.9f, 0x336618 }, // Green
-    { 1.0f, 0x336618 }  // Green
-  });
 
   setWindowTitle(PRJ_NAME);
 
@@ -119,6 +111,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 
   qDebug("Using Qt version: " QT_VERSION_STR);
 
+  _initialize_traffic_lights();
   _initialize_audio_output();
   _initialize_epg_mot_handler();
   _initialize_tii_manager();
@@ -1235,7 +1228,6 @@ void DabRadio::_initialize_audio_output()
   cfg.pFrameBuffer            = mpFrameBuffer;
   cfg.pConfig                 = mpConfig.get();
   cfg.pTechDataWidget         = mpTechDataWidget.get();
-  cfg.pProgBarAudioBuffer     = ui->progBarAudioBuffer;
   cfg.pLevelMeterLeft         = ui->levelMeterLeft;
   cfg.pLevelMeterRight        = ui->levelMeterRight;
   cfg.pSliderVolume           = ui->sliderVolume;
@@ -1243,10 +1235,11 @@ void DabRadio::_initialize_audio_output()
 
   mpAudioManager.reset(new AudioManager(cfg, this));
 
-  connect(mpAudioManager.get(), &AudioManager::signal_sbr_used,           this, [this](bool v){ _set_status_info_status(mStatusInfo.SBR, v); });
-  connect(mpAudioManager.get(), &AudioManager::signal_ps_used,            this, [this](bool v){ _set_status_info_status(mStatusInfo.PS, v); });
-  connect(mpAudioManager.get(), &AudioManager::signal_output_sample_rate, this, [this](u32 v){ _set_status_info_status(mStatusInfo.OutSampRate, v); });
-  connect(mpAudioManager.get(), &AudioManager::signal_unmute_requested,   this, [this](){ _slot_update_mute_state(false); });
+  connect(mpAudioManager.get(), &AudioManager::signal_sbr_used,                  this, [this](bool v){ _set_status_info_status(mStatusInfo.SBR, v); });
+  connect(mpAudioManager.get(), &AudioManager::signal_ps_used,                   this, [this](bool v){ _set_status_info_status(mStatusInfo.PS, v); });
+  connect(mpAudioManager.get(), &AudioManager::signal_output_sample_rate,        this, [this](u32 v){ _set_status_info_status(mStatusInfo.OutSampRate, v); });
+  connect(mpAudioManager.get(), &AudioManager::signal_unmute_requested,          this, [this](){ _slot_update_mute_state(false); });
+  connect(mpAudioManager.get(), &AudioManager::signal_audio_buffer_filled_state, this, &DabRadio::slot_show_audio_buffer_filled_state);
 }
 
 void DabRadio::slot_new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, const u32 iAudioFlags)

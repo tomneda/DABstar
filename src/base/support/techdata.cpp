@@ -139,29 +139,29 @@ bool TechData::isHidden() const
   return mFrame.isHidden();
 }
 
-i32 TechData::_error_to_traffic_light_stage(const i32 iErrorCount)
+TrafficLight::EStage TechData::_error_to_traffic_light_stage(const i32 iErrorCount)
 {
   if (iErrorCount < 0)
   {
-    return static_cast<i32>(TrafficLight::EStage::Off);
+    return TrafficLight::EStage::Off;
   }
   if (iErrorCount == 0)
   {
-    return static_cast<i32>(TrafficLight::EStage::Green);
+    return TrafficLight::EStage::Green;
   }
   if (iErrorCount == 1)
   {
-    return static_cast<i32>(TrafficLight::EStage::YellowGreen);
+    return TrafficLight::EStage::YellowGreen;
   }
   if (iErrorCount <= 3)
   {
-    return static_cast<i32>(TrafficLight::EStage::Yellow);
+    return TrafficLight::EStage::Yellow;
   }
   if (iErrorCount <= 5)
   {
-    return static_cast<i32>(TrafficLight::EStage::RedYellow);
+    return TrafficLight::EStage::RedYellow;
   }
-  return static_cast<i32>(TrafficLight::EStage::Red);
+  return TrafficLight::EStage::Red;
 }
 
 void TechData::slot_show_frame_error_bar(const i32 e) const

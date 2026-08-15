@@ -68,7 +68,7 @@ private:
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
 
-  static i32 _error_to_traffic_light_stage(i32 iErrorCount);
+  static TrafficLight::EStage _error_to_traffic_light_stage(i32 iErrorCount);
 
   void _show_service_label(const QString &) const;
   void _show_SId(u32) const;

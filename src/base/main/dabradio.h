@@ -43,6 +43,7 @@
 #include "tii_manager.h"
 #include "ensemble_list.h"
 #include "dab_channel_desc.h"
+#include "traffic_light.h"
 #ifdef  DATA_STREAMER
   #include "tcp_server.h"
 #endif
@@ -129,8 +130,6 @@ private:
     StatusInfoElem<bool> SBR;
     StatusInfoElem<bool> PS;
     StatusInfoElem<bool> Announce;
-    StatusInfoElem<bool> RsError;
-    StatusInfoElem<bool> CrcError;
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
     StatusInfoElem<const char *> ProtLevel;
@@ -295,6 +294,8 @@ private:
   void _reset_status_info(StatusInfo & ioStatusInfo) const;
   void _display_service_label(const QString & iServiceLabel) const;
   void _write_warning_message(const QString & iMsg) const;
+  static TrafficLight::EStage _fic_to_traffic_light_stage(i32 iSuccessPercent);
+  static TrafficLight::EStage _rs_crc_to_traffic_light_stage(bool iRsError, bool iCrcError);
 
   // UI Controls and Styling
   void _set_favorite_button_style();
@@ -325,6 +326,7 @@ private:
   QString _convert_links_to_clickable(const QString & iText) const;
   void _check_on_github_for_update(bool iShowMessageBox);
 
+  void _initialize_traffic_lights() const;
   void _initialize_signal_slot_connections();
   void _initialize_ensemble_list();
   void _initialize_ui_elements();
@@ -354,8 +356,9 @@ public slots:
   void slot_show_frame_errors(i32 iFrameErrors);
   void slot_show_rs_errors(i32 iRsErrors);
   void slot_show_aac_errors(i32 iAacErrors);
-  void slot_show_fic_status(f32 iSuccessPercent, f32 iBER);
-  void slot_show_rs_corrections(i32 iC, i32 iEc);
+  void slot_show_fic_status(i32 iSuccessPercent, f32 iBER) const;
+  void slot_show_rs_corrections(i32 iRsError, i32 iCrcError);
+  void slot_show_audio_buffer_filled_state(i32 iPercent, i32 iQualFillState, i32 iCorrDir) const;
 
   // Signal Quality and Measurements
   void slot_show_correlation(f32 iThreshold, const QVector<i32> & iV);

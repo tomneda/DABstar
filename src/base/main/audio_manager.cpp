@@ -31,7 +31,6 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   , mpFrameBuffer(cfg.pFrameBuffer)
   , mpConfig(cfg.pConfig)
   , mpTechDataWidget(cfg.pTechDataWidget)
-  , mpProgBarAudioBuffer(cfg.pProgBarAudioBuffer)
   , mpLevelMeterLeft(cfg.pLevelMeterLeft)
   , mpLevelMeterRight(cfg.pLevelMeterRight)
   , mpSliderVolume(cfg.pSliderVolume)
@@ -52,15 +51,10 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(this, &AudioManager::signal_audio_mute, mpAudioOutput, &IAudioOutput::slot_set_mute, Qt::QueuedConnection);
   connect(this, &AudioManager::signal_audio_test_tone, mpAudioOutput, &IAudioOutput::slot_set_test_tone);
   connect(this, &AudioManager::signal_audio_peak_level_delay, mpAudioOutput, &IAudioOutput::slot_set_peak_level_delay);
-  connect(this, &AudioManager::signal_audio_buffer_filled_state, mpProgBarAudioBuffer, &LevelMeter::set_value);
   connect(mpSliderVolume, &QSlider::valueChanged, this, &AudioManager::slot_handle_volume_slider);
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_show_audio_peak_level, this, &AudioManager::slot_show_audio_peak_level, Qt::QueuedConnection);
   connect(mpAudioOutput->get_audio_io_device(), &AudioIODevice::signal_audio_data_available, mpTechDataWidget, &TechData::slot_audio_data_available, Qt::QueuedConnection);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, this, &AudioManager::slot_update_peak_level_delay);
-
-  mpProgBarAudioBuffer->set_lower_bound(0.0f);
-  mpProgBarAudioBuffer->set_upper_bound(100.0f);
-  // color stops for mpProgBarAudioBuffer are defined later
 
   Settings::Main::sliderVolume.register_widget_and_update_ui_from_setting(mpSliderVolume, 100);
 
@@ -236,14 +230,17 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
   constexpr f32 cBufferSizePercentMax  = 95; // we can afford more buffer to the top as the audio buffer is twice in size
   constexpr f32 cBufferSizePercentUsed = 60;
   constexpr f32 cBufferSizePercentStartSize = cBufferSizePercentMin + 20;
-
-  const ESampleAdaptMode currSampleAdaptMode = mSampleAdaptMode;
+  mAudioQualFillState = mAudioBufferFillFiltered < cBufferSizePercentMin
+                          ? -1 // filled too low
+                          : (mAudioBufferFillFiltered > cBufferSizePercentMax
+                               ? 1 // filled too high
+                               : 0);
 
   switch (mSampleAdaptMode)
   {
   case ESampleAdaptMode::NoChange:
-    if      (mAudioBufferFillFiltered < cBufferSizePercentMin) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
-    else if (mAudioBufferFillFiltered > cBufferSizePercentMax) mSampleAdaptMode = ESampleAdaptMode::RemoveSamples;
+    if      (mAudioQualFillState == -1) mSampleAdaptMode = ESampleAdaptMode::AddSamples;
+    else if (mAudioQualFillState == +1) mSampleAdaptMode = ESampleAdaptMode::RemoveSamples;
     break;
   case ESampleAdaptMode::RemoveSamples:
     if (mAudioBufferFillFiltered <= cBufferSizePercentUsed) mSampleAdaptMode = ESampleAdaptMode::NoChange;
@@ -254,29 +251,6 @@ void AudioManager::_check_and_adapt_sample_rate_mode()
   case ESampleAdaptMode::Idle:  // avoid rate adaptions while startup
     if (mAudioBufferFillFiltered >= cBufferSizePercentStartSize) mSampleAdaptMode = ESampleAdaptMode::NoChange;
     break;
-  }
-
-  if (mSampleAdaptMode != currSampleAdaptMode)
-  {
-    if (mSampleAdaptMode == ESampleAdaptMode::NoChange)
-    {
-      mpProgBarAudioBuffer->set_color_stops({
-        { 0.00f, 0x00008B }, // Dark Blue
-        { 0.20f, 0x0055AA }, // Medium Blue
-        { 0.40f, 0x008888 }, // Cyan
-        { 0.60f, 0x336618 }, // Green
-        { 0.80f, 0x008888 }, // Cyan
-        { 0.95f, 0x0055AA }, // Medium Blue
-        { 1.00f, 0x00008B }  // Dark Blue
-      });
-    }
-    else // adjustment in progress
-    {
-      mpProgBarAudioBuffer->set_color_stops({
-        { 0.00f, 0xB11F8C }, // Magenta
-        { 1.00f, 0xB11F8C }, // Magenta
-      });
-    }
   }
 }
 
@@ -409,7 +383,11 @@ void AudioManager::new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, 
     }
   }
 
-  emit signal_audio_buffer_filled_state((i32)mAudioBufferFillFiltered);
+  i32 corrDir = 0;
+  if      (mSampleAdaptMode == ESampleAdaptMode::AddSamples)    corrDir = +1; // audio buffer will grow
+  else if (mSampleAdaptMode == ESampleAdaptMode::RemoveSamples) corrDir = -1; // audio buffer will shrink
+
+  emit signal_audio_buffer_filled_state((i32)mAudioBufferFillFiltered, mAudioQualFillState, corrDir);
 }
 
 void AudioManager::slot_handle_audio_dump_button()
