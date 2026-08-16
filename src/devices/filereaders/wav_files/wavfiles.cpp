@@ -53,10 +53,9 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 {
   mFileName = iFilename;
   setupUi(&mFrame);
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   Settings::FileReaderWav::posAndSize.read_widget_geometry(&mFrame);
-
-  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.show();
 
   SF_INFO sf_info;

@@ -156,6 +156,13 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
   const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
   const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
 
+  const EIqPlotType iqPlotType = mIqPlotType.load(std::memory_order_relaxed);
+  const ECarrierPlotType carrPlotType = mCarrierPlotType.load(std::memory_order_relaxed);
+  const ESoftBitType softBitType = mSoftBitType.load(std::memory_order_relaxed);
+  const f32 invSqrtMeanPower = (mMeanPowerOvrAll > 0.0f) ? (1.0f / std::sqrt(mMeanPowerOvrAll)) : 1.0f;
+  constexpr f32 cInvTu100 = 100.0f / (f32)cTu;
+  const f32 cInvIqVectorSize = (mIqVector.size() > 1) ? (1.0f / (f32)(mIqVector.size() - 1)) : 1.0f;
+
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
     // We do not interchange the positive/negative frequencies to their right positions, the de-interleaving understands this.
@@ -221,12 +228,12 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
     cf32 r1;
     f32 w2;
-    if(mSoftBitType == ESoftBitType::SOFTDEC3) //Optimal 1
+    if(softBitType == ESoftBitType::SOFTDEC3) //Optimal 1
     {
       r1 = fftBin * PhaseReferenceAbs; // input level
       w2 = -140 / mMeanValue;
     }
-    else if(mSoftBitType == ESoftBitType::SOFTDEC2) //Optimal 2
+    else if(softBitType == ESoftBitType::SOFTDEC2) //Optimal 2
     {
       f32 w1 = PhaseReferenceAbs / meanSigmaSqPerBinRef;
       w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
@@ -250,16 +257,16 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
     if (showScopeData)
     {
-      switch (mIqPlotType)
+      switch (iqPlotType)
       {
       case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / meanLevelPerBinRef; break;
-      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin / std::sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw / std::sqrt(mMeanPowerOvrAll); break;
-      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (f32)cTu * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
+      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin * invSqrtMeanPower; break;
+      case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw * invSqrtMeanPower; break;
+      case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = cInvTu100 * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx * cInvIqVectorSize); break;
       case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
       }
 
-      switch (mCarrierPlotType)
+      switch (carrPlotType)
       {
       case ECarrierPlotType::SB_WEIGHT:
         // Convert and limit the soft bit weigth to percent
@@ -410,6 +417,10 @@ void OfdmDecoder::_reset_null_symbol_statistics()
 
 void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)
 {
+  if (mCarrierPlotType == iPlotType)
+  {
+    return;
+  }
   if (iPlotType == ECarrierPlotType::NULL_TII_LIN ||
       iPlotType == ECarrierPlotType::NULL_TII_LOG ||
       iPlotType == ECarrierPlotType::NULL_NO_TII)
@@ -421,11 +432,19 @@ void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)
 
 void OfdmDecoder::set_select_iq_plot_type(EIqPlotType iPlotType)
 {
+  if (mIqPlotType == iPlotType)
+  {
+    return;
+  }
   mIqPlotType = iPlotType;
 }
 
 void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
 {
+  if (mSoftBitType == iSoftBitType)
+  {
+    return;
+  }
   mSoftBitType = iSoftBitType;
 }
 

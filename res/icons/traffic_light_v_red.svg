@@ -6,11 +6,11 @@
   <path d="M 4.2 7 A 3.8 3.8 0 0 1 11.8 7" fill="none" stroke="#383d47" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M 4.2 16 A 3.8 3.8 0 0 1 11.8 16" fill="none" stroke="#383d47" stroke-width="1.2" stroke-linecap="round"/>
   <path d="M 4.2 25 A 3.8 3.8 0 0 1 11.8 25" fill="none" stroke="#383d47" stroke-width="1.2" stroke-linecap="round"/>
-  <!-- Red ON -->
-  <circle cx="8" cy="7" r="3.5" fill="#ff3333" stroke="#ff8080" stroke-width="0.6"/>
-  <circle cx="6.8" cy="5.8" r="1.1" fill="#ffffff" opacity="0.65"/>
+  <!-- Green OFF -->
+  <circle cx="8" cy="7" r="3.4" fill="#123d1c" stroke="#09210f" stroke-width="0.5"/>
   <!-- Yellow OFF -->
   <circle cx="8" cy="16" r="3.4" fill="#4d3f0f" stroke="#2b2308" stroke-width="0.5"/>
-  <!-- Green OFF -->
-  <circle cx="8" cy="25" r="3.4" fill="#123d1c" stroke="#09210f" stroke-width="0.5"/>
+  <!-- Red ON -->
+  <circle cx="8" cy="25" r="3.5" fill="#ff3333" stroke="#ff8080" stroke-width="0.6"/>
+  <circle cx="6.8" cy="23.8" r="1.1" fill="#ffffff" opacity="0.65"/>
 </svg>

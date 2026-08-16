@@ -39,6 +39,7 @@
 #include "phasetable.h"
 #include <QObject>
 #include <vector>
+#include <atomic>
 
 class DabRadio;
 
@@ -78,9 +79,9 @@ private:
   RingBuffer<cf32> * const mpIqBuffer;
   RingBuffer<f32> * const mpCarrBuffer;
 
-  ECarrierPlotType mCarrierPlotType = ECarrierPlotType::DEFAULT;
-  EIqPlotType mIqPlotType = EIqPlotType::DEFAULT;
-  ESoftBitType mSoftBitType = ESoftBitType::DEFAULT;
+  std::atomic<ECarrierPlotType> mCarrierPlotType{ ECarrierPlotType::DEFAULT };
+  std::atomic<EIqPlotType> mIqPlotType{ EIqPlotType::DEFAULT };
+  std::atomic<ESoftBitType> mSoftBitType{ ESoftBitType::DEFAULT };
 
   i32 mShowCntStatistics = 0;
   i32 mShowCntIqScope = 0;

@@ -31,7 +31,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Channel Impulse Response (CIR) for a whole DAB frame. The time axis is in milliseconds.</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Channel Impulse Response (CIR) for a whole DAB frame&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The time axis is in milliseconds.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>

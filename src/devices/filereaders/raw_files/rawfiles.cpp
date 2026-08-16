@@ -59,10 +59,9 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   mFileName = iFilename;
 
   setupUi(&mFrame);
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   Settings::FileReaderRaw::posAndSize.read_widget_geometry(&mFrame);
-
-  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mFrame.show();
 
   mpFile = OpenFileDialog::open_file(iFilename, "rb");

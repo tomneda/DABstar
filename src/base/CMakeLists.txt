@@ -189,13 +189,14 @@ set(${baseLibName}_HDRS
         support/itu_regions.h
         support/map_http_server.h
         support/tii_library/tii_codes.h
-        support/custom_frame.h
         support/gui_helpers.h
         support/wav_writer.h
         support/compass_direction.h
         support/time_meas.h
         support/copyright_info.h
         support/traffic_light.h
+        support/indicator_button.h
+        support/window_visibility_watcher.h
         scopes/iqdisplay.h
         scopes/carrier_display.h
         scopes/audio_display.h
@@ -297,12 +298,13 @@ set(${baseLibName}_SRCS
         support/map_http_server.cpp
         support/tii_list_display.cpp
         support/tii_library/tii_codes.cpp
-        support/custom_frame.cpp
         support/gui_helpers.cpp
         support/wav_writer.cpp
         support/compass_direction.cpp
         support/copyright_info.cpp
         support/traffic_light.cpp
+        support/indicator_button.cpp
+        support/window_visibility_watcher.cpp
         scopes/iqdisplay.cpp
         scopes/carrier_display.cpp
         scopes/audio_display.cpp

@@ -59,6 +59,7 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
+  QWidget * get_widget() override { return &mFrame; }
   bool isFileInput() override;
   void resetBuffer() override;
   QString deviceName() override;

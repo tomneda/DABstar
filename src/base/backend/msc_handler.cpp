@@ -50,54 +50,70 @@ MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<u8> * const ipFrameBuffe
 
 MscHandler::~MscHandler()
 {
-  QMutexLocker lock(&mMutex);
-  for (auto & b: mBackendList)
+  QVector<QSharedPointer<Backend>> backendsToStop;
+  {
+    QMutexLocker lock(&mMutex);
+    backendsToStop.swap(mBackendList);
+  }
+  for (auto & b: backendsToStop)
   {
     b->stop_running();
     b.reset();
   }
-  mBackendList.clear();
 }
 
 void MscHandler::reset_channel()
 {
   qDebug() << "Channel reset: all services will be stopped";
-  QMutexLocker lock(&mMutex);
-  for (auto & b: mBackendList)
+  QVector<QSharedPointer<Backend>> backendsToStop;
+  {
+    QMutexLocker lock(&mMutex);
+    backendsToStop.swap(mBackendList);
+  }
+  for (auto & b: backendsToStop)
   {
     b->stop_running();
     b.reset();
   }
-  mBackendList.clear();
 }
 
 void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFlag)
 {
-  QMutexLocker lock(&mMutex);
-  for (qsizetype i = 0; i < mBackendList.size(); i++)
+  QVector<QSharedPointer<Backend>> backendsToStop;
   {
-    if (auto & b = mBackendList[i];
-        b->subChId == iSubChId && b->processFlag == iProcessFlag)
+    QMutexLocker lock(&mMutex);
+    for (qsizetype i = 0; i < mBackendList.size(); i++)
     {
-      qDebug() << "Stopping SubChannel" << iSubChId;
-      b->stop_running();
-      b.reset();
-      mBackendList.removeAt(i);
-      --i; // we removed one element
+      if (auto & b = mBackendList[i];
+          b->subChId == iSubChId && b->processFlag == iProcessFlag)
+      {
+        qDebug() << "Stopping SubChannel" << iSubChId;
+        backendsToStop.append(b);
+        mBackendList.removeAt(i);
+        --i; // we removed one element
+      }
     }
+  }
+  for (auto & b: backendsToStop)
+  {
+    b->stop_running();
+    b.reset();
   }
 }
 
 void MscHandler::stop_all_services()
 {
-  QMutexLocker lock(&mMutex);
-  for (auto & b: mBackendList)
+  QVector<QSharedPointer<Backend>> backendsToStop;
+  {
+    QMutexLocker lock(&mMutex);
+    backendsToStop.swap(mBackendList);
+  }
+  for (auto & b: backendsToStop)
   {
     qDebug() << "Stopping SId" << Qt::hex << Qt::showbase << b->serviceId << Qt::dec << "SubChannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
     b->stop_running();
     b.reset();
   }
-  mBackendList.clear();
 }
 
 bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const

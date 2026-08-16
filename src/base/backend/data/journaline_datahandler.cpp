@@ -59,7 +59,7 @@ JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR, const i32 iS
   mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(callback_func, this);
 
   connect(this, &JournalineDataHandler::signal_new_data, &mJournalineViewer, &JournalineViewer::slot_new_data);
-  connect(&mJournalineViewer, &JournalineViewer::signal_window_closed, ipDR, &DabRadio::slot_handle_journaline_viewer_closed);
+  connect(&mJournalineViewer, &JournalineViewer::signal_window_closed, ipDR, &DabRadio::slot_handle_journaline_viewer_closed, Qt::QueuedConnection);
 }
 
 JournalineDataHandler::~JournalineDataHandler()

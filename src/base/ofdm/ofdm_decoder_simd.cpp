@@ -330,6 +330,10 @@ void OfdmDecoder::_reset_null_symbol_statistics()
 
 void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)
 {
+  if (mCarrierPlotType == iPlotType)
+  {
+    return;
+  }
   if (iPlotType == ECarrierPlotType::NULL_TII_LIN ||
       iPlotType == ECarrierPlotType::NULL_TII_LOG ||
       iPlotType == ECarrierPlotType::NULL_NO_TII)
@@ -341,11 +345,19 @@ void OfdmDecoder::set_select_carrier_plot_type(ECarrierPlotType iPlotType)
 
 void OfdmDecoder::set_select_iq_plot_type(EIqPlotType iPlotType)
 {
+  if (mIqPlotType == iPlotType)
+  {
+    return;
+  }
   mIqPlotType = iPlotType;
 }
 
 void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
 {
+  if (mSoftBitType == iSoftBitType)
+  {
+    return;
+  }
   mSoftBitType = iSoftBitType;
 }
 
@@ -363,20 +375,26 @@ cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, 
 
 void OfdmDecoder::_display_iq_and_carr_vectors()
 {
+  const EIqPlotType iqPlotType = mIqPlotType.load(std::memory_order_relaxed);
+  const ECarrierPlotType carrPlotType = mCarrierPlotType.load(std::memory_order_relaxed);
+  const f32 invSqrtMeanPower = (mMeanPowerOvrAll > 0.0f) ? (1.0f / std::sqrt(mMeanPowerOvrAll)) : 1.0f;
+  constexpr f32 cInvTu100 = 100.0f / (f32)cTu;
+  const f32 cInvIqVectorSize = (mIqVector.size() > 1) ? (1.0f / (f32)(mIqVector.size() - 1)) : 1.0f;
+
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
-    switch (mIqPlotType)
+    switch (iqPlotType)
     {
     case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / mSimdVecMeanLevel[nomCarrIdx]; break;
-    case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
-    case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] / std::sqrt(mMeanPowerOvrAll); break;
-    case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = 100.0f / (f32)cTu * _interpolate_2d_plane(mDcFftLast, mDcFft, (f32)nomCarrIdx / ((f32)mIqVector.size() - 1)); break;
+    case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] * invSqrtMeanPower; break;
+    case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] * invSqrtMeanPower; break;
+    case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = cInvTu100 * _interpolate_2d_plane(mDcFftLast, mDcFft, (f32)nomCarrIdx * cInvIqVectorSize); break;
     case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
     }
 
     const i16 realCarrRelIdx = mMapNomToRealCarrIdx[nomCarrIdx];
 
-    switch (mCarrierPlotType)
+    switch (carrPlotType)
     {
     case ECarrierPlotType::SB_WEIGHT:
     {
@@ -402,7 +420,7 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
     }
   } // for (nomCarrIdx...
 
-  if (mCarrierPlotType == ECarrierPlotType::PRS_PHASE_UNWRAP)
+  if (carrPlotType == ECarrierPlotType::PRS_PHASE_UNWRAP)
   {
     for (i32 i = 1; i < cK; ++i)
     {

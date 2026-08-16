@@ -41,6 +41,7 @@
 // timeout stage (default: Off).
 
 class QTimer;
+class QEnterEvent;
 
 class TrafficLight : public QWidget
 {
@@ -156,6 +157,7 @@ signals:
 
 protected:
   void changeEvent(QEvent * event) override;
+  void enterEvent(QEnterEvent * event) override;
 
 private slots:
   void _slot_timeout();

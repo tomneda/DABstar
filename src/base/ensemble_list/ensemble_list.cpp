@@ -12,11 +12,13 @@
  */
 
 #include "ensemble_list.h"
+#include "dabradio.h"
 #include "ui_ensemble_list.h"
 #include "setting_helper.h"
 #include "ensemble_list_db_handler.h"
 #include "band_handler.h"
 #include "gui_helpers.h"
+#include "window_visibility_watcher.h"
 #include "qt_compat.h"
 #include <QDir>
 #include <QDirIterator>
@@ -33,11 +35,10 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   , mBandHandler("", &Settings::Storage::instance())
 {
   ui->setupUi(&mFrame);
+  mFrame.setWindowFlag(Qt::Tool, true);
   mFrame.hide();
 
   Settings::EnsembleList::posAndSizeChMode.read_widget_geometry(&mFrame);
-
-  mFrame.setWindowFlag(Qt::Tool, true);
 
   Settings::EnsembleList::ledPathToScan.register_widget_and_update_ui_from_setting(ui->ledPathToScan, QDir::homePath());
 
@@ -65,7 +66,13 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   const QString skipFileName = Settings::Config::varSkipFile.read().toString();
   mBandHandler.setup_skipList(skipFileName);
 
-  connect(&mFrame, &CustomFrame::signal_frame_closed, []{ Settings::EnsembleList::varUiVisible.write(false); });
+  auto * watcher = new WindowVisibilityWatcher(&mFrame, this);
+  connect(watcher, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
+    if (!DabRadio::is_terminating())
+    {
+      Settings::EnsembleList::varUiVisible.write(visible);
+    }
+  });
   connect(ui->btnResetDataBase, &QPushButton::clicked, this, &EnsembleList::_slot_handle_reset_data_base_button);
   connect(ui->btnRemoveFilesWithoutSignal, &QPushButton::clicked, this, &EnsembleList::_slot_handle_remove_invalid_entries_button);
   connect(ui->btnPathToScan, &QPushButton::clicked, this, &EnsembleList::_slot_handle_path_with_files_to_add_button);
@@ -129,10 +136,18 @@ i32 EnsembleList::_get_nr_rows_in_table() const
 
 void EnsembleList::set_list_mode(const EListMode iListMode)
 {
-  _write_pos_and_size(); // save geometry for the outgoing mode before switching
+  if (mListMode == iListMode)
+  {
+    return;
+  }
+
+  if (mListMode != EListMode::Invalid)
+  {
+    _write_pos_and_size(); // save geometry for the outgoing mode before switching
+  }
 
   mListMode = iListMode;
-  EnsembleListDbHandler::EDataMode dataMode;;
+  EnsembleListDbHandler::EDataMode dataMode;
 
   switch (mListMode)
   {
@@ -170,13 +185,19 @@ void EnsembleList::_write_pos_and_size()
 void EnsembleList::hide()
 {
   mFrame.hide();
-  Settings::EnsembleList::varUiVisible.write(false);
+  if (!DabRadio::is_terminating())
+  {
+    Settings::EnsembleList::varUiVisible.write(false);
+  }
 }
 
 void EnsembleList::show()
 {
   mFrame.show();
-  Settings::EnsembleList::varUiVisible.write(true);
+  if (!DabRadio::is_terminating())
+  {
+    Settings::EnsembleList::varUiVisible.write(true);
+  }
 }
 
 void EnsembleList::init_after_connect()

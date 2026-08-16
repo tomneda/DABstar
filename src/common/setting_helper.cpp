@@ -260,12 +260,21 @@ PosAndSize::PosAndSize(const QString & iCat, const QString & iName)
 
 void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, i32 iWidthOffs /*= 0*/, i32 iHeightOffs /*= 0*/) const
 {
-  const i32 x = Storage::instance().value(mKey + "-x", -1).toInt();
-  const i32 y = Storage::instance().value(mKey + "-y", -1).toInt();
+  if (iopWidget == nullptr)
+  {
+    return;
+  }
+
+  // Check if position keys exist rather than checking x >= 0 && y >= 0.
+  // Negative coordinates are valid in multi-monitor setups (e.g. secondary monitor located to the left or above the primary monitor).
+  // Using contains() also avoids collisions with sentinel values.
+  const bool hasPos = Storage::instance().contains(mKey + "-x") && Storage::instance().contains(mKey + "-y");
+  const i32 x = Storage::instance().value(mKey + "-x", 0).toInt();
+  const i32 y = Storage::instance().value(mKey + "-y", 0).toInt();
   const i32 w = Storage::instance().value(mKey + "-w", -1).toInt();
   const i32 h = Storage::instance().value(mKey + "-h", -1).toInt();
 
-  if (x >= 0 && y >= 0) // entries valid?
+  if (hasPos)
   {
     iopWidget->move(QPoint(x, y));
   }
@@ -315,6 +324,11 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsF
 
 void PosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
 {
+  if (ipWidget == nullptr)
+  {
+    return;
+  }
+
   Storage::instance().setValue(mKey + "-x", ipWidget->pos().x());
   Storage::instance().setValue(mKey + "-y", ipWidget->pos().y());
   Storage::instance().setValue(mKey + "-w", ipWidget->width());

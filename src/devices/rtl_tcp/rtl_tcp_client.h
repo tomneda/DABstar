@@ -57,6 +57,7 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
+  QWidget * get_widget() override { return &mFrame; }
   QString deviceName() override;
   void resetBuffer() override;
   bool hasDump() override;

@@ -40,9 +40,9 @@
 #include "glob_enums.h"
 #include "ui_spectrum_viewer.h"
 #include "ringbuffer.h"
-#include "custom_frame.h"
 #include "tii_detector.h"
 #include <array>
+#include <QFrame>
 #include <QObject>
 #include <QTimer>
 #include <fftw3.h>
@@ -79,13 +79,14 @@ public:
   void hide();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool is_hidden() const;
+  [[nodiscard]] QWidget * get_widget() { return &myFrame; }
   void show_digital_peak_and_rms_level(f32 iDigLevelPeak, f32 iDigLevelRms) const;
 
   enum class EAvrRate { SLOW, MEDIUM, FAST, DEFAULT = MEDIUM };
   void set_spectrum_averaging_rate(EAvrRate iAvrRate);
 
 private:
-  CustomFrame myFrame{ nullptr };
+  QFrame myFrame{ nullptr };
   DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
   RingBuffer<cf32> * const mpSpectrumBuffer;
@@ -128,5 +129,4 @@ private slots:
 signals:
   void signal_cmb_carrier_changed(ECarrierPlotType);
   void signal_cmb_iq_scope_changed(EIqPlotType);
-  void signal_window_closed();
 };

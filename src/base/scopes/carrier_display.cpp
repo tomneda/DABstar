@@ -42,6 +42,30 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
   mpDotSeries->attachAxis(mpPlot->get_x_axis());
   mpDotSeries->attachAxis(mpPlot->get_y_axis());
 
+  // Horizontal Y-value marker lines
+  mpMarkerSeries = new QLineSeries();
+  mpMarkerSeries->setPen(QPen(0x606060));
+  mpMarkerSeries->setUseOpenGL(false);
+  mpPlot->chart()->addSeries(mpMarkerSeries);
+  mpMarkerSeries->attachAxis(mpPlot->get_x_axis());
+  mpMarkerSeries->attachAxis(mpPlot->get_y_axis());
+
+  // Vertical TII segment boundary lines (major)
+  mpTiiBlueSeries = new QLineSeries();
+  mpTiiBlueSeries->setPen(QPen(QColor(0x5555BB), 0.0, Qt::SolidLine));
+  mpTiiBlueSeries->setUseOpenGL(false);
+  mpPlot->chart()->addSeries(mpTiiBlueSeries);
+  mpTiiBlueSeries->attachAxis(mpPlot->get_x_axis());
+  mpTiiBlueSeries->attachAxis(mpPlot->get_y_axis());
+
+  // Vertical TII segment boundary lines (minor)
+  mpTiiRedSeries = new QLineSeries();
+  mpTiiRedSeries->setPen(QPen(QColor(0xAA4444), 0.0, Qt::SolidLine));
+  mpTiiRedSeries->setUseOpenGL(false);
+  mpPlot->chart()->addSeries(mpTiiRedSeries);
+  mpTiiRedSeries->attachAxis(mpPlot->get_x_axis());
+  mpTiiRedSeries->attachAxis(mpPlot->get_y_axis());
+
   mpPlot->get_x_axis()->setGridLineVisible(true);
   mpPlot->get_x_axis()->setMinorGridLineVisible(true);
   mpPlot->get_y_axis()->setGridLineVisible(true);
@@ -52,11 +76,6 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
   connect(mpPlot->get_y_axis(), &QValueAxis::rangeChanged, this, [this](const f64 min, const f64 max)
   {
     _update_y_markers(min, max);
-  });
-
-  connect(mpPlot, &PlotWidget::signal_y_zoom_reset, this, [this]()
-  {
-    _update_y_markers(mpPlot->get_y_axis()->min(), mpPlot->get_y_axis()->max());
   });
 
   select_plot_type(ECarrierPlotType::DEFAULT);
@@ -116,36 +135,29 @@ void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
 
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
-  mPlotType = iPlotType;
-  mPlotTypeChanged = true;
+  if (mPlotType != iPlotType)
+  {
+    mPlotType = iPlotType;
+    mPlotTypeChanged = true;
+  }
 }
 
 void CarrierDisp::_clear_marker_lines()
 {
-  for (auto * p : mpMarkerLines)
-  {
-    mpPlot->chart()->removeSeries(p);
-    delete p; // this is correct despite p holds a Qt object
-  }
-  mpMarkerLines.clear();
+  mpMarkerSeries->clear();
 }
 
 void CarrierDisp::_clear_tii_lines()
 {
-  for (auto * p : mpTiiLines)
-  {
-    mpPlot->chart()->removeSeries(p);
-    delete p; // this is correct despite p holds a Qt object
-  }
-  mpTiiLines.clear();
+  mpTiiBlueSeries->clear();
+  mpTiiRedSeries->clear();
 }
 
 void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
 {
-  _clear_marker_lines();
-
   if (mCurrentCustPlot.MarkerYValueStep <= 0 || mCurrentCustPlot.YValueElementNo < 2)
   {
+    _clear_marker_lines();
     return;
   }
 
@@ -171,6 +183,7 @@ void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
 
   if (step <= 0.0)
   {
+    _clear_marker_lines();
     return;
   }
 
@@ -183,18 +196,15 @@ void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
   const i64 firstIdx = (i64)std::floor(yMin / step) + 1;              // do not draw the bottom line (+1)
   const i64 lastIdx  = (i64)std::ceil(yMax / step - cIdxTolerance);   // but draw the top line
 
+  QList<QPointF> markerPts;
   for (i64 idx = firstIdx; idx <= lastIdx; ++idx)
   {
     const f64 yVal = (f64)idx * step;
-    auto * line = new QLineSeries();
-    line->setPen(QPen(0x606060));
-    line->append(-1e9, yVal);
-    line->append(+1e9, yVal);
-    mpPlot->chart()->addSeries(line);
-    line->attachAxis(mpPlot->get_x_axis());
-    line->attachAxis(mpPlot->get_y_axis());
-    mpMarkerLines.push_back(line);
+    markerPts.append(QPointF(-1e9, yVal));
+    markerPts.append(QPointF(+1e9, yVal));
+    markerPts.append(QPointF(qQNaN(), qQNaN()));
   }
+  mpMarkerSeries->replace(markerPts);
 }
 
 void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
@@ -217,10 +227,6 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
   mpPlot->get_x_axis()->setGridLineVisible(iCustPlot.DrawXGrid);
   mpPlot->get_y_axis()->setGridLineVisible(iCustPlot.DrawYGrid);
 
-  // set_y_range (called via reset_y_zoom) resets mYTickAuto=true and re-applies auto ticks
-  // after rangeChanged fires, so call _update_y_markers explicitly here to fix up ticks and markers.
-  _update_y_markers(mpPlot->get_y_axis()->min(), mpPlot->get_y_axis()->max());
-
   // Vertical TII segment boundary lines
   if (iCustPlot.DrawTiiSegments)
   {
@@ -234,18 +240,18 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     const f64 yLineMin = iCustPlot.YBottomValue + iCustPlot.YBottomValueRangeExt - 1.0;
     const f64 yLineMax = iCustPlot.YTopValue    + iCustPlot.YTopValueRangeExt    + 1.0;
 
+    QList<QPointF> bluePts;
+    QList<QPointF> redPts;
     for (i32 i = 0; i < (i32)xPoints.size(); ++i)
     {
-      auto * vline = new QLineSeries();
-      const QColor col = ((i - 15) % 8 == 0) ? QColor(0x5555BB) : QColor(0xAA4444);
-      vline->setPen(QPen(col, 0.0, Qt::SolidLine));
-      vline->append(xPoints[i], yLineMin);
-      vline->append(xPoints[i], yLineMax);
-      mpPlot->chart()->addSeries(vline);
-      vline->attachAxis(mpPlot->get_x_axis());
-      vline->attachAxis(mpPlot->get_y_axis());
-      mpTiiLines.push_back(vline);
+      const bool isBlue = ((i - 15) % 8 == 0);
+      auto & pts = isBlue ? bluePts : redPts;
+      pts.append(QPointF(xPoints[i], yLineMin));
+      pts.append(QPointF(xPoints[i], yLineMax));
+      pts.append(QPointF(qQNaN(), qQNaN()));
     }
+    mpTiiBlueSeries->replace(bluePts);
+    mpTiiRedSeries->replace(redPts);
   }
 }
 

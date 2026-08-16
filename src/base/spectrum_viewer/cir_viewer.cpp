@@ -20,11 +20,10 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
   mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
 
   setupUi(&mFrame);
-
-  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame);
-
   mFrame.setWindowFlag(Qt::Tool, true);
   mFrame.hide();
+
+  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame);
 
   // cirPlot is a PlotWidget (promoted in the UI)
   cirPlot->get_x_axis()->setGridLineVisible(true);
@@ -41,8 +40,6 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
 
   cirPlot->set_x_range(0, 96);
   cirPlot->set_y_range(0, 1.0);
-
-  connect(&mFrame, &CustomFrame::signal_frame_closed, this, &CirViewer::signal_frame_closed);
 }
 
 CirViewer::~CirViewer()

@@ -29,7 +29,7 @@
             <item>
              <widget class="QPushButton" name="dumpButton">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to save the raw input signal to a file. A file selection dialog will open to choose a filename. Note that the file sizes can be very large.&lt;/p&gt;&lt;p&gt;Click again to stop recording. The file can be reloaded using the &amp;quot;Ensemble List&amp;quot; (&amp;quot;EL&amp;quot; button).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the raw input signal to a file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;A file selection dialog will open to choose a filename. Note that the file sizes can be very large.&lt;/p&gt;&lt;p&gt;Click again to stop recording. The file can be reloaded using the &amp;quot;Ensemble List&amp;quot; (&amp;quot;EL&amp;quot; button).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Dump RAW</string>
@@ -39,7 +39,7 @@
             <item>
              <widget class="QPushButton" name="etiButton">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate an ETI file.&lt;/p&gt;&lt;p&gt;Note that generating an ETI file requires considerable resources.&lt;/p&gt;&lt;p&gt;Clicking this button opens a file selection dialog. After selecting a file, the ensemble content is written in ETI format. The ETI session stops when this button is clicked again or when switching to another channel.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Generate an ETI file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Note that generating an ETI file requires considerable resources.&lt;/p&gt;&lt;p&gt;Clicking this button opens a file selection dialog. After selecting a file, the ensemble content is written in ETI format. The ETI session stops when this button is clicked again or when switching to another channel.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Dump ETI</string>
@@ -53,7 +53,7 @@
             <item>
              <widget class="QPushButton" name="resetButton">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to restart synchronization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Restart synchronization&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="styleSheet">
                <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
@@ -67,7 +67,7 @@
             <item>
              <widget class="QPushButton" name="dlTextButton">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the dynamic label text to a file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the dynamic label text to a file&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Save DL Text</string>
@@ -100,7 +100,7 @@
             <item>
              <widget class="QCheckBox" name="cbTestTone">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable or disable the calibration test tone (short tone pings) used to calibrate the peak level delay setting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Calibration test tone&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enable or disable the calibration test tone (short tone pings) used to calibrate the peak level delay setting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Test tone</string>
@@ -117,7 +117,7 @@
             <item>
              <widget class="QSpinBox" name="sbPeakLevelDelay">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delay for the peak level meter. Use the test tone to calibrate the optimal setting — adjust until the peak level meter reacts in sync with the tone. Use the smallest value that works.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Delay for the peak level meter&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use the test tone to calibrate the optimal setting — adjust until the peak level meter reacts in sync with the tone. Use the smallest value that works.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="minimum">
                <number>0</number>
@@ -135,7 +135,7 @@
           <item>
            <widget class="QCheckBox" name="cbAudioConcealment">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Conceal short audio dropouts caused by reception errors.&lt;/p&gt;&lt;p&gt;When &lt;b&gt;enabled&lt;/b&gt;, a lost audio frame is replaced by a synthesised frame instead of leaving a gap, reducing clicks and interruptions. The concealment method depends on the AAC decoder this build uses:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;FDK-AAC&lt;/b&gt;: spectral-domain concealment built into the decoder - seamless, click-free and the better sounding option (recommended, if available in this build).&lt;/li&gt;&lt;li&gt;&lt;b&gt;FAAD&lt;/b&gt;: pitch-synchronous extrapolation of the last good frame in the PCM domain - good, but not as clean as FDK-AAC.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;When &lt;b&gt;disabled&lt;/b&gt;, lost frames are left as gaps (no audio is inserted), as in earlier versions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Conceal short audio dropouts caused by reception errors&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When &lt;b&gt;enabled&lt;/b&gt;, a lost audio frame is replaced by a synthesised frame instead of leaving a gap, reducing clicks and interruptions. The concealment method depends on the AAC decoder this build uses:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;FDK-AAC&lt;/b&gt;: spectral-domain concealment built into the decoder - seamless, click-free and the better sounding option (recommended, if available in this build).&lt;/li&gt;&lt;li&gt;&lt;b&gt;FAAD&lt;/b&gt;: pitch-synchronous extrapolation of the last good frame in the PCM domain - good, but not as clean as FDK-AAC.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;When &lt;b&gt;disabled&lt;/b&gt;, lost frames are left as gaps (no audio is inserted), as in earlier versions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Conceal audio dropouts</string>
@@ -154,7 +154,7 @@
           <item>
            <widget class="QCheckBox" name="cbManualBrowserStart">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, a browser must be started manually when the map HTTP service starts. By default, a browser is opened automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start map browser manually&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When enabled, a browser must be started manually when the map HTTP service starts. By default, a browser is opened automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Start map browser manually</string>
@@ -164,7 +164,7 @@
           <item>
            <widget class="QCheckBox" name="cbSaveTransToCsv">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;While the HTTP map is shown, the transmitter descriptions are also stored in a &amp;quot;.csv&amp;quot; and a &amp;quot;.kml&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the map HTTP server, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save transmitter descriptions to CSV and KML files&lt;/span&gt;&lt;/p&gt;&lt;p&gt;While the HTTP map is shown, the transmitter descriptions are also stored in a &amp;quot;.csv&amp;quot; and a &amp;quot;.kml&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the map HTTP server, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Save transmitters to CSV and KML</string>
@@ -241,7 +241,7 @@
             <item>
              <widget class="QLineEdit" name="leMapPortVal">
               <property name="toolTip">
-               <string>Maps HTTP server port number (1-65535)</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Maps HTTP server port number (1-65535)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignRight</set>
@@ -279,7 +279,7 @@
           <item>
            <widget class="QCheckBox" name="cbAlwaysOnTop">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Keep the main window always on top of other windows. This setting takes effect the next time the program starts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Keep the main window always on top of other windows&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This setting takes effect the next time the program starts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Main widget always on top</string>
@@ -289,7 +289,7 @@
           <item>
            <widget class="QCheckBox" name="cbCloseDirect">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, the application closes immediately without a confirmation dialog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Close without asking for confirmation&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When enabled, the application closes immediately without a confirmation dialog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Close without asking</string>
@@ -299,7 +299,7 @@
           <item>
            <widget class="QCheckBox" name="cbUseUtcTime">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display time in UTC if selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Display time in UTC if selected&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Use UTC time</string>
@@ -344,7 +344,7 @@
             <item>
              <widget class="QToolButton" name="btnSelectBasePath">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open a directory dialog to choose the base directory for MOT and EPG data. Subdirectories MOT/, EPG/, and PIC/ will be created inside it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose the base directory for MOT and EPG data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Subdirectories MOT/, EPG/, and PIC/ will be created inside it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="icon">
                <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
@@ -356,7 +356,7 @@
           <item>
            <widget class="QLabel" name="lblDataBasePath">
             <property name="toolTip">
-             <string>Current base directory for MOT and EPG data storage.</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Current base directory for MOT and EPG data storage&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>-</string>
@@ -423,7 +423,7 @@
           <item>
            <widget class="QCheckBox" name="cbUseNativeIqFormat">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use native IQ format of most input devices in 'Dump RAW' if selected. Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Use native IQ format of input devices in 'Dump RAW'&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;
             &lt;p&gt;If not selected, 'Dump RAW' writes WAV files with 16 bits and 2048 kS/s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
@@ -445,7 +445,7 @@
             <item>
              <widget class="QCheckBox" name="cbCheckForUpdates">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically check for a new version of DABstar after startup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically check for a new version of DABstar after startup&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Check for updates every:</string>
@@ -455,7 +455,7 @@
             <item>
              <widget class="QSpinBox" name="sbUpdateCheckDays">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Interval in days between automatic update checks.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Interval in days between automatic update checks&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="suffix">
                <string> days</string>
@@ -476,7 +476,7 @@
           <item>
            <widget class="QPushButton" name="btnCheckForUpdate">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to check for an update on GitHub immediately.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Check for an update on GitHub immediately&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Check for Update Now</string>
@@ -512,7 +512,7 @@
           <item>
            <widget class="QCheckBox" name="cbUseDcAvoidance">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Try to avoid a DC component on the OFDM bins around the 0 Hz OFDM bin.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices use an analogue IQ receiving concept, which tends to introduce a DC component at 0 Hz baseband.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unused 0 Hz OFDM bin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Try to avoid a DC component on the OFDM bins around the 0 Hz OFDM bin&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Many SDR devices use an analogue IQ receiving concept, which tends to introduce a DC component at 0 Hz baseband.&lt;/p&gt;&lt;p&gt;This feature tries to use the RF synthesizer on the SDR device to shift the DC component to the unused 0 Hz OFDM bin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Use DC avoidance algorithm</string>
@@ -522,7 +522,7 @@
           <item>
            <widget class="QCheckBox" name="cbDoDcCorrOnly">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal. &lt;/p&gt;&lt;p&gt;Mutually exclusive with &amp;quot;Do DC and IQ correction&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Do DC correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes the possible remaining DC from the input signal.&lt;/p&gt;&lt;p&gt;Mutually exclusive with &amp;quot;Do DC and IQ correction&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Do DC correction (without IQ)</string>
@@ -532,7 +532,7 @@
           <item>
            <widget class="QCheckBox" name="cbDoDcAndIqCorr">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Do DC and IQ correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes also a possible IQ misalignment from the input signal. &lt;/p&gt;&lt;p&gt;Mutually exclusive with &amp;quot;Do DC correction (without IQ)&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Do DC and IQ correction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This removes also a possible IQ misalignment from the input signal.&lt;/p&gt;&lt;p&gt;Mutually exclusive with &amp;quot;Do DC correction (without IQ)&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Do DC and IQ correction</string>
@@ -542,7 +542,7 @@
           <item>
            <widget class="QCheckBox" name="cbUseStrongestPeak">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Use strongest correlation peak&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If set, the correlation module will report the strongest peak in the correlation, rather than the first (above a certain minimum).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Use strongest correlation peak</string>
@@ -561,11 +561,11 @@
             <item>
              <widget class="QComboBox" name="cmbSoftBitGen">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;
-                The designations refer to the document &quot;SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES&quot;.
-                The use of an optimal soft decision algorithm compared to the conventional soft decision algorithm gives a performance improvement equivalent to an SNR gain of up to 5dB. 
-                In a time invariant propagation environment, Optimal 3 gives the best performance whereas in time selective environment, Optimal 2 gives the best performance.&lt;/p&gt;&lt;p&gt;
-                See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;
+                 The designations refer to the document &quot;SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES&quot;.
+                 The use of an optimal soft decision algorithm compared to the conventional soft decision algorithm gives a performance improvement equivalent to an SNR gain of up to 5dB. 
+                 In a time invariant propagation environment, Optimal 3 gives the best performance whereas in time selective environment, Optimal 2 gives the best performance.&lt;/p&gt;&lt;p&gt;
+                 See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -595,7 +595,7 @@
             <item>
              <widget class="QCheckBox" name="cbTiiCollisions">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show TII collisions (entries sharing the same sub-ID) as main ID = 99.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show TII collisions as main ID = 99&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Show TII collisions (entries sharing the same sub-ID) as main ID = 99.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Show TII coll. for Sub ID:</string>
@@ -629,7 +629,7 @@
             <item>
              <widget class="QSpinBox" name="sbTiiThreshold">
               <property name="toolTip">
-               <string>Minimum TII signal level above the noise floor in dB.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Minimum TII signal level above the noise floor in dB&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="suffix">
                <string> dB</string>
@@ -650,7 +650,7 @@
           <item>
            <widget class="QPushButton" name="loadTableButton">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click to load a TII table — a file containing the TII data encodings used for transmitter identification.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Load a TII table&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Load a file containing the TII data encodings used for transmitter identification.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Load TII Table</string>

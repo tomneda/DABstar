@@ -13,7 +13,9 @@
 
 #include "traffic_light.h"
 #include <QEvent>
+#include <QEnterEvent>
 #include <QTimer>
+#include <QToolTip>
 
 TrafficLight::TrafficLight(QWidget * const parent)
   : QWidget(parent)
@@ -70,10 +72,12 @@ void TrafficLight::_init_ui(const QString & iText)
   mpLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   mpLabel->setText(mText);
   mpLabel->setVisible(!mText.isEmpty());
+  mpLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
   mpIconLabel = new QLabel(this);
   mpIconLabel->setAlignment(Qt::AlignCenter);
   mpIconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  mpIconLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
   mpLayout->addWidget(mpLabel);
   mpLayout->addWidget(mpIconLabel);
@@ -314,6 +318,15 @@ void TrafficLight::changeEvent(QEvent * const event)
   if (event != nullptr && event->type() == QEvent::EnabledChange)
   {
     _update_display();
+  }
+}
+
+void TrafficLight::enterEvent(QEnterEvent * const event)
+{
+  QWidget::enterEvent(event);
+  if (!toolTip().isEmpty())
+  {
+    QToolTip::showText(QCursor::pos(), toolTip(), this);
   }
 }
 

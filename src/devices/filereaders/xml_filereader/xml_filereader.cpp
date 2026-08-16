@@ -64,9 +64,8 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   sliderFilePos->setFixedHeight(31);
   sliderFilePos->setStyleSheet("QSlider::handle:horizontal { width:  16px; margin-top: -9px;  margin-bottom: -9px; border-radius: 5px; }");
 
-  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
-
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
   myFrame.show();
   theFile = OpenFileDialog::open_file(iFilename, "rb");
 

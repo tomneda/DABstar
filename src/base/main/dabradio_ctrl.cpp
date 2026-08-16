@@ -13,6 +13,7 @@
 #include "configuration.h"
 #include "audio_manager.h"
 #include "mot_slide_progress.h"
+#include "window_visibility_watcher.h"
 
 
 void DabRadio::_create_and_init_dab_processor()
@@ -64,6 +65,10 @@ void DabRadio::_clean_up_dab_processor_and_input_device()
 
   if (mpInputDevice != nullptr)
   {
+    if (mpDeviceWindowWatcher != nullptr)
+    {
+      mpDeviceWindowWatcher->attach(nullptr);
+    }
     mpInputDevice.reset();
     if (!mIsFileMode)
     {
@@ -110,6 +115,11 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
 
   _create_and_init_dab_processor();
   assert(mpDabProcessor != nullptr);
+
+  if (mpDeviceWindowWatcher != nullptr)
+  {
+    mpDeviceWindowWatcher->attach(mpInputDevice ? mpInputDevice->get_widget() : nullptr);
+  }
 
   emit signal_dab_processor_started(); // triggers the DAB processor rereading (new) settings
 
@@ -220,6 +230,10 @@ void DabRadio::_stop_channel()
   {
     mpFibContentTable->hide();
     mpFibContentTable.reset();
+    if (mpFibWindowWatcher != nullptr)
+    {
+      mpFibWindowWatcher->attach(nullptr);
+    }
   }
 
   if (mpFicDumpPointer != nullptr)

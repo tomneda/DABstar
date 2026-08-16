@@ -6,9 +6,9 @@
 #include "ui_cir_widget.h"
 #include "ringbuffer.h"
 #include "phasetable.h"
-#include "custom_frame.h"
 #include "plot_widget.h"
 #include <fftw3.h>
+#include <QFrame>
 #include <QLineSeries>
 #include <QObject>
 
@@ -29,9 +29,10 @@ public:
   void hide();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool is_hidden();
+  [[nodiscard]] QWidget * get_widget() { return &mFrame; }
 
 private:
-  CustomFrame mFrame;
+  QFrame mFrame;
   RingBuffer<cf32> * const mpCirBuffer;
   QLineSeries * mpCurve = nullptr;
   alignas(64) TArrayTu mFftInBuffer;
@@ -39,7 +40,4 @@ private:
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
   cf32 cirbuffer[CIR_SPECTRUMSIZE];
-
-signals:
-  void signal_frame_closed();
 };

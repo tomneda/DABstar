@@ -11,11 +11,13 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "tii_manager.h"
+#include "dabradio.h"
 #include "configuration.h"
 #include "dab_processor.h"
 #include "map_http_server.h"
 #include "setting_helper.h"
 #include "compass_direction.h"
+#include "window_visibility_watcher.h"
 #include "qt_compat.h"
 #include <QDir>
 #include <QComboBox>
@@ -48,7 +50,14 @@ TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
   mTiiIndexCntTimer.setInterval(2000);  // cTiiIndexCntTimeoutMs
   connect(&mTiiIndexCntTimer, &QTimer::timeout, this, &TiiManager::_slot_tii_index_cnt_timeout);
 
-  connect(&mTiiListDisplay, &TiiListDisplay::signal_frame_closed, this, &TiiManager::slot_handle_tii_viewer_closed);
+  auto * watcher = new WindowVisibilityWatcher(mTiiListDisplay.get_widget(), this);
+  connect(watcher, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
+    mShowTiiListWindow = visible;
+    if (!DabRadio::is_terminating())
+    {
+      Settings::TiiViewer::varUiVisible.write(visible);
+    }
+  });
 
   mShowTiiListWindow = Settings::TiiViewer::varUiVisible.read().toBool();
 }
@@ -88,6 +97,12 @@ bool TiiManager::init_tii_file()
 bool TiiManager::fill_tii_cache(const QString & fileName)
 {
   return mTiiHandler.fill_cache_from_tii_file(fileName);
+}
+
+void TiiManager::show_tii_display()
+{
+  mShowTiiListWindow = true;
+  mTiiListDisplay.show();
 }
 
 void TiiManager::hide_tii_display()
@@ -313,17 +328,7 @@ void TiiManager::slot_handle_tii_subid(const i32 subid)
 
 void TiiManager::slot_handle_tii_button()
 {
-  mShowTiiListWindow = !mShowTiiListWindow;
-  mTiiListDisplay.setVisible(mShowTiiListWindow);
-  Settings::TiiViewer::varUiVisible.write(mShowTiiListWindow);
-}
-
-void TiiManager::slot_handle_tii_viewer_closed()
-{
-  if (mShowTiiListWindow)
-  {
-    slot_handle_tii_button();
-  }
+  mTiiListDisplay.setVisible(!mShowTiiListWindow);
 }
 
 void TiiManager::_slot_tii_index_cnt_timeout()

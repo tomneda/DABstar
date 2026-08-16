@@ -11,15 +11,17 @@
  * Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "iqdisplay.h"
+#include "glob_defs.h"
 #include <QPainter>
 #include <QPaintEvent>
 #include <cmath>
+#include <cstring>
 
 IQDisplay::IQDisplay(QWidget * const parent)
   : QWidget(parent)
 {
   setAttribute(Qt::WA_OpaquePaintEvent);
-  mPixelBuffer.resize(c2Radius * c2Radius, 0);
+  mBackgroundImage = QImage(c2Radius, c2Radius, QImage::Format_RGB32);
   mImage = QImage(c2Radius, c2Radius, QImage::Format_RGB32);
 
   // IQ dot color: fully-opaque yellowish-white
@@ -44,12 +46,14 @@ IQDisplay::IQDisplay(QWidget * const parent)
     mCrossGradient[(size_t)y] = qRgb(r, g, b);
   }
 
+  _render_background(0.0f);
   select_plot_type(EIqPlotType::DEFAULT);
 }
 
-inline void IQDisplay::_set_point(const i32 iX, const i32 iY, const u8 iVal)
+inline void IQDisplay::_set_base_point(const i32 iX, const i32 iY)
 {
   i32 x, y;
+  i32 bufX, bufY;
 
   if (mMap1stQuad)
   {
@@ -67,7 +71,8 @@ inline void IQDisplay::_set_point(const i32 iX, const i32 iY, const u8 iVal)
     limit_symmetrically(x, c2Radius - 1);
     limit_symmetrically(y, c2Radius - 1);
 
-    mPixelBuffer[(size_t)((c2Radius - 1 - y) * c2Radius + x)] = iVal;
+    bufX = x;
+    bufY = c2Radius - 1 - y;
   }
   else
   {
@@ -77,113 +82,120 @@ inline void IQDisplay::_set_point(const i32 iX, const i32 iY, const u8 iVal)
     limit_symmetrically(x, cRadius - 1);
     limit_symmetrically(y, cRadius - 1);
 
-    mPixelBuffer[(size_t)((cRadius - 1 - y) * c2Radius + x + cRadius - 1)] = iVal;
+    bufX = x + cRadius - 1;
+    bufY = cRadius - 1 - y;
+  }
+
+  reinterpret_cast<QRgb *>(mBackgroundImage.scanLine(bufY))[bufX] = mCrossGradient[(size_t)bufY];
+}
+
+void IQDisplay::_render_background(const f32 iScale)
+{
+  // 1. Fill background gradient
+  for (i32 y = 0; y < c2Radius; ++y)
+  {
+    QRgb * const line = reinterpret_cast<QRgb *>(mBackgroundImage.scanLine(y));
+    const QRgb bg = mBgGradient[(size_t)y];
+    for (i32 x = 0; x < c2Radius; ++x)
+    {
+      line[x] = bg;
+    }
+  }
+
+  // 2. Draw cross
+  if (mMap1stQuad)
+  {
+    for (i32 i = 0; i < c2Radius; ++i)
+    {
+      _set_base_point(0, i);
+      _set_base_point(i, 0);
+    }
+  }
+  else
+  {
+    for (i32 i = -(cRadius - 1); i < cRadius; ++i)
+    {
+      _set_base_point(0, i);
+      _set_base_point(i, 0);
+    }
+  }
+
+  // 3. Draw circle
+  if (iScale > 0.0f)
+  {
+    const i32 maxCirclePoints = (i32)(180 * iScale);
+    for (i32 i = 0; i < maxCirclePoints; ++i)
+    {
+      const f32 phase = 0.5f * (f32)M_PI * (f32)i / maxCirclePoints;
+      const auto h = (i32)(mRadius * iScale * std::cos(phase));
+      const auto v = (i32)(mRadius * iScale * std::sin(phase));
+
+      if (!mMap1stQuad)
+      {
+        _set_base_point(-h, -v);
+        _set_base_point(-h, +v);
+        _set_base_point(+h, -v);
+      }
+      _set_base_point(+h, +v);
+    }
   }
 }
 
 void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
 {
-  if (iIQ.size() != mPoints.size())
+  const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f);
+  if (scale != mLastCircleSize)
   {
-    mPoints.resize(iIQ.size(), { 0, 0 });
+    mLastCircleSize = scale;
+    _render_background(scale);
   }
 
-  const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f);
   const f32 scaleNormed = scale * mRadius;
 
-  _clean_screen_from_old_data_points();
-  _draw_cross();
-  _repaint_circle(scale);
+  // Copy base image (gradient + cross + circle)
+  std::memcpy(mImage.bits(), mBackgroundImage.constBits(), mImage.sizeInBytes());
 
-  for (u32 i = 0; i < iIQ.size(); i++)
-  {
-    auto x = (i32)(scaleNormed * real(iIQ[i]));
-    auto y = (i32)(scaleNormed * imag(iIQ[i]));
-
-    mPoints[i] = std::complex<i32>(x, y);
-    _set_point(x, y, 100);
-  }
-
-  _rebuild_image();
-  update();
-}
-
-void IQDisplay::_clean_screen_from_old_data_points()
-{
-  for (const auto & p : mPoints)
-  {
-    _set_point(real(p), imag(p), 0);
-  }
-}
-
-void IQDisplay::_draw_cross()
-{
+  // Render dots directly onto mImage
   if (mMap1stQuad)
   {
-    for (i32 i = 0; i < c2Radius; i++)
+    for (const auto & iq : iIQ)
     {
-      _set_point(0, i, 20);
-      _set_point(i, 0, 20);
+      const auto iX = (i32)(scaleNormed * real(iq));
+      const auto iY = (i32)(scaleNormed * imag(iq));
+
+      i32 x, y;
+      if (iX < 0)
+      {
+        if (iY < 0) { x = -iX; y = -iY; }
+        else        { x =  iY; y = -iX; }
+      }
+      else
+      {
+        if (iY < 0) { x = -iY; y =  iX; }
+        else        { x =  iX; y =  iY; }
+      }
+
+      limit_symmetrically(x, c2Radius - 1);
+      limit_symmetrically(y, c2Radius - 1);
+
+      reinterpret_cast<QRgb *>(mImage.scanLine(c2Radius - 1 - y))[x] = mDotColor;
     }
   }
   else
   {
-    for (i32 i = -(cRadius - 1); i < cRadius; i++)
+    for (const auto & iq : iIQ)
     {
-      _set_point(0, i, 20);
-      _set_point(i, 0, 20);
+      auto x = (i32)(scaleNormed * real(iq));
+      auto y = (i32)(scaleNormed * imag(iq));
+
+      limit_symmetrically(x, cRadius - 1);
+      limit_symmetrically(y, cRadius - 1);
+
+      reinterpret_cast<QRgb *>(mImage.scanLine(cRadius - 1 - y))[x + cRadius - 1] = mDotColor;
     }
   }
-}
 
-void IQDisplay::_draw_circle(const f32 iScale, const u8 iVal)
-{
-  const i32 maxCirclePoints = (i32)(180 * iScale);
-
-  for (i32 i = 0; i < maxCirclePoints; ++i)
-  {
-    const f32 phase = 0.5f * (f32)M_PI * (f32)i / maxCirclePoints;
-    auto h = (i32)(mRadius * iScale * std::cos(phase));
-    auto v = (i32)(mRadius * iScale * std::sin(phase));
-
-    if (!mMap1stQuad)
-    {
-      _set_point(-h, -v, iVal);
-      _set_point(-h, +v, iVal);
-      _set_point(+h, -v, iVal);
-    }
-    _set_point(+h, +v, iVal);
-  }
-}
-
-void IQDisplay::_repaint_circle(const f32 iSize)
-{
-  if (iSize != mLastCircleSize)
-  {
-    _draw_circle(mLastCircleSize, 0); // erase old circle
-    mLastCircleSize = iSize;
-  }
-  _draw_circle(iSize, 20);
-}
-
-void IQDisplay::_rebuild_image()
-{
-  for (i32 y = 0; y < c2Radius; ++y)
-  {
-    QRgb * const line = reinterpret_cast<QRgb *>(mImage.scanLine(y));
-    const u8 * const row = mPixelBuffer.data() + y * c2Radius;
-    const QRgb bgColor    = mBgGradient[(size_t)y];
-    const QRgb crossColor = mCrossGradient[(size_t)y];
-    for (i32 x = 0; x < c2Radius; ++x)
-    {
-      switch (row[x])
-      {
-      case 0:   line[x] = bgColor;    break;
-      case 20:  line[x] = crossColor; break;
-      default:  line[x] = mDotColor;  break;
-      }
-    }
-  }
+  update();
 }
 
 void IQDisplay::paintEvent(QPaintEvent * const /*ipEvent*/)
@@ -195,20 +207,27 @@ void IQDisplay::paintEvent(QPaintEvent * const /*ipEvent*/)
 
 void IQDisplay::select_plot_type(const EIqPlotType iPlotType)
 {
-  const SCustPlot cp = _get_plot_type_data(iPlotType);
-  setToolTip(cp.ToolTip);
+  if (mPlotType != iPlotType)
+  {
+    mPlotType = iPlotType;
+    const SCustPlot cp = _get_plot_type_data(iPlotType);
+    setToolTip(cp.ToolTip);
+  }
 }
 
 void IQDisplay::set_map_1st_quad(const bool iMap1stQuad)
 {
-  mMap1stQuad = iMap1stQuad;
-  mRadius = (f32)cRadius * (iMap1stQuad ? 2.0f : 1.0f);
-  std::fill(mPixelBuffer.begin(), mPixelBuffer.end(), 0);
+  if (mMap1stQuad != iMap1stQuad)
+  {
+    mMap1stQuad = iMap1stQuad;
+    mRadius = (f32)cRadius * (iMap1stQuad ? 2.0f : 1.0f);
+    _render_background(mLastCircleSize > 0.0f ? mLastCircleSize : 0.0f);
+  }
 }
 
 IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
 {
-  SCustPlot cp;
+  SCustPlot cp{};
   cp.PlotType = iPlotType;
 
   switch (iPlotType)
@@ -236,6 +255,11 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
   case EIqPlotType::DC_OFFSET_ADC_100:
     cp.ToolTip = "Shows the DC offset of the input signal after ADC (before DC removal filtering). The 'DC removal filter' has to be activated to see changes. The value is 100 times magnified.";
     cp.Name = "DC Off. (ADC) 100x";
+    break;
+
+  default:
+    cp.ToolTip = "";
+    cp.Name = "";
     break;
   }
   return cp;

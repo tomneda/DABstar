@@ -101,6 +101,7 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
+  QWidget * get_widget() override { return &myFrame; }
   bool hasDump() override;
   bool startDumping() override;
   void stopDumping() override;

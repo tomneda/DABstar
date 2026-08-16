@@ -234,10 +234,10 @@ HEADERS += \
     src/base/support/content_table.h \
     src/base/support/converted_map.h \
     src/base/support/copyright_info.h \
-    src/base/support/custom_frame.h \
     src/base/support/dab_tables.h \
     src/base/support/dl_cache.h \
     src/base/support/gui_helpers.h \
+    src/base/support/indicator_button.h \
     src/base/support/itu_regions.h \
     src/base/support/map_http_server.h \
     src/base/support/plotter.h \
@@ -248,6 +248,7 @@ HEADERS += \
     src/base/support/time_table.h \
     src/base/support/traffic_light.h \
     src/base/support/wav_writer.h \
+    src/base/support/window_visibility_watcher.h \
     src/base/support/tii_library/tii_codes.h \
     src/base/support/viterbi_spiral/viterbi_spiral.h \
     src/base/update/appversion.h \
@@ -361,10 +362,10 @@ SOURCES += \
     src/base/support/compass_direction.cpp \
     src/base/support/content_table.cpp \
     src/base/support/copyright_info.cpp \
-    src/base/support/custom_frame.cpp \
     src/base/support/dab_tables.cpp \
     src/base/support/dl_cache.cpp \
     src/base/support/gui_helpers.cpp \
+    src/base/support/indicator_button.cpp \
     src/base/support/itu_regions.cpp \
     src/base/support/map_http_server.cpp \
     src/base/support/ringbuffer.cpp \
@@ -373,6 +374,7 @@ SOURCES += \
     src/base/support/time_table.cpp \
     src/base/support/traffic_light.cpp \
     src/base/support/wav_writer.cpp \
+    src/base/support/window_visibility_watcher.cpp \
     src/base/support/tii_library/tii_codes.cpp \
     src/base/support/viterbi_spiral/viterbi_spiral.cpp \
     src/base/update/updatechecker.cpp \

@@ -57,7 +57,9 @@ public:
   // Called by slot_load_table and on reinit to load a specific file
   bool fill_tii_cache(const QString & fileName);
 
+  void show_tii_display();
   void hide_tii_display();
+  [[nodiscard]] QWidget * get_widget() const { return mTiiListDisplay.get_widget(); }
   void clear_tii_list_and_label();
   const std::vector<STiiResult> & get_transmitter_ids() const { return mTransmitterIds; }
 
@@ -75,8 +77,6 @@ public slots:
   void slot_handle_tii_subid(i32 subid);
   // Connected from btnTii button
   void slot_handle_tii_button();
-  // Connected from TiiListDisplay signal_frame_closed
-  void slot_handle_tii_viewer_closed();
 
 signals:
   void signal_tii_file_status(bool valid, const QString & toolTip);  // for btnHttpServer enabled/tooltip

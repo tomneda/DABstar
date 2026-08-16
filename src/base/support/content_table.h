@@ -57,6 +57,7 @@ public:
   void show() const;
   void hide() const;
   bool is_visible() const;
+  [[nodiscard]] QWidget * get_widget() const { return mpScrollArea.get(); }
   void add_line(const QString &);
   void dump(FILE *) const;
 

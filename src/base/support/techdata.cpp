@@ -47,6 +47,8 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   mpAudioBuffer = ipAudioBuffer;
 
   setupUi(&mFrame);
+  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
+  mFrame.hide();
 
   Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame);
 
@@ -56,15 +58,11 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   framedumpButton->setStyleSheet(get_bg_style_sheet(0x4A7898, Qt::white));
   audiodumpButton->setStyleSheet(get_bg_style_sheet(0x408870, Qt::white));
   timeTable_button->setStyleSheet(get_bg_style_sheet(0xB89028, Qt::white));
-
-  mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  mFrame.hide();
   timeTable_button->setEnabled(false);
   mpAudioDisplay = new AudioDisplay(mr, plotAudioFft, &Settings::Storage::instance());
 
   cleanUp();
 
-  connect(&mFrame, &CustomFrame::signal_frame_closed, this, &TechData::signal_window_closed);
   connect(framedumpButton, &QPushButton::clicked, this, &TechData::signal_handle_frameDumping);
   connect(audiodumpButton, &QPushButton::clicked, this, &TechData::signal_handle_audioDumping);
   connect(timeTable_button, &QPushButton::clicked, this, &TechData::signal_handle_timeTable);

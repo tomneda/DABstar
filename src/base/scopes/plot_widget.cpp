@@ -120,6 +120,13 @@ void PlotWidget::set_x_tick_count(const f64 iAnchor, const i32 iCount) const
 
 void PlotWidget::set_x_tick_dynamic(const f64 iAnchor, const f64 iInterval) const
 {
+  if (!mXTickAuto &&
+      mpXAxis->tickType() == QValueAxis::TicksDynamic &&
+      mpXAxis->tickInterval() == iInterval &&
+      mpXAxis->tickAnchor() == iAnchor)
+  {
+    return;
+  }
   mXTickAuto = false;
   mpXAxis->setTickType(QValueAxis::TicksDynamic);
   mpXAxis->setTickInterval(iInterval);
@@ -137,6 +144,13 @@ void PlotWidget::set_y_tick_count(const f64 iAnchor, const i32 iCount) const
 
 void PlotWidget::set_y_tick_dynamic(const f64 iAnchor, const f64 iInterval) const
 {
+  if (!mYTickAuto &&
+      mpYAxis->tickType() == QValueAxis::TicksDynamic &&
+      mpYAxis->tickInterval() == iInterval &&
+      mpYAxis->tickAnchor() == iAnchor)
+  {
+    return;
+  }
   mYTickAuto = false;
   mpYAxis->setTickType(QValueAxis::TicksDynamic);
   mpYAxis->setTickInterval(iInterval);

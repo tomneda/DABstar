@@ -14,7 +14,6 @@
 
 #include "NML.h"
 #include "glob_data_types.h"
-#include "custom_frame.h"
 #include <memory>
 #include <QObject>
 #include <QFrame>
@@ -39,6 +38,9 @@ public:
   JournalineViewer(TMapData & ioTableVec, i32 iSubChannel);
   ~JournalineViewer() override;
 
+protected:
+  bool eventFilter(QObject * watched, QEvent * event) override;
+
 private:
   TMapData & mDataMap;
   const i32 mSubChannel;
@@ -49,7 +51,7 @@ private:
   static constexpr bool cSubMenusClosedAfterMenuOpen = true; // true: submenus always closed if a menu is opened
 
   // UI elements
-  CustomFrame mFrame;
+  QFrame mFrame;
   QLabel * mpLblTitle;
   QLabel * mpLblHtml;
   QLabel * mpLblCopyRight;

@@ -60,6 +60,7 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
+  QWidget * get_widget() override { return &mFrame; }
   bool isFileInput() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;

@@ -48,6 +48,7 @@
 #include "itu_regions.h"
 #include "audio_manager.h"
 #include "mot_slide_progress.h"
+#include "window_visibility_watcher.h"
 #include <QMessageBox>
 #include <QDesktopServices>
 
@@ -118,6 +119,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   _initialize_signal_slot_connections();
   _initialize_ui_elements();
   _initialize_ensemble_list();
+  _initialize_indicator_buttons();
   _initialize_status_info();
   _initialize_dynamic_label();
   _initialize_time_table();
@@ -142,10 +144,7 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   connect(ui->btnHttpServer, &QPushButton::clicked, this,  &DabRadio::_slot_handle_http_button);
   connect(mpTechDataWidget.get(), &TechData::signal_handle_timeTable, this, &DabRadio::_slot_handle_time_table);
   connect(this, &DabRadio::signal_dab_processor_started, mpSpectrumViewer.get(), &SpectrumViewer::slot_update_settings);
-  connect(mpSpectrumViewer.get(), &SpectrumViewer::signal_window_closed, this, &DabRadio::_slot_handle_spectrum_button);
-  connect(mpTechDataWidget.get(), &TechData::signal_window_closed, this, &DabRadio::_slot_handle_tech_detail_button);
   connect(ui->configButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_config_button);
-  connect(mpCirViewer.get(), &CirViewer::signal_frame_closed, this, &DabRadio::_slot_handle_cir_button);
 
   _initialize_and_start_timers();
 
@@ -275,6 +274,8 @@ void DabRadio::slot_change_in_configuration()
 
 void DabRadio::_slot_terminate_process()
 {
+  sIsTerminating = true;
+
   if (mIsScanning)
   {
     _stop_scanning(mChannelDesc);
@@ -321,6 +322,10 @@ void DabRadio::_slot_terminate_process()
     // mpContentTable->clearTable();
     mpFibContentTable->hide();
     mpFibContentTable.reset();
+    if (mpFibWindowWatcher != nullptr)
+    {
+      mpFibWindowWatcher->attach(nullptr);
+    }
   }
 
   // mBandHandler.saveSettings();
@@ -350,7 +355,6 @@ void DabRadio::_slot_handle_device_widget_button() const
   }
 
   mpInputDevice->setVisible(mpInputDevice->isHidden());
-  Settings::Main::varDeviceUiVisible.write(!mpInputDevice->isHidden());
 }
 
 
@@ -374,7 +378,6 @@ void DabRadio::_slot_handle_tech_detail_button()
   }
 
   mpTechDataWidget->setVisible(mpTechDataWidget->isHidden());
-  Settings::TechDataViewer::varUiVisible.write(!mpTechDataWidget->isHidden());
 }
 
 void DabRadio::_slot_handle_cir_button()
@@ -382,10 +385,7 @@ void DabRadio::_slot_handle_cir_button()
   if (!mIsChannelRunning)
     return;
 
-  const bool willShow = mpCirViewer->is_hidden();
-  if (mpDabProcessor) mpDabProcessor->activate_cir_viewer(willShow);
-  mpCirViewer->setVisible(willShow);
-  Settings::CirViewer::varUiVisible.write(willShow);
+  mpCirViewer->setVisible(mpCirViewer->is_hidden());
 }
 
 void DabRadio::_slot_handle_open_pic_folder_button() const
@@ -414,7 +414,6 @@ void DabRadio::_slot_handle_reset_button()
 void DabRadio::_slot_handle_spectrum_button()
 {
   mpSpectrumViewer->setVisible(mpSpectrumViewer->is_hidden());
-  Settings::SpectrumViewer::varUiVisible.write(!mpSpectrumViewer->is_hidden());
 }
 
 // When changing (or setting) a device, we do not want anybody to have the buttons on the GUI touched, so we just disconnect them and (re)connect them as soon as a device is operational

@@ -49,7 +49,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:15pt;&quot;&gt;Service long label&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Service long label&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>-</string>
@@ -104,7 +104,7 @@
      <item row="1" column="1">
       <widget class="QLabel" name="lblBitrate">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bitrate of the AAC audio stream in kbps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Bitrate of the AAC audio stream in kbps&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -127,7 +127,7 @@
      <item row="2" column="1">
       <widget class="QLabel" name="lblAudioRate">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio sample rate in kilo-samples per second (kSps).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio sample rate in kilo-samples per second (kSps)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -150,7 +150,7 @@
      <item row="3" column="1">
       <widget class="QLabel" name="lblSbrUsed">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows whether audio uses &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;pectral &lt;span style=&quot; font-weight:600;&quot;&gt;B&lt;/span&gt;and &lt;span style=&quot; font-weight:600;&quot;&gt;R&lt;/span&gt;eplication and &lt;span style=&quot; font-weight:600;&quot;&gt;P&lt;/span&gt;arametric &lt;span style=&quot; font-weight:600;&quot;&gt;S&lt;/span&gt;tereo&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Shows whether audio uses Spectral Band Replication and Parametric Stereo (SBR / PS)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -173,7 +173,7 @@
      <item row="4" column="1">
       <widget class="QLabel" name="lblRsCorrections">
        <property name="toolTip">
-        <string>Number of corrections made by the Reed-Solomon algorithm over 100 DAB+ frames. This count does not relate to classic DAB/MP2 frames.</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Number of corrections made by the Reed-Solomon algorithm&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Count over 100 DAB+ frames. This count does not relate to classic DAB/MP2 frames.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -196,7 +196,7 @@
      <item row="5" column="1">
       <widget class="QLabel" name="lblEcCorrections">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RS decoding uses parity bits to recover errors. If a parity bit itself is faulty, the recovery may introduce additional errors. The CRC check following recovery should detect this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RS decoding parity errors (EC errors)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;RS decoding uses parity bits to recover errors. If a parity bit itself is faulty, the recovery may introduce additional errors. The CRC check following recovery should detect this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -219,7 +219,7 @@
      <item row="6" column="1">
       <widget class="QLabel" name="lblUepField">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows Protection Level and Type (A or B)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Shows Protection Level and Type (A or B)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -359,7 +359,7 @@
      <item row="4" column="1">
       <widget class="QLabel" name="lblLanguage">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Language (defined by provider)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Language (defined by provider)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string>font-weight: bold;</string>
@@ -378,7 +378,7 @@
         <bool>false</bool>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This DAB service is on FM as well. Feature only used by some DAB services.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;This DAB service is on FM as well&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Feature only used by some DAB services.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Also on FM:</string>
@@ -418,7 +418,7 @@
      <item>
       <widget class="QPushButton" name="framedumpButton">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio services are encoded in MP2 or AAC format.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the audio frames to a file.&lt;/p&gt;&lt;p&gt;Click again to close the output file. Programs such as VLC can play these files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save audio frames to a file (Dump AAC)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Audio services are encoded in MP2 or AAC format.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the audio frames to a file.&lt;/p&gt;&lt;p&gt;Click again to close the output file. Programs such as VLC can play these files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Dump AAC</string>
@@ -428,7 +428,7 @@
      <item>
       <widget class="QPushButton" name="audiodumpButton">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the audio output as an uncompressed PCM file.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the PCM data.&lt;/p&gt;&lt;p&gt;The output is a standard &amp;quot;.wav&amp;quot; file compatible with most audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the audio output as an uncompressed PCM file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the PCM data.&lt;/p&gt;&lt;p&gt;The output is a standard &amp;quot;.wav&amp;quot; file compatible with most audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Dump WAV</string>
@@ -438,7 +438,7 @@
      <item>
       <widget class="QPushButton" name="timeTable_button">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If configured, opens a window with an SPI (formerly EPG) timetable preview.&lt;/p&gt;&lt;p&gt;Note: this feature is still a work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open SPI (formerly EPG) timetable preview&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If configured, opens a window with an SPI timetable preview.&lt;/p&gt;&lt;p&gt;Note: this feature is still a work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Time Table</string>

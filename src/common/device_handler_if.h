@@ -33,6 +33,8 @@
 #include "glob_defs.h"
 #include <QString>
 
+class QWidget;
+
 class IDeviceHandler
 {
 public:
@@ -49,6 +51,7 @@ public:
   virtual void show() = 0;
   virtual void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   virtual bool isHidden() = 0;
+  virtual QWidget * get_widget() { return nullptr; }
   virtual QString deviceName() = 0;
   virtual bool isFileInput() {return false;};
   virtual bool hasDump() {return false;};

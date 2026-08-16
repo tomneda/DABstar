@@ -75,10 +75,9 @@ SdrPlayHandler::SdrPlayHandler(QSettings *s, const QString & recorderVersion)
   this->sdrplaySettings = s;
 
   setupUi(&myFrame);
+  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
   Settings::SdrPlayV3::posAndSize.read_widget_geometry(&myFrame, false, true);
-
-  myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   //myFrame.show();
 
   antennaSelector->hide();

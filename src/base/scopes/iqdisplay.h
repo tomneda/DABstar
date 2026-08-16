@@ -48,22 +48,18 @@ private:
   static constexpr i32 cRadius  = 100;
   static constexpr i32 c2Radius = 2 * cRadius;  // image width and height
 
-  f32 mLastCircleSize = 0;
+  f32 mLastCircleSize = -1.0f;
   bool mMap1stQuad = false;
   f32 mRadius = (f32)cRadius;
+  EIqPlotType mPlotType = EIqPlotType::DEFAULT;
 
-  std::vector<std::complex<i32>> mPoints;
-  std::vector<u8> mPixelBuffer;       // cDim×cDim uint8 values (0=bg, 20=cross/circle, 100=dot)
-  QImage mImage;                      // rendered image, rebuilt on each display_iq() call
-  QRgb mDotColor{};                   // IQ dot color (value 100): yellowish-white
-  std::array<QRgb, c2Radius> mBgGradient;    // per-row background gradient (top→bottom)
-  std::array<QRgb, c2Radius> mCrossGradient; // per-row cross/circle color
+  QImage mBackgroundImage;                    // cached base image (background gradient + cross + circle)
+  QImage mImage;                              // rendered image
+  QRgb mDotColor{};                           // IQ dot color (value 100): yellowish-white
+  std::array<QRgb, c2Radius> mBgGradient{};   // per-row background gradient (top→bottom)
+  std::array<QRgb, c2Radius> mCrossGradient{};// per-row cross/circle color
 
-  void _set_point(i32 iX, i32 iY, u8 iVal);
-  void _clean_screen_from_old_data_points();
-  void _draw_cross();
-  void _draw_circle(f32 iScale, u8 iVal);
-  void _repaint_circle(f32 iSize);
-  void _rebuild_image();
+  void _render_background(f32 iScale);
+  void _set_base_point(i32 iX, i32 iY);
   static SCustPlot _get_plot_type_data(EIqPlotType iPlotType);
 };

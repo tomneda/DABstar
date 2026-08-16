@@ -69,6 +69,7 @@ class EnsembleList;
 class ItuTables;
 class AudioManager;
 class MotSlideProgress;
+class WindowVisibilityWatcher;
 struct SIdentInfoEL;
 struct SScanResultEL;
 
@@ -100,6 +101,8 @@ public:
   DabRadio(QSettings * ipSettings, const QString & iServiceListDbFileName, const QString & iEnsembleListDbFileName, i32 iDataPort, QWidget * iParent);
   ~DabRadio() override;
 
+  [[nodiscard]] static bool is_terminating() { return sIsTerminating || (qApp != nullptr && qApp->closingDown()); }
+
   enum EAudioFlags : u32
   {
     AFL_NONE     = 0x0,
@@ -112,6 +115,8 @@ private:
   static constexpr i32 cScanningTimeoutMs    = 6000; // max. waiting time for signal and FIB audio data while scanning
   static constexpr i32 cEpgTimeoutMs         = 3000;
   static constexpr i32 cClockResetTimeoutMs  = 5000;
+
+  inline static bool sIsTerminating = false;
 
   template<typename T>
   struct StatusInfoElem
@@ -182,6 +187,8 @@ private:
   QScopedPointer<TiiManager> mpTiiManager;
   QScopedPointer<MotSlideProgress> mpMotSlideProgress;
   std::unique_ptr<IDeviceHandler> mpInputDevice;
+  WindowVisibilityWatcher * mpDeviceWindowWatcher = nullptr;
+  WindowVisibilityWatcher * mpFibWindowWatcher = nullptr;
 
   // Counters and indices
   i32 mMaxDistance = -1;
@@ -331,6 +338,7 @@ private:
   void _initialize_traffic_lights() const;
   void _initialize_signal_slot_connections();
   void _initialize_ensemble_list();
+  void _initialize_indicator_buttons();
   void _initialize_ui_elements();
   void _initialize_status_info();
   void _initialize_dynamic_label() const;

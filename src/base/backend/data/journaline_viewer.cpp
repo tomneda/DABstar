@@ -17,6 +17,7 @@
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QDesktopServices>
+#include <QEvent>
 
 static const QString cColorHeader    = QSL("#87CEFA");  // header elements
 static const QString cColorNotLoaded = QSL("#909090");  // data not loaded yet
@@ -29,6 +30,7 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
   : mDataMap(ioTableVec)
   , mSubChannel(iSubChannel)
 {
+  mFrame.setWindowFlag(Qt::Tool, true);
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
 
   mFrame.setWindowTitle("DABstar Journaline");
@@ -107,15 +109,26 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
   connect(mpLblHtml, &QLabel::linkActivated, this, &JournalineViewer::_slot_html_link_activated);
   connect(mpTimerRecMarker, &QTimer::timeout, this, &JournalineViewer::_slot_colorize_receive_marker_timeout);
   connect(mpTimerHtmlRebuild, &QTimer::timeout, this, &JournalineViewer::_slot_html_rebuild_timeout);
-  connect(&mFrame, &CustomFrame::signal_frame_closed, [this](){ JournalineViewer::signal_window_closed(mSubChannel); });
+
+  mFrame.installEventFilter(this);
 
   mFrame.show();
 }
 
 JournalineViewer::~JournalineViewer()
 {
+  mFrame.removeEventFilter(this);
   Settings::Journaline::posAndSize.write_widget_geometry(&mFrame);
   mFrame.hide();
+}
+
+bool JournalineViewer::eventFilter(QObject * watched, QEvent * event)
+{
+  if (watched == &mFrame && event->type() == QEvent::Close)
+  {
+    emit signal_window_closed(mSubChannel);
+  }
+  return QObject::eventFilter(watched, event);
 }
 
 void JournalineViewer::slot_new_data()

@@ -16,6 +16,7 @@
 #include "audio_manager.h"
 #include "mot_content_types.h"
 #include "mot_slide_progress.h"
+#include "window_visibility_watcher.h"
 #include "qt_compat.h"
 #include <QDialog>
 #include <QTextBrowser>
@@ -166,6 +167,7 @@ void DabRadio::_initialize_ui_elements()
   ui->btnCir->setStyleSheet(get_bg_style_sheet(0xB030A0));             // magenta  — CIR view
   ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x4848C8));    // indigo   — ensemble list
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
+  ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x45bb24));      // green    — map web server
 
   // ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
@@ -177,6 +179,48 @@ void DabRadio::_initialize_ui_elements()
   QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
   QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false));
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
+}
+
+void DabRadio::_initialize_indicator_buttons()
+{
+  auto * watcherSpec = WindowVisibilityWatcher::bind(mpSpectrumViewer->get_widget(), ui->btnSpectrumScope);
+  connect(watcherSpec, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
+    if (!DabRadio::is_terminating())
+    {
+      Settings::SpectrumViewer::varUiVisible.write(visible);
+    }
+  });
+
+  auto * watcherTech = WindowVisibilityWatcher::bind(mpTechDataWidget->get_widget(), ui->btnTechDetails);
+  connect(watcherTech, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
+    if (!DabRadio::is_terminating())
+    {
+      Settings::TechDataViewer::varUiVisible.write(visible);
+    }
+  });
+
+  auto * watcherCir = WindowVisibilityWatcher::bind(mpCirViewer->get_widget(), ui->btnCir);
+  connect(watcherCir, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
+    if (!DabRadio::is_terminating())
+    {
+      if (mpDabProcessor) mpDabProcessor->activate_cir_viewer(visible);
+      Settings::CirViewer::varUiVisible.write(visible);
+    }
+  });
+
+  WindowVisibilityWatcher::bind(mpTiiManager->get_widget(), ui->btnTii);
+  WindowVisibilityWatcher::bind(mpEnsembleList->get_widget(), ui->btnEnsembleList);
+  WindowVisibilityWatcher::bind(mpConfig.get(), ui->configButton);
+
+  mpDeviceWindowWatcher = WindowVisibilityWatcher::bind(mpInputDevice ? mpInputDevice->get_widget() : nullptr, ui->btnDeviceWidget);
+  connect(mpDeviceWindowWatcher, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
+    if (!DabRadio::is_terminating())
+    {
+      Settings::Main::varDeviceUiVisible.write(visible);
+    }
+  });
+
+  mpFibWindowWatcher = WindowVisibilityWatcher::bind(mpFibContentTable ? mpFibContentTable->get_widget() : nullptr, ui->btnFib);
 }
 
 void DabRadio::_initialize_status_info()
@@ -415,6 +459,11 @@ void DabRadio::_show_or_hide_windows_from_config()
   if (Settings::TechDataViewer::varUiVisible.read().toBool())
   {
     mpTechDataWidget->show();
+  }
+
+  if (Settings::TiiViewer::varUiVisible.read().toBool())
+  {
+    mpTiiManager->show_tii_display();
   }
 }
 
@@ -912,6 +961,10 @@ void DabRadio::_slot_handle_content_button()
     const bool isShown = mpFibContentTable->is_visible();
     mpFibContentTable->hide();
     mpFibContentTable.reset();
+    if (mpFibWindowWatcher != nullptr)
+    {
+      mpFibWindowWatcher->attach(nullptr);
+    }
     if (isShown) return;
   }
 
@@ -925,6 +978,10 @@ void DabRadio::_slot_handle_content_button()
     mpFibContentTable->add_line(sl);
   }
   mpFibContentTable->show();
+  if (mpFibWindowWatcher != nullptr)
+  {
+    mpFibWindowWatcher->attach(mpFibContentTable->get_widget());
+  }
 }
 
 void DabRadio::_slot_handle_prev_service_button()
@@ -980,15 +1037,15 @@ void DabRadio::_set_http_server_button(const EHttpButtonState iHttpServerState) 
   switch (iHttpServerState)
   {
   case EHttpButtonState::Off:
-    ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x45bb24));
+    ui->btnHttpServer->set_indicator_active(false);
     ui->btnHttpServer->setEnabled(true);
     break;
   case EHttpButtonState::On:
-    ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0xf97903));
+    ui->btnHttpServer->set_indicator_active(true);
     ui->btnHttpServer->setEnabled(true);
     break;
   case EHttpButtonState::Waiting:
-    // ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x777777));
+    ui->btnHttpServer->set_indicator_active(false);
     ui->btnHttpServer->setEnabled(false);
     break;
   }

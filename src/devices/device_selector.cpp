@@ -263,7 +263,9 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
      */
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    if (Settings::Main::varDeviceUiVisible.read().toBool())
+    // RTL-TCP requires the user to click "Connect" in its device window to establish a connection,
+    // so the device window must always be shown regardless of the saved visibility setting.
+    if (iDeviceNameOrFileName == DN_RTLTCP || Settings::Main::varDeviceUiVisible.read().toBool())
     {
       inputDevice->show(); // should not be necessary as the device widget is shown by default
     }

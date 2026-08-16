@@ -37,19 +37,6 @@
 #include <QObject>
 #include <QScopedPointer>
 
-class CustomScrollArea : public QScrollArea
-{
-  using QScrollArea::QScrollArea;
-  Q_OBJECT
-
-protected:
-  void closeEvent(QCloseEvent *event) override;
-
-signals:
-  void signal_frame_closed();
-};
-
-
 class TiiListDisplay : public QObject
 {
   Q_OBJECT
@@ -73,14 +60,12 @@ public:
   void show() const;
   void hide() const;
   void setVisible(bool iVisible) const { if (iVisible) show(); else hide(); }
+  [[nodiscard]] QWidget * get_widget() const { return mpWidget.get(); }
   i32 get_nr_rows();
   void finish_adding();
 
 private:
   static constexpr i32 cColNr = 10;
-  QScopedPointer<CustomScrollArea> mpWidget;
+  QScopedPointer<QScrollArea> mpWidget;
   QScopedPointer<QTableWidget> mpTableWidget;
-
-signals:
-  void signal_frame_closed();
 };

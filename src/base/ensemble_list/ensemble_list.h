@@ -13,10 +13,10 @@
 #pragma once
 
 #include "glob_data_types.h"
-#include "custom_frame.h"
 #include "ensemble_list_db.h"
 #include "band_handler.h"
 #include "glob_enums.h"
+#include <QFrame>
 
 class Ui_ensembleList;
 class EnsembleListDbHandler;
@@ -55,6 +55,7 @@ public:
   const BandHandler & get_band_handler() { return mBandHandler; }
 
   bool is_hidden() const { return mFrame.isHidden(); }
+  [[nodiscard]] QWidget * get_widget() { return &mFrame; }
   void hide();
   void show();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
@@ -68,7 +69,7 @@ private:
   static constexpr i64 cMinFileSize = 4LL * 1024LL * 1024LL;
 
   Ui_ensembleList * const ui;
-  CustomFrame mFrame;
+  QFrame mFrame;
   QScopedPointer<EnsembleListDbHandler> mpDbHandler;
   EListMode mListMode = EListMode::Invalid;
   i32 mCountScanOk = 0;

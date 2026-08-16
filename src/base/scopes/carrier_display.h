@@ -58,9 +58,9 @@ private:
   PlotWidget * const mpPlot = nullptr;
   QLineSeries * mpLineSeries = nullptr;
   QScatterSeries * mpDotSeries = nullptr;
-
-  std::vector<QLineSeries *> mpMarkerLines;    // horizontal Y-value markers
-  std::vector<QLineSeries *> mpTiiLines;       // vertical TII segment lines
+  QLineSeries * mpMarkerSeries = nullptr;     // horizontal Y-value markers
+  QLineSeries * mpTiiBlueSeries = nullptr;    // vertical TII segment boundary lines (major)
+  QLineSeries * mpTiiRedSeries = nullptr;     // vertical TII segment boundary lines (minor)
 
   std::vector<f32> mX_axis_vec;
   i32 mDataSize = 0;

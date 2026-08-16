@@ -33,7 +33,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correlation display.&lt;/p&gt;&lt;p&gt;Time synchronization is performed by correlation. The first peak above the threshold line corresponds to sample 504 (or nearby).&lt;/p&gt;&lt;p&gt;The signal is shown in dB, normalised to the threshold level.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zooming&lt;/span&gt;&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;CTRL&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;vertical&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;SHIFT&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;horizontal&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Use mouse wheel for zooming.&lt;br/&gt;Press left mouse button for panning.&lt;br/&gt;Press right mouse button to reset zoom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Correlation display&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Time synchronization is performed by correlation. The first peak above the threshold line corresponds to sample 504 (or nearby).&lt;/p&gt;&lt;p&gt;The signal is shown in dB, normalised to the threshold level.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zooming&lt;/span&gt;&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;CTRL&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;vertical&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Press &lt;span style=&quot; font-weight:700;&quot;&gt;&amp;lt;SHIFT&amp;gt;&lt;/span&gt; key for &lt;span style=&quot; font-weight:700;&quot;&gt;horizontal&lt;/span&gt; zooming, panning and reset zoom.&lt;br/&gt;Use mouse wheel for zooming.&lt;br/&gt;Press left mouse button for panning.&lt;br/&gt;Press right mouse button to reset zoom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -50,7 +50,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The spectrum of the incoming signal.&lt;/p&gt;&lt;p&gt;Use the slider at the bottom to zoom into the signal.&lt;/p&gt;&lt;p&gt;The scaling is done automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;The spectrum of the incoming signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use the slider at the bottom to zoom into the signal.&lt;/p&gt;&lt;p&gt;The scaling is done automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -65,7 +65,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If more than one transmitter is detected, shows the relative distance between the transmitter in use and the others.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Relative distance between transmitters&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If more than one transmitter is detected, shows the relative distance between the transmitter in use and the others.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">QLabel { background-color: rgb(165, 29, 45); }</string>
@@ -123,7 +123,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IQ constellation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally four dots are visible, one in each quadrant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;IQ constellation of the decoded signal&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ideally four dots are visible, one in each quadrant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -148,7 +148,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom in/out&lt;/p&gt;&lt;p&gt;The zoom works exponentially&lt;br/&gt;[0%..100%] -&amp;gt; factor [0.1..10]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zoom in/out&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The zoom works exponentially&lt;br/&gt;[0%..100%] -&amp;gt; factor [0.1..10]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -205,7 +205,7 @@
            <item row="6" column="1">
             <widget class="QLabel" name="lblNomFrequency">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The nominal absolute receiving frequency.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;The nominal absolute receiving frequency&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -228,7 +228,7 @@
            <item row="7" column="1">
             <widget class="QLabel" name="lblFreqCorrRF">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequency correction which is done (tried) with the RF synthesizer in the SDR device.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select &amp;quot;Use DC avoidance algorithm&amp;quot; to see an effect here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Frequency correction in RF synthesizer&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Frequency correction which is done (tried) with the RF synthesizer in the SDR device.&lt;/p&gt;&lt;p&gt;Select &amp;quot;Use DC avoidance algorithm&amp;quot; to see an effect here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -251,7 +251,7 @@
            <item row="8" column="1">
             <widget class="QLabel" name="lblFreqCorrBB">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Frequency correction which is done in the baseband.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Frequency correction in baseband&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Frequency correction which is done in the baseband.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -274,7 +274,7 @@
            <item row="9" column="1">
             <widget class="QLabel" name="lblPhaseCorr">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Standard deviation of the residual frequency error in Hz after frequency correction.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Standard deviation of residual frequency error in Hz&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Standard deviation of the residual frequency error in Hz after frequency correction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -297,7 +297,7 @@
            <item row="10" column="1">
             <widget class="QLabel" name="lblClockError">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Clock Offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The offset in Hz from the nominal sample rate of 2'048'000 Hz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clock Offset&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The offset in Hz from the nominal sample rate of 2'048'000 Hz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -320,7 +320,7 @@
            <item row="11" column="1">
             <widget class="QLabel" name="lblSnr">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Averaged Signal-to-Noise Ratio (SNR) in the OFDM symbol.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Averaged Signal-to-Noise Ratio (SNR)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Averaged Signal-to-Noise Ratio (SNR) in the OFDM symbol.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -343,7 +343,7 @@
            <item row="12" column="1">
             <widget class="QLabel" name="lblModQuality">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in dB. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the &amp;quot;Log Likelihood Ratio&amp;quot;, independent of the used Soft-Bit detection.&lt;/p&gt;&lt;p&gt;The graph on the right shows this value also.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Averaged modulation quality in dB&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the &amp;quot;Log Likelihood Ratio&amp;quot;, independent of the used Soft-Bit detection.&lt;/p&gt;&lt;p&gt;The graph on the right shows this value also.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -366,7 +366,7 @@
            <item row="13" column="1">
             <widget class="QLabel" name="lblBER">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Bit Error Rate of the FIC before the Viterbi decoder.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Bit Error Rate (BER)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bit Error Rate of the FIC before the Viterbi decoder.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -399,7 +399,7 @@
            <item row="15" column="1">
             <widget class="QLabel" name="lblTestData1">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is for test data only, helps while developing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Test data 1&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is for test data only, helps while developing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -422,7 +422,7 @@
            <item row="16" column="1">
             <widget class="QLabel" name="lblTestData2">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is for test data only, helps while developing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Test data 2&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is for test data only, helps while developing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
@@ -470,7 +470,7 @@
              <item>
               <widget class="QCheckBox" name="cbMap1stQuad">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show all quadrants folded into the first one.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show all quadrants folded into the first one&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string>Single quadrant view</string>
@@ -482,7 +482,7 @@
            <item>
             <widget class="QComboBox" name="cmbIqScope">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the IQ scope.&lt;/p&gt;&lt;p&gt;See the IQ scope tooltip for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Type of data shown in the IQ scope&lt;/span&gt;&lt;/p&gt;&lt;p&gt;See the IQ scope tooltip for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -502,7 +502,7 @@
            <item>
             <widget class="QComboBox" name="cmbCarrier">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Type of data shown in the carrier plot.&lt;/p&gt;&lt;p&gt;See the carrier plot tooltip for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Type of data shown in the carrier plot&lt;/span&gt;&lt;/p&gt;&lt;p&gt;See the carrier plot tooltip for more details.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -522,7 +522,7 @@
          <item>
           <widget class="QSlider" name="sliderRfScopeZoom">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom in/out&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Zoom in/out&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="maximum">
             <number>100</number>
@@ -557,7 +557,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The averaged modulation quality in dB. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the &amp;quot;Log Likelihood Ratio&amp;quot;, independent of the used Soft-Bit detection.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;The averaged modulation quality in dB&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is related to the &amp;quot;Log Likelihood Ratio&amp;quot;, independent of the used Soft-Bit detection.&lt;/p&gt;&lt;p&gt;Control your device gain that way to maximize this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound" stdset="0">
             <double>0.000000000000000</double>
@@ -592,7 +592,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;RMS and peak Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The peak level is the maximum vector length of the input signal over 10 frames (approximately 1 second).&lt;/p&gt;&lt;p&gt;In digital systems it is generally recommended to keep the level slightly below 0 dBFS. However, since DAB uses phase modulation, some input overdrive may still yield acceptable results; the best approach is to maximise the Modulation Quality using the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;RMS and peak Level in dBFS&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The peak level is the maximum vector length of the input signal over 10 frames (approximately 1 second).&lt;/p&gt;&lt;p&gt;In digital systems it is generally recommended to keep the level slightly below 0 dBFS. However, since DAB uses phase modulation, some input overdrive may still yield acceptable results; the best approach is to maximise the Modulation Quality using the input gain.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="lowerBound" stdset="0">
             <double>-24.000000000000000</double>

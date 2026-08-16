@@ -36,7 +36,7 @@
 #include "dab_constants.h"
 #include "audio_display.h"
 #include "ringbuffer.h"
-#include "custom_frame.h"
+#include <QFrame>
 #include <QObject>
 #include <QTimer>
 
@@ -57,6 +57,7 @@ public:
   void hide();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool isHidden() const;
+  [[nodiscard]] QWidget * get_widget() { return &mFrame; }
 
   void set_audio_dump_button_emphasized(bool iEmphasized) const;
   void set_frame_dump_button_emphasized(bool iEmphasized) const;
@@ -64,7 +65,7 @@ public:
 private:
   DabRadio * const mpRadioInterface;
   RingBuffer<i16> * mpAudioBuffer;
-  CustomFrame mFrame;
+  QFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
 
   void _show_service_label(const QString &) const;
@@ -89,7 +90,6 @@ signals:
   void signal_handle_timeTable();
   void signal_handle_audioDumping();
   void signal_handle_frameDumping();
-  void signal_window_closed();
 };
 
 

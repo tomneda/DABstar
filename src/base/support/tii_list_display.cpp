@@ -32,28 +32,19 @@
 #include "setting_helper.h"
 
 
-void CustomScrollArea::closeEvent(QCloseEvent *event)
-{
-  emit signal_frame_closed();
-  QScrollArea::closeEvent(event);
-}
-
-
 TiiListDisplay::TiiListDisplay()
 {
   mpTableWidget.reset(new QTableWidget(0, cColNr));
   mpTableWidget->setHorizontalHeaderLabels(QStringList() << "Main" << "Sub" << "Level" << "Phase" << "Transmitter"
                                                          << "Distance" << "Dir" << "Power" << "Altitude" << "Height");
 
-  mpWidget.reset(new CustomScrollArea(nullptr));
+  mpWidget.reset(new QScrollArea(nullptr));
   mpWidget->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   mpWidget->setWidgetResizable(true);
   mpWidget->setWindowTitle("TII list");
   mpWidget->setWidget(mpTableWidget.get());
 
   Settings::TiiViewer::posAndSize.read_widget_geometry(mpWidget.get());
-
-  connect(mpWidget.get(), &CustomScrollArea::signal_frame_closed, this, &TiiListDisplay::signal_frame_closed);
 }
 
 TiiListDisplay::~TiiListDisplay()
