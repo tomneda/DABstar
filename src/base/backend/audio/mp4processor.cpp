@@ -40,6 +40,7 @@
  */
 #include "mp4processor.h"
 #include "dabradio.h"
+#include "audio_pipeline.h"
 #include "pad_handler.h"
 #include "crc.h"
 #include "bit_writer.h"
@@ -65,7 +66,10 @@ Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> *
   connect(this, &Mp4Processor::signal_show_rs_errors, iRI, &DabRadio::slot_show_rs_errors);
   connect(this, &Mp4Processor::signal_show_aac_errors, iRI, &DabRadio::slot_show_aac_errors);
   connect(this, &Mp4Processor::signal_is_stereo, iRI, &DabRadio::slot_set_stereo);
-  connect(this, &Mp4Processor::signal_new_aac_frame, iRI, &DabRadio::slot_new_aac_mp2_frame);
+  if (iRI != nullptr && iRI->get_audio_pipeline() != nullptr)
+  {
+    connect(this, &Mp4Processor::signal_new_aac_frame, iRI->get_audio_pipeline(), &AudioPipeline::slot_new_aac_mp2_frame);
+  }
   connect(this, &Mp4Processor::signal_show_rs_corrections, iRI, &DabRadio::slot_show_rs_corrections);
 
 #ifdef  __WITH_FDK_AAC__

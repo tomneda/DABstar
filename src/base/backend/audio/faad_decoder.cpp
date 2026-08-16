@@ -31,6 +31,7 @@
 #include "faad_decoder.h"
 #include "neaacdec.h"
 #include "dabradio.h"
+#include "audio_pipeline.h"
 #include <algorithm>
 #include <cmath>
 
@@ -41,7 +42,10 @@ FaadDecoder::FaadDecoder(const DabRadio * const ipDR, RingBuffer<i16> * ipBuffer
   mAacHandle = NeAACDecOpen();
   mAacConf = NeAACDecGetCurrentConfiguration(mAacHandle);
 
-  connect(this, &FaadDecoder::signal_new_audio, ipDR, &DabRadio::slot_new_audio);
+  if (ipDR != nullptr && ipDR->get_audio_pipeline() != nullptr)
+  {
+    connect(this, &FaadDecoder::signal_new_audio, ipDR->get_audio_pipeline(), &AudioPipeline::slot_new_audio);
+  }
 }
 
 FaadDecoder::~FaadDecoder()

@@ -178,6 +178,7 @@ set(${baseLibName}_HDRS
         audio/audioiodevice.h
         audio/test_tone.h
         audio/audiooutputqt.h
+        audio/audio_pipeline.h
         support/band_handler.h
         support/dab_tables.h
         support/tii_list_display.h
@@ -286,6 +287,7 @@ set(${baseLibName}_SRCS
         audio/audioiodevice.cpp
         audio/test_tone.cpp
         audio/audiooutputqt.cpp
+        audio/audio_pipeline.cpp
         support/ringbuffer.cpp
         support/band_handler.cpp
         support/dab_tables.cpp

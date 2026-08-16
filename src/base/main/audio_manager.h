@@ -14,15 +14,12 @@
 
 #include "dab_constants.h"
 #include "ringbuffer.h"
-#include "wav_writer.h"
-#include "audiofifo.h"
+#include "audio_pipeline.h"
 #include "openfiledialog.h"
 #include <QObject>
-#include <QTimer>
 #include <QAudioDevice>
 #include <vector>
 
-class IAudioOutput;
 class LevelMeter;
 class TechData;
 class Configuration;
@@ -33,7 +30,7 @@ class AudioManager : public QObject
 {
   Q_OBJECT
 public:
-  enum class EAudioFrameType { None, MP2, AAC };
+  using EAudioFrameType = AudioPipeline::EAudioFrameType;
 
   struct SResourceConfig
   {
@@ -51,22 +48,19 @@ public:
   explicit AudioManager(const SResourceConfig & cfg, QObject * parent = nullptr);
   ~AudioManager() override;
 
-  // State update methods called by DabRadio
-  void set_channel_running(bool isRunning) { mIsChannelRunning = isRunning; }
-  void set_scanning(bool isScanning) { mIsScanning = isScanning; }
-  void set_service_label(const QString & label) { mServiceLabel = label; }
-  void set_audio_frame_type(EAudioFrameType type) { mAudioFrameType = type; }
-
+  AudioPipeline * get_audio_pipeline() const { return mpAudioPipeline; }
   RingBuffer<i16> * get_audio_buffer_from_decoder() const { return mpAudioBufferFromDecoder; }
-  void reset_audio_fifo() { mpCurAudioFifo = nullptr; }
+
+  // State update methods called by DabRadio
+  void set_channel_running(bool isRunning);
+  void set_scanning(bool isScanning);
+  void set_service_label(const QString & label);
+  void set_audio_frame_type(EAudioFrameType type);
+  void reset_audio_fifo();
 
   void stop_audio_output();   // called when channel/app stops
   void stop_all_dumping();    // stop WAV and frame dump (called when channel stops)
   void update_dump_timers() const;  // called every second from DabRadio's display timer
-
-  // Called from DabRadio wrappers (not slots — invoked directly)
-  void new_audio(i32 iNumSamples, u32 iAudioSampleRate, u32 iAudioFlags);
-  void new_aac_mp2_frame() const;
 
 private:
   // Non-owned resources (passed in constructor)
@@ -80,77 +74,45 @@ private:
   QSlider * const mpSliderVolume;
   OpenFileDialog * const mpOpenFileDialog;
 
-  // Owned objects
-  IAudioOutput * mpAudioOutput = nullptr;
+  // Owned worker and thread
+  AudioPipeline * mpAudioPipeline = nullptr;
   QThread * mAudioOutputThread = nullptr;
-  WavWriter mWavWriter;
-  SAudioFifo mAudioFifo{};
-  SAudioFifo * mpCurAudioFifo = nullptr;
-  FILE * mpAudioFrameDumper = nullptr;
 
-  // State received from DabRadio
+  // State
   bool mIsChannelRunning = false;
   bool mIsScanning = false;
   bool mMutingActive = false;
+  bool mAudioDumpRunning = false;
+  bool mFrameDumpRunning = false;
   QString mServiceLabel;
-
-  // Internal audio state
-  enum class EPlaybackState { Stopped, WaitForInit, Running };
-  enum class EAudioDumpState { Stopped, WaitForInit, Running };
-  EPlaybackState mPlaybackState = EPlaybackState::Stopped;
-  EAudioDumpState mAudioDumpState = EAudioDumpState::Stopped;
   EAudioFrameType mAudioFrameType = EAudioFrameType::None;
 
-  // Buffer underflow/overflow handling
-  static constexpr i32 cInsertSamplesToPatchSampleRelation = 100 * 2 /*stereo*/;  // How many stereo samples are used for one added/removed sample?
-  enum class ESampleAdaptMode { Idle, NoChange, RemoveSamples, AddSamples };
-  ESampleAdaptMode mSampleAdaptMode = ESampleAdaptMode::Idle;
-  i32 mRemainingSampleCount = 0;
-
-  std::vector<i16> mAudioTempBuffer;
-  QString mAudioWavDumpFileName;
-
-  f32 mAudioBufferFillFiltered = 0.0f;
-  i32 mAudioQualFillState = 0;
-  i32 mAudioFrameCnt = 0;
   mutable uint32_t mAudioDumpTimer = 0;
   mutable uint32_t mFrameDumpTimer = 0;
 
   void _update_level_meter(LevelMeter * ipMeter, const f32 iPeak, const f32 iRms) const;
-  void _setup_audio_output(u32 iSampleRate);
-  void _start_audio_dumping();
-  void _stop_audio_dumping();
-  void _start_audio_frame_dumping();
-  void _stop_audio_frame_dumping();
   QString _seconds_to_timestring(const u32 iTimer) const;
 
 public slots:
-  // Connected from AudioIODevice (internally)
+  // Connected from AudioPipeline
   void slot_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb);
+  void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const;
+  void slot_audio_dump_state_changed(bool iIsDumping);
+  void slot_frame_dump_state_changed(bool iIsDumping);
+  void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
+
   // Connected from TechData buttons
   void slot_handle_audio_dump_button();
   void slot_handle_frame_dump_button();
+
   // Connected from UI elements
   void slot_handle_volume_slider(i32 iSliderValue);
   void slot_set_mute(bool iMuted);
   void slot_set_test_tone(bool iActive);
   void slot_set_audio_device(const QByteArray & iDeviceId);
-  // Connected from IAudioOutput
-  void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
-  // Connected from config spinbox
   void slot_update_peak_level_delay(i32 iDelaySteps = -1);
-  void _check_and_adapt_sample_rate_mode();
-  void _push_rate_adaptive_samples_to_audio_buffer(i32 iAvailableBytes);
 
 signals:
-  // Forwarded to IAudioOutput (queued - IAudioOutput is in a different thread)
-  void signal_start_audio(SAudioFifo * buffer);
-  void signal_switch_audio(SAudioFifo * buffer);
-  void signal_stop_audio();
-  void signal_audio_mute(bool iMuted);
-  void signal_set_audio_device(const QByteArray & deviceId);
-  void signal_audio_test_tone(bool active);
-  void signal_audio_peak_level_delay(i32 delaySteps);
   void signal_audio_buffer_filled_state(i32 percent, i32 qualFillState, i32 corrDir);
 
   // Status info updates to DabRadio (DabRadio updates its status labels)

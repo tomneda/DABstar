@@ -47,6 +47,7 @@
 #include "ensemble_list.h"
 #include "itu_regions.h"
 #include "audio_manager.h"
+#include "audio_pipeline.h"
 #include "mot_slide_progress.h"
 #include "window_visibility_watcher.h"
 #include <QMessageBox>
@@ -1251,14 +1252,26 @@ void DabRadio::_initialize_audio_output()
   connect(mpAudioManager.get(), &AudioManager::signal_audio_buffer_filled_state, this, &DabRadio::slot_show_audio_buffer_filled_state);
 }
 
+AudioPipeline * DabRadio::get_audio_pipeline() const
+{
+  return mpAudioManager ? mpAudioManager->get_audio_pipeline() : nullptr;
+}
+
 void DabRadio::slot_new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, const u32 iAudioFlags)
 {
-  mpAudioManager->new_audio(iNumSamples, iAudioSampleRate, iAudioFlags);
+  if (mpAudioManager && mpAudioManager->get_audio_pipeline())
+  {
+    QMetaObject::invokeMethod(mpAudioManager->get_audio_pipeline(), "slot_new_audio", Qt::QueuedConnection,
+                              Q_ARG(i32, iNumSamples), Q_ARG(u32, iAudioSampleRate), Q_ARG(u32, iAudioFlags));
+  }
 }
 
 void DabRadio::slot_new_aac_mp2_frame()
 {
-  mpAudioManager->new_aac_mp2_frame();
+  if (mpAudioManager && mpAudioManager->get_audio_pipeline())
+  {
+    QMetaObject::invokeMethod(mpAudioManager->get_audio_pipeline(), "slot_new_aac_mp2_frame", Qt::QueuedConnection);
+  }
 }
 
 // MOT wrappers — backend classes (MotObject, PadHandler) reference DabRadio* directly

@@ -68,6 +68,7 @@ class MapHttpServer;
 class EnsembleList;
 class ItuTables;
 class AudioManager;
+class AudioPipeline;
 class MotSlideProgress;
 class WindowVisibilityWatcher;
 struct SIdentInfoEL;
@@ -102,6 +103,8 @@ public:
   ~DabRadio() override;
 
   [[nodiscard]] static bool is_terminating() { return sIsTerminating || (qApp != nullptr && qApp->closingDown()); }
+
+  AudioPipeline * get_audio_pipeline() const;
 
   enum EAudioFlags : u32
   {

@@ -140,6 +140,7 @@ HEADERS += \
 
 # --- src/base ---
 HEADERS += \
+    src/base/audio/audio_pipeline.h \
     src/base/audio/audiofifo.h \
     src/base/audio/audioiodevice.h \
     src/base/audio/audiooutput_if.h \
@@ -277,6 +278,7 @@ SOURCES += \
 
 # --- src/base ---
 SOURCES += \
+    src/base/audio/audio_pipeline.cpp \
     src/base/audio/audioiodevice.cpp \
     src/base/audio/audiooutputqt.cpp \
     src/base/audio/test_tone.cpp \

@@ -33,6 +33,7 @@
 #include "mp4processor.h"
 #include "dabradio.h"
 #include "fdk_aac.h"
+#include "audio_pipeline.h"
 
 /**
   * \class mp4Processor is the main handler for the aac frames
@@ -57,7 +58,10 @@ FdkAAC::FdkAAC(const DabRadio * const ipDR, RingBuffer<i16> * const ipBuffer)
   //       some AOTs (Audio Object Type), so it would require reworking the good-frame path - not used.
   aacDecoder_SetParam(mAacHandle, AAC_CONCEAL_METHOD, 1);
 
-  connect(this, &FdkAAC::signal_new_audio, ipDR, &DabRadio::slot_new_audio);
+  if (ipDR != nullptr && ipDR->get_audio_pipeline() != nullptr)
+  {
+    connect(this, &FdkAAC::signal_new_audio, ipDR->get_audio_pipeline(), &AudioPipeline::slot_new_audio);
+  }
 
   mIsWorking = true;
 }

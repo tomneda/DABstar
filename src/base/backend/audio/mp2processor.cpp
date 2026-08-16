@@ -37,6 +37,7 @@
 //
 #include "mp2processor.h"
 #include "dabradio.h"
+#include "audio_pipeline.h"
 #include "bit_extractors.h"
 #include "pad_handler.h"
 
@@ -223,8 +224,11 @@ Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * const i
   this->bitRate = bitRate;
 
   connect(this, &Mp2Processor::signal_show_frameErrors, mr, &DabRadio::slot_show_frame_errors);
-  connect(this, &Mp2Processor::signal_new_audio, mr, &DabRadio::slot_new_audio);
-  connect(this, &Mp2Processor::signal_new_mp2_frame, mr, &DabRadio::slot_new_aac_mp2_frame);
+  if (mr != nullptr && mr->get_audio_pipeline() != nullptr)
+  {
+    connect(this, &Mp2Processor::signal_new_audio, mr->get_audio_pipeline(), &AudioPipeline::slot_new_audio);
+    connect(this, &Mp2Processor::signal_new_mp2_frame, mr->get_audio_pipeline(), &AudioPipeline::slot_new_aac_mp2_frame);
+  }
   connect(this, &Mp2Processor::signal_is_stereo, mr, &DabRadio::slot_set_stereo);
 
   Voffs = 0;
