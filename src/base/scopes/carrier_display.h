@@ -66,6 +66,7 @@ private:
   i32 mDataSize = 0;
   ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
   bool mPlotTypeChanged = false;
+  bool mInCustomizePlot = false;
   SCustPlot::EStyle mCurrentStyle = SCustPlot::EStyle::LINES;
   SCustPlot mCurrentCustPlot{};
 

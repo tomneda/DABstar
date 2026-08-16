@@ -75,7 +75,18 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
 
   connect(mpPlot->get_y_axis(), &QValueAxis::rangeChanged, this, [this](const f64 min, const f64 max)
   {
-    _update_y_markers(min, max);
+    if (!mInCustomizePlot)
+    {
+      _update_y_markers(min, max);
+    }
+  });
+
+  connect(mpPlot->get_x_axis(), &QValueAxis::rangeChanged, this, [this](const f64 /*min*/, const f64 /*max*/)
+  {
+    if (!mInCustomizePlot)
+    {
+      _update_y_markers(mpPlot->get_y_axis()->min(), mpPlot->get_y_axis()->max());
+    }
   });
 
   select_plot_type(ECarrierPlotType::DEFAULT);
@@ -196,12 +207,15 @@ void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
   const i64 firstIdx = (i64)std::floor(yMin / step) + 1;              // do not draw the bottom line (+1)
   const i64 lastIdx  = (i64)std::ceil(yMax / step - cIdxTolerance);   // but draw the top line
 
+  const f64 xMin = mpPlot->get_x_axis()->min();
+  const f64 xMax = mpPlot->get_x_axis()->max();
+
   QList<QPointF> markerPts;
   for (i64 idx = firstIdx; idx <= lastIdx; ++idx)
   {
     const f64 yVal = (f64)idx * step;
-    markerPts.append(QPointF(-1e9, yVal));
-    markerPts.append(QPointF(+1e9, yVal));
+    markerPts.append(QPointF(xMin, yVal));
+    markerPts.append(QPointF(xMax, yVal));
     markerPts.append(QPointF(qQNaN(), qQNaN()));
   }
   mpMarkerSeries->replace(markerPts);
@@ -214,18 +228,25 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
 
   assert(iCustPlot.YTopValue > iCustPlot.YBottomValue);
 
-  // Clear old overlays before zoom setup triggers rangeChanged → _update_y_markers
+  // Clear old overlays before zoom setup
   _clear_marker_lines();
   _clear_tii_lines();
   mCurrentCustPlot = iCustPlot;
 
+  // Suppress rangeChanged slot execution in CarrierDisp during axis and zoom setup to
+  // prevent intermediate and redundant tick recalculations and marker updates.
+  mInCustomizePlot = true;
   mpPlot->setup_y_zoom(PlotWidget::SRange(iCustPlot.YBottomValue, iCustPlot.YTopValue,
                                           iCustPlot.YBottomValueRangeExt, iCustPlot.YTopValueRangeExt));
   mpPlot->reset_x_zoom();
   mpPlot->reset_y_zoom();
 
   mpPlot->get_x_axis()->setGridLineVisible(iCustPlot.DrawXGrid);
+  mpPlot->get_x_axis()->setMinorGridLineVisible(iCustPlot.DrawXGrid);
   mpPlot->get_y_axis()->setGridLineVisible(iCustPlot.DrawYGrid);
+  mInCustomizePlot = false;
+
+  _update_y_markers(mpPlot->get_y_axis()->min(), mpPlot->get_y_axis()->max());
 
   // Vertical TII segment boundary lines
   if (iCustPlot.DrawTiiSegments)
