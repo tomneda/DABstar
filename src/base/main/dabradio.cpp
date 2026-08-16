@@ -1257,23 +1257,6 @@ AudioPipeline * DabRadio::get_audio_pipeline() const
   return mpAudioManager ? mpAudioManager->get_audio_pipeline() : nullptr;
 }
 
-void DabRadio::slot_new_audio(const i32 iNumSamples, const u32 iAudioSampleRate, const u32 iAudioFlags)
-{
-  if (mpAudioManager && mpAudioManager->get_audio_pipeline())
-  {
-    QMetaObject::invokeMethod(mpAudioManager->get_audio_pipeline(), "slot_new_audio", Qt::QueuedConnection,
-                              Q_ARG(i32, iNumSamples), Q_ARG(u32, iAudioSampleRate), Q_ARG(u32, iAudioFlags));
-  }
-}
-
-void DabRadio::slot_new_aac_mp2_frame()
-{
-  if (mpAudioManager && mpAudioManager->get_audio_pipeline())
-  {
-    QMetaObject::invokeMethod(mpAudioManager->get_audio_pipeline(), "slot_new_aac_mp2_frame", Qt::QueuedConnection);
-  }
-}
-
 // MOT wrappers — backend classes (MotObject, PadHandler) reference DabRadio* directly
 void DabRadio::slot_handle_mot_object(const QByteArray & iResult, const QString & iObjectName, const i32 iContentType, const bool iDirElement) const
 {

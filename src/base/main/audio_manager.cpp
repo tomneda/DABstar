@@ -89,42 +89,42 @@ AudioManager::~AudioManager()
 void AudioManager::set_channel_running(const bool isRunning)
 {
   mIsChannelRunning = isRunning;
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_channel_running", Qt::QueuedConnection, Q_ARG(bool, isRunning));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_channel_running, Qt::QueuedConnection, isRunning);
 }
 
 void AudioManager::set_scanning(const bool isScanning)
 {
   mIsScanning = isScanning;
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_scanning", Qt::QueuedConnection, Q_ARG(bool, isScanning));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_scanning, Qt::QueuedConnection, isScanning);
 }
 
 void AudioManager::set_service_label(const QString & label)
 {
   mServiceLabel = label;
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_service_label", Qt::QueuedConnection, Q_ARG(QString, label));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_service_label, Qt::QueuedConnection, label);
 }
 
 void AudioManager::set_audio_frame_type(const EAudioFrameType type)
 {
   mAudioFrameType = type;
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_audio_frame_type", Qt::QueuedConnection, Q_ARG(AudioPipeline::EAudioFrameType, type));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_audio_frame_type, Qt::QueuedConnection, type);
 }
 
 void AudioManager::reset_audio_fifo()
 {
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_reset_audio_fifo", Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_reset_audio_fifo, Qt::QueuedConnection);
 }
 
 void AudioManager::stop_audio_output()
 {
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_stop_audio", Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_stop_audio, Qt::QueuedConnection);
 }
 
 void AudioManager::stop_all_dumping()
 {
   mAudioDumpRunning = false;
   mFrameDumpRunning = false;
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_stop_all_dumping", Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_stop_all_dumping, Qt::QueuedConnection);
   mpTechDataWidget->set_audio_dump_button_emphasized(false);
   mpTechDataWidget->set_frame_dump_button_emphasized(false);
   mpTechDataWidget->audiodumpButton->setText("Dump WAV");
@@ -218,29 +218,29 @@ void AudioManager::slot_handle_volume_slider(const i32 iSliderValue)
     emit signal_unmute_requested();
   }
 
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_volume", Qt::QueuedConnection, Q_ARG(i32, iSliderValue));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_volume, Qt::QueuedConnection, iSliderValue);
 }
 
 void AudioManager::slot_set_mute(const bool iMuted)
 {
   mMutingActive = iMuted;
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_mute", Qt::QueuedConnection, Q_ARG(bool, iMuted));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_mute, Qt::QueuedConnection, iMuted);
 }
 
 void AudioManager::slot_set_test_tone(const bool iActive)
 {
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_test_tone", Qt::QueuedConnection, Q_ARG(bool, iActive));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_test_tone, Qt::QueuedConnection, iActive);
 }
 
 void AudioManager::slot_set_audio_device(const QByteArray & iDeviceId)
 {
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_audio_device", Qt::QueuedConnection, Q_ARG(QByteArray, iDeviceId));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_audio_device, Qt::QueuedConnection, iDeviceId);
 }
 
 void AudioManager::slot_update_peak_level_delay(i32 /*iDelaySteps = -1*/)
 {
   const i32 val = mpConfig->sbPeakLevelDelay->value();
-  QMetaObject::invokeMethod(mpAudioPipeline, "slot_set_peak_level_delay", Qt::QueuedConnection, Q_ARG(i32, val));
+  QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_peak_level_delay, Qt::QueuedConnection, val);
 }
 
 void AudioManager::slot_handle_audio_dump_button()
@@ -252,7 +252,7 @@ void AudioManager::slot_handle_audio_dump_button()
 
   if (mAudioDumpRunning)
   {
-    QMetaObject::invokeMethod(mpAudioPipeline, "slot_stop_audio_dump", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_stop_audio_dump, Qt::QueuedConnection);
   }
   else
   {
@@ -268,7 +268,7 @@ void AudioManager::slot_handle_audio_dump_button()
     }
 
     mAudioDumpTimer = 0;
-    QMetaObject::invokeMethod(mpAudioPipeline, "slot_start_audio_dump", Qt::QueuedConnection, Q_ARG(QString, fileName));
+    QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_start_audio_dump, Qt::QueuedConnection, fileName);
   }
 }
 
@@ -291,7 +291,7 @@ void AudioManager::slot_handle_frame_dump_button()
 
   if (mFrameDumpRunning)
   {
-    QMetaObject::invokeMethod(mpAudioPipeline, "slot_stop_frame_dump", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_stop_frame_dump, Qt::QueuedConnection);
   }
   else
   {
@@ -307,7 +307,7 @@ void AudioManager::slot_handle_frame_dump_button()
     }
 
     mFrameDumpTimer = 0;
-    QMetaObject::invokeMethod(mpAudioPipeline, "slot_start_frame_dump", Qt::QueuedConnection, Q_ARG(QString, fileName));
+    QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_start_frame_dump, Qt::QueuedConnection, fileName);
   }
 }
 

@@ -108,8 +108,8 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
 void FibDecoder::_reset()
 {
   // the timers live in another thread than the FIB processing, so they must not be touched directly (see also _retrigger_timer_data_loaded_fast())
-  QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, "stop", Qt::QueuedConnection);
-  QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, "stop", Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, &QTimer::stop, Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, &QTimer::stop, Qt::QueuedConnection);
   mFibLoadingState = EFibLoadingState::S0_Init;
   mDiffTimeMax = {};
   mLastTimePoint = {};
@@ -796,8 +796,8 @@ void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerNam
   }
 
   // mpTimerDataLoaded->start() must be called that way as it is a different thread without event-loop which is calling
-  QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, "start", Qt::QueuedConnection);
-  QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, "start", Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
+  QMetaObject::invokeMethod(mpTimerDataConsistencyCheck, qOverload<>(&QTimer::start), Qt::QueuedConnection);
+  QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, qOverload<>(&QTimer::start), Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
 }
 
 void FibDecoder::_retrigger_timer_data_loaded_slow(const char * const iCallerName)

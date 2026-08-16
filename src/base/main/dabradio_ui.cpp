@@ -176,8 +176,8 @@ void DabRadio::_initialize_ui_elements()
   mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
 
   // only the queued call will consider the button size
-  QMetaObject::invokeMethod(this, "_slot_update_mute_state", Qt::QueuedConnection, Q_ARG(bool, false));
-  QMetaObject::invokeMethod(this, "_slot_favorite_changed", Qt::QueuedConnection, Q_ARG(bool, false));
+  QMetaObject::invokeMethod(this, &DabRadio::_slot_update_mute_state, Qt::QueuedConnection, false);
+  QMetaObject::invokeMethod(this, &DabRadio::_slot_favorite_changed, Qt::QueuedConnection, false);
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
 }
 
