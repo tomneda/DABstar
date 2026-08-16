@@ -422,10 +422,11 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
 
   if (carrPlotType == ECarrierPlotType::PRS_PHASE_UNWRAP)
   {
+    constexpr f32 cInv360 = 1.0f / 360.0f; // multiplication should be 11-14 cycles faster than division
     for (i32 i = 1; i < cK; ++i)
     {
       f32 diff = mCarrVector[i] - mCarrVector[i - 1];
-      diff -= 360.0f * std::round(diff / 360.0f);
+      diff -= 360.0f * std::round(diff * cInv360);
       mCarrVector[i] = mCarrVector[i - 1] + diff;
     }
   }
