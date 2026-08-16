@@ -167,7 +167,7 @@ void DabRadio::_initialize_ui_elements()
   ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x4848C8));    // indigo   — ensemble list
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
 
-  ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
+  // ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
 
   _set_http_server_button(EHttpButtonState::Off);
