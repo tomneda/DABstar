@@ -335,7 +335,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
 
       mSum_good_crcs++;
 
-      mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // This is used by the "ACC dump button" in the TechData widget
+      mpFrameBuffer->put_data_into_ring_buffer(aacStreamBuffer.data(), segmentSize); // This is used by the "ACC dump button" in the Audio Service Details widget
       emit signal_new_aac_frame();
 
       // first handle the pad data if any

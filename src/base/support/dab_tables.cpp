@@ -320,6 +320,19 @@ const char * getASCTy (i16 ASCTy)
   }
 }
 
+const char * getAudioStandard (i16 ASCTy)
+{
+  if (ASCTy == 0x3F)
+  {
+    return "HE-AAC";
+  }
+  else if (ASCTy == 0)
+  {
+    return "MP2";
+  }
+  return "unknown";
+}
+
 // from Table 2b
 const char * getDSCTy (i16 DSCTy)
 {

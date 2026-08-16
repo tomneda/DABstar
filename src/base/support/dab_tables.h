@@ -4,6 +4,7 @@
 
 const char * getASCTy (i16 ASCTy);
 const char * getDSCTy (i16 DSCTy);
+const char * getAudioStandard (i16 ASCTy);
 const char * getLanguage (i16 language);
 const char * getCountry	(u8 ecc, u8 countryId);
 //const char * getProgramType_Not_NorthAmerica(i16 programType);

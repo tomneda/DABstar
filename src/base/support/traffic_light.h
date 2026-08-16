@@ -21,7 +21,7 @@
 #include <QString>
 #include <QSize>
 
-// TrafficLight is a UI widget displaying a horizontal traffic light icon
+// TrafficLight is a UI widget displaying a vertical traffic light icon
 // with an optional text label on the left side.
 //
 // Light stages (0..5):
@@ -51,6 +51,8 @@ class TrafficLight : public QWidget
   Q_PROPERTY(Qt::Alignment alignment READ get_alignment WRITE set_alignment)
   Q_PROPERTY(i32 timeoutMs READ get_timeout_ms WRITE set_timeout_ms)
   Q_PROPERTY(EStage timeoutStage READ get_timeout_stage WRITE set_timeout_stage)
+  Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap)
+  Q_PROPERTY(bool scaledContents READ has_scaled_contents WRITE set_scaled_contents)
 
 public:
   enum class EStage : u8
@@ -65,8 +67,8 @@ public:
   Q_ENUM(EStage)
 
   static constexpr i32 cStageCount = 6;
-  static constexpr i32 cDefaultIconWidth = 48;
-  static constexpr i32 cDefaultIconHeight = 24;
+  static constexpr i32 cDefaultIconWidth = 18;
+  static constexpr i32 cDefaultIconHeight = 36;
 
   explicit TrafficLight(QWidget * parent = nullptr);
   explicit TrafficLight(const QString & iText, QWidget * parent = nullptr);
@@ -107,7 +109,9 @@ public:
   [[nodiscard]] bool has_label() const { return !mText.isEmpty(); }
   // Alignment
   void set_alignment(Qt::Alignment iAlignment);
+  void setAlignment(Qt::Alignment iAlignment) { set_alignment(iAlignment); }
   [[nodiscard]] Qt::Alignment get_alignment() const;
+  [[nodiscard]] Qt::Alignment alignment() const { return get_alignment(); }
   void set_label_alignment(Qt::Alignment iAlignment);
   [[nodiscard]] Qt::Alignment get_label_alignment() const;
 
@@ -115,6 +119,17 @@ public:
   void set_icon_size(const QSize & iSize);
   void set_icon_size(i32 iWidth, i32 iHeight) { set_icon_size(QSize(iWidth, iHeight)); }
   [[nodiscard]] QSize get_icon_size() const { return mIconSize; }
+
+  // Pixmap support (e.g. for Qt Designer preview)
+  void setPixmap(const QPixmap & iPixmap);
+  void set_pixmap(const QPixmap & iPixmap) { setPixmap(iPixmap); }
+  [[nodiscard]] QPixmap pixmap() const;
+
+  // Scaled contents support (e.g. for Qt Designer preview)
+  void setScaledContents(bool iScaled);
+  void set_scaled_contents(bool iScaled) { setScaledContents(iScaled); }
+  [[nodiscard]] bool hasScaledContents() const;
+  [[nodiscard]] bool has_scaled_contents() const { return hasScaledContents(); }
 
   // Direct access to internal child widgets
   [[nodiscard]] QLabel * get_label() const { return mpLabel; }

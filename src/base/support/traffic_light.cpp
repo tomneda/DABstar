@@ -84,12 +84,12 @@ void TrafficLight::_init_ui(const QString & iText)
 const QPixmap & TrafficLight::_get_cached_pixmap(const EStage iStage)
 {
   static const QPixmap sPixmaps[cStageCount] = {
-    QPixmap{":/res/icons/traffic_light_h_off.svg"},          // 0
-    QPixmap{":/res/icons/traffic_light_h_red.svg"},          // 1
-    QPixmap{":/res/icons/traffic_light_h_red_yellow.svg"},   // 2
-    QPixmap{":/res/icons/traffic_light_h_yellow.svg"},       // 3
-    QPixmap{":/res/icons/traffic_light_h_yellow_green.svg"}, // 4
-    QPixmap{":/res/icons/traffic_light_h_green.svg"}         // 5
+    QPixmap{":/res/icons/traffic_light_v_off.svg"},          // 0
+    QPixmap{":/res/icons/traffic_light_v_red.svg"},          // 1
+    QPixmap{":/res/icons/traffic_light_v_red_yellow.svg"},   // 2
+    QPixmap{":/res/icons/traffic_light_v_yellow.svg"},       // 3
+    QPixmap{":/res/icons/traffic_light_v_yellow_green.svg"}, // 4
+    QPixmap{":/res/icons/traffic_light_v_green.svg"}         // 5
   };
 
   const auto stageIdx = static_cast<size_t>(iStage);
@@ -274,6 +274,40 @@ void TrafficLight::set_icon_size(const QSize & iSize)
   }
 }
 
+void TrafficLight::setPixmap(const QPixmap & iPixmap)
+{
+  if (mpIconLabel != nullptr && !iPixmap.isNull())
+  {
+    mpIconLabel->setPixmap(iPixmap);
+  }
+}
+
+QPixmap TrafficLight::pixmap() const
+{
+  if (mpIconLabel != nullptr)
+  {
+    return mpIconLabel->pixmap();
+  }
+  return QPixmap();
+}
+
+void TrafficLight::setScaledContents(const bool iScaled)
+{
+  if (mpIconLabel != nullptr)
+  {
+    mpIconLabel->setScaledContents(iScaled);
+  }
+}
+
+bool TrafficLight::hasScaledContents() const
+{
+  if (mpIconLabel != nullptr)
+  {
+    return mpIconLabel->hasScaledContents();
+  }
+  return false;
+}
+
 void TrafficLight::changeEvent(QEvent * const event)
 {
   QWidget::changeEvent(event);
@@ -289,7 +323,7 @@ QSize TrafficLight::sizeHint() const
   {
     return mpLayout->sizeHint();
   }
-  return QSize(85, cDefaultIconHeight);
+  return QSize(85, mIconSize.height());
 }
 
 QSize TrafficLight::minimumSizeHint() const
@@ -298,5 +332,5 @@ QSize TrafficLight::minimumSizeHint() const
   {
     return mpLayout->minimumSize();
   }
-  return QSize(cDefaultIconWidth, cDefaultIconHeight);
+  return mIconSize;
 }

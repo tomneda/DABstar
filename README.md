@@ -15,7 +15,7 @@
     * [Map view of received transmitters](#map-view-of-received-transmitters)
     * [Application update dialog](#application-update-dialog)
     * [Version and Copyright Information window](#version-and-copyright-information-window)
-    * [Technical details window of the selected service](#technical-details-window-of-the-selected-service)
+    * [Audio Service Details window of the selected service](#audio-service-details-window-of-the-selected-service)
     * [The PRS correlation window of a whole DAB frame (CIR)](#the-prs-correlation-window-of-a-whole-dab-frame-cir)
     * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
@@ -123,7 +123,7 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 
 ![](res/for_readme/copyright-information.png)
 
-### Technical details window of the selected service
+### Audio Service Details window of the selected service
 
 ![](res/for_readme/tech-details.png)
 

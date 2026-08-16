@@ -133,6 +133,7 @@ private:
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
     StatusInfoElem<const char *> ProtLevel;
+    StatusInfoElem<const char *> AudioStandard;
   };
 
   struct SScanResult
@@ -296,6 +297,7 @@ private:
   void _write_warning_message(const QString & iMsg) const;
   static TrafficLight::EStage _fic_to_traffic_light_stage(i32 iSuccessPercent);
   static TrafficLight::EStage _rs_crc_to_traffic_light_stage(bool iRsError, bool iCrcError);
+  static TrafficLight::EStage _error_to_traffic_light_stage(i32 iErrorCount);
 
   // UI Controls and Styling
   void _set_favorite_button_style();

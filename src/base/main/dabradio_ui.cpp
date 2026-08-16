@@ -56,7 +56,7 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue
     if (iValue == nullptr)
     {
       iElem.pLbl->setStyleSheet("QLabel { color: " + iElem.colorOff.name() + " }");
-      iElem.pLbl->setText("--- --- ---"); // only for protection level used currently
+      iElem.pLbl->setText("--- --- ---");
     }
     else
     {
@@ -105,6 +105,7 @@ void DabRadio::_reset_status_info(StatusInfo & ioStatusInfo) const
 {
   _set_status_info_status(ioStatusInfo.InpBitRate, (i32)0);
   _set_status_info_status(ioStatusInfo.ProtLevel, (const char *)nullptr);
+  _set_status_info_status(ioStatusInfo.AudioStandard, (const char *)nullptr);
   _set_status_info_status(ioStatusInfo.OutSampRate, (u32)0);
   _set_status_info_status(ioStatusInfo.Stereo, false);
   _set_status_info_status(ioStatusInfo.MOT, false);
@@ -118,15 +119,22 @@ void DabRadio::_initialize_traffic_lights() const
 {
   // Update interval evaluation and timeout configuration:
   // -----------------------------------------------------------------------------------------------------------------
-  // Indicator         | Update Source                     | Nominal Interval   | Max Interval / Jitter      | Timeout
-  // ------------------+-----------------------------------+--------------------+----------------------------+--------
-  // ui->tlFicError    | FicDecoder (signal_fic_status)    | 960 ms (10 frames) | ~1050 - 1300 ms (drop/jit) | 1500 ms
-  // ui->tlAudioBuffer | AudioManager (signal_audio_buffer)| 20 - 120 ms (AU)   | ~150 - 240 ms (concealment)| 1000 ms
-  // ui->tlRsCrcError  | Mp4Processor (signal_show_rs)     | 600 - 4080 ms      | ~4080 - 6000 ms (<=24kbps) | 5000 ms
+  // Indicator         | Update Source                     | Nominal Interval     | Max Interval / Jitter      | Timeout
+  // ------------------+-----------------------------------+----------------------+----------------------------+--------
+  // ui->tlFicError    | FicDecoder (signal_fic_status)    | 960 ms (10 frames)   | ~1050 - 1300 ms (drop/jit) | 3000 ms
+  // ui->tlAudioBuffer | AudioManager (signal_audio_buffer)| 20 - 120 ms (AU)     | ~150 - 240 ms (concealment)| 3000 ms
+  // ui->tlRsCrcError  | Mp4Processor (signal_show_rs)     | 1000 - 4000 ms       | ~4080 - 6000 ms (<=24kbps) | 6000 ms
+  // ui->tlFrameError  | Mp4Processor / Mp2Processor       | 3000 ms DAB+ (25 sf) | ~3000 - 4500 ms (drop/jit) | 6000 ms
+  //                   |                                   | 600 - 1200 ms MP2    |                            |
+  // ui->tlRsError     | Mp4Processor (signal_show_rs_err) | 3120 ms (26 supfr)   | ~4000 - 5500 ms (drop/jit) | 6000 ms
+  // ui->tlAacError    | Mp4Processor (signal_show_aac)    | 520 - 1560 ms (26 AU)| ~3000 - 5000 ms (CRC errs) | 6000 ms
   // -----------------------------------------------------------------------------------------------------------------
   ui->tlFicError->set_timeout(3000, TrafficLight::EStage::Off);    // make timeout bigger that the LED is not flickering while service change
   ui->tlAudioBuffer->set_timeout(3000, TrafficLight::EStage::Off);
-  ui->tlRsCrcError->set_timeout(5000, TrafficLight::EStage::Off);
+  ui->tlRsCrcError->set_timeout(6000, TrafficLight::EStage::Off);
+  ui->tlFrameError->set_timeout(6000, TrafficLight::EStage::Off);
+  ui->tlRsError->set_timeout(6000, TrafficLight::EStage::Off);
+  ui->tlAacError->set_timeout(6000, TrafficLight::EStage::Off);
 }
 
 void DabRadio::_initialize_ui_elements()
@@ -160,7 +168,7 @@ void DabRadio::_initialize_ui_elements()
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
 
   ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
-  ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));      // slate blue — TII transmitter list
+  // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
 
   _set_http_server_button(EHttpButtonState::Off);
   mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
@@ -198,15 +206,16 @@ void DabRadio::_initialize_status_info()
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-  _add_status_label_elem(mStatusInfo.ProtLevel,   0x6AB45B, "ProtLevel",   protLevToolTip);
-  _add_status_label_elem(mStatusInfo.InpBitRate,  0x40c6db, "InpBitRate",  "Input bit-rate of the audio decoder");
-  _add_status_label_elem(mStatusInfo.OutSampRate, 0xDE9769, "OutSampRate", "Output sample-rate of the audio decoder");
-  _add_status_label_elem(mStatusInfo.Stereo,      0xf2c629, "Stereo",      "Stereo");
-  _add_status_label_elem(mStatusInfo.PS,          0xf2c629, "PS",          "Parametric Stereo");
-  _add_status_label_elem(mStatusInfo.SBR,         0xf2c629, "SBR",         "Spectral Band Replication");
-  _add_status_label_elem(mStatusInfo.MOT,         0x7F8CFF, "MOT",         "Multimedia Object Transfer<br>for slide show");
-  _add_status_label_elem(mStatusInfo.EPG,         0xf2c629, "EPG",         "Electronic Program Guide");
-  _add_status_label_elem(mStatusInfo.Announce,    0xf2c629, "ANN",         "Announcement");
+  _add_status_label_elem(mStatusInfo.ProtLevel,     0x6AB45B, "ProtLevel",     protLevToolTip);
+  _add_status_label_elem(mStatusInfo.AudioStandard, 0xE07A58, "AudioStandard", "Used audio decoder standard");
+  _add_status_label_elem(mStatusInfo.InpBitRate,    0x40c6db, "InpBitRate",    "Input bit-rate of the audio decoder");
+  _add_status_label_elem(mStatusInfo.OutSampRate,   0xDE9769, "OutSampRate",   "Output sample-rate of the audio decoder");
+  _add_status_label_elem(mStatusInfo.Stereo,        0xf2c629, "Stereo",        "Stereo");
+  _add_status_label_elem(mStatusInfo.PS,            0xf2c629, "PS",            "Parametric Stereo");
+  _add_status_label_elem(mStatusInfo.SBR,           0xf2c629, "SBR",           "Spectral Band Replication");
+  _add_status_label_elem(mStatusInfo.MOT,           0x7F8CFF, "MOT",           "Multimedia Object Transfer<br>for slide show");
+  _add_status_label_elem(mStatusInfo.EPG,           0xf2c629, "EPG",           "Electronic Program Guide");
+  _add_status_label_elem(mStatusInfo.Announce,      0xf2c629, "ANN",           "Announcement");
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
@@ -305,6 +314,9 @@ void DabRadio::_cleanup_ui() const
   ui->tlFicError->set_stage(TrafficLight::EStage::Red);
   ui->tlAudioBuffer->set_stage(TrafficLight::EStage::Red);
   ui->tlRsCrcError->set_stage(TrafficLight::EStage::Red);
+  ui->tlFrameError->set_stage(TrafficLight::EStage::Red);
+  ui->tlRsError->set_stage(TrafficLight::EStage::Red);
+  ui->tlAacError->set_stage(TrafficLight::EStage::Red);
 }
 
 void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
@@ -555,17 +567,14 @@ void DabRadio::_clean_screen(StatusInfo & ioStatusInfo) const
   _reset_status_info(ioStatusInfo);
 }
 
-// called from the MP4 decoder
+// called from the MP4 decoder or MP2 decoder
 void DabRadio::slot_show_frame_errors(i32 iFrameErrors)
 {
   if (!mIsChannelRunning.load())
   {
     return;
   }
-  if (!mpTechDataWidget->isHidden())
-  {
-    mpTechDataWidget->slot_show_frame_error_bar(iFrameErrors);
-  }
+  ui->tlFrameError->set_stage(_error_to_traffic_light_stage(iFrameErrors));
 }
 
 // called from the MP4 decoder
@@ -575,11 +584,7 @@ void DabRadio::slot_show_rs_errors(i32 iRsErrors)
   {    // should not happen
     return;
   }
-
-  if (!mpTechDataWidget->isHidden())
-  {
-    mpTechDataWidget->slot_show_rs_error_bar(iRsErrors);
-  }
+  ui->tlRsError->set_stage(_error_to_traffic_light_stage(iRsErrors));
 }
 
 // called from the aac decoder
@@ -589,11 +594,32 @@ void DabRadio::slot_show_aac_errors(i32 iAacErrors)
   {
     return;
   }
+  ui->tlAacError->set_stage(_error_to_traffic_light_stage(iAacErrors));
+}
 
-  if (!mpTechDataWidget->isHidden())
+TrafficLight::EStage DabRadio::_error_to_traffic_light_stage(const i32 iErrorCount)
+{
+  if (iErrorCount < 0)
   {
-    mpTechDataWidget->slot_show_aac_error_bar(iAacErrors);
+    return TrafficLight::EStage::Off;
   }
+  if (iErrorCount == 0)
+  {
+    return TrafficLight::EStage::Green;
+  }
+  if (iErrorCount == 1)
+  {
+    return TrafficLight::EStage::YellowGreen;
+  }
+  if (iErrorCount <= 3)
+  {
+    return TrafficLight::EStage::Yellow;
+  }
+  if (iErrorCount <= 5)
+  {
+    return TrafficLight::EStage::RedYellow;
+  }
+  return TrafficLight::EStage::Red;
 }
 
 TrafficLight::EStage DabRadio::_fic_to_traffic_light_stage(const i32 iSuccessPercent)

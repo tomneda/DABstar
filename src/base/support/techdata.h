@@ -37,7 +37,6 @@
 #include "audio_display.h"
 #include "ringbuffer.h"
 #include "custom_frame.h"
-#include "traffic_light.h"
 #include <QObject>
 #include <QTimer>
 
@@ -68,8 +67,6 @@ private:
   CustomFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
 
-  static TrafficLight::EStage _error_to_traffic_light_stage(i32 iErrorCount);
-
   void _show_service_label(const QString &) const;
   void _show_SId(u32) const;
   void _show_bitrate(i32) const;
@@ -81,9 +78,6 @@ private:
   void _show_coderate(i32, i32) const;
 
 public slots:
-  void slot_show_frame_error_bar(i32) const;
-  void slot_show_aac_error_bar(i32) const;
-  void slot_show_rs_error_bar(i32) const;
   void slot_show_rs_corrections(i32, i32) const;
   void slot_show_timetableButton(bool) const;
   void slot_show_language(i32) const;

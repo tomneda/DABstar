@@ -693,7 +693,7 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 
         if (frameSize > 0)
         {
-          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameSize); // this is used by the "MP2 dump button" in the TechData widget
+          frameBuffer->put_data_into_ring_buffer(MP2frame.data(), frameSize); // this is used by the "MP2 dump button" in the Audio Service Details widget
           audioBuffer->put_data_into_ring_buffer(sample_buf, 2 * (i32)KJMP2_SAMPLES_PER_FRAME);
 
           if (audioBuffer->get_ring_buffer_read_available() > audioBufferFillSize) // all 125ms

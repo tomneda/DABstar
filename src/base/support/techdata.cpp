@@ -91,9 +91,6 @@ void TechData::cleanUp()
   framedumpButton->setEnabled(false);
   audiodumpButton->setEnabled(false);
   slot_show_rs_corrections(0, 0); // call via this method to consider color change
-  frameError_display->set_stage(TrafficLight::EStage::Red);
-  rsError_display->set_stage(TrafficLight::EStage::Red);
-  aacError_display->set_stage(TrafficLight::EStage::Red);
   lblBitrate->setText("0");
   lblStartAddress->setText("0");
   lblLength->setText("0");
@@ -137,46 +134,6 @@ void TechData::hide()
 bool TechData::isHidden() const
 {
   return mFrame.isHidden();
-}
-
-TrafficLight::EStage TechData::_error_to_traffic_light_stage(const i32 iErrorCount)
-{
-  if (iErrorCount < 0)
-  {
-    return TrafficLight::EStage::Off;
-  }
-  if (iErrorCount == 0)
-  {
-    return TrafficLight::EStage::Green;
-  }
-  if (iErrorCount == 1)
-  {
-    return TrafficLight::EStage::YellowGreen;
-  }
-  if (iErrorCount <= 3)
-  {
-    return TrafficLight::EStage::Yellow;
-  }
-  if (iErrorCount <= 5)
-  {
-    return TrafficLight::EStage::RedYellow;
-  }
-  return TrafficLight::EStage::Red;
-}
-
-void TechData::slot_show_frame_error_bar(const i32 e) const
-{
-  frameError_display->set_stage(_error_to_traffic_light_stage(e));
-}
-
-void TechData::slot_show_aac_error_bar(const i32 e) const
-{
-  aacError_display->set_stage(_error_to_traffic_light_stage(e));
-}
-
-void TechData::slot_show_rs_error_bar(const i32 e) const
-{
-  rsError_display->set_stage(_error_to_traffic_light_stage(e));
 }
 
 void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
@@ -244,8 +201,6 @@ void TechData::_show_ASCTy(const i32 a) const
   const bool isDabPlus = (a == 077);
   lblAscTy->setText(isDabPlus ? "DAB+" : "DAB");
   framedumpButton->setText(isDabPlus ? "Dump AAC" : "Dump MP2");
-  aacError_display->setEnabled(isDabPlus);
-  rsError_display->setEnabled(isDabPlus);
 }
 
 void TechData::_show_uep_eep(i32 shortForm, i32 protLevel) const
