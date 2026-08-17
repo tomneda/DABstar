@@ -371,7 +371,7 @@ void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, co
   f32 relPosPeak = (valuedBPeak - minValue) / range;
   const f32 relPos0dB  = (0 - minValue) / range;
 
-  // relPosPeak is clamped to 0 dBFS so it marks the orange?red boundary.
+  // relPosPeak is clamped to 0 dBFS so it marks the orange/red boundary.
   // setValue() uses the unclamped valuedBPeak so the bar can extend into the red zone.
   relPosRms  = std::clamp<f32>(relPosRms,  0.0f, relPos0dB);
   relPosPeak = std::clamp<f32>(relPosPeak, 0.0f, relPos0dB);
