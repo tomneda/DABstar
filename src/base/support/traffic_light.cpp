@@ -66,7 +66,7 @@ void TrafficLight::_init_ui(const QString & iText)
   mpLayout = new QHBoxLayout(this);
   mpLayout->setContentsMargins(0, 0, 0, 0);
   mpLayout->setSpacing(4);
-  mpLayout->setAlignment(Qt::AlignCenter);
+  mpLayout->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
   mpLabel = new QLabel(this);
   mpLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -259,7 +259,7 @@ Qt::Alignment TrafficLight::get_alignment() const
   {
     return mpLayout->alignment();
   }
-  return Qt::AlignCenter;
+  return Qt::AlignRight | Qt::AlignVCenter;
 }
 
 void TrafficLight::set_label_alignment(const Qt::Alignment iAlignment)
