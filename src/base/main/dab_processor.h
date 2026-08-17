@@ -128,7 +128,7 @@ private:
   bool mEnableTii = false;
   f32 mPhaseOffsetCyclPrefRad = 0.0f;
   f32 mFreqOffsSyncSymb = 0.0f;
-  i32 mFreqOffsBBHz = 0;
+  f32 mFreqOffsBBHz = 0.0f;
   i32 mFreqOffsRFHz = 0;
   i32 mTimeSyncAttemptCount = 0;
   i32 mClockOffsetTotalSamples = 0;
@@ -175,4 +175,3 @@ signals:
   void signal_show_freq_corr_bb_Hz(i32);
   void signal_linear_peak_and_rms_level(f32, f32);
 };
-

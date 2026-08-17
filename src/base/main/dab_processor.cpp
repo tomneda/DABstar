@@ -235,14 +235,13 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
 
   mPhaseOffsetCyclPrefRad = _process_ofdm_symbols_1_to_L(ioSampleCount);
 
-  _process_null_symbol(ioSampleCount);
-
   // The first sample to be found for the next frame should be T_g samples ahead. Before going for the next frame, we just check the fineCorrector
   // We integrate the newly found frequency error with the existing frequency error.
   limit_symmetrically(mPhaseOffsetCyclPrefRad, 20.0f * F_RAD_PER_DEG);
   mFreqOffsSyncSymb += mPhaseOffsetCyclPrefRad / F_2_M_PI * (f32)cCarrDiff; // formerly 0.05
-
   _set_bb_freq_offs_Hz(mFreqOffsSyncSymb);
+
+  _process_null_symbol(ioSampleCount);
 
   if (correction == 0)
   {
@@ -370,11 +369,11 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 void DabProcessor::_set_bb_freq_offs_Hz(const f32 iFreqHz)
 {
   const i32 iFreqHzInt = (i32)std::round(iFreqHz);
-  if (mFreqOffsBBHz != iFreqHzInt)
+  if (std::round(mFreqOffsBBHz) != iFreqHzInt)
   {
-    mFreqOffsBBHz = iFreqHzInt;
-    emit signal_show_freq_corr_bb_Hz(mFreqOffsBBHz);
+    emit signal_show_freq_corr_bb_Hz(iFreqHzInt);
   }
+  mFreqOffsBBHz = iFreqHz;
 }
 
 void DabProcessor::_set_rf_freq_offs_Hz(const f32 iFreqHz)

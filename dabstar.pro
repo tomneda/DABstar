@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.5.0\\\"
+DEFINES		+= PRJ_VERS=\\\"5.6.1\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -128,6 +128,7 @@ HEADERS += \
     src/common/dab_constants.h \
     src/common/device_handler_if.h \
     src/common/device_selector_if.h \
+    src/common/device_notifier_if.h \
     src/common/fir_filters.h \
     src/common/glob_data_types.h \
     src/common/glob_defs.h \

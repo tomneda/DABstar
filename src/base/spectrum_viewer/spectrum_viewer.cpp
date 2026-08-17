@@ -280,7 +280,7 @@ void SpectrumViewer::show_lcd_data(const i32 /*iOfdmSymbNo*/, const f32 iModQual
   lblTestData1->setText(QSL("%1").arg(iTestData1, 0, 'f', 2));
   lblTestData2->setText(QSL("%1").arg(iTestData2, 0, 'f', 2));
   lblSnr->setText(QSL("%1").arg(iSNR, 0, 'f', 1));
-  lblPhaseCorr->setText(QSL("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 1));
+  lblPhaseCorr->setText(QSL("%1").arg(iMeanSigmaSqFreqCorr, 0, 'f', 2));
   lblModQuality->setText(QSL("%1").arg(iModQual, 0, 'f', 1));
 
   if (!mThermoModQualConfigured)
@@ -371,7 +371,7 @@ void SpectrumViewer::show_digital_peak_and_rms_level(const f32 iDigLevelPeak, co
   f32 relPosPeak = (valuedBPeak - minValue) / range;
   const f32 relPos0dB  = (0 - minValue) / range;
 
-  // relPosPeak is clamped to 0 dBFS so it marks the orange→red boundary.
+  // relPosPeak is clamped to 0 dBFS so it marks the orange?red boundary.
   // setValue() uses the unclamped valuedBPeak so the bar can extend into the red zone.
   relPosRms  = std::clamp<f32>(relPosRms,  0.0f, relPos0dB);
   relPosPeak = std::clamp<f32>(relPosPeak, 0.0f, relPos0dB);

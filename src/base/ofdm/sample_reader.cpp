@@ -93,13 +93,13 @@ void SampleReader::discard_samples(const i32 iSampleCnt)
   }
 }
 
-cf32 SampleReader::get_sample(const i32 iPhaseOffset)
+cf32 SampleReader::get_sample(const f32 iPhaseOffset)
 {
   get_samples(mSampleBuffer, 0, 1, iPhaseOffset, true); // show spectrum while scanning
   return mSampleBuffer[0];
 }
 
-void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const i32 iFreqOffsetBBHz, const bool iShowSpec)
+void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const f32 iFreqOffsetBBHz, const bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
 
@@ -205,10 +205,11 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
   }
 
   // adjust frequency. We need Hz accuracy
-  const cf32 phase_inc = cmplx_from_phase(F_2_M_PI * -(f32)iFreqOffsetBBHz / INPUT_RATE);
+  const cf32 phase_inc = cmplx_from_phase(F_2_M_PI * -iFreqOffsetBBHz / INPUT_RATE);
   volk_32fc_s32fc_x2_rotator2_32fc_u(buffer, buffer, &phase_inc, &phase, iNoSamples);
 
 #else
+  const i32 FreqOffsetBBHz = std::round(iFreqOffsetBBHz);
   for (i32 i = 0; i < iNoSamples; i++)
   {
     cf32 v = buffer[i];
@@ -272,7 +273,7 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
 
     // adjust frequency. We need Hz accuracy
     // Note that "phase" itself might be negative
-    currentPhase -= iFreqOffsetBBHz;
+    currentPhase -= FreqOffsetBBHz;
     currentPhase = (currentPhase + INPUT_RATE) % INPUT_RATE;
     assert(currentPhase >= 0);  // could happen with currentPhase < -INPUT_RATE
 
