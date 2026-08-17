@@ -45,6 +45,13 @@
     <file>res/icons/traffic_light_v_off.svg</file>
     <file>res/icons/traffic_light_v_red_yellow.svg</file>
     <file>res/icons/traffic_light_v_yellow_green.svg</file>
+    <file>res/icons/traffic_light_1_red.svg</file>
+    <file>res/icons/traffic_light_1_yellow.svg</file>
+    <file>res/icons/traffic_light_1_orange.svg</file>
+    <file>res/icons/traffic_light_1_red_yellow.svg</file>
+    <file>res/icons/traffic_light_1_green.svg</file>
+    <file>res/icons/traffic_light_1_yellow_green.svg</file>
+    <file>res/icons/traffic_light_1_off.svg</file>
 <!--    <file>res/icons/traffic_light_h_red.svg</file>-->
 <!--    <file>res/icons/traffic_light_h_yellow.svg</file>-->
 <!--    <file>res/icons/traffic_light_h_green.svg</file>-->
