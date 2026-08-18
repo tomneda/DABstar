@@ -124,5 +124,7 @@ private:
   f64 _nice_major_interval(f64 iRangeSpan, i32 iTargetIntervals = 5) const;
   f64 _min_pixels_per_y_tick() const;
   static f64 _widened_max(f64 iMin, f64 iMax);
+  void _reapply_auto_x_ticks(f64 iMin, f64 iMax) const;
+  void _reapply_auto_y_ticks(f64 iMin, f64 iMax) const;
   void _reapply_auto_ticks() const;
 };

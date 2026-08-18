@@ -77,20 +77,20 @@ f64 PlotWidget::_widened_max(const f64 iMin, const f64 iMax)
 
 void PlotWidget::set_x_range(const f64 iMin, const f64 iMax) const
 {
-  mpXAxis->setRange(iMin, _widened_max(iMin, iMax));
+  mXTickAuto = true;
   mpXAxis->setTickType(QValueAxis::TicksDynamic);
   mpXAxis->setTickAnchor(0.0);
-  mXTickAuto = true;
-  _reapply_auto_ticks();
+  _reapply_auto_x_ticks(iMin, iMax);
+  mpXAxis->setRange(iMin, _widened_max(iMin, iMax));
 }
 
 void PlotWidget::set_y_range(const f64 iMin, const f64 iMax) const
 {
-  mpYAxis->setRange(iMin, _widened_max(iMin, iMax));
+  mYTickAuto = true;
   mpYAxis->setTickType(QValueAxis::TicksDynamic);
   mpYAxis->setTickAnchor(0.0);
-  mYTickAuto = true;
-  _reapply_auto_ticks();
+  _reapply_auto_y_ticks(iMin, iMax);
+  mpYAxis->setRange(iMin, _widened_max(iMin, iMax));
 }
 
 void PlotWidget::_update_y_label_format() const
@@ -234,17 +234,35 @@ void PlotWidget::_zoom_axis(QValueAxis * const iopAxis, SAxisData & ioData, cons
   if (newMin < hardMin) newMin = hardMin;
   if (newMax > hardMax) newMax = _widened_max(newMin, hardMax);
 
+  const f64 span = newMax - newMin;
+  const bool isAutoAxis = (iopAxis == mpXAxis) ? mXTickAuto : mYTickAuto;
+  if (iopAxis->tickType() == QValueAxis::TicksDynamic)
+  {
+    if (isAutoAxis)
+    {
+      if (iopAxis == mpXAxis)
+      {
+        _reapply_auto_x_ticks(newMin, newMax);
+      }
+      else
+      {
+        _reapply_auto_y_ticks(newMin, newMax);
+      }
+    }
+    else
+    {
+      // If manual axis is zoomed out so far that the old interval would create too many ticks,
+      // temporarily adjust interval to prevent a freeze inside setRange before rangeChanged fires.
+      if (iopAxis->tickInterval() > 0.0 && span / iopAxis->tickInterval() > 20.0)
+      {
+        iopAxis->setTickInterval(span / 5.0);
+      }
+    }
+  }
+
   iopAxis->setRange(newMin, newMax);
 
-  // For auto-managed axes, recompute major interval for the new span so that
-  // zooming in adds denser ticks and zooming out removes them.
-  // For manually-overridden axes, just keep minor ticks consistent.
-  const bool isAutoAxis = (iopAxis == mpXAxis) ? mXTickAuto : mYTickAuto;
-  if (isAutoAxis)
-  {
-    _reapply_auto_ticks();
-  }
-  else
+  if (!isAutoAxis)
   {
     const f64 majorInterval = (iopAxis->tickType() == QValueAxis::TicksDynamic)
                                 ? iopAxis->tickInterval()
@@ -357,44 +375,52 @@ void PlotWidget::resizeEvent(QResizeEvent * const iopEvent)
   _reapply_auto_ticks();
 }
 
+void PlotWidget::_reapply_auto_x_ticks(const f64 iMin, const f64 iMax) const
+{
+  const QRectF plotArea = chart()->plotArea();
+  const f64 span = iMax - iMin;
+  const i32 target = plotArea.isEmpty()
+                       ? 5
+                       : std::max(2, static_cast<i32>(plotArea.width() / cMinPixelsPerXTick));
+  const f64 interval = _nice_major_interval(span, target);
+  mpXAxis->setTickInterval(interval);
+  mpXAxis->setMinorTickCount(_nice_minor_tick_count(interval));
+}
+
+void PlotWidget::_reapply_auto_y_ticks(const f64 iMin, const f64 iMax) const
+{
+  const QRectF plotArea = chart()->plotArea();
+  const f64 span = iMax - iMin;
+  const i32 target = plotArea.isEmpty()
+                       ? 5
+                       : std::max(2, static_cast<i32>(plotArea.height() / _min_pixels_per_y_tick()));
+  f64 interval = _nice_major_interval(span, target);
+  // Guarantee at least 2 major ticks visible. With TicksDynamic anchored at 0,
+  // ticks land at n*interval — the range may contain only one depending on alignment.
+  // Halve the interval until at least 2 ticks fall inside [iMin, iMax].
+  while (interval > 0.0)
+  {
+    const i32 nVisible = (i32)std::floor(iMax / interval) - (i32)std::ceil(iMin / interval) + 1;
+    if (nVisible >= 2) break;
+    interval /= 2.0;
+  }
+  mpYAxis->setTickInterval(interval);
+  mpYAxis->setMinorTickCount(_nice_minor_tick_count(interval));
+  _update_y_label_format();
+}
+
 // Recomputes tick intervals for auto-managed axes based on the current plot-area
 // pixel size. Falls back to 5 target intervals when called before first layout.
 void PlotWidget::_reapply_auto_ticks() const
 {
-  const QRectF plotArea = chart()->plotArea();
-
   if (mXTickAuto && mpXAxis->tickType() == QValueAxis::TicksDynamic)
   {
-    const f64 span = mpXAxis->max() - mpXAxis->min();
-    const i32 target = plotArea.isEmpty()
-                         ? 5
-                         : std::max(2, static_cast<i32>(plotArea.width() / cMinPixelsPerXTick));
-    const f64 interval = _nice_major_interval(span, target);
-    mpXAxis->setTickInterval(interval);
-    mpXAxis->setMinorTickCount(_nice_minor_tick_count(interval));
+    _reapply_auto_x_ticks(mpXAxis->min(), mpXAxis->max());
   }
 
   if (mYTickAuto && mpYAxis->tickType() == QValueAxis::TicksDynamic)
   {
-    const f64 span = mpYAxis->max() - mpYAxis->min();
-    const i32 target = plotArea.isEmpty()
-                         ? 5
-                         : std::max(2, static_cast<i32>(plotArea.height() / _min_pixels_per_y_tick()));
-    f64 interval = _nice_major_interval(span, target);
-    // Guarantee at least 2 major ticks visible. With TicksDynamic anchored at 0,
-    // ticks land at n*interval — the range may contain only one depending on alignment.
-    // Halve the interval until at least 2 ticks fall inside [axMin, axMax].
-    const f64 axMin = mpYAxis->min();
-    const f64 axMax = mpYAxis->max();
-    while (interval > 0.0)
-    {
-      const i32 nVisible = (i32)std::floor(axMax / interval) - (i32)std::ceil(axMin / interval) + 1;
-      if (nVisible >= 2) break;
-      interval /= 2.0;
-    }
-    mpYAxis->setTickInterval(interval);
-    mpYAxis->setMinorTickCount(_nice_minor_tick_count(interval));
-    _update_y_label_format();
+    _reapply_auto_y_ticks(mpYAxis->min(), mpYAxis->max());
   }
 }
 
