@@ -73,8 +73,6 @@ signals:
   void signal_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb);
   void signal_audio_data_available(i32 numSamples, i32 sampleRate);
   void signal_audio_buffer_filled_state(i32 percent, i32 qualFillState, i32 corrDir);
-  void signal_sbr_used(bool used);
-  void signal_ps_used(bool used);
   void signal_output_sample_rate(u32 kSps);
   void signal_sample_rate_and_audio_flags(i32 sampleRate, bool sbrUsed, bool psUsed);
   void signal_audio_dump_state_changed(bool isDumping);

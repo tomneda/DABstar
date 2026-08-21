@@ -1245,8 +1245,7 @@ void DabRadio::_initialize_audio_output()
 
   mpAudioManager.reset(new AudioManager(cfg, this));
 
-  connect(mpAudioManager.get(), &AudioManager::signal_sbr_used,                  this, [this](bool v){ _set_status_info_status(mStatusInfo.SBR, v); });
-  connect(mpAudioManager.get(), &AudioManager::signal_ps_used,                   this, [this](bool v){ _set_status_info_status(mStatusInfo.PS, v); });
+  connect(mpAudioManager.get(), &AudioManager::signal_sbr_and_ps_used,           this, [this](bool sbr, bool ps){ _set_status_info_status(mStatusInfo.SBR, sbr); _set_status_info_status(mStatusInfo.PS, ps); });
   connect(mpAudioManager.get(), &AudioManager::signal_output_sample_rate,        this, [this](u32 v){ _set_status_info_status(mStatusInfo.OutSampRate, v); });
   connect(mpAudioManager.get(), &AudioManager::signal_unmute_requested,          this, [this](){ _slot_update_mute_state(false); });
   connect(mpAudioManager.get(), &AudioManager::signal_audio_buffer_filled_state, this, &DabRadio::slot_show_audio_buffer_filled_state);

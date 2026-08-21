@@ -42,8 +42,6 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(mpAudioPipeline, &AudioPipeline::signal_audio_devices_list, this, &AudioManager::slot_load_audio_device_list);
   connect(mpAudioPipeline, &AudioPipeline::signal_show_audio_peak_level, this, &AudioManager::slot_show_audio_peak_level);
   connect(mpAudioPipeline, &AudioPipeline::signal_audio_data_available, mpTechDataWidget, &TechData::slot_audio_data_available, Qt::QueuedConnection);
-  connect(mpAudioPipeline, &AudioPipeline::signal_sbr_used, this, &AudioManager::signal_sbr_used);
-  connect(mpAudioPipeline, &AudioPipeline::signal_ps_used, this, &AudioManager::signal_ps_used);
   connect(mpAudioPipeline, &AudioPipeline::signal_output_sample_rate, this, &AudioManager::signal_output_sample_rate);
   connect(mpAudioPipeline, &AudioPipeline::signal_audio_buffer_filled_state, this, &AudioManager::signal_audio_buffer_filled_state);
   connect(mpAudioPipeline, &AudioPipeline::signal_sample_rate_and_audio_flags, this, &AudioManager::slot_show_sample_rate_and_audio_flags);
@@ -134,8 +132,10 @@ void AudioManager::stop_all_dumping()
     mpTechDataWidget->framedumpButton->setText("Dump MP2");
 }
 
-void AudioManager::slot_show_sample_rate_and_audio_flags(const i32 iSampleRate, const bool iSbrUsed, const bool iPsUsed) const
+void AudioManager::slot_show_sample_rate_and_audio_flags(const i32 iSampleRate, const bool iSbrUsed, const bool iPsUsed)
 {
+  emit signal_sbr_and_ps_used(iSbrUsed, iPsUsed);
+
   if (!mpTechDataWidget->isHidden())
   {
     mpTechDataWidget->slot_show_sample_rate_and_audio_flags(iSampleRate, iSbrUsed, iPsUsed);

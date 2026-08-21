@@ -96,7 +96,7 @@ private:
 public slots:
   // Connected from AudioPipeline
   void slot_show_audio_peak_level(f32 iPeakLeftDb, f32 iPeakRightDb, f32 iRmsLeftDb, f32 iRmsRightDb);
-  void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const;
+  void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
   void slot_audio_dump_state_changed(bool iIsDumping);
   void slot_frame_dump_state_changed(bool iIsDumping);
   void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
@@ -116,8 +116,7 @@ signals:
   void signal_audio_buffer_filled_state(i32 percent, i32 qualFillState, i32 corrDir);
 
   // Status info updates to DabRadio (DabRadio updates its status labels)
-  void signal_sbr_used(bool used);
-  void signal_ps_used(bool used);
+  void signal_sbr_and_ps_used(bool sbrUsed, bool psUsed);
   void signal_output_sample_rate(u32 kSps);
 
   // Mute state: emitted when volume slider unmutes

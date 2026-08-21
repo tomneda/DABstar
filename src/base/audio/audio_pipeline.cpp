@@ -160,8 +160,6 @@ void AudioPipeline::slot_new_audio(const i32 iNumSamples, const u32 iAudioSample
 
     const bool sbrUsed = ((iAudioFlags & 0x1) != 0); // DabRadio::AFL_SBR_USED
     const bool psUsed = ((iAudioFlags & 0x2) != 0); // DabRadio::AFL_PS_USED
-    emit signal_sbr_used(sbrUsed);
-    emit signal_ps_used(psUsed);
     emit signal_sample_rate_and_audio_flags((i32)iAudioSampleRate, sbrUsed, psUsed);
   }
 
