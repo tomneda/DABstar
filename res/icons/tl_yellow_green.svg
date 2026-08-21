@@ -3,6 +3,6 @@
   <circle cx="8" cy="8" r="4.2" fill="#14161a"/>
   <path d="M 4.2 8 A 3.8 3.8 0 0 1 11.8 8" fill="none" stroke="#383d47" stroke-width="1.2" stroke-linecap="round"/>
   <!-- Yellow-Green ON -->
-  <circle cx="8" cy="8" r="3.5" fill="#8ce600" stroke="#c4ff80" stroke-width="0.6"/>
+  <circle cx="8" cy="8" r="3.5" fill="#b8e600" stroke="#dcff66" stroke-width="0.6"/>
   <circle cx="6.8" cy="6.8" r="1.1" fill="#ffffff" opacity="0.65"/>
 </svg>
