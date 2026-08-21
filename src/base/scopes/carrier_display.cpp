@@ -94,10 +94,10 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
 
 void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
 {
-  if (mPlotTypeChanged)
+  if (mPlotTypeChanged) // we customize the plot here to avoid flickering while plot change
   {
     mPlotTypeChanged = false;
-    _customize_plot(_get_plot_type_data(mPlotType));
+    _customize_plot(_get_plot_type_data(mPlotType.value()));
   }
 
   if (mDataSize != (i32)iYValVec.size())
@@ -146,7 +146,7 @@ void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
 
 void CarrierDisp::select_plot_type(const ECarrierPlotType iPlotType)
 {
-  if (mPlotType != iPlotType)
+  if (!mPlotType.has_value() || mPlotType != iPlotType)
   {
     mPlotType = iPlotType;
     mPlotTypeChanged = true;

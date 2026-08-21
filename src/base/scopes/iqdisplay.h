@@ -16,6 +16,7 @@
 #include "dab_constants.h"
 #include <vector>
 #include <array>
+#include <optional>
 #include <QWidget>
 #include <QImage>
 
@@ -51,7 +52,7 @@ private:
   f32 mLastCircleSize = -1.0f;
   bool mMap1stQuad = false;
   f32 mRadius = (f32)cRadius;
-  EIqPlotType mPlotType = EIqPlotType::DEFAULT;
+  std::optional<EIqPlotType> mPlotType = std::nullopt;
 
   QImage mBackgroundImage;                    // cached base image (background gradient + cross + circle)
   QImage mImage;                              // rendered image

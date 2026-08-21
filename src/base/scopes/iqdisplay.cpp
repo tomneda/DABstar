@@ -207,7 +207,7 @@ void IQDisplay::paintEvent(QPaintEvent * const /*ipEvent*/)
 
 void IQDisplay::select_plot_type(const EIqPlotType iPlotType)
 {
-  if (mPlotType != iPlotType)
+  if (!mPlotType.has_value() || mPlotType != iPlotType)
   {
     mPlotType = iPlotType;
     const SCustPlot cp = _get_plot_type_data(iPlotType);

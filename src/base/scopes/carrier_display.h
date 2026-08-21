@@ -21,6 +21,7 @@
 #include <QLineSeries>
 #include <QScatterSeries>
 #include <vector>
+#include <optional>
 
 
 class CarrierDisp : public QObject
@@ -64,7 +65,7 @@ private:
 
   std::vector<f32> mX_axis_vec;
   i32 mDataSize = 0;
-  ECarrierPlotType mPlotType = ECarrierPlotType::DEFAULT;
+  std::optional<ECarrierPlotType> mPlotType = std::nullopt;
   bool mPlotTypeChanged = false;
   bool mInCustomizePlot = false;
   SCustPlot::EStyle mCurrentStyle = SCustPlot::EStyle::LINES;
