@@ -40,10 +40,6 @@
 // before the timeout expires, the traffic light automatically switches to the defined
 // timeout stage (default: Off).
 
-// Compiler switch to choose between old (vertical 3-lamp) and new (single color point) SVG graphics:
-// Uncomment the line below (or define via compiler flag / build configuration) to use single-point graphics.
-#define TRAFFIC_LIGHT_SINGLE_POINT
-
 class QTimer;
 class QEnterEvent;
 
@@ -72,13 +68,8 @@ public:
   Q_ENUM(EStage)
 
   static constexpr i32 cStageCount = 6;
-#if defined(TRAFFIC_LIGHT_SINGLE_POINT)
   static constexpr i32 cDefaultIconWidth = 18;
   static constexpr i32 cDefaultIconHeight = 18;
-#else
-  static constexpr i32 cDefaultIconWidth = 18;
-  static constexpr i32 cDefaultIconHeight = 36;
-#endif
 
   explicit TrafficLight(QWidget * parent = nullptr);
   explicit TrafficLight(const QString & iText, QWidget * parent = nullptr);
