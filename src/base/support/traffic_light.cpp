@@ -75,7 +75,7 @@ void TrafficLight::_init_ui(const QString & iText)
   mpLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
   mpIconLabel = new QLabel(this);
-  mpIconLabel->setAlignment(Qt::AlignCenter);
+  mpIconLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   mpIconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   mpIconLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 

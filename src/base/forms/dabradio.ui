@@ -1120,7 +1120,7 @@
          <item row="1" column="2">
           <widget class="TrafficLight" name="tlAudioBuffer" native="true">
            <property name="text">
-            <string>AB: </string>
+            <string>AB:</string>
            </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio buffer state indicator&lt;/span&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Buffer fill level normal.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Buffer fill level critical (too low or too high).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Audio rate adaptation active. Could be slightly audible (~1% audio speed change).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
