@@ -1039,11 +1039,11 @@
          </property>
          <item row="0" column="0">
           <widget class="TrafficLight" name="tlFicError" native="true">
-           <property name="text">
-            <string>FIC:</string>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;FIC/FIB (Fast Information Channel/Block) quality indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(If not Green the reception is very unlikely)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;≥ 95% FIB CRC success&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;≥ 85% FIB CRC success&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;≥ 65% FIB CRC success&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;≥ 45% FIB CRC success&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;&amp;lt; 45% FIB CRC success&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>FIC:</string>
            </property>
            <property name="pixmap" stdset="0">
             <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
@@ -1055,11 +1055,11 @@
          </item>
          <item row="0" column="1">
           <widget class="TrafficLight" name="tlFrameError" native="true">
-           <property name="text">
-            <string>FRM:</string>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Frame / superframe synchronization and Fire Code header quality indicator&lt;/span&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;0 frame / superframe errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;1 error&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;2–3 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;4–5 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;&amp;gt; 5 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>FRM:</string>
            </property>
            <property name="pixmap" stdset="0">
             <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
@@ -1071,11 +1071,11 @@
          </item>
          <item row="0" column="2">
           <widget class="TrafficLight" name="tlAacError" native="true">
-           <property name="text">
-            <string>AAC:</string>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;AAC core decoding syntax / bitstream quality indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(Only valid for DAB+, not DAB)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;0 AAC decoding errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;1 error&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;2–3 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;4–5 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;&amp;gt; 5 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>AAC:</string>
            </property>
            <property name="pixmap" stdset="0">
             <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
@@ -1087,11 +1087,11 @@
          </item>
          <item row="1" column="0">
           <widget class="TrafficLight" name="tlRsError" native="true">
-           <property name="text">
-            <string>RSe:</string>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reed-Solomon uncorrectable error indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(Only valid for DAB+, not DAB)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;0 uncorrectable RS errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;1 error&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;2–3 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;4–5 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;&amp;gt; 5 errors&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>RSE:</string>
            </property>
            <property name="pixmap" stdset="0">
             <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
@@ -1103,11 +1103,11 @@
          </item>
          <item row="1" column="1">
           <widget class="TrafficLight" name="tlRsCrcError" native="true">
-           <property name="text">
-            <string>RSC:</string>
-           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Reed-Solomon / CRC error indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(Only valid for DAB+, not DAB)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Error-free reception (no RS or CRC errors).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Errors detected but successfully repaired by Reed-Solomon.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Uncorrectable errors; audible audio drops will occur.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>RSC:</string>
            </property>
            <property name="pixmap" stdset="0">
             <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
@@ -1119,11 +1119,11 @@
          </item>
          <item row="1" column="2">
           <widget class="TrafficLight" name="tlAudioBuffer" native="true">
-           <property name="text">
-            <string>AB:</string>
-           </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio buffer state indicator&lt;/span&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Buffer fill level normal.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Buffer fill level critical (too low or too high).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Audio rate adaptation active. Could be slightly audible (~1% audio speed change).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio buffer state indicator&lt;/span&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;/p&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Buffer fill level normal.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;img src=&quot;:/res/icons/tl_red.png&quot; width=&quot;13&quot; height=&quot;13&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;/p&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Buffer fill level critical (too low or too high).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;img src=&quot;:/res/icons/tl_yellow_green.png&quot; width=&quot;13&quot; height=&quot;13&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;img src=&quot;:/res/icons/tl_red_yellow.png&quot; width=&quot;13&quot; height=&quot;13&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;/p&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Audio rate adaptation active. Could be slightly audible (~1% audio speed change).&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>AB:</string>
            </property>
            <property name="pixmap" stdset="0">
             <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
