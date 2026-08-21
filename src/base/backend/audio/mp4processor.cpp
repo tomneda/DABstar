@@ -325,13 +325,12 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
     if (aacFrameLen > cAacCoreFrameBytes || aacFrameLen < 0)
     {
       qWarning() << "Invalid aacFrameLen =" << aacFrameLen;
+      mAacErrors++;
       // Conceal this AU and continue rather than abandoning all remaining AUs.
       if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
-      continue;
     }
-
     //	but first the crc check
-    if (check_crc_bytes(&mOutVec[mAuStartArr[auIdx]], aacFrameLen))
+    else if (check_crc_bytes(&mOutVec[mAuStartArr[auIdx]], aacFrameLen))
     {
       //	first prepare dumping
       std::vector<u8> aacStreamBuffer;
@@ -374,19 +373,19 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
         // The AAC decoder produced no PCM; conceal the gap to avoid a buffer hole.
         if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
       }
-
-      if (++mAacFrames > 25)
-      {
-        emit signal_show_aac_errors(mAacErrors);
-        mAacErrors = 0;
-        mAacFrames = 0;
-      }
     }
     else
     {
       mCrcErrors++;
       mSumCrcErrors++;
       if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
+    }
+
+    if (++mAacFrames > 25)
+    {
+      emit signal_show_aac_errors(mAacErrors);
+      mAacErrors = 0;
+      mAacFrames = 0;
     }
     //	TODO: what would happen if the errors were in the 10 parity bytes	rather than in the 110 payload bytes?
   }
