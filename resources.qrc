@@ -39,20 +39,20 @@
     <file>res/icons/combo_arrow_on.svg</file>
     <file>res/icons/spin_up.svg</file>
     <file>res/icons/spin_down.svg</file>
-    <file>res/icons/traffic_light_1_red.svg</file>
-    <file>res/icons/traffic_light_1_yellow.svg</file>
-    <file>res/icons/traffic_light_1_orange.svg</file>
-    <file>res/icons/traffic_light_1_red_yellow.svg</file>
-    <file>res/icons/traffic_light_1_green.svg</file>
-    <file>res/icons/traffic_light_1_yellow_green.svg</file>
-    <file>res/icons/traffic_light_1_off.svg</file>
-    <file>res/icons/traffic_light_1_red.png</file>
-    <file>res/icons/traffic_light_1_yellow.png</file>
-    <file>res/icons/traffic_light_1_orange.png</file>
-    <file>res/icons/traffic_light_1_red_yellow.png</file>
-    <file>res/icons/traffic_light_1_green.png</file>
-    <file>res/icons/traffic_light_1_yellow_green.png</file>
-    <file>res/icons/traffic_light_1_off.png</file>
+    <file>res/icons/tl_red.svg</file>
+    <file>res/icons/tl_yellow.svg</file>
+    <file>res/icons/tl_orange.svg</file>
+    <file>res/icons/tl_red_yellow.svg</file>
+    <file>res/icons/tl_green.svg</file>
+    <file>res/icons/tl_yellow_green.svg</file>
+    <file>res/icons/tl_off.svg</file>
+    <file>res/icons/tl_red.png</file>
+    <file>res/icons/tl_yellow.png</file>
+    <file>res/icons/tl_orange.png</file>
+    <file>res/icons/tl_red_yellow.png</file>
+    <file>res/icons/tl_green.png</file>
+    <file>res/icons/tl_yellow_green.png</file>
+    <file>res/icons/tl_off.png</file>
     <file>res/globstyle.qss</file>
     <file>res/map-viewer.html</file>
     <file>res/txdata.tii</file>

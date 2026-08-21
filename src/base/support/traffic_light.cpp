@@ -88,12 +88,12 @@ void TrafficLight::_init_ui(const QString & iText)
 const QPixmap & TrafficLight::_get_cached_pixmap(const EStage iStage)
 {
   static const QPixmap sPixmaps[cStageCount] = {
-    QPixmap{":/res/icons/traffic_light_1_off.svg"},          // 0
-    QPixmap{":/res/icons/traffic_light_1_red.svg"},          // 1
-    QPixmap{":/res/icons/traffic_light_1_orange.svg"},       // 2
-    QPixmap{":/res/icons/traffic_light_1_yellow.svg"},       // 3
-    QPixmap{":/res/icons/traffic_light_1_yellow_green.svg"}, // 4
-    QPixmap{":/res/icons/traffic_light_1_green.svg"}         // 5
+    QPixmap{":/res/icons/tl_off.svg"},          // 0
+    QPixmap{":/res/icons/tl_red.svg"},          // 1
+    QPixmap{":/res/icons/tl_orange.svg"},       // 2
+    QPixmap{":/res/icons/tl_yellow.svg"},       // 3
+    QPixmap{":/res/icons/tl_yellow_green.svg"}, // 4
+    QPixmap{":/res/icons/tl_green.svg"}         // 5
   };
 
   const auto stageIdx = static_cast<size_t>(iStage);
