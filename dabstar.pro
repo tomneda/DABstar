@@ -51,7 +51,7 @@ GIT_HASH_LINES += "$${LITERAL_HASH}define GITHASH \"$$GITHASHSTRING\""
 write_file($$OUT_PWD/git_hash.h, GIT_HASH_LINES)
 INCLUDEPATH += $$OUT_PWD
 
-#DESTDIR 	= ../../DABstar-Qt6.11.1
+#DESTDIR 	= ../../DABstar-Qt6.11.2
 LIBS		+= -L$$_PRO_FILE_PWD_/../dabstar-libs/lib
 CONFIG		+= airspy
 CONFIG		+= spyServer

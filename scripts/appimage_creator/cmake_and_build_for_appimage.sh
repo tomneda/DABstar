@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-QT_VERSION=6.11.1
+QT_VERSION=6.11.2
 CUD=$PWD
 SRC=$CUD/../..
 DST=~/DABstarAppImage/build

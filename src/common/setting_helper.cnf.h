@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2025 by Thomas Neder (https://github.com/tomneda)
+ * Copyright (c) 2025 by Thomas Neder (https://github.com/tomneda)
  *
  * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
  * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
