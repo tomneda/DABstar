@@ -33,7 +33,7 @@ dongleSelect::dongleSelect()
   QVBoxLayout *layOut = new QVBoxLayout;
   layOut->addWidget(selectorDisplay);
   layOut->addWidget(toptext);
-  setWindowTitle(tr("device select"));
+  setWindowTitle("Device select");
   setLayout(layOut);
 
   Dongles = QStringList();

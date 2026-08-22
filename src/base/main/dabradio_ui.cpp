@@ -478,13 +478,13 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
   mLevelMeterMode = iMode;
   Settings::Main::varLevelMeterMode.write(static_cast<u32>(iMode));
 
-  static const QString sCompactBtnStyle = QSL("QPushButton { padding: 0px; margin: 0px; }");
+  static const QString sCompactBtnStyle = QSL("QPushButton { padding: 0px; margin: 0px; }"); // needed to show the letter in the button
 
   if (mLevelMeterMode == ELevelMeterMode::SnrMer)
   {
-    ui->btnToggleMeterMode->setText("Q");
+    ui->btnToggleMeterMode->setText(QSL("Q"));
     ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x00A840) + sCompactBtnStyle);
-    ui->btnToggleMeterMode->setToolTip(tr("Current Mode: RF Signal Quality (SNR/MER)\nClick to switch to Audio Level (L/R)"));
+    ui->btnToggleMeterMode->setToolTip(QSL("Current Mode: RF Signal Quality (SNR/MER)\nClick to switch to Audio Level (L/R)"));
     ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
 
     if (mpAudioManager != nullptr)
@@ -506,7 +506,7 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
     ui->levelMeterLeft->set_show_scale(false);
     ui->levelMeterLeft->set_bar_visible(true);
     ui->levelMeterLeft->set_color_stops(snrMerStops);
-    ui->levelMeterLeft->setToolTip(tr("<html><head/><body><p><span style=\" font-weight:700;\">SNR (Signal-to-Noise Ratio) in dB</span></p><p>Top meter: Averaged Signal-to-Noise Ratio (SNR) in the OFDM symbol.</p></body></html>"));
+    ui->levelMeterLeft->setToolTip(QSL("<html><head/><body><p><span style=\" font-weight:700;\">SNR (Signal-to-Noise Ratio) in dB</span></p><p>Top meter: Averaged Signal-to-Noise Ratio (SNR) in the OFDM symbol.</p></body></html>"));
 
     // Bottom meter: MER (0 to 36 dB)
     ui->levelMeterRight->set_lower_bound(0.0f);
@@ -516,7 +516,7 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
     ui->levelMeterRight->set_show_scale(false);
     ui->levelMeterRight->set_bar_visible(true);
     ui->levelMeterRight->set_color_stops(snrMerStops);
-    ui->levelMeterRight->setToolTip(tr("<html><head/><body><p><span style=\" font-weight:700;\">MER (Modulation Error Ratio) in dB</span></p><p>Bottom meter: Averaged modulation quality in dB.</p></body></html>"));
+    ui->levelMeterRight->setToolTip(QSL("<html><head/><body><p><span style=\" font-weight:700;\">MER (Modulation Error Ratio) in dB</span></p><p>Bottom meter: Averaged modulation quality in dB.</p></body></html>"));
 
     // Scale meter: 0 to 36 dB
     ui->levelMeterScale->set_lower_bound(0.0f);
@@ -525,7 +525,7 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
     ui->levelMeterScale->set_minor_step(1.0f);
     ui->levelMeterScale->set_show_scale(true);
     ui->levelMeterScale->set_bar_visible(false);
-    ui->levelMeterScale->setToolTip(tr("<html><head/><body><p><span style=\" font-weight:700;\">RF Signal Quality in dB</span></p><p>- Top: SNR (Signal-to-Noise Ratio)<br/>- Bottom: MER (Modulation Error Ratio)</p></body></html>"));
+    ui->levelMeterScale->setToolTip(QSL("<html><head/><body><p><span style=\" font-weight:700;\">RF Signal Quality in dB</span></p><p>- Top: SNR (Signal-to-Noise Ratio)<br/>- Bottom: MER (Modulation Error Ratio)</p></body></html>"));
 
     const f32 snr = mIsChannelRunning.load() ? mChannelDesc.snrLast : 0.0f;
     const f32 mer = mIsChannelRunning.load() ? mChannelDesc.merLast : 0.0f;
@@ -534,9 +534,9 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
   }
   else
   {
-    ui->btnToggleMeterMode->setText("A");
+    ui->btnToggleMeterMode->setText(QSL("A"));
     ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0) + sCompactBtnStyle);
-    ui->btnToggleMeterMode->setToolTip(tr("Current Mode: Audio Level (L/R)\nClick to switch to RF Signal Quality (SNR/MER)"));
+    ui->btnToggleMeterMode->setToolTip(QSL("Current Mode: Audio Level (L/R)\nClick to switch to RF Signal Quality (SNR/MER)"));
     ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
 
     const QVector<QPair<f32, u32>> audioStops = {
@@ -549,7 +549,7 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
       { 1.0f,       0xFF2828 },  // bright red            (Overflow end)
     };
 
-    const QString audioToolTip = tr("<html><head/><body><p><span style=\" font-weight:700;\">RMS and Peak level in dBFS</span></p><p>- Top: left channel<br/>- Bottom: right channel</p><p>Use the test-tone in the configuration to calibrate the timing</p></body></html>");
+    const QString audioToolTip = QSL("<html><head/><body><p><span style=\" font-weight:700;\">RMS and Peak level in dBFS</span></p><p>- Top: left channel<br/>- Bottom: right channel</p><p>Use the test-tone in the configuration to calibrate the timing</p></body></html>");
 
     // Top meter: Left audio (-22 to 0 dBFS)
     ui->levelMeterLeft->set_lower_bound(-22.0f);

@@ -131,13 +131,13 @@ void TiiManager::load_table()
 
   if (mTiiHandler.is_valid())
   {
-    QMessageBox::information(mpParentWidget, QObject::tr("success"), QObject::tr("Loading and installing TII database completed\n"));
+    QMessageBox::information(mpParentWidget, QSL("Success"), QSL("Loading and installing TII database completed\n"));
     fill_tii_cache(tableFile);
     emit signal_tii_file_status(true, {});
   }
   else
   {
-    QMessageBox::information(mpParentWidget, QObject::tr("fail"), QObject::tr("Loading database failed\n"));
+    QMessageBox::information(mpParentWidget, QSL("Fail"), QSL("Loading database failed\n"));
     emit signal_tii_file_status(false, "Failed to load TII database.");
   }
 }

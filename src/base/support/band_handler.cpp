@@ -123,7 +123,7 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
 
   theTable.setColumnCount(2);
   QStringList header;
-  header << tr("channel") << tr("scan");
+  header << "Channel" << "Scan";
   theTable.setHorizontalHeaderLabels(header);
   theTable.verticalHeader()->hide();
   theTable.setShowGrid(true);
