@@ -56,6 +56,7 @@ public:
   void set_scanning(bool isScanning);
   void set_service_label(const QString & label);
   void set_audio_frame_type(EAudioFrameType type);
+  void set_level_meters_enabled(bool isEnabled);
   void reset_audio_fifo();
 
   void stop_audio_output();   // called when channel/app stops
@@ -82,6 +83,7 @@ private:
   bool mIsChannelRunning = false;
   bool mIsScanning = false;
   bool mMutingActive = false;
+  bool mLevelMetersEnabled = true;
   bool mAudioDumpRunning = false;
   bool mFrameDumpRunning = false;
   QString mServiceLabel;

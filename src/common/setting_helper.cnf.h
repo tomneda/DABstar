@@ -50,6 +50,7 @@ CATEGORY_BEGIN(Main)
   DEFINE_VARIANT(Main, varDeviceUiVisible, true)
   DEFINE_VARIANT(Main, varSdrDevice, "no device")
   DEFINE_VARIANT(Main, varDeviceFilePlayerId, 0)
+  DEFINE_VARIANT(Main, varLevelMeterMode, 0)
   DEFINE_VARIANT(Main, varPresetCh, "")
   DEFINE_VARIANT(Main, varPresetFId, 0)
   DEFINE_VARIANT(Main, varPresetFSId, 0) // SId for file mode

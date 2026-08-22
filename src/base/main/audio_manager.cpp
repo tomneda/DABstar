@@ -108,6 +108,11 @@ void AudioManager::set_audio_frame_type(const EAudioFrameType type)
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_audio_frame_type, Qt::QueuedConnection, type);
 }
 
+void AudioManager::set_level_meters_enabled(const bool isEnabled)
+{
+  mLevelMetersEnabled = isEnabled;
+}
+
 void AudioManager::reset_audio_fifo()
 {
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_reset_audio_fifo, Qt::QueuedConnection);
@@ -195,6 +200,9 @@ void AudioManager::_update_level_meter(LevelMeter * const ipMeter, const f32 iPe
 
 void AudioManager::slot_show_audio_peak_level(const f32 iPeakLeftDb, const f32 iPeakRightDb, const f32 iRmsLeftDb, const f32 iRmsRightDb)
 {
+  if (!mLevelMetersEnabled)
+    return;
+
   // each 50ms...
   _update_level_meter(mpLevelMeterLeft, iPeakLeftDb, iRmsLeftDb);
   _update_level_meter(mpLevelMeterRight, iPeakRightDb, iRmsRightDb);

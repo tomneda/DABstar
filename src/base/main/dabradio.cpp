@@ -1440,6 +1440,7 @@ void DabRadio::_initialize_signal_slot_connections()
   connect(ui->btnTii, &QPushButton::clicked, mpTiiManager.get(), &TiiManager::slot_handle_tii_button);
   connect(ui->btnCir, &QPushButton::clicked, this, &DabRadio::_slot_handle_cir_button);
   connect(ui->btnOpenPicFolder, &QPushButton::clicked, this, &DabRadio::_slot_handle_open_pic_folder_button);
+  connect(ui->btnToggleMeterMode, &QPushButton::clicked, this, &DabRadio::_slot_toggle_level_meter_mode);
 
   // configuration UI connections
   assert(mpConfig != nullptr);

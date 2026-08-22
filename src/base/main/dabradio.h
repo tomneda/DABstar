@@ -233,6 +233,8 @@ private:
   EServiceListSrc mEnsListServiceListSrc = EServiceListSrc::DEVICE_PLAYER;
   enum class EDipSyncState { NotSetYet, DipFound, DipNotFound };
   EDipSyncState mDipSyncState = EDipSyncState::NotSetYet;
+  enum class ELevelMeterMode : u8 { AudioLevel = 0, SnrMer = 1 };
+  ELevelMeterMode mLevelMeterMode = ELevelMeterMode::AudioLevel;
 
   // Structures
   StatusInfo mStatusInfo{};
@@ -311,6 +313,7 @@ private:
 
   // UI Controls and Styling
   void _set_favorite_button_style();
+  void _set_level_meter_mode(ELevelMeterMode iMode);
   void _show_epg_label(const bool iShowLabel);
   enum class EHttpButtonState { Off, On, Waiting };
   void _set_http_server_button(EHttpButtonState iHttpServerState) const;
@@ -469,6 +472,7 @@ private slots:
 
   // UI Styling and Display
   void _slot_set_static_button_style();
+  void _slot_toggle_level_meter_mode();
 
   // Application Control
   void _slot_terminate_process();

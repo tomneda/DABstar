@@ -14,6 +14,7 @@
 #include "configuration.h"
 #include "gui_helpers.h"
 #include "audio_manager.h"
+#include "level_meter.h"
 #include "mot_content_types.h"
 #include "mot_slide_progress.h"
 #include "window_visibility_watcher.h"
@@ -168,12 +169,16 @@ void DabRadio::_initialize_ui_elements()
   ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x4848C8));    // indigo   — ensemble list
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
   ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x45bb24));      // green    — map web server
+  ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0)); // slate blue — meter mode toggle
 
   // ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
 
   _set_http_server_button(EHttpButtonState::Off);
   mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
+
+  const auto levelMeterMode = static_cast<ELevelMeterMode>(Settings::Main::varLevelMeterMode.read().toUInt());
+  _set_level_meter_mode(levelMeterMode);
 
   // only the queued call will consider the button size
   QMetaObject::invokeMethod(this, &DabRadio::_slot_update_mute_state, Qt::QueuedConnection, false);
@@ -361,6 +366,17 @@ void DabRadio::_cleanup_ui() const
   ui->tlFrameError->set_stage(TrafficLight::EStage::Red);
   ui->tlRsError->set_stage(TrafficLight::EStage::Red);
   ui->tlAacError->set_stage(TrafficLight::EStage::Red);
+
+  if (mLevelMeterMode == ELevelMeterMode::SnrMer)
+  {
+    ui->levelMeterLeft->set_value(0.0f);
+    ui->levelMeterRight->set_value(0.0f);
+  }
+  else
+  {
+    ui->levelMeterLeft->set_value(-100.0f);
+    ui->levelMeterRight->set_value(-100.0f);
+  }
 }
 
 void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
@@ -447,6 +463,126 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnEnsembleList->setFixedSize(QSize(32, 32));
   ui->btnOpenPicFolder->setIconSize(QSize(24, 24));
   ui->btnOpenPicFolder->setFixedSize(QSize(32, 32));
+  ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
+}
+
+void DabRadio::_slot_toggle_level_meter_mode()
+{
+  const ELevelMeterMode newMode = (mLevelMeterMode == ELevelMeterMode::AudioLevel) ?
+                                  ELevelMeterMode::SnrMer : ELevelMeterMode::AudioLevel;
+  _set_level_meter_mode(newMode);
+}
+
+void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
+{
+  mLevelMeterMode = iMode;
+  Settings::Main::varLevelMeterMode.write(static_cast<u32>(iMode));
+
+  if (mLevelMeterMode == ELevelMeterMode::SnrMer)
+  {
+    ui->btnToggleMeterMode->setText("Q");
+    ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x00A840));
+    ui->btnToggleMeterMode->setToolTip(tr("Current Mode: RF Signal Quality (SNR/MER)\nClick to switch to Audio Level (L/R)"));
+
+    if (mpAudioManager != nullptr)
+    {
+      mpAudioManager->set_level_meters_enabled(false);
+    }
+
+    const QVector<QPair<f32, u32>> snrMerStops = {
+      { 0.0f, 0x003820 },  // dark phosphor green
+      { 0.6f, 0x00A840 },  // mid phosphor green
+      { 1.0f, 0x80FF90 },  // bright phosphor peak
+    };
+
+    // Top meter: SNR (0 to 36 dB)
+    ui->levelMeterLeft->set_lower_bound(0.0f);
+    ui->levelMeterLeft->set_upper_bound(36.0f);
+    ui->levelMeterLeft->set_major_step(6.0f);
+    ui->levelMeterLeft->set_minor_step(1.0f);
+    ui->levelMeterLeft->set_show_scale(false);
+    ui->levelMeterLeft->set_bar_visible(true);
+    ui->levelMeterLeft->set_color_stops(snrMerStops);
+    ui->levelMeterLeft->setToolTip(tr("<html><head/><body><p><span style=\" font-weight:700;\">SNR (Signal-to-Noise Ratio) in dB</span></p><p>Top meter: Averaged Signal-to-Noise Ratio (SNR) in the OFDM symbol.</p></body></html>"));
+
+    // Bottom meter: MER (0 to 36 dB)
+    ui->levelMeterRight->set_lower_bound(0.0f);
+    ui->levelMeterRight->set_upper_bound(36.0f);
+    ui->levelMeterRight->set_major_step(6.0f);
+    ui->levelMeterRight->set_minor_step(1.0f);
+    ui->levelMeterRight->set_show_scale(false);
+    ui->levelMeterRight->set_bar_visible(true);
+    ui->levelMeterRight->set_color_stops(snrMerStops);
+    ui->levelMeterRight->setToolTip(tr("<html><head/><body><p><span style=\" font-weight:700;\">MER (Modulation Error Ratio) in dB</span></p><p>Bottom meter: Averaged modulation quality in dB.</p></body></html>"));
+
+    // Scale meter: 0 to 36 dB
+    ui->levelMeterScale->set_lower_bound(0.0f);
+    ui->levelMeterScale->set_upper_bound(36.0f);
+    ui->levelMeterScale->set_major_step(6.0f);
+    ui->levelMeterScale->set_minor_step(1.0f);
+    ui->levelMeterScale->set_show_scale(true);
+    ui->levelMeterScale->set_bar_visible(false);
+    ui->levelMeterScale->setToolTip(tr("<html><head/><body><p><span style=\" font-weight:700;\">RF Signal Quality in dB</span></p><p>- Top: SNR (Signal-to-Noise Ratio)<br/>- Bottom: MER (Modulation Error Ratio)</p></body></html>"));
+
+    const f32 snr = mIsChannelRunning.load() ? mChannelDesc.snrLast : 0.0f;
+    const f32 mer = mIsChannelRunning.load() ? mChannelDesc.merLast : 0.0f;
+    ui->levelMeterLeft->set_value(snr);
+    ui->levelMeterRight->set_value(mer);
+  }
+  else
+  {
+    ui->btnToggleMeterMode->setText("A");
+    ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0));
+    ui->btnToggleMeterMode->setToolTip(tr("Current Mode: Audio Level (L/R)\nClick to switch to RF Signal Quality (SNR/MER)"));
+
+    const QVector<QPair<f32, u32>> audioStops = {
+      { 0.0f,       0x004018 },  // dark green baseline
+      { 0.4090909f, 0x18B830 },  // standard green        (-13 dBFS)
+      { 0.7727273f, 0x50E020 },  // light yellow-green    ( -5 dBFS)
+      { 0.8636364f, 0xD0C800 },  // bright warm yellow    ( -3 dBFS)
+      { 0.9545455f, 0xE06000 },  // orange warning        ( -1 dBFS)
+      { 0.9886364f, 0xD01818 },  // red peak onset        (-0.25 dBFS)
+      { 1.0f,       0xFF2828 },  // bright red            (Overflow end)
+    };
+
+    const QString audioToolTip = tr("<html><head/><body><p><span style=\" font-weight:700;\">RMS and Peak level in dBFS</span></p><p>- Top: left channel<br/>- Bottom: right channel</p><p>Use the test-tone in the configuration to calibrate the timing</p></body></html>");
+
+    // Top meter: Left audio (-22 to 0 dBFS)
+    ui->levelMeterLeft->set_lower_bound(-22.0f);
+    ui->levelMeterLeft->set_upper_bound(0.0f);
+    ui->levelMeterLeft->set_major_step(3.0f);
+    ui->levelMeterLeft->set_minor_step(1.0f);
+    ui->levelMeterLeft->set_show_scale(false);
+    ui->levelMeterLeft->set_bar_visible(true);
+    ui->levelMeterLeft->set_color_stops(audioStops);
+    ui->levelMeterLeft->setToolTip(audioToolTip);
+    ui->levelMeterLeft->set_value(-100.0f);
+
+    // Bottom meter: Right audio (-22 to 0 dBFS)
+    ui->levelMeterRight->set_lower_bound(-22.0f);
+    ui->levelMeterRight->set_upper_bound(0.0f);
+    ui->levelMeterRight->set_major_step(3.0f);
+    ui->levelMeterRight->set_minor_step(1.0f);
+    ui->levelMeterRight->set_show_scale(false);
+    ui->levelMeterRight->set_bar_visible(true);
+    ui->levelMeterRight->set_color_stops(audioStops);
+    ui->levelMeterRight->setToolTip(audioToolTip);
+    ui->levelMeterRight->set_value(-100.0f);
+
+    // Scale meter: -22 to 0 dBFS
+    ui->levelMeterScale->set_lower_bound(-22.0f);
+    ui->levelMeterScale->set_upper_bound(0.0f);
+    ui->levelMeterScale->set_major_step(3.0f);
+    ui->levelMeterScale->set_minor_step(1.0f);
+    ui->levelMeterScale->set_show_scale(true);
+    ui->levelMeterScale->set_bar_visible(false);
+    ui->levelMeterScale->setToolTip(audioToolTip);
+
+    if (mpAudioManager != nullptr)
+    {
+      mpAudioManager->set_level_meters_enabled(true);
+    }
+  }
 }
 
 void DabRadio::_show_or_hide_windows_from_config()
@@ -614,6 +750,17 @@ void DabRadio::_clean_screen(StatusInfo & ioStatusInfo) const
   ui->lblProgType->setText("");
   mpTechDataWidget->cleanUp();
   _reset_status_info(ioStatusInfo);
+
+  if (mLevelMeterMode == ELevelMeterMode::SnrMer)
+  {
+    ui->levelMeterLeft->set_value(0.0f);
+    ui->levelMeterRight->set_value(0.0f);
+  }
+  else
+  {
+    ui->levelMeterLeft->set_value(-100.0f);
+    ui->levelMeterRight->set_value(-100.0f);
+  }
 }
 
 // called from the MP4 decoder or MP2 decoder
@@ -843,6 +990,12 @@ void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData & iQD)
 
   mChannelDesc.snrLast = iQD.SNR;
   mChannelDesc.merLast = iQD.MER;
+
+  if (mLevelMeterMode == ELevelMeterMode::SnrMer)
+  {
+    ui->levelMeterLeft->set_value(iQD.SNR);
+    ui->levelMeterRight->set_value(iQD.MER);
+  }
 
   if (!mpSpectrumViewer->is_hidden())
   {
