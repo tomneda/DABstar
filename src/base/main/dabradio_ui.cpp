@@ -478,11 +478,14 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
   mLevelMeterMode = iMode;
   Settings::Main::varLevelMeterMode.write(static_cast<u32>(iMode));
 
+  static const QString sCompactBtnStyle = QSL("QPushButton { padding: 0px; margin: 0px; }");
+
   if (mLevelMeterMode == ELevelMeterMode::SnrMer)
   {
     ui->btnToggleMeterMode->setText("Q");
-    ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x00A840));
+    ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x00A840) + sCompactBtnStyle);
     ui->btnToggleMeterMode->setToolTip(tr("Current Mode: RF Signal Quality (SNR/MER)\nClick to switch to Audio Level (L/R)"));
+    ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
 
     if (mpAudioManager != nullptr)
     {
@@ -532,8 +535,9 @@ void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
   else
   {
     ui->btnToggleMeterMode->setText("A");
-    ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0));
+    ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0) + sCompactBtnStyle);
     ui->btnToggleMeterMode->setToolTip(tr("Current Mode: Audio Level (L/R)\nClick to switch to RF Signal Quality (SNR/MER)"));
+    ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
 
     const QVector<QPair<f32, u32>> audioStops = {
       { 0.0f,       0x004018 },  // dark green baseline
