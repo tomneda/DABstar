@@ -151,11 +151,7 @@ void MapHttpServer::_slot_ready_read()
   if (url.contains("/data.json")) // ajax request
   {
     content = _move_transmitter_list_to_json();
-
-    if (!content.isEmpty())
-    {
-      ctype = "application/json;charset=utf-8";
-    }
+    ctype = "application/json;charset=utf-8";
   }
   else
   {
@@ -264,7 +260,7 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
 
   if (mTransmitters.empty())
   {
-    return {};
+    return "[]";
   }
 
   QJsonArray jsonArray;
