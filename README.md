@@ -3,8 +3,10 @@
 ## Table of Content
 <!-- TOC -->
   * [Table of Content](#table-of-content)
-  * [Pictures from V5.5.0](#pictures-from-v550)
+  * [Pictures from V5.7.0](#pictures-from-v570)
     * [Main window](#main-window)
+      * [Traffic Light indicators in the main window](#traffic-light-indicators-in-the-main-window)
+      * [SNR and MER bar graph in the main window](#snr-and-mer-bar-graph-in-the-main-window)
     * [Ensemble List window (device mode)](#ensemble-list-window-device-mode)
     * [Ensemble List window (file mode)](#ensemble-list-window-file-mode)
     * [Configuration window](#configuration-window)
@@ -20,13 +22,12 @@
     * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
   * [Introduction and history](#introduction-and-history)
-  * [What is new in V5.0.0](#what-is-new-in-v500)
-    * [Ensemble List](#ensemble-list)
-      * [Two operation modes](#two-operation-modes)
-      * [Controls](#controls)
-      * [Color coding in the table](#color-coding-in-the-table)
-      * [Filter checkboxes](#filter-checkboxes)
-      * [Stored data per ensemble](#stored-data-per-ensemble)
+  * [Ensemble List](#ensemble-list)
+    * [Two operation modes](#two-operation-modes)
+    * [Controls](#controls)
+    * [Color coding in the table](#color-coding-in-the-table)
+    * [Filter checkboxes](#filter-checkboxes)
+    * [Stored data per ensemble](#stored-data-per-ensemble)
   * [Service List](#service-list)
     * [Favorites](#favorites)
     * [Sorting](#sorting)
@@ -34,10 +35,15 @@
     * [Target Button](#target-button)
     * [ANS (Automatic Next Service)](#ans-automatic-next-service)
     * [Some help for scanning](#some-help-for-scanning)
-  * [How to apply TII info](#how-to-apply-tii-info)
+  * [Configuration and Data Files](#configuration-and-data-files)
   * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
     * [Installing VOLK](#installing-volk)
+    * [Installing FDK-AAC](#installing-fdk-aac)
     * [Building DABstar](#building-dabstar)
+      * [CMake Build Options](#cmake-build-options)
+        * [Supported SDR Hardware](#supported-sdr-hardware)
+        * [DSP, SIMD & Decoding Options](#dsp-simd--decoding-options)
+        * [Recommended Minimum Configuration (RTL-SDR on x86_64)](#recommended-minimum-configuration-rtl-sdr-on-x86_64)
     * [RTL-SDR driver installation](#rtl-sdr-driver-installation)
     * [Installing USRP UHD](#installing-usrp-uhd)
     * [Installing AirSpy](#installing-airspy)
@@ -47,7 +53,7 @@
 
 ---
 
-## Pictures from V5.5.0
+## Pictures from V5.7.0
 
 ### Main window
 
@@ -60,16 +66,34 @@ The status bar below the MOT picture shows:
 | Indicator | Meaning                                                                            |
 |-----------|------------------------------------------------------------------------------------|
 | EEP 3-A   | The current (Viterbi) protection mode                                              |
+| HE-AAC    | The used audio decoder (DAB+: HE-AAC, DAB: MP2)                                    |
 | 72 kbps   | AAC decoder input bit rate (including MOT data)                                    |
 | 48 kSps   | The sample rate to the audio signal                                                |
 | Stereo    | Whether stereo mode is active                                                      |
 | PS        | Whether Parametric Stereo mode is active                                           |
 | SBR       | Whether Spectral Band Replication mode is active                                   |
-| MOT       | A Media Object Transfer is currently happening (e.g. Slide Show)                   |
+| MOT       | A Media Object Transfer is currently happening                                     |
 | EPG       | Whether Electronic Program Guide data are available (needs further implementation) |
-| Ann       | Whether an announcement is currently being broadcast                               |
-| RS        | For DAB+: The Reed Solomon decoder has detected errors (and almost repaired them)  |
-| CRC       | The RS decoder was not able to repair the error. Audible noise may occur           |                                                                     
+| ANN        | Whether an announcement is currently being broadcast                               |
+
+#### Traffic Light indicators in the main window
+
+The traffic light indicators provide real-time diagnostic information on signal quality, synchronization, error correction, and audio decoding:
+
+| Indicator | Meaning | Details / Thresholds |
+|-----------|---------|----------------------|
+| **FIC**   | FIC/FIB (Fast Information Channel/Block) quality indicator | **Green**: ≥ 95% FIB CRC success<br>**Yellow-Green**: ≥ 85% FIB CRC success<br>**Yellow**: ≥ 65% FIB CRC success<br>**Red-Yellow**: ≥ 45% FIB CRC success<br>**Red**: < 45% FIB CRC success *(if not green, reception is very unlikely)* |
+| **FRM**   | Frame / superframe synchronization and Fire Code header quality indicator | **Green**: 0 frame / superframe errors<br>**Yellow-Green**: 1 error<br>**Yellow**: 2–3 errors<br>**Red-Yellow**: 4–5 errors<br>**Red**: > 5 errors |
+| **AAC**   | AAC core decoding syntax / bitstream quality indicator *(DAB+ only)* | **Green**: 0 AAC decoding errors<br>**Yellow-Green**: 1 error<br>**Yellow**: 2–3 errors<br>**Red-Yellow**: 4–5 errors<br>**Red**: > 5 errors |
+| **RSE**   | Reed-Solomon uncorrectable error indicator *(DAB+ only)* | **Green**: 0 uncorrectable RS errors<br>**Yellow-Green**: 1 error<br>**Yellow**: 2–3 errors<br>**Red-Yellow**: 4–5 errors<br>**Red**: > 5 errors |
+| **RSC**   | Reed-Solomon / CRC error indicator *(DAB+ only)* | **Green**: Error-free reception (no RS or CRC errors)<br>**Yellow**: Errors detected but successfully repaired by Reed-Solomon<br>**Red**: Uncorrectable errors (audible audio drops will occur) |
+| **ABS**   | Audio buffer state indicator (Audio Bit Stream) | **Green**: Buffer fill level normal<br>**Red**: Buffer fill level critical (too low or too high)<br>**Yellow-Green** / **Red-Yellow**: Audio rate adaptation active (~1% audio speed adjustment) |
+                         
+#### SNR and MER bar graph in the main window
+
+With the toggle button **A/Q** you can switch between audio level and SNR/MER bar graph.
+
+![](res/for_readme/mainwidget_snr_mer.png)
 
 ### Ensemble List window (device mode)
 
@@ -149,7 +173,7 @@ For the latest AppImage versions see the
 The feature-set could be a bit different between Linux and Windows, even with same version number.
 
 ## Introduction and history
-[DABstar](https://github.com/tomneda/DABstar) was originally forked from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab)
+The predecessor of [DABstar](https://github.com/tomneda/DABstar) was originally forked in June 2023 from Jan van Katwijk's great work of [Qt-DAB](https://github.com/JvanKatwijk/qt-dab)
 from [commit](https://github.com/JvanKatwijk/qt-dab/commits/b083a8e169ca2b7dd47167a07b92fa5a1970b249) ([tree](https://github.com/JvanKatwijk/qt-dab/tree/b083a8e169ca2b7dd47167a07b92fa5a1970b249)) from 2023-05-30. Some fixes and adaptations from Qt-DAB made afterwards are included.
 
 With what now amounts to (not just perceived) hundreds to thousands of hours of work, there are huge changes and additions (but also reductions) made and there will be bigger changes in the future,
@@ -165,17 +189,14 @@ They are intended for development, backups and tests and will not always work in
 Recommended is to checkout a [Tag](https://github.com/tomneda/DABstar/tags) of a released version, these are better tested.
 
 
-## What is new in V5.0.0
+## Ensemble List
 
-### Ensemble List
-
-The biggest new addition in this development cycle is the **Ensemble List** — a dedicated window
-for cataloging and scanning DAB ensembles (groups of radio stations) either from a live SDR
+The **Ensemble List** is a dedicated window for cataloging and scanning DAB ensembles (groups of radio stations) either from a live SDR
 device or from pre-recorded IQ sample files.
 
 **How to open it:** Click the blue "EL" (Ensemble List) button in the main window toolbar.
 
-#### Two operation modes
+### Two operation modes
 (Select them on the main window, left from the "EL" button)
 
 | Mode                  | Description                                                                                                     |
@@ -183,7 +204,7 @@ device or from pre-recorded IQ sample files.
 | Device / Channel scan | Scans all standard DAB channels via the connected SDR device and stores the result for each channel.            |
 | File scan             | Scans a folder (or several folders) of recorded DAB IQ files and catalogs which ones contain valid signal data. |
 
-#### Controls
+### Controls
 
 | Control                                    | Mode      | Description                                                                                                                                                                                                                                       |
 |--------------------------------------------|:----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -196,7 +217,7 @@ device or from pre-recorded IQ sample files.
 | Minimum file size (MB)                     | file only | Files smaller than this threshold are skipped when adding files to the database.                                                                                                                                                                  |
 | Add a single file and play                 | file only | Adds one recording to the database and starts playback immediately. Replaces the former "Eject" button. If the file is already in the database it is selected and played. The minimum size threshold does not apply (only the hard 4 MB minimum). |
 
-#### Color coding in the table
+### Color coding in the table
 
 The table uses background colors to give a quick status overview:
 
@@ -206,7 +227,7 @@ The table uses background colors to give a quick status overview:
 | Grayish  | Successfully scanned entry     |
 | Reddish  | No signal detected (failed)    |
 
-#### Filter checkboxes
+### Filter checkboxes
 
 Three filter checkboxes control which entries are visible in the table.
 Their state may be changed automatically when a certain scan situation arises.
@@ -217,7 +238,7 @@ Their state may be changed automatically when a certain scan situation arises.
 | Scanned     | Entries that already have scan data         |
 | No signal   | Entries where no valid DAB signal was found |
 
-#### Stored data per ensemble
+### Stored data per ensemble
 
 The SQLite database stores the following information for each entry (exact fields differ between device and file mode):
 
@@ -293,46 +314,39 @@ Also, the clock on the top of the service list can be used as indicator. Its tim
 can be received.
 
 
-## How to apply TII info
+## Configuration and Data Files
 
-To show the location, distance and direction to the transmitter, do the following:
+DABstar stores its configuration and databases in the `~/.config/dabstar` directory:
 
-1) Provide your home coordinates on the "Configuration and Control" window.
-2) Check the README.txt in sub folder **/tii-library** and follow the instructions given there (you will need sudo rights).
+- `settings03.ini`: Application configuration, window layouts, SDR settings, coordinates, and color schemes.
+- `servicelist04.db`: SQLite database containing scanned services, multiplex info, and favorites.
+- `ensemblelist04.db`: SQLite database containing channel and file scan records for the Ensemble List.
 
 ## Installing on Linux from current mainline
 
-This is what I needed to install DABstar on a fresh Ubuntu 24.04:
-```
+This is what is needed to install DABstar on Ubuntu (tested on Ubuntu 24.04):
+
+```bash
 sudo apt-get update
-sudo apt-get install git
-sudo apt-get install cmake
-sudo apt-get install build-essential
-sudo apt-get install g++
-sudo apt-get install libsndfile1-dev
-sudo apt-get install libfftw3-dev
-sudo apt-get install zlib1g-dev
-sudo apt-get install libsamplerate0-dev
-sudo apt-get install libusb-dev
-sudo apt-get install libusb-1.0-0-dev
-sudo apt-get install qt6-base-dev
-sudo apt-get install qt6-multimedia-dev
-sudo apt-get install qt6-charts-dev
+sudo apt-get install -y \
+    git cmake build-essential g++ \
+    libsndfile1-dev libfftw3-dev zlib1g-dev libusb-1.0-0-dev \
+    qt6-base-dev qt6-multimedia-dev qt6-charts-dev
 ```
 
 ### Installing VOLK
 
-Several parts (not only the OFDM decoder) use the [VOLK](https://www.libvolk.org/)
-(Vector-Optimized Library of Kernels) library for vectorized signal-processing operations.
-This noticeably reduces CPU load especially on machines with SSE/AVX capable processors.
+Several parts (including the OFDM decoder and frequency correction) use the [VOLK](https://www.libvolk.org/)
+(Vector-Optimized Library of Kernels) library for SIMD vectorized signal-processing operations.
+This noticeably reduces CPU load, especially on machines with SSE/AVX capable processors.
 VOLK version 3.3.0 or newer is recommended.
 
 Ubuntu 24.04 ships VOLK 3.1; install the packaged version or build from source for ≥ 3.3.0:
-```
+```bash
 sudo apt-get install libvolk-dev
 ```
 or build from source:
-```
+```bash
 git clone --recursive https://github.com/gnuradio/volk.git
 cd volk
 mkdir build && cd build
@@ -343,51 +357,84 @@ sudo ldconfig
 ```
 Enable VOLK in the DABstar build by adding `-DSSE_OR_AVX=ON` to the `cmake` command (see below).
 
-As libfaad had issues with low-rate services I switched over to FDK-AAC.
-But also the repository version in Ubuntu 24.04 has still flaws with PS (Parametric Stereo) services.
-So I recommend to build it for your own. I used the latest main version which is v2.0.3.
-```
+### Installing FDK-AAC
+
+As libfaad had issues with low-rate services, DABstar uses Fraunhofer FDK-AAC. FDK-AAC also supports a good working audio drop-out concealing.
+Because the repository version in some Linux distributions has flaws with PS (Parametric Stereo) services, building from source is recommended. 
+I used the latest tagged version which is v2.0.3 (contains AAC decoder library v3.2.0):
+```bash
 git clone https://github.com/mstorsjo/fdk-aac.git
 cd fdk-aac
 git checkout v2.0.3
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
-make
+make -j4
 sudo make install
+sudo ldconfig
 ```
 
 ### Building DABstar
-```
+```bash
 git clone https://github.com/tomneda/DABstar.git
 cd DABstar
-mkdir build
-cd build
-cmake .. -DAIRSPY=ON -DSDRPLAY=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR=ON -DVITERBI_SSE2=ON -DVITERBI_NEON=OFF -DFDK_AAC=ON -DSSE_OR_AVX=ON
-make
+mkdir build && cd build
+cmake .. -DAIRSPY=ON -DSPYSERVER=ON -DSDRPLAY=ON -DHACKRF=ON -DLIMESDR=ON -DRTL_TCP=ON -DPLUTO=ON -DUHD=ON -DRTLSDR=ON -DSOAPY=ON -DVITERBI_AVX2=ON -DFDK_AAC=ON -DSSE_OR_AVX=ON
+make -j4
 ```
-Reduce or adapt the `cmake` command line for the devices/features you need.
 
-E.G.: If you have an RTL-SDR stick and work on a desktop PC (I have only tested this on an Intel-PC), this should be the minimum recommendation:
+#### CMake Build Options
+
+You can customize the build using CMake flags to enable only the SDR hardware and optimizations you need:
+
+##### Supported SDR Hardware
+
+| CMake Option | Default | Description |
+|---|---|---|
+| `-DRTLSDR=ON` | ON | RTL-SDR USB dongles |
+| `-DRTL_TCP=ON` | OFF | RTL-TCP networked SDR client |
+| `-DAIRSPY=ON` | OFF | AirSpy SDR |
+| `-DSPYSERVER=ON` | OFF | SpyServer network SDR client |
+| `-DHACKRF=ON` | OFF | Great Scott Gadgets HackRF One |
+| `-DSDRPLAY=ON` | OFF | SDRplay RSP devices (RSP1, RSP1A, RSP2, RSPduo, RSPdx) |
+| `-DPLUTO=ON` | OFF | Analog Devices ADALM-PLUTO SDR |
+| `-DLIMESDR=ON` | OFF | Lime Microsystems LimeSDR |
+| `-DUHD=ON` | OFF | Ettus Research USRP UHD |
+| `-DSOAPY=ON` | OFF | SoapySDR generic device wrapper |
+
+##### DSP, SIMD & Decoding Options
+
+| CMake Option | Default | Description |
+|---|---|---|
+| `-DVITERBI_AVX2=ON` | OFF | 16-way AVX2 SIMD Viterbi decoder (fastest for modern x86_64 CPUs) |
+| `-DVITERBI_SSE2=ON` | OFF | SSE2 SIMD Viterbi decoder (for older x86_64 CPUs) |
+| `-DVITERBI_NEON=ON` | OFF | ARM NEON SIMD Viterbi decoder (for ARM / Raspberry Pi) |
+| `-DSSE_OR_AVX=ON` | OFF | Vectorized OFDM decoding and frequency correction (requires VOLK) |
+| `-DFDK_AAC=ON` | ON | High-quality Fraunhofer FDK-AAC audio decoder |
+| `-DUSE_LIQUID=ON` | OFF | Liquid DSP for half-band filter and resampler (requires liquid-dsp) |
+| `-DDATA_STREAMER=ON` | OFF | Raw data streamer over TCP |
+
+##### Recommended Minimum Configuration (RTL-SDR on x86_64)
+
+```bash
+cmake .. -DRTLSDR=ON -DVITERBI_AVX2=ON -DSSE_OR_AVX=ON
 ```
-cmake .. -DRTLSDR=ON -DVITERBI_SSE2=ON -DSSE_OR_AVX=ON
-```
+*(Use `-DVITERBI_SSE2=ON` instead of `-DVITERBI_AVX2=ON` if your processor does not support AVX2).*
 
 To speed up compilation you can provide `-j<n>` as argument with `<n>` number of threads after the `make` command. E.G. `make -j4`.
-Do not choose a too high number (or at my side only providing a `-j`) the system can hang due to running out memory and needed swapping!
+Do not choose a too high number, as the system can run out of memory!
 
 Finally, in the build folder you can find the program file which you can start with
-```
+```bash
 ./dabstar
 ```
 
 You could try to install the software within your system with
-```
+```bash
 sudo make install
 sudo ldconfig
 ```
 To uninstall DABstar again, do this:
-```
+```bash
 sudo make uninstall
 ```
 
@@ -402,14 +449,14 @@ If you are using the default driver while running DABStar you will get a message
 The driver from old-dab should still be compatible with other applications using this driver.
 
 Remove the default driver with:
-```
+```bash
 sudo apt remove rtl-sdr librtlsdr-dev
 sudo ldconfig
 ```
 
 
 If you nevertheless want to use the default version from Ubuntu (but this is not recommended as the driver from old-dab has some improvements):
-```
+```bash
 sudo apt install rtl-sdr librtlsdr-dev
 sudo ldconfig
 ```
@@ -418,7 +465,7 @@ sudo ldconfig
 
 Best worked for me was building UHD from the repository of Ettus Research.
 
-```
+```bash
 sudo add-apt-repository ppa:ettusresearch/uhd
 sudo apt-get update
 sudo apt-get install libuhd-dev uhd-host
@@ -428,20 +475,19 @@ sudo apt-get install libuhd-dev uhd-host
 
 Details see https://github.com/airspy/airspyone_host
 
-```
+```bash
 git clone https://github.com/airspy/airspyone_host.git
 cd airspyone_host
-mkdir build
-cd build
+mkdir build && cd build
 cmake ../ -DINSTALL_UDEV_RULES=ON
-make
+make -j4
 sudo make install
 sudo ldconfig
 ```
 
 ## Licences
 
-Rights of Qt-DAB, AbracaDABra, Qt, FFTW, VOLK, FDK-AAC, libfaad, libsamplerate and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, AbracaDABra, Qt, FFTW, VOLK, FDK-AAC, libfaad, and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 
