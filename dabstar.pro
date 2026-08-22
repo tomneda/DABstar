@@ -327,7 +327,6 @@ SOURCES += \
     src/base/ensemble_list/ensemble_list_db_handler.cpp \
     src/base/eti_handler/eti_generator.cpp \
     src/base/main/audio_manager.cpp \
-    src/base/main/dab_channel_desc.cpp \
     src/base/main/dab_processor.cpp \
     src/base/main/dabradio.cpp \
     src/base/main/dabradio_ctrl.cpp \

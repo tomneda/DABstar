@@ -12,7 +12,7 @@
 struct SChannelDescriptor
 {
 public:
-  SChannelDescriptor(const bool & ioIsFileMode)
+  explicit SChannelDescriptor(const bool & ioIsFileMode)
     : usingFile(ioIsFileMode)
   {}
 
@@ -59,7 +59,6 @@ public:
     }
   };
 
-  // i32 nominalFreqHz = -1;
   QString ensembleName;
   QString ensembleNameShort;
   u8 mainId = 0;

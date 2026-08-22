@@ -231,7 +231,6 @@ set(${baseLibName}_SRCS
         main/tii_manager.cpp
         main/dabradio_el.cpp
         main/dabradio_ctrl.cpp
-        main/dab_channel_desc.cpp
         main/dab_processor.cpp
         support/techdata.cpp
         main/mot_slide_progress.cpp
