@@ -40,7 +40,6 @@ LimeHandler::LimeHandler(QSettings *s,
   this->recorderVersion = recorderVersion;
   setupUi(&myFrame);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
 
   filtering = false;
 

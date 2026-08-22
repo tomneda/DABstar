@@ -59,6 +59,7 @@ public:
   bool isHidden() override;
   QWidget * get_widget() override { return &mFrame; }
   QString deviceName() override;
+  bool should_be_visible() const override { return true; }
   void resetBuffer() override;
   bool hasDump() override;
   bool startDumping() override;

@@ -40,7 +40,6 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
     setupUi (&myFrame);
     myFrame.move (QPoint (x, y));
     myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-    myFrame.show        ();
 //
 //  Since we have different tabs, with different sliders for
 //  gain setting, restoring the settings is a tedious task

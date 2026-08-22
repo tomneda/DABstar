@@ -63,10 +63,8 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   mpHackrfSettings->endGroup();
 
   setupUi(&myFrame);
-
   myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
 
   const char *libraryString = "libhackrf";
   mpHandle = new QLibrary(libraryString);

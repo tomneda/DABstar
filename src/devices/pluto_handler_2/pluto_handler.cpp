@@ -48,7 +48,6 @@ PlutoHandler::PlutoHandler(QSettings *s,
     plutoSettings = s;
     this->recorderVersion = recorderVersion;
     setupUi(&myFrame);
-    myFrame.show();
 
     const char * libName= "libiio";
 

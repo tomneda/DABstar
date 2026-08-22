@@ -103,7 +103,6 @@ UhdHandler::UhdHandler(QSettings * s) :
 {
   setupUi(&myFrame);
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  myFrame.show();
 
   std::vector<std::string> antList;
 

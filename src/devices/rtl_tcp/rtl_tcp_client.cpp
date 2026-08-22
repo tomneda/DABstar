@@ -72,7 +72,6 @@ RtlTcpClient::RtlTcpClient(QSettings * s, const QString & iRecorderVersion)
   setupUi(&mFrame);
 
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  mFrame.show();
 
   lblTunerType->setStyleSheet("color: #FFBB00;");
 

@@ -49,11 +49,13 @@ public:
   virtual void resetBuffer() = 0;
   virtual void hide() = 0;
   virtual void show() = 0;
-  virtual void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   virtual bool isHidden() = 0;
-  virtual QWidget * get_widget() { return nullptr; }
   virtual QString deviceName() = 0;
+
+  virtual void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
+  virtual QWidget * get_widget() { return nullptr; }
   virtual bool isFileInput() {return false;};
+  virtual bool should_be_visible() const { return false; } // should the device be visible at startup?
   virtual bool hasDump() {return false;};
   virtual bool startDumping() {return false;};
   virtual void stopDumping() {};

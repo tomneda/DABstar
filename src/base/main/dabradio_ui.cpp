@@ -188,7 +188,7 @@ void DabRadio::_initialize_ui_elements()
 
 void DabRadio::_initialize_indicator_buttons()
 {
-  auto * watcherSpec = WindowVisibilityWatcher::bind(mpSpectrumViewer->get_widget(), ui->btnSpectrumScope);
+  const auto * watcherSpec = WindowVisibilityWatcher::bind(mpSpectrumViewer->get_widget(), ui->btnSpectrumScope);
   connect(watcherSpec, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
     if (!DabRadio::is_terminating())
     {
@@ -196,7 +196,7 @@ void DabRadio::_initialize_indicator_buttons()
     }
   });
 
-  auto * watcherTech = WindowVisibilityWatcher::bind(mpTechDataWidget->get_widget(), ui->btnTechDetails);
+  const auto * watcherTech = WindowVisibilityWatcher::bind(mpTechDataWidget->get_widget(), ui->btnTechDetails);
   connect(watcherTech, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
     if (!DabRadio::is_terminating())
     {
@@ -204,7 +204,7 @@ void DabRadio::_initialize_indicator_buttons()
     }
   });
 
-  auto * watcherCir = WindowVisibilityWatcher::bind(mpCirViewer->get_widget(), ui->btnCir);
+  const auto * watcherCir = WindowVisibilityWatcher::bind(mpCirViewer->get_widget(), ui->btnCir);
   connect(watcherCir, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
     if (!DabRadio::is_terminating())
     {
@@ -218,8 +218,14 @@ void DabRadio::_initialize_indicator_buttons()
   WindowVisibilityWatcher::bind(mpConfig.get(), ui->configButton);
 
   mpDeviceWindowWatcher = WindowVisibilityWatcher::bind(mpInputDevice ? mpInputDevice->get_widget() : nullptr, ui->btnDeviceWidget);
-  connect(mpDeviceWindowWatcher, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
-    if (!DabRadio::is_terminating())
+  connect(mpDeviceWindowWatcher, &WindowVisibilityWatcher::signal_visibility_changed, [this](bool visible) {
+    // Do not store the device visibility state for RTL-TCP device as it always opens at startup
+    if (mpInputDevice != nullptr && mpInputDevice->should_be_visible())
+    {
+      return;
+    }
+
+    if (!DabRadio::is_terminating() && mpDeviceWindowWatcher != nullptr && mpDeviceWindowWatcher->get_target() != nullptr)
     {
       Settings::Main::varDeviceUiVisible.write(visible);
     }

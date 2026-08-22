@@ -58,7 +58,6 @@ SpyServerClient::SpyServerClient(QSettings * /*s*/)
   // spyServer_settings = s;
   setupUi(&mFrame);
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  mFrame.show();
 
   const QString url = "https://airspy.com/directory/";
   const QString style = "style='color: lightblue;'";

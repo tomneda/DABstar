@@ -66,7 +66,6 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
 
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
-  myFrame.show();
   theFile = OpenFileDialog::open_file(iFilename, "rb");
 
   if (theFile == nullptr)
