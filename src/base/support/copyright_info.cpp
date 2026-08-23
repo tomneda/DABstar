@@ -14,6 +14,7 @@
 #include "copyright_info.h"
 #include "git_hash.h"
 #include "qt_compat.h"
+#include <QLibrary>
 #include <fftw3.h>
 #include <sndfile.h>
 #include <zlib.h>
@@ -42,14 +43,83 @@ QString hyperlink_text(const QString & iUrl, const QString & iText)
   return QSL("<a href=\"%1\">%2</a>").arg(iUrl, iText);
 }
 
+#ifdef HAVE_RTLSDR
+static QString get_rtlsdr_version_string()
+{
+  const char * libraryString = "librtlsdr";
+  QLibrary lib(libraryString);
+  if (!lib.load())
+  {
+    return {};
+  }
+
+  using pfn_rtlsdr_get_version = uint32_t (*)();
+  using pfn_rtlsdr_get_ver_id  = const char * (*)();
+
+  const auto get_version = reinterpret_cast<pfn_rtlsdr_get_version>(lib.resolve("rtlsdr_get_version"));
+  const auto get_ver_id  = reinterpret_cast<pfn_rtlsdr_get_ver_id>(lib.resolve("rtlsdr_get_ver_id"));
+
+  QString result;
+  if (get_version != nullptr)
+  {
+    const uint32_t v = get_version();
+    const uint32_t major = (v >> 24) & 0xFF;
+    const uint32_t minor = (v >> 16) & 0xFF;
+    const uint32_t micro = (v >> 8)  & 0xFF;
+    const uint32_t nano  = v & 0xFF;
+
+    if (nano > 0)
+    {
+      result = QString::asprintf("RTL-SDR (old-dab) %u.%u.%u.%u", major, minor, micro, nano);
+    }
+    else
+    {
+      result = QString::asprintf("RTL-SDR (old-dab) %u.%u.%u", major, minor, micro);
+    }
+
+    if (get_ver_id != nullptr)
+    {
+      const char * verId = get_ver_id();
+      if (verId != nullptr)
+      {
+        const QString idStr = QString::fromUtf8(verId);
+        const int dateStart = idStr.indexOf(QLatin1Char('('));
+        if (dateStart != -1)
+        {
+          result += QSL(" ") + idStr.mid(dateStart);
+        }
+      }
+    }
+  }
+  else
+  {
+    result = QSL("RTL-SDR (osmocom / unknown version)");
+  }
+
+  lib.unload();
+  return result;
+}
+#endif
+
 QString get_copyright_text()
 {
 #ifdef HAVE_SSE_OR_AVX
-  QString volkVers = hyperlink_text(QSL("https://github.com/gnuradio/volk"), QSL("Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT)) + QSL("<br/>");
-  QString useVolk = QSL(", Volk");
+  const QString volkVers = hyperlink_text(QSL("https://github.com/gnuradio/volk"), QSL("Volk %1.%2.%3").arg(VOLK_VERSION_MAJOR).arg(VOLK_VERSION_MINOR).arg(VOLK_VERSION_MAINT)) + QSL("<br/>");
+  const QString useVolk = QSL(", VOLK");
 #else
   QString volkVers;
   QString useVolk;
+#endif
+
+#ifdef HAVE_RTLSDR
+  const QString rtlSdrInfo = get_rtlsdr_version_string();
+  QString rtlSdrVers;
+  if (!rtlSdrInfo.isEmpty())
+  {
+    rtlSdrVers = hyperlink_text(QSL("https://github.com/old-dab/rtlsdr"), rtlSdrInfo) + QSL("<br/>");
+  }
+#else
+  QString rtlSdrVers;
 #endif
 
 #ifdef __WITH_FDK_AAC__
@@ -91,6 +161,7 @@ QString get_copyright_text()
   versionText += QSL("<p><b>Used libraries with version:</b><br/>") +
                  hyperlink_text(QSL("https://www.qt.io"), QSL("Qt " QT_VERSION_STR)) + QSL("<br/>") +
                  volkVers +
+                 rtlSdrVers +
                  hyperlink_text(QSL("https://www.fftw.org"), QString::fromUtf8(fftwf_version)) + QSL("<br/>") +
                  faadVers +
                  fdkVers +

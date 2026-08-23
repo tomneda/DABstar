@@ -32,7 +32,6 @@ if (SDRPLAY)
 
   list(APPEND devices_ui forms/sdrplay_widget.ui)
   list(APPEND devicesExtraIncludes sdrplay_handler)
-  add_definitions(-DHAVE_SDRPLAY)
 endif ()
 
 if (AIRSPY)
@@ -48,7 +47,6 @@ if (AIRSPY)
 
   list(APPEND devices_ui forms/airspy_widget.ui)
   list(APPEND devicesExtraIncludes airspy_handler)
-  add_definitions(-DHAVE_AIRSPY)
 endif ()
 
 if (SPYSERVER)
@@ -69,7 +67,6 @@ if (SPYSERVER)
 
   list(APPEND devices_ui forms/spyserver_client.ui)
   list(APPEND devicesExtraIncludes spy_server)
-  add_definitions(-DHAVE_SPYSERVER)
 endif ()
 
 if (HACKRF)
@@ -85,7 +82,6 @@ if (HACKRF)
 
   list(APPEND devices_ui forms/hackrf_widget.ui)
   list(APPEND devicesExtraIncludes hackrf_handler)
-  add_definitions(-DHAVE_HACKRF)
 endif ()
 
 if (PLUTO)
@@ -101,7 +97,6 @@ if (PLUTO)
 
   list(APPEND devices_ui forms/pluto_widget.ui)
   list(APPEND devicesExtraIncludes pluto_handler_2)
-  add_definitions(-DHAVE_PLUTO)
 endif ()
 
 if (LIMESDR)
@@ -119,7 +114,6 @@ if (LIMESDR)
   )
 
   list(APPEND devicesExtraIncludes lime_handler)
-  add_definitions(-DHAVE_LIME)
 endif ()
 
 if (RTLSDR)
@@ -135,7 +129,6 @@ if (RTLSDR)
 
   list(APPEND devices_ui forms/rtlsdr_widget.ui)
   list(APPEND devicesExtraIncludes rtlsdr_handler)
-  add_definitions(-DHAVE_RTLSDR)
 endif ()
 
 if (UHD)
@@ -154,7 +147,6 @@ if (UHD)
 
   list(APPEND devices_ui forms/uhd_widget.ui)
   list(APPEND devicesExtraIncludes uhd)
-  add_definitions(-DHAVE_UHD)
 endif ()
 
 if (RTL_TCP)
@@ -170,7 +162,6 @@ if (RTL_TCP)
 
   list(APPEND devices_ui forms/rtl_tcp_widget.ui)
   list(APPEND devicesExtraIncludes rtl_tcp)
-  add_definitions(-DHAVE_RTL_TCP)
 endif ()
 
 if (SOAPY)
@@ -193,7 +184,6 @@ if (SOAPY)
   list(APPEND devices_ui forms/soapy_handler.ui)
   list(APPEND devicesExtraLibs ${SoapySDR_LIBRARIES})
   list(APPEND devicesExtraIncludes soapy)
-  add_definitions(-DHAVE_SOAPY)
 endif ()
 
 #---------------------------------------------------
