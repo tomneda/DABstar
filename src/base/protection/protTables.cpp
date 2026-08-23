@@ -61,7 +61,7 @@ static constexpr i8 cPI_Codes[24][32] =
   { 1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1,   1, 1, 1, 1 }  // 24, code rate = 8/32
 };
 
-const i8 * get_PI_codes(const i16 iPiCode)
+const i8 * get_PI_codes(const i32 iPiCode)
 {
   assert(iPiCode >= 1 && iPiCode <= 24);
   return cPI_Codes[iPiCode - 1];

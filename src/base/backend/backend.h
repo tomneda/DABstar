@@ -66,8 +66,8 @@ public:
   i32 CuSize;
   bool shortForm;
   i32 protLevel;
-  i16 bitRate;
-  i16 subChId;
+  i32 bitRate;
+  i32 subChId;
   // QString serviceName;
   EProcessFlag processFlag;
 
@@ -81,16 +81,16 @@ private:
   QSemaphore freeSlots;
   QSemaphore usedSlots;
   std::vector<i16> theData[NUMBER_SLOTS];
-  i16 nextIn;
-  i16 nextOut;
+  i32 nextIn;
+  i32 nextOut;
 #endif
   void _process_segment(const i16 * iData);
   DabRadio * radioInterface;
 
-  i16 fragmentSize;
+  i32 fragmentSize;
   std::vector<std::vector<i16>> interleaveData;
   std::vector<i16> tempX;
-  i16 countforInterleaver;
-  i16 interleaverIndex;
+  i32 countforInterleaver;
+  i32 interleaverIndex;
   std::vector<u8> disperseVector;
 };

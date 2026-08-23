@@ -40,19 +40,19 @@
   * equal error protection, bitRate and protLevel
   * define the puncturing table
   */
-EepProtection::EepProtection(const i16 iBitRate, const i16 iProtLevel)
+EepProtection::EepProtection(const i32 iBitRate, const i32 iProtLevel)
   : Protection(iBitRate)
 {
-  i16 viterbiCounter = 0;
-  i16 L1 = 0, L2 = 0;
+  i32 viterbiCounter = 0;
+  i32 L1 = 0, L2 = 0;
   const i8 * PI1 = nullptr;
   const i8 * PI2 = nullptr;
-  const i16 protLevel = iProtLevel & 0x3;
-  const i16 option = (iProtLevel & (1 << 2)) >> 2;
+  const i32 protLevel = iProtLevel & 0x3;
+  const i32 option = (iProtLevel & (1 << 2)) >> 2;
 
   if (option == 0) // A profiles, see 11.3.2 table 18
   {
-    const i16 n = bitRate / 8;
+    const i32 n = bitRate / 8;
     assert(bitRate % 8 == 0);
 
     switch (protLevel)
@@ -99,7 +99,7 @@ EepProtection::EepProtection(const i16 iBitRate, const i16 iProtLevel)
   }
   else if (option == 1) // B profiles, see 11.3.2 table 19
   {
-    const i16 n = bitRate / 32;
+    const i32 n = bitRate / 32;
     assert(bitRate % 32 == 0);
 
     L1 = 24 * n - 3; // common for all B protection levels
@@ -150,8 +150,9 @@ EepProtection::EepProtection(const i16 iBitRate, const i16 iProtLevel)
   }
 }
 
-void EepProtection::_extract_viterbi_block_addresses(i16 & ioViterbiCounter, const i16 iLx, const i8 * const ipPIx)
+void EepProtection::_extract_viterbi_block_addresses(i32 & ioViterbiCounter, const i32 iLx, const i8 * const ipPIx)
 {
+  assert(ioViterbiCounter >= 0);
   for (i32 i = 0; i < iLx; i++)
   {
     for (i32 j = 0; j < 128; j++)

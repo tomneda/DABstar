@@ -34,10 +34,10 @@
 class EepProtection : public Protection
 {
 public:
-  EepProtection(i16, i16);
+  EepProtection(i32, i32);
   ~EepProtection() override = default;
 
 private:
-  void _extract_viterbi_block_addresses(i16 & ioViterbiCounter, i16 iLx, const i8 * ipPIx);
+  void _extract_viterbi_block_addresses(i32 & ioViterbiCounter, i32 iLx, const i8 * ipPIx);
 };
 

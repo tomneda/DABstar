@@ -37,16 +37,16 @@
 
 struct SProtectionProfile
 {
-  i16 bitRate;
-  i16 protLevel;
-  i16 L1;
-  i16 L2;
-  i16 L3;
-  i16 L4;
-  i16 PI1;
-  i16 PI2;
-  i16 PI3;
-  i16 PI4;
+  i32 bitRate;
+  i32 protLevel;
+  i32 L1;
+  i32 L2;
+  i32 L3;
+  i32 L4;
+  i32 PI1;
+  i32 PI2;
+  i32 PI3;
+  i32 PI4;
 };
 
 static constexpr SProtectionProfile cProfileTable[] =
@@ -131,7 +131,7 @@ static constexpr SProtectionProfile cProfileTable[] =
   { 0,   -1, -1, -1, -1,  -1, -1, -1, -1, -1 }
 };
 
-static i16 find_index(const i16 bitRate, const i16 protLevel)
+static i32 find_index(const i32 bitRate, const i32 protLevel)
 {
   for (i32 i = 0; cProfileTable[i].bitRate != 0; i++)
   {
@@ -152,12 +152,12 @@ static i16 find_index(const i16 bitRate, const i16 protLevel)
   *	The bitRate and the protectionLevel determine the
   *	depuncturing scheme.
   */
-UepProtection::UepProtection(const i16 bitRate, const i16 protLevel)
+UepProtection::UepProtection(const i32 bitRate, const i32 protLevel)
   : Protection(bitRate)
 {
-  i16 viterbiCounter = 0;
+  i32 viterbiCounter = 0;
 
-  i16 index = find_index(bitRate, protLevel);
+  i32 index = find_index(bitRate, protLevel);
 
   if (index == -1)
   {
@@ -195,8 +195,9 @@ UepProtection::UepProtection(const i16 bitRate, const i16 protLevel)
   }
 }
 
-void UepProtection::_extract_viterbi_block_addresses(i16 & ioViterbiCounter, const i16 iLx, const i8 * const ipPIx)
+void UepProtection::_extract_viterbi_block_addresses(i32 & ioViterbiCounter, const i32 iLx, const i8 * const ipPIx)
 {
+  assert(ioViterbiCounter >= 0);
   for (i32 i = 0; i < iLx; i++)
   {
     for (i32 j = 0; j < 128; j++)

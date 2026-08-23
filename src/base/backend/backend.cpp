@@ -33,7 +33,7 @@
 #include "backend.h"
 
 // Interleaving is - for reasons of simplicity - done inline rather than through a special class-object
-constexpr i16 cCuSizeBits = 64;
+constexpr i32 cCuSizeBits = 64;
 
 //	fragmentsize == Length * CUSize
 Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag)
@@ -86,7 +86,7 @@ Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer
   //	for local buffering the input, we have
   nextIn = 0;
   nextOut = 0;
-  for (i = 0; i < NUMBER_SLOTS; i++)
+  for (i32 i = 0; i < NUMBER_SLOTS; i++)
   {
     theData[i].resize(fragmentSize);
   }
@@ -130,7 +130,7 @@ static constexpr i16 interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 
 
 void Backend::_process_segment(const i16 * iData)
 {
-  for (i16 i = 0; i < fragmentSize; i++)
+  for (i32 i = 0; i < fragmentSize; i++)
   {
     tempX[i] = interleaveData[(interleaverIndex + interleaveMap[i & 0x0F]) & 0x0F][i];
     interleaveData[interleaverIndex][i] = iData[i];
@@ -152,7 +152,7 @@ void Backend::_process_segment(const i16 * iData)
   deconvolver.deconvolve(tempX.data(), fragmentSize, outV.data());
 
   // Reverse the energy dispersal
-  for (i16 i = 0; i < bitRate * 24; i++)
+  for (i32 i = 0; i < bitRate * 24; i++)
   {
     outV[i] ^= disperseVector[i];
   }

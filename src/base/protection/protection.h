@@ -38,13 +38,13 @@
 class Protection : public ViterbiSpiral
 {
 public:
-  explicit Protection(i16);
+  explicit Protection(i32);
   ~Protection() override = default;
 
   virtual bool deconvolve(const i16 *, i32, u8 *);
   
 protected:
-  i16 bitRate;
+  i32 bitRate;
   i32 outSize;
   std::vector<i16> viterbiBlock;
   std::vector<i16 *> viterbiBlockAddresses; // addresses of non-punctured bits

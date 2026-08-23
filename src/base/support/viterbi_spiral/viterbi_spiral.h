@@ -14,16 +14,16 @@ typedef struct
 class ViterbiSpiral
 {
 public:
-  explicit ViterbiSpiral(const short iWordlength, const bool iSpiralMode = false);
+  explicit ViterbiSpiral(const i32 iWordlength, const bool iSpiralMode = false);
   virtual ~ViterbiSpiral();
 
-  void deconvolve(const short * const input, u8 * const output);
-  void calculate_BER(const short * const input, u8 * punctureTable,
+  void deconvolve(const i16 * const input, u8 * const output);
+  void calculate_BER(const i16 * const input, u8 * punctureTable,
                      u8 const * output, i32 & bits, i32 & errors);
 
 private:
   i32 parity(i32);
-  const short mFrameBits;
+  const i32 mFrameBits;
   const bool mSpiral;
   decision_t * decisions = nullptr;
 };

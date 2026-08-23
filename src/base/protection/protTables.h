@@ -32,5 +32,5 @@
 
 #include "glob_data_types.h"
 
-const i8 * get_PI_codes(i16 iPiCode);
+const i8 * get_PI_codes(i32 iPiCode);
 

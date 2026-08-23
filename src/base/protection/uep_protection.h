@@ -34,10 +34,10 @@
 class UepProtection : public Protection
 {
 public:
-  UepProtection(i16, i16);
+  UepProtection(i32, i32);
   ~UepProtection() override = default;
 
 private:
-  void _extract_viterbi_block_addresses(i16 & ioViterbiCounter, i16 iLx, const i8 * ipPIx);
+  void _extract_viterbi_block_addresses(i32 & ioViterbiCounter, i32 iLx, const i8 * ipPIx);
 };
 

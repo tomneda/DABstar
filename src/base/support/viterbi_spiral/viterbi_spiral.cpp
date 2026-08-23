@@ -53,7 +53,7 @@ static const u8 PARTAB[256] =
 };
 
 
-ViterbiSpiral::ViterbiSpiral(const i16 iWordlength, const bool iSpiralMode)
+ViterbiSpiral::ViterbiSpiral(const i32 iWordlength, const bool iSpiralMode)
   : mFrameBits(iWordlength)
   , mSpiral(iSpiralMode)
 {

@@ -33,11 +33,11 @@
  */
 #include "protection.h"
 
-Protection::Protection(const i16 iBitRate) :
+Protection::Protection(const i32 iBitRate) :
   ViterbiSpiral(24 * iBitRate, true),
   bitRate(iBitRate),
   outSize(24 * iBitRate),
-  viterbiBlock(outSize * 4 + 24, 0) // important, initializes all elements to zero
+  viterbiBlock(outSize * 4 + 24 /*6*4 trailing bits*/, 0) // important, initializes all elements to zero
 {
   // the target addresses within viterbiBlock of the non-punctured bits are contained in vector viterbiBlockAddresses and stay the same for each block
   viterbiBlockAddresses.reserve(outSize * 4 + 24);
@@ -45,7 +45,7 @@ Protection::Protection(const i16 iBitRate) :
 
 bool Protection::deconvolve(const i16 * iV, i32 /*iSize*/, u8 * oOutBuffer)
 {
-  i16 inputCounter = 0;
+  i32 inputCounter = 0;
 
   // do de-puncturing
   for (i16 * const addr : viterbiBlockAddresses)
