@@ -79,6 +79,7 @@ typedef i32 (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t *, i32);
 typedef char * (* pfnrtlsdr_get_device_name)(i32);
 typedef i32 (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t *dev, u8* data, i32 *len, i32 *strength);
 typedef i32 (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t *dev);
+typedef u32 (* pfnrtlsdr_get_version)();
 }
 
 //  This class is a simple wrapper around the
@@ -135,6 +136,8 @@ private:
   i32 agcControl;
   void set_autogain(i32);
   void enable_gainControl(i32);
+  void set_deviceName(const QString &);
+  void set_apiVersion(const QString &);
   i16 maxGain();
   i32 old_overload = 2;
   i32 old_gain = 0;
@@ -162,6 +165,7 @@ private:
   pfnrtlsdr_get_device_name rtlsdr_get_device_name;
   pfnrtlsdr_get_tuner_i2c_register rtlsdr_get_tuner_i2c_register;
   pfnrtlsdr_get_tuner_type rtlsdr_get_tuner_type;
+  pfnrtlsdr_get_version rtlsdr_get_version;
 
 private slots:
   void set_ExternalGain(i32);

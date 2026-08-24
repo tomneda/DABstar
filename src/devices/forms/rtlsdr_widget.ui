@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>180</width>
-    <height>240</height>
+    <width>202</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,17 +25,17 @@
      </item>
      <item>
       <widget class="QDoubleSpinBox" name="ppm_correction">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oscillator frequency correction in ppm. Enter the observed frequency offset of the device's oscillator.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="suffix">
         <string> ppm</string>
        </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oscillator frequency correction in ppm. Enter the observed frequency offset of the device&apos;s oscillator.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
        <property name="minimum">
-        <double>-150.0</double>
+        <double>-150.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>150.0</double>
+        <double>150.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -140,7 +140,7 @@
         <string>Overload</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -243,7 +243,7 @@
      <item>
       <widget class="QLabel" name="serialNumber">
        <property name="text">
-        <string></string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -252,7 +252,20 @@
    <item>
     <widget class="QLabel" name="product_display">
      <property name="frameShape">
-      <enum>QFrame::Box</enum>
+      <enum>QFrame::Shape::Box</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="deviceNameLabel">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::Box</enum>
      </property>
      <property name="text">
       <string/>
@@ -262,10 +275,10 @@
    <item>
     <widget class="QLabel" name="deviceVersion">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the detected RTL-SDR library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="frameShape">
-      <enum>QFrame::Box</enum>
+      <enum>QFrame::Shape::Box</enum>
      </property>
      <property name="text">
       <string/>

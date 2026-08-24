@@ -210,8 +210,26 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
     delete phandle;
     throw(std_exception_string("Opening rtlsdr device failed"));
   }
-  deviceModel = rtlsdr_get_device_name(deviceIndex);
-  deviceVersion->setText(deviceModel);
+  set_deviceName(rtlsdr_get_device_name(deviceIndex));
+
+  QString versionString;
+  if (rtlsdr_get_version != nullptr)
+  {
+    const u32 v = rtlsdr_get_version();
+    const u32 major = (v >> 24) & 0xFF;
+    const u32 minor = (v >> 16) & 0xFF;
+    const u32 micro = (v >> 8)  & 0xFF;
+    const u32 nano  = v & 0xFF;
+
+    versionString = QString::asprintf("Version %u.%u.%u.%u (old-dab)", major, minor, micro, nano);
+  }
+  else
+  {
+    versionString = QSL("Version unknown (osmocom)");
+  }
+
+  set_apiVersion(versionString);
+
   r = this->rtlsdr_set_sample_rate(theDevice, inputRate);
   if (r < 0)
   {
@@ -388,6 +406,17 @@ void RtlSdrHandler::set_bandwidth(i32 bandwidth)
   if (rtlsdr_set_tuner_bandwidth != nullptr)
     rtlsdr_set_tuner_bandwidth(theDevice, bandwidth * 1000);
   //fprintf(stderr, "Bandwidth = %d\n", bandwidth*1000);
+}
+
+void RtlSdrHandler::set_deviceName(const QString & name)
+{
+  deviceModel = name;
+  deviceNameLabel->setText(name);
+}
+
+void RtlSdrHandler::set_apiVersion(const QString & versionStr)
+{
+  deviceVersion->setText(versionStr);
 }
 
 void RtlSdrHandler::set_autogain(i32 agc)
@@ -610,6 +639,13 @@ bool RtlSdrHandler::load_rtlFunctions(bool & oHasNewInterface)
     // nullpointer - if function is not available - is handled
     fprintf(stderr, "Could not find rtlsdr_get_tuner_type\n");
     return false;
+  }
+
+  rtlsdr_get_version = (pfnrtlsdr_get_version)phandle->resolve("rtlsdr_get_version");
+  if (rtlsdr_get_version == nullptr)
+  {
+    // nullpointer - if function is not available - is handled
+    fprintf(stderr, "rtlsdr_get_version is not available\n");
   }
 
   fprintf(stderr, "RTLSDR functions loaded\n");
