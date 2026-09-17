@@ -75,7 +75,6 @@ private:
   void _delete_db_file();
   bool _open_db();
   void _exec_simple_query(const QString & iQuery);
-  bool _check_if_entry_exists(const QString & iTableName, const QString & iChannel, u32 iSId);
   void _set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite, bool iStoreInFavTable) const;
   [[nodiscard]] const QString & _cur_tab_name() const;
 };

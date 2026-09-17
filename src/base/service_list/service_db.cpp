@@ -121,14 +121,12 @@ void ServiceDB::delete_table(const bool iDeleteFavorites)
 
 bool ServiceDB::add_entry(const QString & iChannel, const QString & iServiceLabel, const u32 iSId)
 {
-  if (_check_if_entry_exists(_cur_tab_name(), iChannel, iSId))
-  {
-    return false; // entry found, no table update needed
-  }
-
-  // add new entry
+  // add new entry or update service label on conflict
   QSqlQuery queryAdd(mDB);
-  queryAdd.prepare("INSERT OR IGNORE INTO " + _cur_tab_name() + " (" + sTeFIdOrCh + "," + sTeServiceLabel + "," + sTeServiceId + ") VALUES (:channel, :service, :serviceId)");
+  queryAdd.prepare("INSERT INTO " + _cur_tab_name() + " (" + sTeFIdOrCh + ", " + sTeServiceLabel + ", " + sTeServiceId + ") "
+                   "VALUES (:channel, :service, :serviceId) "
+                   "ON CONFLICT(" + sTeFIdOrCh + ", " + sTeServiceId + ") "
+                   "DO UPDATE SET " + sTeServiceLabel + " = excluded." + sTeServiceLabel);
   queryAdd.bindValue(":channel", iChannel);
   queryAdd.bindValue(":service", iServiceLabel);
   queryAdd.bindValue(":serviceId", iSId);
@@ -146,12 +144,6 @@ bool ServiceDB::add_entry(const QString & iChannel, const QString & iServiceLabe
 
 bool ServiceDB::delete_entry(const QString & iChannel, const u32 iSId)
 {
-  if (!_check_if_entry_exists(_cur_tab_name(), iChannel, iSId))
-  {
-    return false; // entry not found, no table update needed
-  }
-
-  // add new entry
   QSqlQuery queryDel(mDB);
   queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
   queryDel.bindValue(":channel", iChannel);
@@ -165,7 +157,7 @@ bool ServiceDB::delete_entry(const QString & iChannel, const u32 iSId)
     QCoreApplication::exit(1);
   }
 
-  return true;
+  return (queryDel.numRowsAffected() > 0);
 }
 
 bool ServiceDB::delete_channel(const QString & iChannel)
@@ -409,31 +401,6 @@ void ServiceDB::_exec_simple_query(const QString & iQuery)
     qCritical() << "Error: Failed to execute '" << iQuery << "': " << dbErr;
     QCoreApplication::exit(1);
   }
-}
-
-bool ServiceDB::_check_if_entry_exists(const QString & iTableName, const QString & iChannel, const u32 iSId)
-{
-  // first check if entry already exists, this avoid new table update afterward
-  QSqlQuery querySearch(mDB);
-  querySearch.prepare("SELECT " + sTeFIdOrCh + " FROM " + iTableName + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
-  querySearch.bindValue(":channel", iChannel);
-  querySearch.bindValue(":serviceId", iSId);
-
-  if (querySearch.exec())
-  {
-    if (querySearch.next())
-    {
-      return true; // entry found
-    }
-  }
-  else
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Search query with table '" << iTableName << "': " << dbErr;
-    QCoreApplication::exit(1);
-  }
-  return false; // no entry found
 }
 
 const QString & ServiceDB::_cur_tab_name() const
