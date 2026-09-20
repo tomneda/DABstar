@@ -63,7 +63,6 @@ CorrelationViewer::CorrelationViewer(PlotWidget * pPlot, QLabel * pLabel, QSetti
   mpThresholdLine->attachAxis(mpPlot->get_x_axis());
   mpThresholdLine->attachAxis(mpPlot->get_y_axis());
 
-  mpPlot->set_x_range(0, 2047);
   mpPlot->setup_x_zoom(PlotWidget::SRange(0, 2047));
 
   // Reposition text labels whenever zoom, pan, or resize changes the plot geometry

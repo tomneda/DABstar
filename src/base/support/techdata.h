@@ -63,10 +63,14 @@ public:
   void set_frame_dump_button_emphasized(bool iEmphasized) const;
 
 private:
+  static constexpr i32 cDefaultPlotWindowHeight = 560;
+  static constexpr i32 cMinPlotWindowHeight     = 450;
+
   DabRadio * const mpRadioInterface;
   RingBuffer<i16> * mpAudioBuffer;
   QFrame mFrame;
   AudioDisplay * mpAudioDisplay = nullptr;
+  i32 mSavedPlotWindowHeight = 0;
 
   void _show_service_label(const QString &) const;
   void _show_SId(u32) const;
@@ -77,6 +81,7 @@ private:
   void _show_ASCTy(i32) const;
   void _show_uep_eep(i32, i32) const;
   void _show_coderate(i32, i32) const;
+  void _update_audio_plot_mode(EAudioPlotMode iMode);
 
 public slots:
   void slot_show_rs_corrections(i32, i32) const;

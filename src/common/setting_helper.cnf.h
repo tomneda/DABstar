@@ -122,6 +122,7 @@ CATEGORY_END(ServiceList)
 CATEGORY_BEGIN(TechDataViewer)
   DEFINE_POS_SIZE(TechDataViewer)
   DEFINE_VARIANT(TechDataViewer, varUiVisible, false)
+  DEFINE_WIDGET(TechDataViewer, cmbAudioPlotMode)
 CATEGORY_END(TechDataViewer)
 
 CATEGORY_BEGIN(SdrPlayV3)

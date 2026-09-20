@@ -51,6 +51,7 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   mFrame.hide();
 
   Settings::TechDataViewer::posAndSize.read_widget_geometry(&mFrame);
+  mSavedPlotWindowHeight = (mFrame.height() >= cMinPlotWindowHeight) ? mFrame.height() : cDefaultPlotWindowHeight;
 
   formLayout->setLabelAlignment(Qt::AlignLeft);
   formLayout_2->setLabelAlignment(Qt::AlignLeft);
@@ -60,6 +61,17 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   timeTable_button->setStyleSheet(get_bg_style_sheet(0xB89028, Qt::white));
   timeTable_button->setEnabled(false);
   mpAudioDisplay = new AudioDisplay(mr, plotAudioFft, &Settings::Storage::instance());
+
+  cmbAudioPlotMode->addItems(AudioDisplay::get_plot_mode_names());
+  // cmbAudioPlotMode->setStyleSheet(get_combo_style_sheet(0x985256));
+
+  connect(cmbAudioPlotMode, qOverload<i32>(&QComboBox::currentIndexChanged), this, [this](const i32 index)
+  {
+    _update_audio_plot_mode(static_cast<EAudioPlotMode>(index));
+  });
+
+  Settings::TechDataViewer::cmbAudioPlotMode.register_widget_and_update_ui_from_setting(cmbAudioPlotMode, AudioDisplay::get_plot_mode_names().first());
+  _update_audio_plot_mode(static_cast<EAudioPlotMode>(cmbAudioPlotMode->currentIndex()));
 
   cleanUp();
 
@@ -236,9 +248,37 @@ void TechData::slot_show_fm(i32 freq) const
     fmLabel->show();
     lblFmFrequency->show();
     QString f = QString::number(freq);
-    f.append(" Khz");
+    f.append(" kHz");
     lblFmFrequency->setText(f);
   }
+}
+
+void TechData::_update_audio_plot_mode(const EAudioPlotMode iMode)
+{
+  if (iMode == EAudioPlotMode::OFF)
+  {
+    if (!plotAudioFft->isHidden())
+    {
+      if (mFrame.height() >= cMinPlotWindowHeight)
+      {
+        mSavedPlotWindowHeight = mFrame.height();
+      }
+      const i32 currentWidth = mFrame.width();
+      plotAudioFft->hide();
+      mFrame.adjustSize();
+      mFrame.resize(currentWidth, mFrame.height());
+    }
+  }
+  else
+  {
+    if (plotAudioFft->isHidden())
+    {
+      plotAudioFft->show();
+      const i32 targetHeight = (mSavedPlotWindowHeight >= cMinPlotWindowHeight) ? mSavedPlotWindowHeight : cDefaultPlotWindowHeight;
+      mFrame.resize(mFrame.width(), targetHeight);
+    }
+  }
+  mpAudioDisplay->set_plot_mode(iMode);
 }
 
 void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate) const
@@ -250,11 +290,11 @@ void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate) c
     return;
   }
 
-  if (!mFrame.isHidden())
+  if (!mFrame.isHidden() && mpAudioDisplay->get_plot_mode() != EAudioPlotMode::OFF)
   {
     auto * const buffer = make_vla(i16, cNumNeededSample);
     mpAudioBuffer->get_data_from_ring_buffer(buffer, cNumNeededSample); // get 512 stereo samples
-    mpAudioDisplay->create_spectrum(buffer, cNumNeededSample, iSampleRate);
+    mpAudioDisplay->plot_spectrum(buffer, cNumNeededSample, iSampleRate);
   }
 
   mpAudioBuffer->flush_ring_buffer();

@@ -35,12 +35,23 @@
 #include <QSettings>
 #include <QObject>
 #include <QLineSeries>
+#include <QAreaSeries>
+#include <QStringList>
 #include <fftw3.h>
 
 #define USE_C2C_FFT
 
 class DabRadio;
 class PlotWidget;
+class QCategoryAxis;
+
+enum class EAudioPlotMode
+{
+  FFT_SPECTRUM_UNFILLED,
+  FFT_SPECTRUM_FILLED,
+  LOG_BANDS,
+  OFF
+};
 
 class AudioDisplay : public QObject
 {
@@ -49,21 +60,43 @@ public:
   AudioDisplay(DabRadio *, PlotWidget *, QSettings *);
   ~AudioDisplay() override;
 
-  void create_spectrum(const i16 *, i32, i32);
+  void plot_spectrum(const i16 *, i32, i32);
+  void set_plot_mode(EAudioPlotMode iMode);
+  [[nodiscard]] EAudioPlotMode get_plot_mode() const { return mPlotMode; }
+  [[nodiscard]] static QStringList get_plot_mode_names();
 
 private:
+  struct SBandLimit
+  {
+    i32 startBin;
+    i32 endBin;
+  };
+
   static constexpr char SETTING_GROUP_NAME[] = "audioDisplay";
   static constexpr i32 cSpectrumSize = 512;
   static constexpr i32 cNormalizer = 32378;
   static constexpr i32 cDisplaySize = cSpectrumSize / 2;  // we use only the right half of the FFT
 
+  static constexpr std::array<f32, 7> cBorderFrequencies = {
+    62.5f, 125.0f, 500.0f, 1000.0f, 2000.0f, 4000.0f, 8000.0f
+  };
+
   DabRadio * const mpRadioInterface;
   QSettings * const mpDabSettings;
   PlotWidget * const mpPlot;
-  QLineSeries * mpCurve = nullptr;
+  QLineSeries * mpLineSeries = nullptr;
+  QLineSeries * mpUpperCurve = nullptr;
+  QLineSeries * mpLowerCurve = nullptr;
+  QAreaSeries * mpAreaSeries = nullptr;
+  QCategoryAxis * mpCategoryAxis = nullptr;
+
+  EAudioPlotMode mPlotMode = EAudioPlotMode::FFT_SPECTRUM_UNFILLED;
+  bool mPlotModeChanged = false;
 
   std::array<f32, cDisplaySize>  mXDispBuffer{};
   std::array<f32, cDisplaySize>  mYDispBuffer{};
+  std::array<f32, 8>             mYBand8Buffer{};
+  std::array<SBandLimit, 8>      mBandLimits8{};
   std::array<f32, cSpectrumSize> mWindow;
 
   static_assert(sizeof(fftwf_complex) == sizeof(cf32));
@@ -79,4 +112,8 @@ private:
 #endif
 
   i32 mSampleRateLast = 0;
+
+  void _setup_x_axis(i32 iSampleRate);
+  void _calculate_band_limits(i32 iSampleRate);
+  [[nodiscard]] static QString _get_plot_mode_tool_tip(EAudioPlotMode iMode);
 };

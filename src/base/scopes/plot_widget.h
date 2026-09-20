@@ -69,7 +69,9 @@ public:
   // to set minor ticks explicitly; -1 lets the helper compute a nice count.
   void set_y_tick_dynamic(f64 iAnchor, f64 iInterval) const;
 
-  // Configure zoom-out limits (call once, then zoom/pan are bounded)
+  // Configure zoom-out limits (call once, then zoom/pan are bounded). Also applies the default
+  // range via set_x_range()/set_y_range() unless the axis is currently zoomed -- so there is no
+  // need to call those separately with the same numbers.
   void setup_x_zoom(const SRange & iRange);
   void setup_y_zoom(const SRange & iRange);
   void reset_x_zoom();
