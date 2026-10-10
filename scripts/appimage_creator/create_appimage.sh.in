@@ -4,7 +4,7 @@ set -euo pipefail
 QT_VERSION=6.12.0
 export PATH=/home/work/fs_Qt/$QT_VERSION/gcc_64/bin/:$PATH
 export LD_LIBRARY_PATH=/home/work/fs_Qt/$QT_VERSION/gcc_64/lib/:${LD_LIBRARY_PATH:-}
-export LD_LIBRARY_PATH=/home/work/fs_DABstar/scripts/appimage_creator/stublibs/:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/home/work/fs_DABstar/scripts/appimage_creator/stublibs/:$LD_LIBRARY_PATH
 
 DST=~/DABstarAppImage
 LINUXDEPLOYQT="linuxdeployqt-continuous-x86_64.AppImage"
@@ -35,20 +35,20 @@ chmod a+x "$LINUXDEPLOYQT"
 # Some Qt SQL driver plugins depend on libraries that are not installed on this machine
 # (e.g. libfbclient.so.2 for Firebird, libmimerapi.so for Mimer SQL, etc.).
 # linuxdeployqt runs ldd on every discovered plugin and aborts on missing dependencies.
-# Solution: scan all sqldrivers for "not found" entries, create minimal stub shared
-# libraries for each, and tell linuxdeployqt to exclude them from bundling.
+# Solution: scan all sqldrivers for "not found" third-party libraries (excluding Qt libraries),
+# create minimal stub shared libraries for them, and tell linuxdeployqt to exclude them from bundling.
 STUB_DIR=$(mktemp -d)
 trap 'rm -rf "$STUB_DIR"' EXIT
 
 QT_SQLDRIVERS_DIR="/home/work/fs_Qt/$QT_VERSION/gcc_64/plugins/sqldrivers"
 
-# Collect all libraries reported as "not found" by ldd across all SQL driver plugins.
+# Collect all third-party libraries reported as "not found" by ldd across all SQL driver plugins.
 MISSING_LIBS=""
 if [ -d "$QT_SQLDRIVERS_DIR" ]; then
   while IFS= read -r lib; do
     [ -n "$lib" ] && MISSING_LIBS="$MISSING_LIBS $lib"
   done < <(ldd "$QT_SQLDRIVERS_DIR"/*.so 2>/dev/null \
-            | awk '/not found/ {print $1}' \
+            | awk '/not found/ && !/libQt/ {print $1}' \
             | sort -u)
 fi
 
