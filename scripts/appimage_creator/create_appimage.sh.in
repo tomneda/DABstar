@@ -2,12 +2,22 @@
 set -euo pipefail
 
 QT_VERSION=6.12.0
-export PATH=/home/work/fs_Qt/$QT_VERSION/gcc_64/bin/:$PATH
-export LD_LIBRARY_PATH=/home/work/fs_Qt/$QT_VERSION/gcc_64/lib/:${LD_LIBRARY_PATH:-}
-#export LD_LIBRARY_PATH=/home/work/fs_DABstar/scripts/appimage_creator/stublibs/:$LD_LIBRARY_PATH
+QT_DIR="/home/work/fs_Qt/$QT_VERSION/gcc_64"
+export PATH="$QT_DIR/bin/:$PATH"
+export LD_LIBRARY_PATH="$QT_DIR/lib/:${LD_LIBRARY_PATH:-}"
+
+if [ -x "$QT_DIR/bin/qmake" ]; then
+  export QMAKE="$QT_DIR/bin/qmake"
+elif command -v qmake6 >/dev/null 2>&1; then
+  export QMAKE="$(command -v qmake6)"
+elif command -v qmake >/dev/null 2>&1; then
+  export QMAKE="$(command -v qmake)"
+fi
 
 DST=~/DABstarAppImage
-LINUXDEPLOYQT="linuxdeployqt-continuous-x86_64.AppImage"
+LINUXDEPLOY="linuxdeploy-x86_64.AppImage"
+LINUXDEPLOY_PLUGIN_QT="linuxdeploy-plugin-qt-x86_64.AppImage"
+LINUXDEPLOY_PLUGIN_APPIMAGE="linuxdeploy-plugin-appimage-x86_64.AppImage"
 
 mkdir -p "$DST"
 
@@ -15,66 +25,70 @@ mkdir -p "$DST/appdir/usr/bin"
 mkdir -p "$DST/appdir/usr/lib"
 mkdir -p "$DST/appdir/usr/share/applications"
 mkdir -p "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
-#mkdir -p "$DST/appdir/usr/share/icons/hicolor/scalable/apps/"
 
-cp dabstar.desktop              "$DST/appdir/usr/share/applications"
-#cp ../../res/logo/dabstar.png   "$DST/appdir/"
+cp dabstar.desktop              "$DST/appdir/usr/share/applications/"
 cp ../../res/logo/dabstar.png   "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
-#cp ../../res/logo/dabstar.svg   "$DST/appdir/"
-#cp ../../res/logo/dabstar.svg   "$DST/appdir/usr/share/icons/hicolor/scalable/apps/"
-cp /usr/local/lib/librtlsdr.so  "$DST/appdir/usr/lib/"
+if [ -f /usr/local/lib/librtlsdr.so ]; then
+  cp -d /usr/local/lib/librtlsdr.so* "$DST/appdir/usr/lib/" || true
+fi
 
 cd "$DST"
 
 # from here the build folder with the build has to exist in the folder $DST
 cp build/dabstar appdir/usr/bin/
 
-wget -q --show-progress -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/$LINUXDEPLOYQT"
-chmod a+x "$LINUXDEPLOYQT"
+wget -q --show-progress -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/$LINUXDEPLOY"
+wget -q --show-progress -c "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/$LINUXDEPLOY_PLUGIN_QT"
+wget -q --show-progress -c "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/$LINUXDEPLOY_PLUGIN_APPIMAGE"
 
-# Some Qt SQL driver plugins depend on libraries that are not installed on this machine
-# (e.g. libfbclient.so.2 for Firebird, libmimerapi.so for Mimer SQL, etc.).
-# linuxdeployqt runs ldd on every discovered plugin and aborts on missing dependencies.
-# Solution: scan all sqldrivers for "not found" third-party libraries (excluding Qt libraries),
-# create minimal stub shared libraries for them, and tell linuxdeployqt to exclude them from bundling.
+chmod a+x "$LINUXDEPLOY" "$LINUXDEPLOY_PLUGIN_QT" "$LINUXDEPLOY_PLUGIN_APPIMAGE"
+
+# Official Qt distributions bundle all SQL drivers (e.g., Oracle OCI, Mimer, Firebird)
+# which dynamically link to vendor libraries (e.g., libclntsh.so, libmimerapi.so).
+# linuxdeploy-plugin-qt attempts to deploy all plugins and aborts if any dependency is missing.
+# Create dummy stubs for missing third-party driver dependencies to satisfy resolution.
 STUB_DIR=$(mktemp -d)
 trap 'rm -rf "$STUB_DIR"' EXIT
 
-QT_SQLDRIVERS_DIR="/home/work/fs_Qt/$QT_VERSION/gcc_64/plugins/sqldrivers"
-
-# Collect all third-party libraries reported as "not found" by ldd across all SQL driver plugins.
-MISSING_LIBS=""
-if [ -d "$QT_SQLDRIVERS_DIR" ]; then
+QT_PLUGINS_DIR="$QT_DIR/plugins"
+if [ -d "$QT_PLUGINS_DIR" ]; then
   while IFS= read -r lib; do
-    [ -n "$lib" ] && MISSING_LIBS="$MISSING_LIBS $lib"
-  done < <(ldd "$QT_SQLDRIVERS_DIR"/*.so 2>/dev/null \
+    if [ -n "$lib" ]; then
+      gcc -shared -fPIC -o "$STUB_DIR/$lib" -x c /dev/null 2>/dev/null || true
+    fi
+  done < <(ldd "$QT_PLUGINS_DIR"/*/*.so 2>/dev/null \
             | awk '/not found/ && !/libQt/ {print $1}' \
             | sort -u)
 fi
 
-# Create a stub shared library for each missing dependency.
-EXCLUDE_LIBS=""
-for lib in $MISSING_LIBS; do
-  gcc -shared -fPIC -o "$STUB_DIR/$lib" -x c /dev/null 2>/dev/null \
-    && echo "Created stub: $lib" || true
-  EXCLUDE_LIBS="${EXCLUDE_LIBS:+$EXCLUDE_LIBS,}$lib"
-done
+export LD_LIBRARY_PATH="$STUB_DIR:${LD_LIBRARY_PATH:-}"
 
-export LD_LIBRARY_PATH="$STUB_DIR:$LD_LIBRARY_PATH"
+APP_NAME="@PROJECT_NAME@"
+APP_VERS="@PROJECT_VERSION@"
+APP_ARCH="x86_64"
+FN_DST="${APP_NAME}-${APP_VERS}-${APP_ARCH}.AppImage"
 
-DEPLOYQT_ARGS="-appimage -no-translations"
-[ -n "$EXCLUDE_LIBS" ] && DEPLOYQT_ARGS="$DEPLOYQT_ARGS -exclude-libs=$EXCLUDE_LIBS"
+export VERSION="$APP_VERS"
+export LDAI_OUTPUT="$FN_DST"
+export EXTRA_QT_MODULES="sql;multimedia;charts;network;xml;widgets"
+export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 
-# shellcheck disable=SC2086
-if ./"$LINUXDEPLOYQT" ./appdir/usr/share/applications/* $DEPLOYQT_ARGS; then
-  echo "linuxdeployqt runs successfully"
-  APP_NAME="@PROJECT_NAME@"
-  APP_VERS="@PROJECT_VERSION@"
-  APP_ARCH="x86_64"
-  FN_SRC="${APP_NAME}-${APP_ARCH}.AppImage"
-  FN_DST="${APP_NAME}-${APP_VERS}-${APP_ARCH}.AppImage"
-  mv -f -v "$FN_SRC" "$FN_DST"
+# Execute linuxdeploy with the Qt plugin to deploy dependencies and package the AppImage
+if ./"$LINUXDEPLOY" \
+    --appdir appdir \
+    -e appdir/usr/bin/dabstar \
+    -d appdir/usr/share/applications/dabstar.desktop \
+    -i appdir/usr/share/icons/hicolor/256x256/apps/dabstar.png \
+    --plugin qt \
+    --output appimage; then
+  echo "linuxdeploy runs successfully"
+  if [ ! -f "$FN_DST" ]; then
+    FN_SRC=$(ls -1 "${APP_NAME}"*.AppImage 2>/dev/null | grep -v "${FN_DST}" | head -n 1 || true)
+    if [ -n "$FN_SRC" ] && [ -f "$FN_SRC" ]; then
+      mv -f -v "$FN_SRC" "$FN_DST"
+    fi
+  fi
 else
-  echo "linuxdeployqt failed"
+  echo "linuxdeploy failed"
   exit 1
 fi
