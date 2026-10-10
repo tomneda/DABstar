@@ -96,8 +96,6 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
     return; // nothing will happen
   }
 
-  mpTiiManager->hide_tii_display();
-
   // Only the device handlers with asynchronous events derive from IDeviceNotifier, the others simply never emit
   if (const auto * const pDeviceNotifier = dynamic_cast<IDeviceNotifier *>(mpInputDevice.get()))
   {
