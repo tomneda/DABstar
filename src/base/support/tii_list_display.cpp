@@ -62,6 +62,7 @@ TiiListDisplay::TiiListDisplay()
   mpBtnSaveList = new QPushButton("Save to CSV or KML", mpWidget.get());
   mpBtnSaveList->setStyleSheet(get_bg_style_sheet(0x509B50, Qt::white));
   mpBtnSaveList->setToolTip("Save the displayed transmitter list to a CSV or KML file");
+  mpBtnSaveList->setEnabled(false);
 
   mpBtnOpenFolder = new QPushButton("Open save folder", mpWidget.get());
   mpBtnOpenFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D, Qt::white));
@@ -214,6 +215,10 @@ void TiiListDisplay::_update_table()
     row++;
   }
   mpTableWidget->resizeColumnsToContents();
+  if (mpBtnSaveList != nullptr)
+  {
+    mpBtnSaveList->setEnabled(row > 0);
+  }
 }
 
 void TiiListDisplay::clear()
@@ -223,6 +228,10 @@ void TiiListDisplay::clear()
   if (mpTableWidget != nullptr)
   {
     mpTableWidget->setRowCount(0);
+  }
+  if (mpBtnSaveList != nullptr)
+  {
+    mpBtnSaveList->setEnabled(false);
   }
   if (mpWidget != nullptr)
   {
@@ -284,7 +293,6 @@ void TiiListDisplay::_slot_save_list()
 
   if (exportEntries.empty())
   {
-    QMessageBox::information(mpWidget.get(), "Save list", "No transmitter entries to save.");
     return;
   }
 
