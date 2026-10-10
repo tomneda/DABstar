@@ -43,6 +43,8 @@
 #include <algorithm>
 #include <cstdio>
 
+constexpr f32 cRefLuminance = 0.40f;
+
 TiiListDisplay::TiiListDisplay()
 {
   mpWidget.reset(new QWidget(nullptr));
@@ -60,12 +62,12 @@ TiiListDisplay::TiiListDisplay()
   mpCbIgnoreNoDb->setToolTip("Ignore detected transmitters that have no matching database entry");
 
   mpBtnSaveList = new QPushButton("Save to CSV or KML", mpWidget.get());
-  mpBtnSaveList->setStyleSheet(get_bg_style_sheet(0x509B50, Qt::white));
+  mpBtnSaveList->setStyleSheet(get_bg_style_sheet(0x509B50, Qt::white, cRefLuminance));
   mpBtnSaveList->setToolTip("Save the displayed transmitter list to a CSV or KML file");
   mpBtnSaveList->setEnabled(false);
 
   mpBtnOpenFolder = new QPushButton("Open save folder", mpWidget.get());
-  mpBtnOpenFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D, Qt::white));
+  mpBtnOpenFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D, Qt::white, cRefLuminance));
   mpBtnOpenFolder->setToolTip("Open storage folder in file manager and select the last saved file");
 
   auto * pBottomLayout = new QHBoxLayout();
