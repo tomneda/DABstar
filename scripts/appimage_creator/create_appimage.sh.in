@@ -19,15 +19,18 @@ LINUXDEPLOY="linuxdeploy-x86_64.AppImage"
 LINUXDEPLOY_PLUGIN_QT="linuxdeploy-plugin-qt-x86_64.AppImage"
 LINUXDEPLOY_PLUGIN_APPIMAGE="linuxdeploy-plugin-appimage-x86_64.AppImage"
 
+rm -rf "$DST/appdir"
 mkdir -p "$DST"
 
 mkdir -p "$DST/appdir/usr/bin"
 mkdir -p "$DST/appdir/usr/lib"
 mkdir -p "$DST/appdir/usr/share/applications"
+mkdir -p "$DST/appdir/usr/share/metainfo"
 mkdir -p "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
 
-cp dabstar.desktop              "$DST/appdir/usr/share/applications/"
-cp ../../res/logo/dabstar.png   "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
+cp io.github.tomneda.DABstar.desktop   "$DST/appdir/usr/share/applications/"
+cp io.github.tomneda.DABstar.appdata.xml "$DST/appdir/usr/share/metainfo/"
+cp ../../res/logo/dabstar.png          "$DST/appdir/usr/share/icons/hicolor/256x256/apps/"
 if [ -f /usr/local/lib/librtlsdr.so ]; then
   cp -d /usr/local/lib/librtlsdr.so* "$DST/appdir/usr/lib/" || true
 fi
@@ -69,6 +72,7 @@ APP_ARCH="x86_64"
 FN_DST="${APP_NAME}-${APP_VERS}-${APP_ARCH}.AppImage"
 
 export VERSION="$APP_VERS"
+export LINUXDEPLOY_OUTPUT_VERSION="$APP_VERS"
 export LDAI_OUTPUT="$FN_DST"
 export EXTRA_QT_MODULES="sql;multimedia;charts;network;xml;widgets"
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
@@ -77,7 +81,7 @@ export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 if ./"$LINUXDEPLOY" \
     --appdir appdir \
     -e appdir/usr/bin/dabstar \
-    -d appdir/usr/share/applications/dabstar.desktop \
+    -d appdir/usr/share/applications/io.github.tomneda.DABstar.desktop \
     -i appdir/usr/share/icons/hicolor/256x256/apps/dabstar.png \
     --plugin qt \
     --output appimage; then

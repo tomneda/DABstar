@@ -98,8 +98,10 @@ add_definitions(-DPRJ_VERS="${PROJECT_VERSION}")
 option(CONV_IN_FILES "Convert .in-files" ON)
 
 if (CONV_IN_FILES)
-  configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/dabstar.desktop.in"
-          "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/dabstar.desktop" @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/io.github.tomneda.DABstar.desktop.in"
+          "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/io.github.tomneda.DABstar.desktop" @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/io.github.tomneda.DABstar.appdata.xml.in"
+          "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/io.github.tomneda.DABstar.appdata.xml" @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/scripts/appimage_creator/create_appimage.sh.in"
           "${PROJECT_SOURCE_DIR}/scripts/appimage_creator/create_appimage.sh" @ONLY)
 endif ()
