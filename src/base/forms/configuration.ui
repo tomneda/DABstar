@@ -162,16 +162,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="cbSaveTransToCsv">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save transmitter descriptions to CSV and KML files&lt;/span&gt;&lt;/p&gt;&lt;p&gt;While the HTTP map is shown, the transmitter descriptions are also stored in a &amp;quot;.csv&amp;quot; and a &amp;quot;.kml&amp;quot; file.&lt;/p&gt;&lt;p&gt;On starting the map HTTP server, a file selection menu will appear.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Save transmitters to CSV and KML</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLabel" name="lblMapUrlHint">
             <property name="text">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Get home coordinates from (e.g.):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

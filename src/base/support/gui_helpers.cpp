@@ -14,6 +14,11 @@
 #include "glob_data_types.h"
 #include <sstream>
 #include <cassert>
+#include <QFileInfo>
+#include <QDir>
+#include <QUrl>
+#include <QProcess>
+#include <QDesktopServices>
 // #include <QDebug>
 
 namespace {
@@ -33,7 +38,7 @@ void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, co
 
   // qDebug() << "luminance=" << luminance << corrFac;
 
-  if (corrFac > 1) // only allow to bright up, keep already bright colors
+  if (corrFac > 1) // only allow to bright up, keep already bright colors               
   {
     r1 = r1 * corrFac;
     g1 = g1 * corrFac;
@@ -132,4 +137,47 @@ QString get_combo_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBas
      << "QToolTip { color: black; background-color: #ffffdc; border: 1px solid black; }";
 
   return { ts.str().c_str() };
+}
+
+void open_folder_and_select_file(const QString & iFilePath, const QString & iFallbackDir)
+{
+  const QFileInfo fileInfo(iFilePath);
+  const QString targetDir = fileInfo.exists() ? fileInfo.absolutePath() : iFallbackDir;
+
+  if (!iFilePath.isEmpty() && fileInfo.exists())
+  {
+#if defined(Q_OS_WIN)
+    const QString winPath = QDir::toNativeSeparators(fileInfo.absoluteFilePath());
+    if (QProcess::startDetached("explorer.exe", QStringList() << ("/select," + winPath)))
+    {
+      return;
+    }
+#elif defined(Q_OS_MAC)
+    if (QProcess::startDetached("open", QStringList() << "-R" << fileInfo.absoluteFilePath()))
+    {
+      return;
+    }
+#elif defined(Q_OS_LINUX)
+    const QString fileUrl = QUrl::fromLocalFile(fileInfo.absoluteFilePath()).toString();
+    const QStringList args = {
+      "--session",
+      "--dest=org.freedesktop.FileManager1",
+      "--type=method_call",
+      "/org/freedesktop/FileManager1",
+      "org.freedesktop.FileManager1.ShowItems",
+      "array:string:" + fileUrl,
+      "string:"
+    };
+    if (QProcess::execute("dbus-send", args) == 0)
+    {
+      return;
+    }
+#endif
+  }
+
+  // Fallback to opening directory
+  if (QDir(targetDir).exists())
+  {
+    QDesktopServices::openUrl(QUrl::fromLocalFile(targetDir));
+  }
 }

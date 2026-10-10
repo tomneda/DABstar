@@ -32,40 +32,70 @@
 #include "tii_codes.h"
 #include <QString>
 #include <QWidget>
-#include <QScrollArea>
 #include <QTableWidget>
+#include <QCheckBox>
+#include <QPushButton>
 #include <QObject>
 #include <QScopedPointer>
+#include <vector>
 
 class TiiListDisplay : public QObject
 {
   Q_OBJECT
 
-public:                                                                        
+public:
   TiiListDisplay();
-  ~TiiListDisplay();
+  ~TiiListDisplay() override;
 
   struct SDerivedData
   {
-    f32 strength_dB;
-    f32 phase_deg;
-    bool  isNonEtsiPhase;
-    f32 distance_km;
-    f32 corner_deg;
+    f32  strength_dB;
+    f32  phase_deg;
+    bool isNonEtsiPhase;
+    f32  distance_km;
+    f32  corner_deg;
+  };
+
+  struct STableRowEntry
+  {
+    STiiDataEntry tr;
+    SDerivedData  dd;
+    QString       dateTime;
+    bool          isCurrent  = true;
+    bool          hasDbEntry = true;
   };
 
   void set_window_title(const QString &);
-  void add_row(const STiiDataEntry & iTr, const SDerivedData & iDD);
+  void set_channel(const QString & iChannel) { mCurChannel = iChannel; }
+  void add_row(const STiiDataEntry & iTr, const SDerivedData & iDD, bool iHasDbEntry = true);
   void start_adding();
   void show() const;
   void hide() const;
   void setVisible(bool iVisible) const { if (iVisible) show(); else hide(); }
   [[nodiscard]] QWidget * get_widget() const { return mpWidget.get(); }
-  i32 get_nr_rows();
+  i32 get_nr_rows() const;
   void finish_adding();
+  void clear();
+
+private slots:
+  void _slot_keep_persistent_changed(i32 iState);
+  void _slot_ignore_no_db_changed(i32 iState);
+  void _slot_save_list();
+  void _slot_open_folder();
 
 private:
+  void _update_table();
+
   static constexpr i32 cColNr = 10;
-  QScopedPointer<QScrollArea> mpWidget;
-  QScopedPointer<QTableWidget> mpTableWidget;
+  QScopedPointer<QWidget> mpWidget;
+  QTableWidget * mpTableWidget = nullptr;
+  QCheckBox    * mpCbKeepPersistent = nullptr;
+  QCheckBox    * mpCbIgnoreNoDb = nullptr;
+  QPushButton  * mpBtnSaveList = nullptr;
+  QPushButton  * mpBtnOpenFolder = nullptr;
+
+  std::vector<STableRowEntry> mEntries;
+  std::vector<STableRowEntry> mCurrentScanEntries;
+  QString mLastSavedFilePath;
+  QString mCurChannel;
 };

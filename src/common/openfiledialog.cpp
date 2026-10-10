@@ -172,11 +172,6 @@ QString OpenFileDialog::get_dl_text_file_name()
   return _open_file_dialog(PRJ_NAME "-dlText", sSettingContentStorageDir, "Text", ".txt");
 }
 
-QString OpenFileDialog::get_maps_file_name()
-{
-  return _open_file_dialog(PRJ_NAME "-Transmitters", sSettingContentStorageDir, "CSV", ".csv");
-}
-
 QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName) const
 {
   return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), sSettingContentStorageDir, "ETI", ".eti");

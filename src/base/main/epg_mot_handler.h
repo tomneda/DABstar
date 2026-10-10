@@ -60,6 +60,7 @@ public:
 
   // Called from DabRadio::_slot_handle_open_pic_folder_button
   QString get_pic_folder() const;
+  QString get_last_saved_pic_path() const { return mMotPicPathLast; }
   // Called from DabRadio::slot_show_label for DL text file writing
   FILE * get_dl_text_file() const { return mpDlTextFile; }
 

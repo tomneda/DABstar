@@ -28,7 +28,7 @@ class MapHttpServer : public QObject
   Q_OBJECT
 
 public:
-  MapHttpServer(DabRadio *, const QString & iHttpPort, const QString & iHttpAddress, cf32 address, const QString & iCsvDumpName, bool autoBrowse);
+  MapHttpServer(DabRadio *, const QString & iHttpPort, const QString & iHttpAddress, cf32 address, bool autoBrowse);
   ~MapHttpServer() override;
 
   void start() const;
@@ -67,23 +67,18 @@ private:
   const bool mAutoBrowserOff;
   const cf32 mHomeLocation;
 
-  FILE * mpCsvFP = nullptr;
-  FILE * mpKmlFP = nullptr;
   QTcpServer * mTcpServer = nullptr;
-  std::vector<SHttpData> mAlreadyLoggedTransmitters;
   std::vector<SHttpData> mTransmitters;
   QTimer * mpAjaxRequestTimer = nullptr;
   mutable std::mutex mMutex; // guards the list of mTransmitters
 
   QByteArray _gen_html_code() const;
   QByteArray _move_transmitter_list_to_json(); // mTransmitters is empty after call
-  void _write_cvs_entry(const STiiDataEntry * ipTiiDataEntry, const QString & iDateTime, f32 iStrength, f32 iDistance, f32 iAzimuth);
 
 private slots:
   void _slot_new_connection();
   void _slot_ready_read();
   void _slot_ajax_request_timeout();
-  void _write_kml_entry(const STiiDataEntry * ipTiiDataEntry, const QString & iDateTime, f32 iStrength, f32 iDistance, f32 iAzimuth);
 
 
 signals:

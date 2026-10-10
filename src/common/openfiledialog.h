@@ -55,7 +55,6 @@ public:
   QString get_frame_dump_file_name(const QString & iServiceName, bool iIsAAC);
   QString get_skip_file_file_name();
   QString get_dl_text_file_name();
-  QString get_maps_file_name();
   QString get_eti_file_name(const QString &, const QString &) const;
 
   enum class EFileType { UNDEF, UFF_XML, SDR_WAV, RAW_IQ }; // do not use "RAW" as it seems to be used as macro

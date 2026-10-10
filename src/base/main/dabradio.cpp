@@ -50,8 +50,8 @@
 #include "audio_pipeline.h"
 #include "mot_slide_progress.h"
 #include "window_visibility_watcher.h"
+#include "gui_helpers.h"
 #include <QMessageBox>
-#include <QDesktopServices>
 
 #if defined(_WIN32)
   #include <windows.h>
@@ -391,12 +391,7 @@ void DabRadio::_slot_handle_cir_button()
 
 void DabRadio::_slot_handle_open_pic_folder_button() const
 {
-  const QString picFolder = mpEpgMotHandler->get_pic_folder();
-
-  if (QDir(picFolder).exists())
-  {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(picFolder));
-  }
+  open_folder_and_select_file(mpEpgMotHandler->get_last_saved_pic_path(), mpEpgMotHandler->get_pic_folder());
 }
 
 void DabRadio::_slot_handle_reset_button()
@@ -1133,16 +1128,7 @@ void DabRadio::_slot_handle_http_button()
     const QString browserAddress = Settings::Config::varBrowserAddress.read().toString();
     const QString mapPort = Settings::Config::varMapPort.read().toString();
 
-    QString mapFile;
-    if (Settings::Config::cbSaveTransToCsv.read().toBool())
-    {
-      mapFile = mOpenFileDialog.get_maps_file_name();
-    }
-    else
-    {
-      mapFile = "";
-    }
-    mpHttpHandler.reset(new MapHttpServer(this, mapPort, browserAddress, mLocalPos, mapFile, Settings::Config::cbManualBrowserStart.read().toBool()));
+    mpHttpHandler.reset(new MapHttpServer(this, mapPort, browserAddress, mLocalPos, Settings::Config::cbManualBrowserStart.read().toBool()));
     mMaxDistance = -1;
 
     if (mpHttpHandler != nullptr)

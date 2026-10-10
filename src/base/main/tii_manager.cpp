@@ -64,10 +64,15 @@ TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
 
 void TiiManager::set_channel_info(const QString & fIdOrCh, const u32 eid, const QString & countryName, const QString & typeInfo)
 {
+  if (mCurFIdOrCh != fIdOrCh)
+  {
+    mTiiListDisplay.clear();
+  }
   mCurFIdOrCh     = fIdOrCh;
   mCurEid         = eid;
   mCurCountryName = countryName;
   mCurTypeInfo    = typeInfo;
+  mTiiListDisplay.set_channel(fIdOrCh);
 }
 
 bool TiiManager::init_tii_file()
@@ -115,6 +120,7 @@ void TiiManager::clear_tii_list_and_label()
   mpCmbTiiList->clear();
   mpLblTii->setText("");
   mTiiIndex = 0;
+  mTiiListDisplay.clear();
 }
 
 void TiiManager::load_table()
@@ -228,7 +234,7 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
 
     if (mShowTiiListWindow)
     {
-      mTiiListDisplay.add_row(*pTr, bd);
+      mTiiListDisplay.add_row(*pTr, bd, dataValid);
     }
 
     if (!isDropDownVisible)
