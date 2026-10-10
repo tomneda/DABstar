@@ -5,7 +5,8 @@ QT_VERSION=6.12.0
 CUD=$PWD
 SRC=$CUD/../..
 DST=~/DABstarAppImage/build
-CMFLAG=-DCONV_IN_FILES=OFF #switch off .in-files conversion as repo access could only be read-only
+CMFLAG="-DCONV_IN_FILES=OFF" #switch off .in-files conversion as repo access could only be read-only
+CMFLAG="$CMFLAG -DQT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT=3.22" # Qt6.12.0 needs a newer cmake version than the build OS can provide, make it compatible again
 QtPath=-DCMAKE_PREFIX_PATH=/home/work/fs_Qt/$QT_VERSION/gcc_64/
 echo "Source folder is $SRC"
 echo "Destination folder is $DST"
