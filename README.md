@@ -3,7 +3,7 @@
 ## Table of Content
 <!-- TOC -->
   * [Table of Content](#table-of-content)
-  * [Pictures from V5.7.0](#pictures-from-v570)
+  * [Pictures from DABstar](#pictures-from-dabstar)
     * [Main window](#main-window)
       * [Traffic Light indicators in the main window](#traffic-light-indicators-in-the-main-window)
       * [SNR and MER bar graph in the main window](#snr-and-mer-bar-graph-in-the-main-window)
@@ -53,7 +53,7 @@
 
 ---
 
-## Pictures from V5.7.0
+## Pictures from DABstar
 
 ### Main window
 
@@ -123,6 +123,8 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 
 ![](res/for_readme/scope-spec-corr.png)
 
+Shows the spectrum scope, IQ constellation, impulse response / correlation, and audio spectrum analyzer. The audio display supports multiple visualization modes (FFT spectrum unfilled/filled, 8 log bands, or off) with interactive horizontal and vertical zooming/panning.
+
 ### FIB content window
 
 ![](res/for_readme/fib-content.png)
@@ -134,6 +136,8 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 ### TII-list window which shows received transmitter details
 
 ![](res/for_readme/TII-list.png)
+
+Displays detected Transmitter Identification Information (TII), including main/sub ID, transmitter location, distance, azimuth, and signal strength. The transmitter list can be exported directly to CSV or KML format for external mapping and propagation analysis.
 
 ### Map view of received transmitters
 
@@ -150,6 +154,7 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 ### Audio Service Details window of the selected service
 
 ![](res/for_readme/tech-details.png)
+![](res/for_readme/tech-details2.png)
 
 ### The PRS correlation window of a whole DAB frame (CIR)
 
@@ -161,6 +166,8 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 ![](res/for_readme/device-rtltcp.png)
 ![](res/for_readme/device-hackrf.png)
 ![](res/for_readme/device-sdrplay.png)
+
+Device configuration windows provide hardware-specific controls (gain, AGC, PPM correction, bandwidth). Supported RTL-SDR and RTL-TCP devices also display detected tuner chip types (e.g. R820T, R828D, E4000, FC0012/13, FC2580) and library/firmware information.
 
 ---
 
