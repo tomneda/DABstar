@@ -1,7 +1,7 @@
 TARGET		= dabstar
 TEMPLATE	= app
-QT			+= widgets xml sql multimedia charts
-CONFIG		+= console
+QT			+= widgets xml sql multimedia charts network
+CONFIG		+= console c++17
 #CONFIG		+= debug
 
 # switch off to save compile/link time while development
@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.6.1\\\"
+DEFINES		+= PRJ_VERS=\\\"5.8.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -62,8 +62,10 @@ CONFIG		+= pluto
 CONFIG		+= hackrf
 CONFIG		+= lime
 CONFIG		+= soapy
+#CONFIG		+= uhd
 CONFIG		+= sse2
 #CONFIG		+= avx2
+#CONFIG		+= neon
 CONFIG		+= fdk-aac
 CONFIG		+= volk
 CONFIG		+= liquid
@@ -262,6 +264,7 @@ HEADERS += \
     src/devices/device_exceptions.h \
     src/devices/device_selector.h \
     src/devices/dongleselect.h \
+    src/devices/filereaders/filereader/filereader_widget.h \
     src/devices/filereaders/raw_files/raw_reader.h \
     src/devices/filereaders/raw_files/rawfiles.h \
     src/devices/filereaders/wav_files/wav_reader.h \
@@ -507,6 +510,7 @@ pluto	{
     QT		+= network
     INCLUDEPATH	+= src/devices/pluto_handler_2
     HEADERS		+= src/devices/pluto_handler_2/dabFilter.h \
+               src/devices/pluto_handler_2/iio.h \
                src/devices/pluto_handler_2/pluto_handler.h
     SOURCES		+= src/devices/pluto_handler_2/pluto_handler.cpp
     FORMS		+= src/devices/forms/pluto_widget.ui
@@ -549,6 +553,9 @@ avx2	{
 }else:sse2	{
     DEFINES		+= HAVE_VITERBI_SSE2
     HEADERS		+= src/base/support/viterbi_spiral/viterbi_8way.h
+}else:neon	{
+    DEFINES		+= HAVE_VITERBI_NEON
+    HEADERS		+= src/base/support/viterbi_spiral/sse2neon.h
 }else	{
     HEADERS		+= src/base/support/viterbi_spiral/viterbi_scalar.h
 }
