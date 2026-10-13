@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>202</width>
-    <height>332</height>
+    <width>226</width>
+    <height>336</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="Label1">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>Corr.</string>
        </property>
@@ -45,6 +51,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_1">
      <item>
       <widget class="QLabel" name="gainLabel">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>IF Gain</string>
        </property>
@@ -59,6 +71,12 @@
      </item>
      <item>
       <widget class="QLabel" name="dbLabel">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>dB</string>
        </property>
@@ -70,6 +88,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="Label2">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>AGC</string>
        </property>
@@ -109,6 +133,12 @@
      </item>
      <item>
       <widget class="QLabel" name="Label3">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>Level</string>
        </property>
@@ -135,6 +165,12 @@
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the ADC overload condition. Decrease the gain to avoid this.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
        </property>
        <property name="text">
         <string>Overload</string>
@@ -177,6 +213,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="Label4">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>Bandwidth</string>
        </property>
@@ -207,6 +249,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
       <widget class="QLabel" name="tunerType">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>unknown</string>
        </property>
@@ -214,6 +262,12 @@
      </item>
      <item>
       <widget class="QLabel" name="Label5">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>Tuner gain:</string>
        </property>
@@ -223,6 +277,12 @@
       <widget class="QLabel" name="tunerGain">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Total gain of the tuner (LNA, Mixer and IF).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
        </property>
        <property name="text">
         <string>unknown</string>
@@ -235,6 +295,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
       <widget class="QLabel" name="Label7">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string>S/N:</string>
        </property>
@@ -242,6 +308,12 @@
      </item>
      <item>
       <widget class="QLabel" name="serialNumber">
+       <property name="frameShape">
+        <enum>QFrame::Shape::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -251,6 +323,9 @@
    </item>
    <item>
     <widget class="QLabel" name="product_display">
+     <property name="frameShape">
+      <enum>QFrame::Shape::Panel</enum>
+     </property>
      <property name="frameShadow">
       <enum>QFrame::Shadow::Sunken</enum>
      </property>
@@ -264,6 +339,12 @@
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::Panel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Sunken</enum>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -273,6 +354,12 @@
     <widget class="QLabel" name="deviceVersion">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the detected RTL-SDR library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::Panel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <property name="text">
       <string/>
