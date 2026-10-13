@@ -251,8 +251,8 @@
    </item>
    <item>
     <widget class="QLabel" name="product_display">
-     <property name="frameShape">
-      <enum>QFrame::Shape::Box</enum>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <property name="text">
       <string/>
@@ -264,9 +264,6 @@
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
-     <property name="frameShape">
-      <enum>QFrame::Shape::Box</enum>
-     </property>
      <property name="text">
       <string/>
      </property>
@@ -276,9 +273,6 @@
     <widget class="QLabel" name="deviceVersion">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Version of the detected RTL-SDR library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Shape::Box</enum>
      </property>
      <property name="text">
       <string/>
