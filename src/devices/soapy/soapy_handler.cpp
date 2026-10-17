@@ -220,8 +220,7 @@ void SoapyHandler::createDevice(QString driver, QString serial)
   {
     for (u32 i = 0; i < antennas.size(); i++)
       comboBox_1->addItem(antennas[i].c_str());
-    connect(comboBox_1, SIGNAL(textActivated (const QString &)),
-            this, SLOT(handleAntenna (const QString &)));
+    connect(comboBox_1, &QComboBox::textActivated, this, &SoapyHandler::handleAntenna);
     comboBox_1->show();
   }
 

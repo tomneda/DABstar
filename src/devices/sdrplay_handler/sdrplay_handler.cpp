@@ -107,12 +107,12 @@ SdrPlayHandler::SdrPlayHandler(QSettings *s, const QString & recorderVersion)
   //    and be prepared for future changes in the settings
   connect(GRdBSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler::set_ifgainReduction);
   connect(lnaGainSetting, qOverload<i32>(&QSpinBox::valueChanged), this, &SdrPlayHandler::set_lnagainReduction);
-  connect(ppmControl, SIGNAL(valueChanged(double)), this, SLOT(set_ppmControl(double)));
+  connect(ppmControl, &QDoubleSpinBox::valueChanged, this, &SdrPlayHandler::set_ppmControl);
   connect(agcControl, &QCheckBox::stateChangedSubst, this, &SdrPlayHandler::set_agcControl);
   connect(biasT_selector, &QCheckBox::stateChangedSubst, this, &SdrPlayHandler::set_biasT);
   connect(notch_selector, &QCheckBox::stateChangedSubst, this, &SdrPlayHandler::set_notch);
   connect(antennaSelector, &QComboBox::textActivated, this, &SdrPlayHandler::set_selectAntenna);
-  connect(this, SIGNAL(new_lnaValue(int)), lnaGainSetting, SLOT(setValue(int)));
+  connect(this, &SdrPlayHandler::new_lnaValue, lnaGainSetting, &QSpinBox::setValue);
 
   save_lnaSettings = true;
   vfoFrequency = MHz (220);

@@ -193,19 +193,12 @@ PlutoHandler::PlutoHandler(QSettings *s,
 
     iio_buffer_set_blocking_mode (rxbuf, true);
 //  and be prepared for future changes in the settings
-    connect (gainControl, SIGNAL (valueChanged (i32)),
-             this, SLOT (set_gainControl (i32)));
-    connect (agcControl, SIGNAL (stateChanged (i32)),
-             this, SLOT (set_agcControl (i32)));
-    connect (debugButton, SIGNAL (clicked ()),
-             this, SLOT (toggle_debugButton ()));
-    connect (filterButton, SIGNAL (clicked ()),
-             this, SLOT (set_filter ()));
-
-    connect (this, SIGNAL (new_gainValue (i32)),
-             gainControl, SLOT (setValue (i32)));
-    connect (this, SIGNAL (new_agcValue (bool)),
-             agcControl, SLOT (setChecked (bool)));
+    connect(gainControl, qOverload<i32>(&QSpinBox::valueChanged), this, &PlutoHandler::set_gainControl);
+    connect(agcControl, &QCheckBox::stateChangedSubst, this, &PlutoHandler::set_agcControl);
+    connect(debugButton, &QPushButton::clicked, this, &PlutoHandler::toggle_debugButton);
+    connect(filterButton, &QPushButton::clicked, this, &PlutoHandler::set_filter);
+    connect(this, &PlutoHandler::new_gainValue, gainControl, &QSpinBox::setValue);
+    connect(this, &PlutoHandler::new_agcValue, agcControl, &QCheckBox::setChecked);
 //  set up for interpolator
     float   denominator = float (DAB_RATE) / DIVIDER;
         float inVal     = float (PLUTO_RATE) / DIVIDER;
@@ -459,11 +452,9 @@ void    PlutoHandler::set_gainControl   (i32 newGain)
           return;
        }
 
-       disconnect (agcControl, SIGNAL (stateChanged (i32)),
-             this, SLOT (set_agcControl (i32)));
+       disconnect (agcControl, &QCheckBox::stateChangedSubst, this, &PlutoHandler::set_agcControl);
        agcControl -> setChecked (false);
-       connect (agcControl, SIGNAL (stateChanged (i32)),
-             this, SLOT (set_agcControl (i32)));
+       connect (agcControl, &QCheckBox::stateChangedSubst, this, &PlutoHandler::set_agcControl);
     }
 
     ret = iio_channel_attr_write_longlong (chn, "hardwaregain", newGain);

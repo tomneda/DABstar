@@ -134,7 +134,7 @@ LimeHandler::LimeHandler(QSettings *s,
     if (k != -1)
       antennaList->setCurrentIndex(k);
 
-  connect(antennaList, SIGNAL(activated(int)), this, SLOT(setAntenna(int)));
+  connect(antennaList, qOverload<i32>(&QComboBox::activated), this, &LimeHandler::setAntenna);
 
   //  default antenna setting
   res = LMS_SetAntenna(theDevice, LMS_CH_RX, 0, antennaList->currentIndex());
@@ -165,9 +165,9 @@ LimeHandler::LimeHandler(QSettings *s,
   limeSettings->endGroup();
   gainSelector->setValue(k);
   setGain(k);
-  connect(gainSelector, SIGNAL(valueChanged(int)), this, SLOT(setGain(int)));
-  connect(this, SIGNAL(new_gainValue(int)), gainSelector, SLOT(setValue(int)));
-  connect(filterSelector, SIGNAL(stateChanged(int)), this, SLOT(set_filter(int)));
+  connect(gainSelector, qOverload<i32>(&QSpinBox::valueChanged), this, &LimeHandler::setGain);
+  connect(this, &LimeHandler::new_gainValue, gainSelector, &QSpinBox::setValue);
+  connect(filterSelector, &QCheckBox::stateChangedSubst, this, &LimeHandler::set_filter);
   xmlDumper = nullptr;
   dumping.store(false);
   running.store(false);
