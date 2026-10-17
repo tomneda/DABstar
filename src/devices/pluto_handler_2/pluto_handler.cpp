@@ -102,11 +102,13 @@ PlutoHandler::PlutoHandler(QSettings *s,
 //
 //  step 1: establish a context
 //
-    ctx = iio_create_default_context ();
-    if (ctx == nullptr)
-    {
-       ctx = iio_create_local_context ();
-    }
+    // do the proposed change in https://github.com/tomneda/DABstar/issues/134
+    ctx = nullptr;
+    // ctx = iio_create_default_context ();
+    // if (ctx == nullptr)
+    // {
+    //   ctx = iio_create_local_context ();
+    // }
 
     if (ctx == nullptr)
     {
