@@ -77,7 +77,6 @@ void CoherentDemod::_ifft()
   }
 }
 
-// exp(-j (phase + slope * k)) for every carrier k, by multiplying (std::polar for every carrier is too slow)
 void CoherentDemod::_rotation(const f32 iPhase, const f32 iSlope, TArrayK & oV) const
 {
   const cf32 step = cmplx_from_phase(-iSlope);
@@ -133,7 +132,8 @@ void CoherentDemod::process_prs(const TArrayTu & iV)
     mHAvg[c] *= cmplx_from_phase(phasePerCarrier * (f32)mCarrier[c]);
     common += mHRaw[c] * std::conj(mHAvg[c]);
   }
-  const cf32 commonRotation = cmplx_from_phase(std::arg(common));
+
+  const cf32 commonRotation = norm_to_length_one(common);
 
   // A different channel (other ensemble, other antenna) hardly correlates with the average; at 0 dB SNR the correlation is still about 0.7
   if (std::abs(common) < cMinCorrelation * std::sqrt(rawPower * avgPower))
