@@ -36,10 +36,12 @@ else ()
     set(${baseLibName}_HDRS
             ${${baseLibName}_HDRS}
             ofdm/ofdm_decoder.h
+            ofdm/coherent_demod.h
     )
     set(${baseLibName}_SRCS
             ${${baseLibName}_SRCS}
             ofdm/ofdm_decoder.cpp
+            ofdm/coherent_demod.cpp
     )
 endif ()
 

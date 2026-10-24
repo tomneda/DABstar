@@ -121,7 +121,7 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & /*iGuardCorrSum*/, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();

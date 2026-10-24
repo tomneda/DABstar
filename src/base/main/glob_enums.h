@@ -51,6 +51,7 @@ enum class ESoftBitType  // adapt RadioInterface::get_soft_bit_gen_names() too i
   SOFTDEC1,
   SOFTDEC2,
   SOFTDEC3,
+  COHERENT,  // coherent demodulation (see CoherentDemodulator), only available in the non-SIMD OfdmDecoder
 
   DEFAULT = SOFTDEC1   // use 3rd version for startup constellation
 };

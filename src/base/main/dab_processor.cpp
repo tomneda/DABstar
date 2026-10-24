@@ -339,7 +339,7 @@ f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_begin();
 #endif
-    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, mClockErrHz, mBits);
+    mOfdmDecoder.decode_symbol(mFftOutBuffer, ofdmSymbIdx, mPhaseOffsetCyclPrefRad, mClockErrHz, freqCorr, mBits);
 #ifdef DO_TIME_MEAS
     mTimeMeas.trigger_end();
 #endif

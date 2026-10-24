@@ -37,6 +37,7 @@
 #include "freq_interleaver.h"
 #include "ringbuffer.h"
 #include "phasetable.h"
+#include "coherent_demod.h"
 #include <QObject>
 #include <vector>
 #include <atomic>
@@ -64,7 +65,7 @@ public:
   void store_null_symbol_with_tii(const TArrayTu &);
   void store_null_symbol_without_tii(const TArrayTu &);
   void store_reference_symbol_0(const TArrayTu &);
-  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits);
+  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
@@ -102,6 +103,9 @@ private:
   f32 mMeanValue = 1.0f;
   f32 mMeanSigmaSqFreqCorr = 0.0f;
   cf32 mDcAdc{ 0.0f, 0.0f };
+
+  CoherentDemod mCoherentDemod;
+  bool mCoherentFrame = false; // coherent demodulation selected for the current frame (chosen at its PRS)
 
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter
