@@ -123,7 +123,7 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 
 ![](res/for_readme/scope-spec-corr.png)
 
-Shows the spectrum scope, IQ constellation, impulse response / correlation, and audio spectrum analyzer. The audio display supports multiple visualization modes (FFT spectrum unfilled/filled, 8 log bands, or off) with interactive horizontal and vertical zooming/panning.
+Shows the spectrum scope, IQ constellation, impulse response/correlation and carrier related components with interactive horizontal and vertical zooming/panning. 
 
 ### FIB content window
 
@@ -155,6 +155,8 @@ Displays detected Transmitter Identification Information (TII), including main/s
 
 ![](res/for_readme/tech-details.png)
 ![](res/for_readme/tech-details2.png)
+
+The audio display supports multiple visualization modes (FFT spectrum unfilled/filled, 8 log bands, or off) with interactive horizontal and vertical zooming/panning.
 
 ### The PRS correlation window of a whole DAB frame (CIR)
 
