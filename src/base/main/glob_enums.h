@@ -46,14 +46,20 @@ enum class ECarrierPlotType
   DEFAULT = SB_WEIGHT  // use the first element for startup constellation
 };
 
-enum class ESoftBitType  // adapt RadioInterface::get_soft_bit_gen_names() too if changes made here
+enum class ESoftBitType  // adapt DabRadio::_get_soft_bit_gen_names() too if changes made here
 {
+#ifndef HAVE_SSE_OR_AVX
+  COHERENT,  // coherent demodulation (see CoherentDemodulator), only available in the non-SIMD OfdmDecoder
+#endif
   SOFTDEC1,
   SOFTDEC2,
   SOFTDEC3,
-  COHERENT,  // coherent demodulation (see CoherentDemodulator), only available in the non-SIMD OfdmDecoder
 
-  DEFAULT = SOFTDEC1   // use 3rd version for startup constellation
+#ifndef HAVE_SSE_OR_AVX
+  DEFAULT = COHERENT   // use coherent for startup constellation
+#else
+  DEFAULT = SOFTDEC1
+#endif
 };
 
 enum class EInfoReason // this is the info given back from DabRadio to the EnsembleList
