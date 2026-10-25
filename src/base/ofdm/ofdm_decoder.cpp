@@ -283,9 +283,10 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       // The soft bits of the coherent demodulator are already scaled to the range of the soft bits
       softBitReal = mCoherentDemod.get_soft_bit_real(fftIdx);
       softBitImag = mCoherentDemod.get_soft_bit_imag(fftIdx);
-      limit_symmetrically(softBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
-      limit_symmetrically(softBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
     }
+
+    limit_symmetrically(softBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
+    limit_symmetrically(softBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
 
     oBits[0  + nomCarrIdx] = (i16)softBitReal;
     oBits[cK + nomCarrIdx] = (i16)softBitImag;
@@ -304,12 +305,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
       switch (carrPlotType)
       {
-      case ECarrierPlotType::SB_WEIGHT:
-        // Convert and limit the soft bit weigth to percent
-        w2 = (std::abs(softBitReal) + std::abs(softBitImag)) / 2.0f;
-        limit_min_max(w2, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
-        mCarrVector[realCarrRelIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * w2;
-        break;
+      case ECarrierPlotType::SB_WEIGHT:       mCarrVector[realCarrRelIdx] = (std::abs(softBitReal) + std::abs(softBitImag)) / 2.0f * 100.0f / VITERBI_SOFT_BIT_VALUE_MAX; break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[realCarrRelIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
