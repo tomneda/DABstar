@@ -602,12 +602,9 @@ bool DabRadio::_start_primary_and_secondary_service(const u32 iSId, const bool i
 
     const bool isDabPlus = (ad.ASCTy == 0x3F);
 
-    if (!isDabPlus)
-    {
-      ui->tlRsCrcError->set_stage(TrafficLight::EStage::Off);
-      ui->tlRsError->set_stage(TrafficLight::EStage::Off);
-      ui->tlAacError->set_stage(TrafficLight::EStage::Off);
-    }
+    ui->tlRsCrcError->setEnabled(isDabPlus);
+    ui->tlRsError->setEnabled(isDabPlus);
+    ui->tlAacError->setEnabled(isDabPlus);
 
     _set_status_info_status(mStatusInfo.InpBitRate, (i32)ad.bitRate); // the (i32) is important for the template deduction
     _set_status_info_status(mStatusInfo.ProtLevel, getProtectionLevel(ad.shortForm, ad.protLevel));

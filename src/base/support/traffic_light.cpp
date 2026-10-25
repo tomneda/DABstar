@@ -16,6 +16,37 @@
 #include <QEnterEvent>
 #include <QTimer>
 #include <QToolTip>
+#include <QPainter>
+#include <QStyle>
+
+namespace
+{
+class TrafficLightIconLabel : public QLabel
+{
+public:
+  using QLabel::QLabel;
+
+protected:
+  void paintEvent(QPaintEvent * /*event*/) override
+  {
+    const QPixmap p = pixmap();
+    if (p.isNull())
+    {
+      return;
+    }
+    QPainter painter(this);
+    if (hasScaledContents())
+    {
+      painter.drawPixmap(rect(), p);
+    }
+    else
+    {
+      const QRect targetRect = QStyle::alignedRect(layoutDirection(), alignment(), p.size(), rect());
+      painter.drawPixmap(targetRect, p);
+    }
+  }
+};
+} // namespace
 
 TrafficLight::TrafficLight(QWidget * const parent)
   : QWidget(parent)
@@ -74,7 +105,7 @@ void TrafficLight::_init_ui(const QString & iText)
   mpLabel->setVisible(!mText.isEmpty());
   mpLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-  mpIconLabel = new QLabel(this);
+  mpIconLabel = new TrafficLightIconLabel(this);
   mpIconLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   mpIconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   mpIconLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
