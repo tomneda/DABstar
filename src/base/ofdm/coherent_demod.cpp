@@ -221,8 +221,15 @@ void CoherentDemod::_process_prs_frame_average(const TArrayTu & iV)
   {
     mHAvg[c] *= commonRotation;
     const f32 e = std::norm(mHRaw[c] - mHAvg[c]) * noiseScale;
-    mNoiseVar[c] = (mFrames == 1 ? e : (1.0f - beta) * mNoiseVar[c] + beta * e);
-    mHAvg[c] = (1.0f - alpha) * mHAvg[c] + alpha * mHRaw[c];
+    if (mFrames == 1)
+    {
+      mNoiseVar[c] = e;
+    }
+    else
+    {
+      mean_filter(mNoiseVar[c], e, beta);
+    }
+    mean_filter(mHAvg[c], mHRaw[c], alpha);
   }
   ++mFrames;
 
@@ -548,7 +555,7 @@ void CoherentDemod::_demodulate_frame_average(const TArrayTu & iV, const i32 iCu
 
   if (counted > 0)
   {
-    mDataNoise = (1.0f - cDataNoiseAlpha) * mDataNoise + cDataNoiseAlpha * relativeError / (f32)counted;
+    mean_filter(mDataNoise, relativeError / (f32)counted, cDataNoiseAlpha);
   }
 }
 
@@ -563,7 +570,14 @@ void CoherentDemod::_process_prs_decision_directed(const TArrayTu & iV)
   if (mChannelSlow)
   {
     const f32 meanLlr = (f32)(mLlrSum / (f64)(2 * cK * (cL - 1))) + 1e-12f;
-    mLlrRef = (mLlrRef > 0.0f ? (1.0f - cDdLlrRefAlpha) * mLlrRef + cDdLlrRefAlpha * meanLlr : meanLlr);
+    if (mLlrRef > 0.0f)
+    {
+      mean_filter(mLlrRef, meanLlr, cDdLlrRefAlpha);
+    }
+    else
+    {
+      mLlrRef = meanLlr;
+    }
   }
 
   mLlrSum = 0.0;
