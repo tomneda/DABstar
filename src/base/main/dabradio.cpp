@@ -134,6 +134,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   mpTiiManager->set_local_pos(mLocalPos);
 
   mpConfig->cmbSoftBitGen->addItems(_get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
+  _slot_update_coherent_traffic_light(mpConfig->cmbSoftBitGen->currentIndex());
+  connect(mpConfig->cmbSoftBitGen, qOverload<i32>(&QComboBox::currentIndexChanged), this, &DabRadio::_slot_update_coherent_traffic_light);
   mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
 
 #ifdef DATA_STREAMER

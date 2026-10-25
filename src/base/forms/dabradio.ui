@@ -1085,6 +1085,22 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="3">
+          <widget class="TrafficLight" name="tlCoherent" native="true">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Coherent demodulation state indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(Only active if &amp;quot;Coherent&amp;quot; is selected in the &amp;quot;Soft bit generation&amp;quot; setting)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Channel estimate ready, coherent demodulation in use.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Channel estimate not ready yet, differential demodulation in use.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text" stdset="0">
+            <string>COH:</string>
+           </property>
+           <property name="pixmap" stdset="0">
+            <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
+           </property>
+           <property name="scaledContents" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="TrafficLight" name="tlRsError" native="true">
            <property name="toolTip">

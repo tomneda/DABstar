@@ -377,6 +377,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
+    mLcdData.CoherentReady = useCoherent;
 
     emit signal_show_lcd_data(mLcdData);
 

@@ -59,6 +59,7 @@ public:
     f32 MER;
     f32 TestData1;
     f32 TestData2;
+    bool CoherentReady; // coherent demodulation is selected and its channel estimate is ready
   };
 
   void reset();

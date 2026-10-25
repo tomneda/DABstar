@@ -473,6 +473,7 @@ private slots:
   // UI Styling and Display
   void _slot_set_static_button_style();
   void _slot_toggle_level_meter_mode();
+  void _slot_update_coherent_traffic_light(i32 iSoftBitTypeIdx) const;
 
   // Application Control
   void _slot_terminate_process();

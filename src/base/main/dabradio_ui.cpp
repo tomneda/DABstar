@@ -130,6 +130,7 @@ void DabRadio::_initialize_traffic_lights() const
   //                   |                                   | 600 - 1200 ms MP2    |                            |
   // ui->tlRsError     | Mp4Processor (signal_show_rs_err) | 3120 ms (26 supfr)   | ~4000 - 5500 ms (drop/jit) | 6000 ms
   // ui->tlAacError    | Mp4Processor (signal_show_aac)    | 520 - 1560 ms (26 AU)| ~3000 - 5000 ms (CRC errs) | 6000 ms
+  // ui->tlCoherent    | OfdmDecoder (signal_show_lcd_data)| ~500 - 600 ms        | ~600 - 700 ms (drop/jit)   | 3000 ms
   // -----------------------------------------------------------------------------------------------------------------
   ui->tlFicError->set_timeout(3000, TrafficLight::EStage::Off);    // make timeout bigger that the LED is not flickering while service change
   ui->tlAudioBuffer->set_timeout(3000, TrafficLight::EStage::Off);
@@ -137,6 +138,11 @@ void DabRadio::_initialize_traffic_lights() const
   ui->tlFrameError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlRsError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlAacError->set_timeout(6000, TrafficLight::EStage::Off);
+#ifndef HAVE_SSE_OR_AVX
+  ui->tlCoherent->set_timeout(3000, TrafficLight::EStage::Off);
+#else
+  ui->tlCoherent->setVisible(false); // the coherent demodulation is not available in the SIMD OfdmDecoder
+#endif
 }
 
 void DabRadio::_initialize_ui_elements()
@@ -367,6 +373,21 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
   return sl;
 }
 
+void DabRadio::_slot_update_coherent_traffic_light(const i32 iSoftBitTypeIdx) const
+{
+#ifndef HAVE_SSE_OR_AVX
+  // The traffic light is disabled (shown off) if the coherent demodulation is not selected at all
+  const bool isCoherent = ((ESoftBitType)iSoftBitTypeIdx == ESoftBitType::COHERENT);
+  ui->tlCoherent->setEnabled(isCoherent);
+  if (isCoherent)
+  {
+    ui->tlCoherent->set_stage(TrafficLight::EStage::RedYellow); // the channel estimate has to be built up first
+  }
+#else
+  (void)iSoftBitTypeIdx;
+#endif
+}
+
 void DabRadio::_cleanup_ui() const
 {
   ui->tlFicError->set_stage(TrafficLight::EStage::Red);
@@ -375,6 +396,7 @@ void DabRadio::_cleanup_ui() const
   ui->tlFrameError->set_stage(TrafficLight::EStage::Red);
   ui->tlRsError->set_stage(TrafficLight::EStage::Red);
   ui->tlAacError->set_stage(TrafficLight::EStage::Red);
+  ui->tlCoherent->set_stage(TrafficLight::EStage::RedYellow);
 
   if (mLevelMeterMode == ELevelMeterMode::SnrMer)
   {
@@ -1003,6 +1025,10 @@ void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData & iQD)
 
   mChannelDesc.snrLast = iQD.SNR;
   mChannelDesc.merLast = iQD.MER;
+
+#ifndef HAVE_SSE_OR_AVX
+  ui->tlCoherent->set_stage(iQD.CoherentReady ? TrafficLight::EStage::Green : TrafficLight::EStage::RedYellow);
+#endif
 
   if (mLevelMeterMode == ELevelMeterMode::SnrMer)
   {
