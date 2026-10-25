@@ -566,7 +566,7 @@ void CoherentDemod::_process_prs_decision_directed(const TArrayTu & iV)
   // the estimate, unreliable: the next frame goes back to the differential demodulation, which follows the channel
   // without decisions.
   const bool frameComplete = (mTapMaskValid && mNextOfdmSymbIdx == cL);
-  mChannelSlow = frameComplete && std::isfinite(mLlrSum) && std::isfinite(mDeltaHSum) && mDeltaHSum < cDdMaxChannelChange * mPowerHSum;
+  mChannelSlow = frameComplete && mDeltaHSum < cDdMaxChannelChange * mPowerHSum;
   if (mChannelSlow)
   {
     const f32 meanLlr = (f32)(mLlrSum / (f64)(2 * cK * (cL - 1))) + 1e-12f;
