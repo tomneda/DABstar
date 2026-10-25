@@ -278,7 +278,8 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     if (useCoherent)
     {
       // The log-likelihood ratios (> 0: bit 0) are scaled to the range of the soft bits
-      constexpr f32 cLlrScale = 16.0f;
+      constexpr f32 cLlrScale = 16.0f; // original value
+      // constexpr f32 cLlrScale = F_VITERBI_SOFT_BIT_VALUE_MAX / 15.0f;
       softBitReal = -mCoherentDemod.get_llr_real(fftIdx) * cLlrScale;
       softBitImag = -mCoherentDemod.get_llr_imag(fftIdx) * cLlrScale;
       limit_symmetrically(softBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
