@@ -49,14 +49,15 @@ enum class ECarrierPlotType
 enum class ESoftBitType  // adapt DabRadio::_get_soft_bit_gen_names() too if changes made here
 {
 #ifndef HAVE_SSE_OR_AVX
-  COHERENT,  // coherent demodulation (see CoherentDemodulator), only available in the non-SIMD OfdmDecoder
+  COHERENT_1,  // coherent demodulation (see CoherentDemod::EMethod::FRAME_AVERAGE), only available in the non-SIMD OfdmDecoder
+  COHERENT_2,  // coherent demodulation (see CoherentDemod::EMethod::DECISION_DIRECTED), only available in the non-SIMD OfdmDecoder
 #endif
   SOFTDEC1,
   SOFTDEC2,
   SOFTDEC3,
 
 #ifndef HAVE_SSE_OR_AVX
-  DEFAULT = COHERENT   // use coherent for startup constellation
+  DEFAULT = COHERENT_1 // use coherent for startup constellation
 #else
   DEFAULT = SOFTDEC1
 #endif

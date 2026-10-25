@@ -107,6 +107,7 @@ private:
 
   CoherentDemod mCoherentDemod;
   bool mCoherentFrame = false; // coherent demodulation selected for the current frame (chosen at its PRS)
+  ESoftBitType mFrameSoftBitType{ ESoftBitType::DEFAULT }; // soft bit type at the PRS of the current frame
 
   // mLcdData has always be visible due to address access in another thread.
   // It isn't even thread safe but due to slow access this shouldn't be any matter

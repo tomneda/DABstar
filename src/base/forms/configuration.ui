@@ -555,7 +555,11 @@
                  The designations refer to the document &quot;SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES&quot;.
                  The use of an optimal soft decision algorithm compared to the conventional soft decision algorithm gives a performance improvement equivalent to an SNR gain of up to 5dB. 
                  In a time invariant propagation environment, Optimal 3 gives the best performance whereas in time selective environment, Optimal 2 gives the best performance.&lt;/p&gt;&lt;p&gt;
-                 See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;
+                 &amp;quot;Coherent 1&amp;quot; and &amp;quot;Coherent 2&amp;quot; use a channel estimate instead of the previous symbol as reference (not available in the SIMD build). They need less SNR for weak, stationary signals:&lt;br/&gt;
+                 &lt;b&gt;Coherent 1&lt;/b&gt; (from welle.io): the channel estimate of the phase reference symbol is averaged over frames, the phase and timing drift is tracked within the frame.&lt;br/&gt;
+                 &lt;b&gt;Coherent 2&lt;/b&gt; (from OnAir): the channel is estimated from the phase reference symbol of each frame and re-estimated from every data symbol with the decided carriers. If the channel changes too fast (mobile reception), the next frame uses the differential demodulation.&lt;br/&gt;
+                 Until the channel estimate is ready, &amp;quot;Optimal 3&amp;quot; is used (see the coherent traffic light in the main window).&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>

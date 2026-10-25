@@ -1,9 +1,13 @@
 /*
  * This file is adapted by Thomas Neder (https://github.com/tomneda)
  *
- * The coherent demodulator was taken over from the project welle.io (https://github.com/AlbrechtL/welle.io),
+ * The coherent demodulator EMethod::FRAME_AVERAGE was taken over from the project welle.io (https://github.com/AlbrechtL/welle.io),
  * file src/backend/ofdm-decoder.cpp/.h, class CoherentDemodulator. Many thanks to the welle.io team for this
  * contribution! It was adapted to the programming style and the data structures of DABstar.
+ *
+ * The coherent demodulator EMethod::DECISION_DIRECTED was taken over from the project OnAir,
+ * file core/src/dab/dab_rx.cpp, DabReceiver::Impl::channelSoft(). It was adapted to the symbol-wise processing,
+ * the programming style and the data structures of DABstar.
  *
  * The original copyright is acknowledged.
  */
@@ -12,6 +16,7 @@
 #include <algorithm>
 #include <cmath>
 
+// ---- EMethod::FRAME_AVERAGE
 // Weight of the newest PRS in the average of the channel estimate. The first frames are averaged with equal weights.
 constexpr f32 cChannelAlpha = 0.15f;
 // Weight of the newest PRS in the average of the noise power
@@ -41,6 +46,21 @@ constexpr f32 cMaxLogLikelihood = 15.0f;
 constexpr f32 cMinProbability = 1e-15f;
 // Largest timing rate: 0.33 samples per symbol (130 ppm)
 constexpr f32 cMaxTimingRate = 0.001f;
+// The log-likelihood ratios are scaled with this factor to the range of the soft bits
+constexpr f32 cLlrScale = 16.0f;
+
+// ---- EMethod::DECISION_DIRECTED
+// Taps of the impulse response of the PRS that are kept: above this many times the median tap power (noise),
+// widened by cDdTapWidening taps on each side
+constexpr f32 cDdTapThreshold = 12.0f;
+constexpr i32 cDdTapWidening = 2;
+// A frame whose channel estimate changed more than this (relative power of the change from symbol to symbol) makes
+// the decisions unreliable: the next frame goes back to the differential demodulation
+constexpr f64 cDdMaxChannelChange = 0.05;
+// Weight of a frame in the average of the mean |LLR|
+constexpr f32 cDdLlrRefAlpha = 0.2f;
+// Mean |soft bit| of a symbol with the average |LLR|
+constexpr f32 cDdSoftBitMean = 40.0f / 127.0f * F_VITERBI_SOFT_BIT_VALUE_MAX;
 
 CoherentDemod::CoherentDemod()
   : PhaseTable()
@@ -58,6 +78,13 @@ CoherentDemod::CoherentDemod()
     ++c;
   }
   assert(c == cK);
+
+  // log(1 + exp(-d)) in the middle of the steps of 1/8 up to 8, then nothing
+  for (i32 i = 0; i < (i32)mMaxStarTable.size() - 1; ++i)
+  {
+    mMaxStarTable[i] = std::log1p(std::exp(-((f32)i + 0.5f) / 8.0f));
+  }
+  mMaxStarTable.back() = 0.0f;
 }
 
 CoherentDemod::~CoherentDemod()
@@ -92,14 +119,53 @@ void CoherentDemod::_rotation(const f32 iPhase, const f32 iSlope, TArrayK & oV) 
   }
 }
 
+void CoherentDemod::set_method(const EMethod iMethod)
+{
+  mMethod = iMethod;
+  reset();
+}
+
 void CoherentDemod::reset()
 {
   mFrames = 0;
   mTimingRate = 0.0f;
   mDataNoise = 1.0f;
+
+  mTapMaskValid = false;
+  mChannelSlow = false;
+  mNextOfdmSymbIdx = 0;
+  mLlrRef = 0.0f;
+}
+
+bool CoherentDemod::is_ready() const
+{
+  switch (mMethod)
+  {
+  case EMethod::FRAME_AVERAGE:     return mFrames >= 2; // the channel estimate and the noise are known
+  case EMethod::DECISION_DIRECTED: return mTapMaskValid && mChannelSlow;
+  }
+  return false;
 }
 
 void CoherentDemod::process_prs(const TArrayTu & iV)
+{
+  switch (mMethod)
+  {
+  case EMethod::FRAME_AVERAGE:     _process_prs_frame_average(iV); break;
+  case EMethod::DECISION_DIRECTED: _process_prs_decision_directed(iV); break;
+  }
+}
+
+void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum)
+{
+  switch (mMethod)
+  {
+  case EMethod::FRAME_AVERAGE:     _demodulate_frame_average(iV, iCurOfdmSymbIdx, iGuardCorrSum); break;
+  case EMethod::DECISION_DIRECTED: _demodulate_decision_directed(iV, iCurOfdmSymbIdx); break;
+  }
+}
+
+void CoherentDemod::_process_prs_frame_average(const TArrayTu & iV)
 {
   f32 rawPower = 0.0f;
   f32 avgPower = 0.0f;
@@ -316,8 +382,13 @@ void CoherentDemod::_smooth_channel()
   }
 }
 
-void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum)
+void CoherentDemod::_demodulate_frame_average(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum)
 {
+  if (!is_ready())
+  {
+    return; // the differential demodulation is used until the channel estimate is ready
+  }
+
   if (iCurOfdmSymbIdx == 1)
   {
     // The previous symbol is the PRS, it is known
@@ -462,11 +533,12 @@ void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, c
       }
     }
 
-    // The differences pi/4 and 7 pi/4 have a positive real part (bit 0), pi/4 and 3 pi/4 a positive imaginary part
+    // The differences pi/4 and 7 pi/4 have a positive real part (bit 0), pi/4 and 3 pi/4 a positive imaginary part.
+    // The log-likelihood ratios (> 0: bit 0) are scaled to the soft bits (> 0: bit 1).
     constexpr f32 tiny = 1e-30f;
     const i32 fftIdx = mFftBin[c];
-    mLlrRe[fftIdx] = std::log((pd[0] + pd[3] + tiny) / (pd[1] + pd[2] + tiny));
-    mLlrIm[fftIdx] = std::log((pd[0] + pd[1] + tiny) / (pd[2] + pd[3] + tiny));
+    mSoftBitRe[fftIdx] = -cLlrScale * std::log((pd[0] + pd[3] + tiny) / (pd[1] + pd[2] + tiny));
+    mSoftBitIm[fftIdx] = -cLlrScale * std::log((pd[0] + pd[1] + tiny) / (pd[2] + pd[3] + tiny));
 
     const i32 prevIdx = (i32)(std::max_element(q.begin(), q.end()) - q.begin());
     mDecisions[fftIdx] = v * toDifference[prevIdx];
@@ -477,5 +549,204 @@ void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, c
   if (counted > 0)
   {
     mDataNoise = (1.0f - cDataNoiseAlpha) * mDataNoise + cDataNoiseAlpha * relativeError / (f32)counted;
+  }
+}
+
+void CoherentDemod::_process_prs_decision_directed(const TArrayTu & iV)
+{
+  // Only a complete frame tells whether the channel changed slowly enough for the decisions. A channel that changes
+  // fast (Doppler of some 40 Hz and more, a car on a motorway in Band III) makes the decided carriers, and with them
+  // the estimate, unreliable: the next frame goes back to the differential demodulation, which follows the channel
+  // without decisions.
+  const bool frameComplete = (mTapMaskValid && mNextOfdmSymbIdx == cL);
+  mChannelSlow = frameComplete && std::isfinite(mLlrSum) && std::isfinite(mDeltaHSum) && mDeltaHSum < cDdMaxChannelChange * mPowerHSum;
+  if (mChannelSlow)
+  {
+    const f32 meanLlr = (f32)(mLlrSum / (f64)(2 * cK * (cL - 1))) + 1e-12f;
+    mLlrRef = (mLlrRef > 0.0f ? (1.0f - cDdLlrRefAlpha) * mLlrRef + cDdLlrRefAlpha * meanLlr : meanLlr);
+  }
+
+  mLlrSum = 0.0;
+  mDeltaHSum = 0.0;
+  mPowerHSum = 0.0;
+  mNextOfdmSymbIdx = 1;
+
+  // The PRS is known: the raw estimate of the channel
+  for (i32 c = 0; c < cK; ++c)
+  {
+    mYPrev[c] = iV[mFftBin[c]];
+    mRawEst[c] = mYPrev[c] * std::conj(mPrs[c]);
+  }
+
+  // The taps of the impulse response that stand out of the noise, widened a bit
+  mFftInBuffer.fill(cf32(0.0f, 0.0f));
+  for (i32 c = 0; c < cK; ++c)
+  {
+    mFftInBuffer[mFftBin[c]] = mRawEst[c];
+  }
+  fftwf_execute(mFftPlanBwd);
+
+  for (i32 n = 0; n < cTu; ++n)
+  {
+    mTapPower[n] = std::norm(mFftOutBuffer[n]);
+  }
+  mTapPowerSorted = mTapPower;
+  std::nth_element(mTapPowerSorted.begin(), mTapPowerSorted.begin() + cTu / 2, mTapPowerSorted.end());
+  const f32 threshold = cDdTapThreshold * mTapPowerSorted[cTu / 2];
+
+  // The mask contains the normalization of the backward FFT in _clean_estimate()
+  mTapMask.fill(0.0f);
+  for (i32 n = 0; n < cTu; ++n)
+  {
+    if (mTapPower[n] > threshold)
+    {
+      for (i32 d = -cDdTapWidening; d <= cDdTapWidening; ++d)
+      {
+        mTapMask[(n + d + cTu) % cTu] = 1.0f / (f32)cTu;
+      }
+    }
+  }
+  const i32 kept = (i32)std::count_if(mTapMask.begin(), mTapMask.end(), [](const f32 iM) { return iM > 0.0f; });
+
+  // Nothing stands out (no signal) or nothing is sparse (noise-like): differential demodulation
+  mTapMaskValid = (kept > 0 && kept <= cTu / 4);
+  if (!mTapMaskValid)
+  {
+    return;
+  }
+
+  _clean_estimate(mRawEst, mHCur);
+  mHPrev = mHCur; // a straight line through the last two estimates predicts the next one
+}
+
+void CoherentDemod::_clean_estimate(const TArrayK & iE, TArrayK & oH)
+{
+  // Through the time domain, only the masked taps kept (mFftInBuffer and mFftOutBuffer are different buffers)
+  mFftInBuffer.fill(cf32(0.0f, 0.0f));
+  for (i32 c = 0; c < cK; ++c)
+  {
+    mFftInBuffer[mFftBin[c]] = iE[c];
+  }
+  fftwf_execute(mFftPlanBwd);
+
+  for (i32 n = 0; n < cTu; ++n)
+  {
+    mFftInBuffer[n] = mFftOutBuffer[n] * mTapMask[n];
+  }
+  fftwf_execute(mFftPlanFwd);
+
+  for (i32 c = 0; c < cK; ++c)
+  {
+    oH[c] = mFftOutBuffer[mFftBin[c]];
+  }
+}
+
+f32 CoherentDemod::_max_star(const f32 iA, const f32 iB) const
+{
+  // max*(a, b) = log(e^a + e^b): the larger plus a correction from a table
+  const f32 m = std::max(iA, iB);
+  const f32 d = std::abs(iA - iB);
+  if (!(d < 8.0f)) return m;
+  return m + mMaxStarTable[(i32)(d * 8.0f)];
+}
+
+void CoherentDemod::_demodulate_decision_directed(const TArrayTu & iV, const i32 iCurOfdmSymbIdx)
+{
+  if (!mTapMaskValid)
+  {
+    return;
+  }
+
+  if (iCurOfdmSymbIdx != mNextOfdmSymbIdx)
+  {
+    mTapMaskValid = false; // a gap in the symbols: the channel is lost until the next PRS
+    return;
+  }
+  ++mNextOfdmSymbIdx;
+
+  // The PRS is on the axes, every DQPSK step turns by an odd multiple of 45 degrees
+  const bool diag = ((iCurOfdmSymbIdx & 1) != 0);
+
+  // Decide the carriers with the estimate predicted from the last two symbols, then estimate the channel of this symbol
+  for (i32 c = 0; c < cK; ++c)
+  {
+    const cf32 y = iV[mFftBin[c]];
+    const cf32 z = std::conj(2.0f * mHCur[c] - mHPrev[c]) * y;
+    cf32 s;
+    if (diag)
+    {
+      s = cf32(z.real() >= 0.0f ? F_SQRT1_2 : -F_SQRT1_2, z.imag() >= 0.0f ? F_SQRT1_2 : -F_SQRT1_2);
+    }
+    else if (std::abs(z.real()) >= std::abs(z.imag()))
+    {
+      s = cf32(z.real() >= 0.0f ? 1.0f : -1.0f, 0.0f);
+    }
+    else
+    {
+      s = cf32(0.0f, z.imag() >= 0.0f ? 1.0f : -1.0f);
+    }
+    mRawEst[c] = y * std::conj(s);
+  }
+  _clean_estimate(mRawEst, mHNew);
+
+  // The noise of this symbol: what is left after the channel times the decided symbol (wrong decisions make it larger, not smaller)
+  f64 residual = 0.0;
+  f64 power = 0.0;
+  for (i32 c = 0; c < cK; ++c)
+  {
+    residual += std::norm(mRawEst[c] - mHNew[c]);
+    power += std::norm(mHNew[c]);
+  }
+  const f32 g = (f32)(2.0 * cK / std::max(residual, 1e-6 * power + 1e-30)); // 2 / sigma^2
+
+  f64 llrSum = 0.0;
+  for (i32 c = 0; c < cK; ++c)
+  {
+    const cf32 y = iV[mFftBin[c]];
+    const cf32 a = std::conj(mHCur[c]) * mYPrev[c];
+    const cf32 b = std::conj(mHNew[c]) * y;
+
+    // Log of the likelihood of d = (iDr + j iDi) / sqrt(2), summed over the four phases of the previous symbol (log-MAP)
+    auto metric = [&](const f32 iDr, const f32 iDi)
+    {
+      const f32 wr = g * (a.real() + (b.real() * iDr + b.imag() * iDi) * F_SQRT1_2);
+      const f32 wi = g * (a.imag() + (b.imag() * iDr - b.real() * iDi) * F_SQRT1_2);
+      if (diag) return _max_star(_max_star(wr, -wr), _max_star(wi, -wi)); // previous symbol on the axes
+      const f32 u = (wr + wi) * F_SQRT1_2;
+      const f32 v = (wr - wi) * F_SQRT1_2;
+      return _max_star(_max_star(u, -u), _max_star(v, -v));
+    };
+
+    const f32 mpp = metric( 1.0f,  1.0f);
+    const f32 mpm = metric( 1.0f, -1.0f);
+    const f32 mmp = metric(-1.0f,  1.0f);
+    const f32 mmm = metric(-1.0f, -1.0f);
+    const f32 llrRe = _max_star(mmp, mmm) - _max_star(mpp, mpm); // > 0: the real part negative, bit 1
+    const f32 llrIm = _max_star(mpm, mmm) - _max_star(mpp, mmp); // > 0: the imaginary part negative, bit 1
+
+    const i32 fftIdx = mFftBin[c];
+    mSoftBitRe[fftIdx] = llrRe;
+    mSoftBitIm[fftIdx] = llrIm;
+    mDecisions[fftIdx] = b * std::conj(a);
+    llrSum += std::abs(llrRe) + std::abs(llrIm);
+
+    mDeltaHSum += std::norm(mHNew[c] - mHCur[c]);
+    mPowerHSum += std::norm(mHCur[c]);
+    mYPrev[c] = y;
+  }
+  mLlrSum += llrSum;
+
+  mHPrev = mHCur;
+  mHCur = mHNew;
+
+  // The soft bits are scaled by the slow average of the mean |LLR| of the frames with a slow channel, not by this
+  // symbol's own: a faded symbol then gives weak soft bits that the Viterbi decoder takes as nearly erased.
+  const f32 meanLlr = (f32)(llrSum / (f64)(2 * cK)) + 1e-12f;
+  const f32 scale = cDdSoftBitMean / std::max(meanLlr, mLlrRef);
+  for (i32 c = 0; c < cK; ++c)
+  {
+    const i32 fftIdx = mFftBin[c];
+    mSoftBitRe[fftIdx] *= scale;
+    mSoftBitIm[fftIdx] *= scale;
   }
 }

@@ -365,7 +365,8 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
 
   // ATTENTION: use same sequence as in ESoftBitType
 #ifndef HAVE_SSE_OR_AVX
-  sl << "Coherent";        // ESoftBitType::COHERENT
+  sl << "Coherent 1";      // ESoftBitType::COHERENT_1
+  sl << "Coherent 2";      // ESoftBitType::COHERENT_2
 #endif
   sl << "Optimal 3";       // ESoftBitType::SOFTDEC1
   sl << "Optimal 2";       // ESoftBitType::SOFTDEC2
@@ -377,7 +378,8 @@ void DabRadio::_slot_update_coherent_traffic_light(const i32 iSoftBitTypeIdx) co
 {
 #ifndef HAVE_SSE_OR_AVX
   // The traffic light is disabled (shown off) if the coherent demodulation is not selected at all
-  const bool isCoherent = ((ESoftBitType)iSoftBitTypeIdx == ESoftBitType::COHERENT);
+  const ESoftBitType softBitType = (ESoftBitType)iSoftBitTypeIdx;
+  const bool isCoherent = (softBitType == ESoftBitType::COHERENT_1 || softBitType == ESoftBitType::COHERENT_2);
   ui->tlCoherent->setEnabled(isCoherent);
   if (isCoherent)
   {
