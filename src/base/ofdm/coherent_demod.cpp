@@ -559,16 +559,38 @@ void CoherentDemod::_demodulate_frame_average(const TArrayTu & iV, const i32 iCu
   }
 }
 
+/*
+ * PRS (symbol 0) of a frame for EMethod::DECISION_DIRECTED.
+ *
+ * Steps:
+ *  1. Evaluation of the frame just finished (statistics collected by _demodulate_decision_directed()):
+ *     was the channel slow enough, and the slow average mLlrRef of the mean |LLR|. The result mChannelSlow is
+ *     applied to the frame that starts now (one frame delay).
+ *  2. Reset of the statistics and of the symbol counter for the new frame.
+ *  3. Raw channel estimate of every carrier from the known PRS.
+ *  4. Tap mask: the taps of the impulse response that stand out of the noise. It is used by _clean_estimate() for
+ *     the PRS and for every data symbol of this frame.
+ *  5. Cleaned estimate of the PRS as the start of the chain of estimates H_0, H_1, ...
+ *
+ * After reset() the first frame never gives soft bits (mChannelSlow needs a complete frame before), so the coherent
+ * soft bits start with the second frame at the earliest.
+ */
 void CoherentDemod::_process_prs_decision_directed(const TArrayTu & iV)
 {
+  // ---- 1. Evaluation of the frame just finished
   // Only a complete frame tells whether the channel changed slowly enough for the decisions. A channel that changes
   // fast (Doppler of some 40 Hz and more, a car on a motorway in Band III) makes the decided carriers, and with them
   // the estimate, unreliable: the next frame goes back to the differential demodulation, which follows the channel
   // without decisions.
+  // Complete: the tap mask was valid for the whole frame and all data symbols 1 .. cL-1 came without a gap.
   const bool frameComplete = (mTapMaskValid && mNextOfdmSymbIdx == cL);
+  // sum |H_l - H_{l-1}|^2 / sum |H_{l-1}|^2 over all carriers and symbols: mean relative power of the change from
+  // symbol to symbol, limit 5 % (-13 dB). Noise left in the estimates and wrong decisions count as change as well.
   mChannelSlow = frameComplete && mDeltaHSum < cDdMaxChannelChange * mPowerHSum;
   if (mChannelSlow)
   {
+    // Mean |LLR| per bit of the frame (2 bits per carrier, cL-1 data symbols), the reference for the scaling of the
+    // soft bits. Only frames with a slow channel count, the decisions of the others are not trustworthy.
     const f32 meanLlr = (f32)(mLlrSum / (f64)(2 * cK * (cL - 1))) + 1e-12f;
     if (mLlrRef > 0.0f)
     {
@@ -576,39 +598,48 @@ void CoherentDemod::_process_prs_decision_directed(const TArrayTu & iV)
     }
     else
     {
-      mLlrRef = meanLlr;
+      mLlrRef = meanLlr; // first slow frame since reset(): start the average with it
     }
   }
 
+  // ---- 2. Start of the new frame
   mLlrSum = 0.0;
   mDeltaHSum = 0.0;
   mPowerHSum = 0.0;
-  mNextOfdmSymbIdx = 1;
+  mNextOfdmSymbIdx = 1; // _demodulate_decision_directed() expects the data symbols 1, 2, ... without a gap
 
-  // The PRS is known: the raw estimate of the channel
+  // ---- 3. The PRS is known: the raw estimate of the channel
+  // y_0 conj(x_0) = H_0 + n (|x_0| = 1). y_0 is also kept as the "previous symbol" of data symbol 1.
   for (i32 c = 0; c < cK; ++c)
   {
     mYPrev[c] = iV[mFftBin[c]];
     mRawEst[c] = mYPrev[c] * std::conj(mPrs[c]);
   }
 
-  // The taps of the impulse response that stand out of the noise, widened a bit
+  // ---- 4. The taps of the impulse response that stand out of the noise, widened a bit
+  // Impulse response: backward FFT of the raw estimate, the bins without a carrier (outside band, DC) set to 0
   mFftInBuffer.fill(cf32(0.0f, 0.0f));
   for (i32 c = 0; c < cK; ++c)
   {
     mFftInBuffer[mFftBin[c]] = mRawEst[c];
   }
-  fftwf_execute(mFftPlanBwd);
+  fftwf_execute(mFftPlanBwd); // not normalized, only the ratio to the threshold matters
 
   for (i32 n = 0; n < cTu; ++n)
   {
     mTapPower[n] = std::norm(mFftOutBuffer[n]);
   }
+  // The paths occupy only a few taps, most taps contain only noise: the median is a robust measure of the noise
+  // power of a tap (for exponentially distributed noise power the median is ln(2) times the mean).
+  // A pure noise tap exceeds 12 times the median with the probability 2^-12, i.e. about 0.5 false taps per PRS.
   mTapPowerSorted = mTapPower;
   std::nth_element(mTapPowerSorted.begin(), mTapPowerSorted.begin() + cTu / 2, mTapPowerSorted.end());
   const f32 threshold = cDdTapThreshold * mTapPowerSorted[cTu / 2];
 
   // The mask contains the normalization of the backward FFT in _clean_estimate()
+  // Every strong tap is widened by cDdTapWidening taps on each side: the paths do not lie exactly on the tap grid and
+  // the missing carriers (band edges, DC) spread a path over its neighbours. The index wraps around: taps before the
+  // first path (pre-echoes, FFT window too late) lie at the end of the buffer.
   mTapMask.fill(0.0f);
   for (i32 n = 0; n < cTu; ++n)
   {
@@ -623,13 +654,16 @@ void CoherentDemod::_process_prs_decision_directed(const TArrayTu & iV)
   const i32 kept = (i32)std::count_if(mTapMask.begin(), mTapMask.end(), [](const f32 iM) { return iM > 0.0f; });
 
   // Nothing stands out (no signal) or nothing is sparse (noise-like): differential demodulation
+  // (cTu / 4 is about the length of the guard interval, a usable impulse response is not longer)
   mTapMaskValid = (kept > 0 && kept <= cTu / 4);
   if (!mTapMaskValid)
   {
-    return;
+    return; // is_ready() false and _demodulate_decision_directed() idle for this frame
   }
 
+  // ---- 5. Start of the chain of estimates
   _clean_estimate(mRawEst, mHCur);
+  // Both estimates the same: the prediction 2 H_cur - H_prev for data symbol 1 is H_0 (no slope known yet)
   mHPrev = mHCur; // a straight line through the last two estimates predicts the next one
 }
 
@@ -664,13 +698,36 @@ f32 CoherentDemod::_max_star(const f32 iA, const f32 iB) const
   return m + mMaxStarTable[(i32)(d * 8.0f)];
 }
 
+/*
+ * Decision-directed coherent demodulation of the data symbol l = iCurOfdmSymbIdx.
+ *
+ * Model of carrier c (index c omitted): y_l = H_l x_l + n_l with the channel H_l, the absolute (unknown) symbol x_l
+ * and complex Gaussian noise n_l of power sigma^2. The transmitted information is the phase difference
+ * d_l = x_l / x_{l-1} in {e^(j pi/4), e^(j 3pi/4), e^(-j 3pi/4), e^(-j pi/4)}.
+ *
+ * State on entry (written by _process_prs_decision_directed() or by the previous call):
+ *   mHCur  = H_{l-1}  cleaned estimate of the previous symbol (for l = 1: the PRS)
+ *   mHPrev = H_{l-2}  cleaned estimate of the symbol before that (for l = 1: also the PRS)
+ *   mYPrev = y_{l-1}  received carriers of the previous symbol
+ *
+ * Steps:
+ *  1. Hard decision of x_l with the channel predicted linearly from H_{l-1} and H_{l-2}.
+ *  2. New channel estimate H_l from y_l with the decided x_l taken out, cleaned in the time domain.
+ *  3. Noise power sigma^2 of this symbol from what the cleaning removed.
+ *  4. Soft bits of d_l (log-MAP, the absolute phase of x_{l-1} is unknown and summed out).
+ *  5. Statistics for the next PRS (channel change, mean |LLR|), shift of the state.
+ *  6. Scaling of the soft bits to the range of the Viterbi decoder.
+ */
 void CoherentDemod::_demodulate_decision_directed(const TArrayTu & iV, const i32 iCurOfdmSymbIdx)
 {
+  // No usable impulse response in the PRS of this frame: nothing to do until the next PRS (is_ready() is false, the
+  // statistics are not collected, so the next PRS also sees the frame as incomplete).
   if (!mTapMaskValid)
   {
     return;
   }
 
+  // The estimate is carried from symbol to symbol, a missing symbol breaks the chain
   if (iCurOfdmSymbIdx != mNextOfdmSymbIdx)
   {
     mTapMaskValid = false; // a gap in the symbols: the channel is lost until the next PRS
@@ -679,31 +736,43 @@ void CoherentDemod::_demodulate_decision_directed(const TArrayTu & iV, const i32
   ++mNextOfdmSymbIdx;
 
   // The PRS is on the axes, every DQPSK step turns by an odd multiple of 45 degrees
+  // (so x_l lies on the diagonals for odd l and on the axes for even l; x_{l-1} is on the other grid)
   const bool diag = ((iCurOfdmSymbIdx & 1) != 0);
 
-  // Decide the carriers with the estimate predicted from the last two symbols, then estimate the channel of this symbol
+  // ---- 1. + 2. Decide the carriers with the estimate predicted from the last two symbols, then estimate the channel of this symbol
   for (i32 c = 0; c < cK; ++c)
   {
     const cf32 y = iV[mFftBin[c]];
+    // Linear prediction H_l ~ H_{l-1} + (H_{l-1} - H_{l-2}) follows a slowly turning or fading channel.
+    // z = conj(H_pred) y ~ |H|^2 x_l: x_l with the channel phase removed (the amplitude does not matter for the decision).
     const cf32 z = std::conj(2.0f * mHCur[c] - mHPrev[c]) * y;
+    // s: nearest of the four possible points of x_l (|s| = 1)
     cf32 s;
     if (diag)
     {
+      // Diagonals: the quadrant of z
       s = cf32(z.real() >= 0.0f ? F_SQRT1_2 : -F_SQRT1_2, z.imag() >= 0.0f ? F_SQRT1_2 : -F_SQRT1_2);
     }
     else if (std::abs(z.real()) >= std::abs(z.imag()))
     {
+      // Axes: the real axis is nearer
       s = cf32(z.real() >= 0.0f ? 1.0f : -1.0f, 0.0f);
     }
     else
     {
+      // Axes: the imaginary axis is nearer
       s = cf32(0.0f, z.imag() >= 0.0f ? 1.0f : -1.0f);
     }
+    // Raw estimate y conj(s) = H_l + n' if s is right (|s| = 1: the noise keeps its power). A wrong decision turns this carrier
+    // by a multiple of 90 degrees, which looks like a single outlier to the cleaning below.
     mRawEst[c] = y * std::conj(s);
   }
+  // Keep only the taps of the impulse response found in the PRS: removes most of the noise and largely smooths out single
+  // wrong decisions over the neighbouring carriers.
   _clean_estimate(mRawEst, mHNew);
 
-  // The noise of this symbol: what is left after the channel times the decided symbol (wrong decisions make it larger, not smaller)
+  // ---- 3. The noise of this symbol: what is left after the channel times the decided symbol (wrong decisions make it larger, not smaller)
+  // residual ~ cK sigma^2 (a bit less, the part of the noise inside the kept taps stays in mHNew).
   f64 residual = 0.0;
   f64 power = 0.0;
   for (i32 c = 0; c < cK; ++c)
@@ -711,50 +780,70 @@ void CoherentDemod::_demodulate_decision_directed(const TArrayTu & iV, const i32
     residual += std::norm(mRawEst[c] - mHNew[c]);
     power += std::norm(mHNew[c]);
   }
+  // The lower bound limits the SNR to 60 dB (and avoids a division by zero for a noise-free or empty signal)
   const f32 g = (f32)(2.0 * cK / std::max(residual, 1e-6 * power + 1e-30)); // 2 / sigma^2
 
+  // ---- 4. Soft bits
+  // With the unknown absolute phase s = x_{l-1} the log-likelihood of (s, d) is, up to terms that do not depend on s and d:
+  //   -|y_{l-1} - H_{l-1} s|^2 / sigma^2 - |y_l - H_l s d|^2 / sigma^2
+  //   = (2 / sigma^2) Re(conj(s) (conj(H_{l-1}) y_{l-1} + conj(H_l) y_l conj(d))) + const
+  //   = Re(conj(s) g (a + b conj(d)))
+  // Both symbols contribute to the reference of the phase: with a poor estimate of H only the combination
+  // a + b conj(d) ~ y_{l-1} + y_l conj(d) works (like differential detection), with a good one every term on its own (coherent).
   f64 llrSum = 0.0;
   for (i32 c = 0; c < cK; ++c)
   {
     const cf32 y = iV[mFftBin[c]];
-    const cf32 a = std::conj(mHCur[c]) * mYPrev[c];
-    const cf32 b = std::conj(mHNew[c]) * y;
+    const cf32 a = std::conj(mHCur[c]) * mYPrev[c]; // conj(H_{l-1}) y_{l-1} ~ |H|^2 x_{l-1}
+    const cf32 b = std::conj(mHNew[c]) * y;         // conj(H_l) y_l         ~ |H|^2 x_l
 
     // Log of the likelihood of d = (iDr + j iDi) / sqrt(2), summed over the four phases of the previous symbol (log-MAP)
     auto metric = [&](const f32 iDr, const f32 iDi)
     {
+      // w = g (a + b conj(d)), written out in real and imaginary part
       const f32 wr = g * (a.real() + (b.real() * iDr + b.imag() * iDi) * F_SQRT1_2);
       const f32 wi = g * (a.imag() + (b.imag() * iDr - b.real() * iDi) * F_SQRT1_2);
+      // log sum_s exp(Re(conj(s) w)) over the four possible s (equally likely, the prior cancels in the LLR)
+      // s in {1, -1, j, -j}: Re(conj(s) w) = wr, -wr, wi, -wi
       if (diag) return _max_star(_max_star(wr, -wr), _max_star(wi, -wi)); // previous symbol on the axes
+      // s in {(+-1 +- j) / sqrt(2)}: Re(conj(s) w) = (+-wr +- wi) / sqrt(2) = u, -u, v, -v
       const f32 u = (wr + wi) * F_SQRT1_2;
       const f32 v = (wr - wi) * F_SQRT1_2;
       return _max_star(_max_star(u, -u), _max_star(v, -v));
     };
 
+    // The four phase differences: mpp = e^(j pi/4), mpm = e^(-j pi/4), mmp = e^(j 3pi/4), mmm = e^(-j 3pi/4)
     const f32 mpp = metric( 1.0f,  1.0f);
     const f32 mpm = metric( 1.0f, -1.0f);
     const f32 mmp = metric(-1.0f,  1.0f);
     const f32 mmm = metric(-1.0f, -1.0f);
+    // Each bit is carried by the sign of one component of d: LLR = log(sum of the likelihoods with bit 1 / with bit 0)
     const f32 llrRe = _max_star(mmp, mmm) - _max_star(mpp, mpm); // > 0: the real part negative, bit 1
     const f32 llrIm = _max_star(mpm, mmm) - _max_star(mpp, mmp); // > 0: the imaginary part negative, bit 1
 
     const i32 fftIdx = mFftBin[c];
-    mSoftBitRe[fftIdx] = llrRe;
+    mSoftBitRe[fftIdx] = llrRe; // still in the scale of the LLR, scaled below
     mSoftBitIm[fftIdx] = llrIm;
-    mDecisions[fftIdx] = b * std::conj(a);
+    mDecisions[fftIdx] = b * std::conj(a); // ~ |H|^4 d: the channel-corrected phase difference for the constellation diagram
     llrSum += std::abs(llrRe) + std::abs(llrIm);
 
+    // ---- 5. Statistics of the frame, evaluated at the next PRS: relative power of the channel change from symbol to symbol
+    // (decides whether the next frame may use this method, see _process_prs_decision_directed())
     mDeltaHSum += std::norm(mHNew[c] - mHCur[c]);
     mPowerHSum += std::norm(mHCur[c]);
     mYPrev[c] = y;
   }
-  mLlrSum += llrSum;
+  mLlrSum += llrSum; // for the slow average mLlrRef at the next PRS
 
+  // Shift of the estimates for the prediction of the next symbol
   mHPrev = mHCur;
   mHCur = mHNew;
 
+  // ---- 6. Scaling of the LLR to the soft bits
   // The soft bits are scaled by the slow average of the mean |LLR| of the frames with a slow channel, not by this
   // symbol's own: a faded symbol then gives weak soft bits that the Viterbi decoder takes as nearly erased.
+  // A symbol better than the average is scaled by its own mean |LLR|, so that its mean |soft bit| is cDdSoftBitMean
+  // and does not grow beyond it. As long as no frame set mLlrRef (still 0), the own mean |LLR| is taken.
   const f32 meanLlr = (f32)(llrSum / (f64)(2 * cK)) + 1e-12f;
   const f32 scale = cDdSoftBitMean / std::max(meanLlr, mLlrRef);
   for (i32 c = 0; c < cK; ++c)
