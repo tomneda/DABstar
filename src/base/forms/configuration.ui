@@ -231,6 +231,19 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="lblUpdateStatus">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

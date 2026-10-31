@@ -351,7 +351,7 @@ private:
   // Utility Functions
   QStringList _get_soft_bit_gen_names() const;
   QString _convert_links_to_clickable(const QString & iText) const;
-  void _check_on_github_for_update(bool iShowMessageBox);
+  void _check_on_github_for_update(bool iShowStatus);
 
   void _initialize_traffic_lights() const;
   void _initialize_signal_slot_connections();
