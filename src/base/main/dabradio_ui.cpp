@@ -192,6 +192,10 @@ void DabRadio::_initialize_ui_elements()
   QMetaObject::invokeMethod(this, &DabRadio::_slot_update_mute_state, Qt::QueuedConnection, false);
   QMetaObject::invokeMethod(this, &DabRadio::_slot_favorite_changed, Qt::QueuedConnection, false);
   QMetaObject::invokeMethod(this, &DabRadio::_slot_set_static_button_style, Qt::QueuedConnection);
+
+  // Let the layout enforce its minimum size so that no widgets overlap (e.g. the right button row and the MOT picture).
+  // This must be queued after the button styles above: before, the global QPushButton min-width inflates the minimum size.
+  QMetaObject::invokeMethod(this, [this]() { layout()->setSizeConstraint(QLayout::SetMinimumSize); }, Qt::QueuedConnection);
 }
 
 void DabRadio::_initialize_indicator_buttons()
