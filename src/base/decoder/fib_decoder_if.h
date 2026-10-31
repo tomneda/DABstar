@@ -88,6 +88,7 @@ public:
   virtual void get_data_for_audio_service(u32 iSId, SAudioData & oAD) const = 0;
   virtual void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const = 0;
   virtual void get_data_for_packet_service(u32 iSId, std::vector<SPacketData> & oPDVec) const = 0;
+  virtual std::vector<SXPadUserApp> get_xpad_user_apps_of_audio_service(u32 iSId) const = 0;
   virtual std::vector<SServiceId> get_service_list() const = 0;
 
   virtual const QString & get_service_label_from_SId_SCIdS(u32 iSId, i32 iSCIdS) const = 0;

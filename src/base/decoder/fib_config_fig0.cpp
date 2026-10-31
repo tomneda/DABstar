@@ -477,7 +477,16 @@ void FibConfigFig0::print_Fig0s13_UserApplicationInformation(SStatistic & ioS, c
       const auto & u = e.UserAppVec[i];
       l << QSL("[UserAppType %1").arg(u.UserAppType);
       l << QSL("UserAppDataLength %1").arg(u.UserAppDataLength);
-      l << QSL("XPadData %1]").arg(u.XPadData);
+      if (u.XPadData.has_value())
+      {
+        l << QSL("XPadAppTy %1").arg(u.XPadData->XPadAppTy);
+        l << QSL("DG_Flag %1").arg(u.XPadData->DG_Flag);
+        l << QSL("DSCTy %1]").arg(u.XPadData->DSCTy);
+      }
+      else
+      {
+        l << QSL("XPadData -]");
+      }
     }
     qInfo().noquote() << l.join(' ');
   }

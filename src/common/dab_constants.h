@@ -156,6 +156,14 @@ struct SAudioData : SDescriptorType
   SAudioData() { TMId = ETMId::StreamModeAudio; }
 };
 
+struct SXPadUserApp // user application carried in the X-PAD of an audio service component (signalled via FIG 0/13)
+{
+  i16 UserAppType = -1; // e.g. 0x44A for Journaline
+  i16 XPadAppTy = -1;   // X-PAD application type for the start of X-PAD data group, continuation uses XPadAppTy + 1
+  i16 DSCTy = -1;
+  bool DataGroupsUsed = false; // MSC data groups are used to transport the user application
+};
+
 struct SAudioDataAddOns // "slower" addons
 {
   std::optional<i16> language = std::nullopt;

@@ -40,6 +40,7 @@ public:
   void get_data_for_audio_service(u32 iSId, SAudioData & oAD) const override;
   void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const override;
   void get_data_for_packet_service(u32 iSId, std::vector<SPacketData> & oPDVec) const override;
+  std::vector<SXPadUserApp> get_xpad_user_apps_of_audio_service(u32 iSId) const override;
   std::vector<SServiceId> get_service_list() const override;
 
   const QString & get_service_label_from_SId_SCIdS(u32, i32) const override;

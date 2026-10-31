@@ -482,4 +482,5 @@ signals:
   void signal_dab_processor_started();
   void signal_fib_data_status(const SScanResultEL &) const;
   void signal_fid_or_ch_selected(const QString & oFIdOrCh, u32 oSId);
+  void signal_xpad_journaline_app_type(i16 iXPadAppTy);
 };

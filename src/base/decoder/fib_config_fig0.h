@@ -15,6 +15,7 @@
 #include "glob_data_types.h"
 #include "fib_helper.h"
 #include "qt_compat.h"
+#include <optional>
 #include <vector>
 #include <QString>
 
@@ -186,22 +187,19 @@ public:
     u32 SId = -1;        // (Service Identifier): this 16-bit or 32-bit field shall identify the service (see clause 6.3.1) and the length of the SId shall be signalled by the P/D flag (see clause 5.2.2.1).
     i8  SCIdS = -1;      // (Service Component Identifier within the Service): this 4-bit field shall identify the service component within the service. The combination of the SId and the SCIdS provides a globally valid identifier for a service component.
     i16 NumUserApps = 0; // his 4-bit field, expressed as an unsigned binary number, shall indicate the number of user applications (in the range 1 to 6) contained in the subsequent list.
-    // struct SXPadData
-    // {
-    //   i8  CA_Flag = -1;
-    //   i8  CA_Org_Flag = -1;
-    //   i8  XPad_AppTy = -1;
-    //   i8  DG_Flag = -1;
-    //   i8  DSCTy = -1;
-    //   u16 CA_Org = 0;
-    // };
+    struct SXPadData // this field is only present for applications carried in the X-PAD of an audio service component (PD_Flag == 0).
+    {
+      i8  CA_Flag = -1;     // this 1-bit flag shall indicate whether access control applies to the user application.
+      i8  CA_Org_Flag = -1; // this 1-bit flag shall indicate whether the CAOrg field is present.
+      i8  XPadAppTy = -1;   // this 5-bit field shall specify the X-PAD application type used to transport the user application (start of X-PAD data group, the continuation uses XPadAppTy + 1).
+      i8  DG_Flag = -1;     // this 1-bit flag shall indicate whether MSC data groups are used to transport the user application: 0: MSC data groups are used; 1: MSC data groups are not used.
+      i8  DSCTy = -1;       // this 6-bit field shall indicate the data service component type.
+    };
     struct SUserApp
     {
       i16 UserAppType = -1;      // this 11-bit field identifies the user application that shall be used to decode the data in the channel identified by SId and SCIdS. The interpretation of this field shall be as defined in ETSI TS 101 756 [3], table 16.
       i16 UserAppDataLength = 0; // this 5-bit field, expressed as an unsigned binary number (in the range 0 to 23), indicates the length in bytes of the X-PAD data field (when present) and User Application data field that follows.
-      u32 XPadData = 0;          // this field is only present for applications carried in the X-PAD of an audio service component.
-      // SXPadData XPadData;
-      // i16 UserAppData[16];
+      std::optional<SXPadData> XPadData; // filled for PD_Flag == 0 if UserAppDataLength >= 2, but only meaningful if SId/SCIdS refers to an audio service component
     };
     std::array<SUserApp, 6> UserAppVec;
     u16 SizeBits = 0;          // Helper which stores the entire size of the dataset if avoid repeated read-outs of the FIB data

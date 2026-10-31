@@ -292,6 +292,55 @@ bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_
   return true;
 }
 
+std::vector<SXPadUserApp> FibDecoder::get_xpad_user_apps_of_audio_service(const u32 iSId) const
+{
+  QMutexLocker lock(&mMutex);
+
+  std::vector<SXPadUserApp> xpadUserAppVec;
+
+  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
+
+  if (pFig0s2 == nullptr)
+  {
+    return xpadUserAppVec;
+  }
+
+  // The primary service component shall use SCIdS 0, but use FIG 0/8 if it is given for the audio sub-channel
+  i32 SCIdS = 0;
+  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SubChId(iSId);
+
+  if (pFig0s8 != nullptr && pFig0s8->SubChId == pFig0s2->ServiceComp_C.TMId00.SubChId)
+  {
+    SCIdS = pFig0s8->SCIdS;
+  }
+
+  const auto * const pFig0s13 = mpFibConfigFig0Curr->get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(iSId, SCIdS);
+
+  if (pFig0s13 == nullptr)
+  {
+    return xpadUserAppVec;
+  }
+
+  for (i16 i = 0; i < std::min(pFig0s13->NumUserApps, (i16)pFig0s13->UserAppVec.size()); ++i)
+  {
+    const auto & userApp = pFig0s13->UserAppVec[i];
+
+    if (!userApp.XPadData.has_value())
+    {
+      continue;
+    }
+
+    SXPadUserApp xua;
+    xua.UserAppType = userApp.UserAppType;
+    xua.XPadAppTy = userApp.XPadData->XPadAppTy;
+    xua.DSCTy = userApp.XPadData->DSCTy;
+    xua.DataGroupsUsed = (userApp.XPadData->DG_Flag == 0);
+    xpadUserAppVec.emplace_back(xua);
+  }
+
+  return xpadUserAppVec;
+}
+
 void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacketData> & oPDVec) const
 {
   QMutexLocker lock(&mMutex);

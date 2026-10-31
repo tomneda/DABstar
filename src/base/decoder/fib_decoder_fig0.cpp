@@ -541,6 +541,18 @@ i16 FibDecoder::_subprocess_Fig0s13(const u8 * const d, i16 used, const SFigHead
       FibConfigFig0::SFig0s13_UserApplicationInformation::SUserApp & userApp = fig0s13.UserAppVec[i];
       userApp.UserAppType = getBits(d, bitOffset, 11);
       userApp.UserAppDataLength = getBits_5(d, bitOffset + 11); // in bytes
+
+      // the X-PAD data field (2 or 4 bytes) leads the user application data field, if the application is carried in the X-PAD of an audio service component
+      if (fig0s13.PD_Flag == 0 && userApp.UserAppDataLength >= 2)
+      {
+        auto & xpad = userApp.XPadData.emplace();
+        xpad.CA_Flag     = getBits_1(d, bitOffset + 16);
+        xpad.CA_Org_Flag = getBits_1(d, bitOffset + 17);
+        xpad.XPadAppTy   = getBits_5(d, bitOffset + 19);
+        xpad.DG_Flag     = getBits_1(d, bitOffset + 24);
+        xpad.DSCTy       = getBits_6(d, bitOffset + 26);
+      }
+
       bitOffset += (11 + 5 + 8 * userApp.UserAppDataLength);
     }
 
