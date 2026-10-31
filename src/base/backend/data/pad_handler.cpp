@@ -30,6 +30,7 @@
  */
 
 #include "pad_handler.h"
+#include "journaline_datahandler.h"
 #include "dabradio.h"
 #include "crc.h"
 #include <QLoggingCategory>
@@ -55,10 +56,30 @@ PadHandler::PadHandler(DabRadio * mr)
 
   connect(this, &PadHandler::signal_show_label, mr, &DabRadio::slot_show_label);
   connect(this, &PadHandler::signal_show_mot_handling, mr, &DabRadio::slot_trigger_mot_indicator);
+  connect(mr, &DabRadio::signal_xpad_journaline_app_type, this, &PadHandler::slot_set_xpad_journaline_app_type);
+  // the data groups are collected in the backend thread but the Journaline handler (with its viewer) lives in the GUI thread
+  connect(this, &PadHandler::signal_journaline_data_group, this, &PadHandler::_slot_handle_journaline_data_group, Qt::QueuedConnection);
 
   mMscDataGroupBuffer.reserve(1024); // try to avoid future memory swapping
   mDataBuffer.reserve(1024); // try to avoid future memory swapping
   mShortPadData.reserve(16); // try to avoid future memory swapping
+}
+
+PadHandler::~PadHandler() = default;
+
+void PadHandler::slot_set_xpad_journaline_app_type(const i16 iXPadAppTy)
+{
+  if (iXPadAppTy >= 0 && mpJournalineDataHandler == nullptr)
+  {
+    qInfo() << "Create Journaline data handler for X-PAD AppTy" << iXPadAppTy;
+    mpJournalineDataHandler = std::make_unique<JournalineDataHandler>(mpRadioInterface, -1); // -1: closing the viewer must not stop the audio service
+  }
+  else if (iXPadAppTy < 0)
+  {
+    mpJournalineDataHandler.reset();
+  }
+
+  mJournalineXPadAppTy = iXPadAppTy;
 }
 
 //	Data is stored reverse, we pass the vector and the index of the
@@ -239,7 +260,12 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
         if (mMscGroupElement)
           _add_MSC_element(mDataBuffer);
         break;
-      default: ;
+      default:
+        if (const i16 jAppTy = mJournalineXPadAppTy; jAppTy >= 0 && (mLastAppType == jAppTy || mLastAppType == jAppTy + 1))
+        {
+          _add_journaline_element(mDataBuffer);
+        }
+        break;
       }
     }
     return;
@@ -315,7 +341,9 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
       _add_MSC_element(mDataBuffer);
       break;
 
-    default: return; // sorry, we do not handle this
+    default:
+      _handle_xpad_journaline(appType, mDataBuffer); // other applications are skipped, the length is given by the CI
+      break;
     }
 
     mLastAppType = appType;
@@ -516,6 +544,93 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
     //	   mscGroupElement	= false;
     // emit signal_show_mot_handling(false);
   }
+}
+
+void PadHandler::_handle_xpad_journaline(const u8 iAppType, const std::vector<u8> & iData)
+{
+  const i16 jAppTy = mJournalineXPadAppTy;
+
+  if (jAppTy < 0)
+  {
+    return;
+  }
+
+  if (iAppType == jAppTy)
+  {
+    _new_journaline_element(iData);
+  }
+  else if (iAppType == jAppTy + 1)
+  {
+    _add_journaline_element(iData);
+  }
+}
+
+// Start of a Journaline X-PAD data group, the length was given by the preceding appType "1"
+void PadHandler::_new_journaline_element(const std::vector<u8> & iData)
+{
+  mJournalineDataGroupBuffer.clear();
+  mJournalineDataGroupLength = mDataGroupLength;
+
+  if (mJournalineDataGroupLength <= 0)
+  {
+    qCWarning(sLogPadHandler) << "Journaline X-PAD data group without data group length indicator";
+    return;
+  }
+
+  mJournalineDataGroupBuffer = iData;
+  _emit_journaline_data_group_if_complete();
+}
+
+void PadHandler::_add_journaline_element(const std::vector<u8> & iData)
+{
+  if (mJournalineDataGroupBuffer.empty())
+  {
+    return; // start of data group is missing
+  }
+
+  // GCC 13 false positive, see _add_MSC_element()
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+  mJournalineDataGroupBuffer.insert(mJournalineDataGroupBuffer.cend(), iData.cbegin(), iData.cend());
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+  _emit_journaline_data_group_if_complete();
+}
+
+void PadHandler::_emit_journaline_data_group_if_complete()
+{
+  if ((i32)mJournalineDataGroupBuffer.size() >= mJournalineDataGroupLength)
+  {
+    // the data group CRC is checked by the Journaline data group decoder
+    emit signal_journaline_data_group(QByteArray((const char *)mJournalineDataGroupBuffer.data(), mJournalineDataGroupLength));
+    mJournalineDataGroupBuffer.clear();
+  }
+}
+
+void PadHandler::_slot_handle_journaline_data_group(const QByteArray & iDataGroup) const
+{
+  if (mpJournalineDataHandler == nullptr)
+  {
+    return;
+  }
+
+  // the data handler expects one bit per byte (like delivered from the packet data processor)
+  std::vector<u8> bitVec(iDataGroup.size() * 8);
+
+  for (qsizetype byteIdx = 0; byteIdx < iDataGroup.size(); ++byteIdx)
+  {
+    const u8 byte = (u8)iDataGroup[byteIdx];
+
+    for (i32 bitIdx = 0; bitIdx < 8; ++bitIdx)
+    {
+      bitVec[byteIdx * 8 + bitIdx] = (byte >> (7 - bitIdx)) & 0x1;
+    }
+  }
+
+  mpJournalineDataHandler->add_MSC_data_group(bitVec);
 }
 
 // see chapter 5.3.3 in ETSI EN 300 401

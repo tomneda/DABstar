@@ -49,6 +49,7 @@ void FibDecoder::_process_Fig0(const u8 * const d)
   case 10: _process_Fig0s10(d); break;                                      // SI,  RepTyB/C, date and time (8.1.3.1)
   case 13: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s13); break;  // MCI, RepTyB,   user application information (6.3.6)
   case 14: _process_fig0_loop(d, &FibDecoder::_subprocess_Fig0s14); break;  // MCI, RepTyB?,  FEC subchannel organization (6.2.2)
+  case 15: _process_Fig0s15(d); break;                                      // SI,  RepTyB,   EWS information (ETSI TS 104 089, annex E)
   case 17: _process_Fig0s17(d); break;                                      // SI,  RepTyA/B, programme type (8.1.5)
   case 18: _process_Fig0s18(d); break;                                      // SI,  RepTyB,   announcement support (8.1.6.1)
   case 19: _process_Fig0s19(d); break;                                      // SI,  RepTyA/B, announcement switching (8.1.6.2)
@@ -540,6 +541,18 @@ i16 FibDecoder::_subprocess_Fig0s13(const u8 * const d, i16 used, const SFigHead
       FibConfigFig0::SFig0s13_UserApplicationInformation::SUserApp & userApp = fig0s13.UserAppVec[i];
       userApp.UserAppType = getBits(d, bitOffset, 11);
       userApp.UserAppDataLength = getBits_5(d, bitOffset + 11); // in bytes
+
+      // the X-PAD data field (2 or 4 bytes) leads the user application data field, if the application is carried in the X-PAD of an audio service component
+      if (fig0s13.PD_Flag == 0 && userApp.UserAppDataLength >= 2)
+      {
+        auto & xpad = userApp.XPadData.emplace();
+        xpad.CA_Flag     = getBits_1(d, bitOffset + 16);
+        xpad.CA_Org_Flag = getBits_1(d, bitOffset + 17);
+        xpad.XPadAppTy   = getBits_5(d, bitOffset + 19);
+        xpad.DG_Flag     = getBits_1(d, bitOffset + 24);
+        xpad.DSCTy       = getBits_6(d, bitOffset + 26);
+      }
+
       bitOffset += (11 + 5 + 8 * userApp.UserAppDataLength);
     }
 
@@ -580,6 +593,159 @@ i16 FibDecoder::_subprocess_Fig0s14(const u8 * const d, const i16 used, const SF
   }
 
   return used + 1;
+}
+
+static const char * _get_ews_phase_str(const u8 iPhase)
+{
+  switch (iPhase)
+  {
+  case 0:  return "Pre-trigger";
+  case 1:  return "Trigger";
+  case 2:  return "Sustain";
+  default: return "End";
+  }
+}
+
+static const char * _get_ews_stage_str(const u8 iStage)
+{
+  static constexpr const char * cStageStr[8] = { "Level 1 Start", "Level 1 Update", "Level 1 Repeat", "Level 1 Critical",
+                                                 "Level 2 Start", "Level 2 Update", "Level 2 Repeat", "Test" };
+  return cStageStr[iStage & 0x7];
+}
+
+// Presentation format (as entered by the user at the receiver) of a full resolution location code with zone and 6 digits, ETSI TS 104 089, annex A
+static QString _get_ews_location_presentation_code(const u8 iZone, const u32 iDigits)
+{
+  const u64 code30 = ((u64)iZone << 24) | iDigits;
+  const u64 code36 = (code30 << 6) | (code30 % 61); // append the modulo-61 checksum
+  QString str;
+
+  for (i32 i = 11; i >= 0; --i) // 12 octal digits, each presented as symbol '1'..'8'
+  {
+    str += QChar('1' + (i32)((code36 >> (3 * i)) & 0x7));
+    if (i == 8 || i == 4) str += '-';
+  }
+  return str;
+}
+
+// Location code, ETSI TS 104 089, annex E and F. Returns the bit offset behind the location code or -1 if the coding is invalid.
+static i16 _get_ews_location_code_str(const u8 * const d, i16 bitOffset, const i16 iEndOffset, QTextStream & ts)
+{
+  if (bitOffset + 16 > iEndOffset) return -1;
+
+  const u8 nff = getBits_2(d, bitOffset);           // number of following FIG 0/15 of this alert set
+  const u8 zone = getBits_6(d, bitOffset + 2);
+  const u8 scf = getBits_1(d, bitOffset + 8);       // sub-codes field present
+  const u8 numDigits = getBits_3(d, bitOffset + 9); // number of "Other digits"
+  u32 digits = getBits_4(d, bitOffset + 12);        // Digit 1
+  bitOffset += 16;
+
+  if (numDigits > (scf == 1 ? 4 : 5)) return -1;
+  if (bitOffset + 4 * numDigits + (numDigits & 1 ? 4 : 0) + (scf == 1 ? 16 : 0) > iEndOffset) return -1;
+
+  for (i16 i = 0; i < numDigits; ++i)
+  {
+    digits = (digits << 4) | getBits_4(d, bitOffset);
+    bitOffset += 4;
+  }
+  if (numDigits & 1) bitOffset += 4; // padding
+
+  const auto print_code = [&ts, zone](const u32 iDigits, const i32 iNumDigits)
+  {
+    ts << " Z" << (i32)zone << ":" << QString("%1").arg(iDigits, iNumDigits, 16, QChar('0')).toUpper();
+    if (iNumDigits == 6) ts << " (" << _get_ews_location_presentation_code(zone, iDigits) << ")";
+  };
+
+  ts << " [NFF " << (i32)nff;
+
+  if (scf == 1)
+  {
+    const u16 subCodes = getBits(d, bitOffset, 16); // bit i set: sub-area i (the least significant digit) is part of the alert area
+    bitOffset += 16;
+
+    for (i32 i = 0; i < 16; ++i)
+    {
+      if (subCodes & (1 << i)) print_code((digits << 4) | i, numDigits + 2);
+    }
+  }
+  else
+  {
+    print_code(digits, numDigits + 1);
+  }
+
+  ts << " ]";
+  return bitOffset;
+}
+
+// EWS information (Emergency Warning System, called ASA - Automatic Safety Alert - in Germany), ETSI TS 104 089, annex E
+void FibDecoder::_process_Fig0s15(const u8 * const d)
+{
+  const SFigHeader fh = _get_fig_header(d);
+
+  if (fh.Length == 1) // heartbeat form with empty type 0 field, no alert is active
+  {
+    if (!mEwsHeartbeatReceived)
+    {
+      qInfo() << "FIG 0/15: ensemble participates in the Emergency Warning System (EWS/ASA)";
+      mEwsHeartbeatReceived = true;
+    }
+    mEwsPrintedSet.clear(); // allow printing of upcoming alerts again
+    return;
+  }
+
+  // the P/D flag is not printed as it toggles every 30 seconds for the receiver sleep mode synchronization
+  const i16 endOffset = (fh.Length + 1) * 8;
+  i16 bitOffset = 16;
+  bool hasStatus = true;
+  QString str;
+  QTextStream ts(&str);
+
+  ts << "FIG 0/15 EWS:";
+
+  if (fh.OE_Flag == 0) // alert audio is carried in the tuned ensemble
+  {
+    const u8 phase = getBits_2(d, bitOffset);
+    const u8 subChId = getBits_6(d, bitOffset + 2);
+    bitOffset += 8;
+    ts << " Phase " << _get_ews_phase_str(phase) << " SubChId " << (i32)subChId;
+
+    if (phase == 0) // Pre-trigger
+    {
+      ts << " TriggerSec " << (i32)getBits_6(d, bitOffset + 2); // skip Rfa
+      bitOffset += 8;
+    }
+    hasStatus = (phase <= 1); // Sustain and End carry the Id field only
+  }
+  else // alert audio is carried in another ensemble
+  {
+    ts << " OE EId " << hex_str(getBits(d, bitOffset, 16));
+    bitOffset += 16;
+  }
+
+  if (hasStatus && bitOffset + 8 <= endOffset)
+  {
+    ts << " Last " << (i32)getBits_1(d, bitOffset)
+       << " Stage '" << _get_ews_stage_str(getBits_3(d, bitOffset + 1)) << "'"
+       << " IId " << (i32)getBits_4(d, bitOffset + 4);
+    bitOffset += 8;
+
+    if (bitOffset == endOffset) ts << " Area: entire ensemble coverage";
+
+    while (bitOffset < endOffset)
+    {
+      bitOffset = _get_ews_location_code_str(d, bitOffset, endOffset, ts);
+      if (bitOffset < 0) { ts << " <invalid location code>"; break; }
+    }
+  }
+  else if (bitOffset > endOffset || hasStatus)
+  {
+    ts << " <invalid length " << (i32)fh.Length << ">";
+  }
+
+  if (mEwsPrintedSet.insert(str).second) // print only changes, FIG 0/15 is repeated several times per second
+  {
+    qInfo().noquote() << str;
+  }
 }
 
 void FibDecoder::_process_Fig0s17(const u8 * const d)

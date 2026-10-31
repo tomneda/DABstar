@@ -40,6 +40,7 @@ public:
   void get_data_for_audio_service(u32 iSId, SAudioData & oAD) const override;
   void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const override;
   void get_data_for_packet_service(u32 iSId, std::vector<SPacketData> & oPDVec) const override;
+  std::vector<SXPadUserApp> get_xpad_user_apps_of_audio_service(u32 iSId) const override;
   std::vector<SServiceId> get_service_list() const override;
 
   const QString & get_service_label_from_SId_SCIdS(u32, i32) const override;
@@ -78,6 +79,8 @@ private:
   SUtcTimeSet mUtcTimeSet{};
   std::set<u8> mUnhandledFig0Set;
   std::set<u8> mUnhandledFig1Set;
+  std::set<QString> mEwsPrintedSet;  // already printed FIG 0/15 alert contents
+  bool mEwsHeartbeatReceived = false; // FIG 0/15 heartbeat seen, ensemble is part of an EWS (ASA)
   std::chrono::milliseconds mDiffTimeMax{};
   std::chrono::time_point<std::chrono::system_clock> mLastTimePoint{};
   FibHelper::TTP mFirstFigTimePoint{};
@@ -114,6 +117,7 @@ private:
   void _process_Fig0s10(const u8 *);
   i16 _subprocess_Fig0s13(const u8 *, i16, const SFigHeader &);
   i16 _subprocess_Fig0s14(const u8 *, i16, const SFigHeader &);
+  void _process_Fig0s15(const u8 *);
   void _process_Fig0s17(const u8 *);
   void _process_Fig0s18(const u8 *);
   void _process_Fig0s19(const u8 *);

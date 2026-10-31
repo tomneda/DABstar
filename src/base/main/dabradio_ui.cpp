@@ -457,7 +457,7 @@ void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) con
 
 void DabRadio::slot_handle_journaline_viewer_closed(i32 iSubChannel)
 {
-  if (mpDabProcessor)
+  if (mpDabProcessor && iSubChannel >= 0) // iSubChannel < 0: Journaline in X-PAD, the audio service has to keep running
   {
     mpDabProcessor->stop_service(iSubChannel, EProcessFlag::Primary);
     mpDabProcessor->stop_service(iSubChannel, EProcessFlag::Secondary);

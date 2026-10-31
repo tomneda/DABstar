@@ -622,6 +622,17 @@ bool DabRadio::_start_primary_and_secondary_service(const u32 iSId, const bool i
       // Store primary channel to settings file
       _write_sid_to_settings(mCurPrimaryAudioService.SId);
 
+      // Journaline could also be carried in the X-PAD of the audio service (only signalled via FIG 0/13)
+      for (const auto & xua : mpDabProcessor->get_fib_decoder()->get_xpad_user_apps_of_audio_service(iSId))
+      {
+        if (xua.UserAppType == 0x44a && xua.DataGroupsUsed)
+        {
+          qCInfo(sLogDabRadio) << "Journaline in X-PAD with AppTy" << xua.XPadAppTy << "and DSCTy" << xua.DSCTy;
+          emit signal_xpad_journaline_app_type(xua.XPadAppTy);
+          break;
+        }
+      }
+
       std::vector<SPacketData> pdVec;
       mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(iSId, pdVec);
 
