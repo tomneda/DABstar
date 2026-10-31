@@ -176,6 +176,14 @@ void DabRadio::_initialize_ui_elements()
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
   ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x45bb24));      // green    — map web server
   ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0)); // slate blue — meter mode toggle
+  ui->btnEpg->setStyleSheet(get_bg_style_sheet(0xB89028));             // amber    — EPG
+  ui->btnJournaline->setStyleSheet(get_bg_style_sheet(0xD86A5A));      // coral    — Journaline
+  _set_dump_button_emphasized(ui->btnDumpRaw, false, cRawDumpColor);
+  _set_dump_button_emphasized(ui->btnDumpEti, false, cEtiDumpColor);
+
+  // EPG and JOUR are only enabled if the according data is received
+  ui->btnEpg->setEnabled(false);
+  ui->btnJournaline->setEnabled(false);
 
   // ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
@@ -238,6 +246,7 @@ void DabRadio::_initialize_indicator_buttons()
   });
 
   mpFibWindowWatcher = WindowVisibilityWatcher::bind(mpFibContentTable ? mpFibContentTable->get_widget() : nullptr, ui->btnFib);
+  mpJournalineWindowWatcher = WindowVisibilityWatcher::bind(nullptr, ui->btnJournaline);
 }
 
 void DabRadio::_initialize_status_info()
@@ -440,6 +449,7 @@ void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
 void DabRadio::_show_epg_label(const bool iShowLabel)
 {
   _set_status_info_status(mStatusInfo.EPG, iShowLabel);
+  ui->btnEpg->setEnabled(iShowLabel);
 }
 
 void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) const
@@ -448,19 +458,53 @@ void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) con
   ui->cmbDeviceSelect->setEnabled(iPlayingDevice);
   ui->cbAutoNextService->setEnabled(!iPlayingDevice);
 #else
-  mpConfig->dumpButton->setEnabled(iPlayingDevice);
+  ui->btnDumpRaw->setEnabled(iPlayingDevice);
   btnScanning->setEnabled(iPlayingDevice);
   mpConfig->setEnabled(iPlayingDevice);
   channelSelector->setEnabled(iPlayingDevice);
 #endif
 }
 
-void DabRadio::slot_handle_journaline_viewer_closed(i32 iSubChannel)
+void DabRadio::register_journaline_viewer(QWidget * const ipViewerWidget)
 {
-  if (mpDabProcessor && iSubChannel >= 0) // iSubChannel < 0: Journaline in X-PAD, the audio service has to keep running
+  if (mpJournalineWindowWatcher != nullptr)
   {
-    mpDabProcessor->stop_service(iSubChannel, EProcessFlag::Primary);
-    mpDabProcessor->stop_service(iSubChannel, EProcessFlag::Secondary);
+    mpJournalineWindowWatcher->attach(ipViewerWidget);
+  }
+  ui->btnJournaline->setEnabled(false); // enabled with the first received data
+}
+
+void DabRadio::unregister_journaline_viewer(const QWidget * const ipViewerWidget)
+{
+  if (DabRadio::is_terminating() || mpJournalineWindowWatcher == nullptr || mpJournalineWindowWatcher->get_target() != ipViewerWidget)
+  {
+    return; // another (newer) viewer is still registered
+  }
+
+  mpJournalineWindowWatcher->attach(nullptr);
+  ui->btnJournaline->set_activity_indicator_active(false);
+  ui->btnJournaline->setEnabled(false);
+}
+
+void DabRadio::set_journaline_data_received(const QWidget * const ipViewerWidget) const
+{
+  if (mpJournalineWindowWatcher != nullptr && mpJournalineWindowWatcher->get_target() != nullptr && mpJournalineWindowWatcher->get_target() == ipViewerWidget)
+  {
+    ui->btnJournaline->setEnabled(true);
+    ui->btnJournaline->trigger_activity_indicator(cJournalineActivityMs); // like the "Receiving data" marker in the viewer
+  }
+}
+
+void DabRadio::_slot_handle_journaline_button() const
+{
+  if (mpJournalineWindowWatcher == nullptr)
+  {
+    return;
+  }
+
+  if (QWidget * const pViewerWidget = mpJournalineWindowWatcher->get_target(); pViewerWidget != nullptr)
+  {
+    pViewerWidget->setVisible(!pViewerWidget->isVisible());
   }
 }
 
@@ -497,6 +541,13 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnOpenPicFolder->setIconSize(QSize(24, 24));
   ui->btnOpenPicFolder->setFixedSize(QSize(32, 32));
   ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
+  ui->btnDumpRaw->setFixedSize(QSize(32, 32));
+  ui->btnDumpEti->setFixedSize(QSize(32, 32));
+  ui->btnDumpFrame->setFixedSize(QSize(32, 32));
+  ui->btnDumpAudio->setFixedSize(QSize(32, 32));
+  ui->btnDlText->setFixedSize(QSize(32, 32));
+  ui->btnEpg->setFixedSize(QSize(32, 32));
+  ui->btnJournaline->setFixedSize(QSize(32, 32));
 }
 
 void DabRadio::_slot_toggle_level_meter_mode()
@@ -1204,8 +1255,8 @@ void DabRadio::_slot_handle_target_service_button()
 // In those case we are sure not to have an operating dabProcessor, we hide some buttons
 void DabRadio::_enable_ui_elements_for_safety(const bool iEnable) const
 {
-  mpConfig->dumpButton->setEnabled(iEnable);
-  mpConfig->etiButton->setEnabled(iEnable);
+  ui->btnDumpRaw->setEnabled(iEnable);
+  ui->btnDumpEti->setEnabled(iEnable);
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);

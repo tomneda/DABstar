@@ -105,10 +105,6 @@ Configuration::Configuration(DabRadio * ipRI) :
   leMapPortVal->setValidator(new QIntValidator(1, 65535, leMapPortVal));
   leMapPortVal->setText(Settings::Config::varMapPort.read().toString());
 
-  dumpButton->setStyleSheet(get_bg_style_sheet(0x4A7898, Qt::white));
-  etiButton->setStyleSheet(get_bg_style_sheet(0x5060A0, Qt::white));
-
-  dlTextButton->setStyleSheet(get_bg_style_sheet(0x408870, Qt::white));
   btnCheckForUpdate->setStyleSheet(get_bg_style_sheet(0x2878C0, Qt::white));
   loadTableButton->setStyleSheet(get_bg_style_sheet(0x607898, Qt::white));
 
@@ -171,16 +167,4 @@ void Configuration::_slot_select_base_path()
   Settings::Config::varDataBasePath5.write(dir);
   lblDataBasePath->setText(dir);
   emit signal_data_base_path_changed();
-}
-
-void Configuration::set_eti_button_emphasized(const bool iEmphasized) const
-{
-  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
-  etiButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x5060A0, Qt::white));
-}
-
-void Configuration::set_dump_button_emphasized(const bool iEmphasized) const
-{
-  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
-  dumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x4A7898, Qt::white));
 }

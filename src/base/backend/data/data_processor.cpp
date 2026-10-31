@@ -47,7 +47,6 @@ DataProcessor::DataProcessor(DabRadio * ipDR, const SPacketData * const ipPD, Ri
   , mPacketAddress(ipPD->PacketAddress)
   , mDGflag(ipPD->DGflag)
   , mFEC_scheme(ipPD->FEC_scheme)
-  , mSubChannel(ipPD->SubChId)
   , mpDataBuffer(ipDataBuffer)
 {
   switch (mDSCTy)
@@ -56,7 +55,7 @@ DataProcessor::DataProcessor(DabRadio * ipDR, const SPacketData * const ipPD, Ri
     if (mAppType == 0x44a)
     {
       qInfo() << "Create Journaline (DSCTy 5, AppType 0x44a) data handler";
-      mpDataHandler.reset(new JournalineDataHandler(ipDR, mSubChannel));
+      mpDataHandler.reset(new JournalineDataHandler(ipDR));
       break;
     }
     else if (mAppType == 1500)
@@ -81,7 +80,7 @@ DataProcessor::DataProcessor(DabRadio * ipDR, const SPacketData * const ipPD, Ri
 
   case 44:
     qInfo() << "Create Journaline (DSCTy 44) data handler";
-    mpDataHandler.reset(new JournalineDataHandler(ipDR, mSubChannel));
+    mpDataHandler.reset(new JournalineDataHandler(ipDR));
     break;
 
   case 59:

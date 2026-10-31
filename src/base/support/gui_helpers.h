@@ -16,5 +16,6 @@
 #include <QColor>
 
 QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor = Qt::black, f32 iRefLuminance = 0.55f);
+QString get_active_dump_style_sheet();
 QString get_combo_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor = Qt::white, f32 iRefLuminance = 0.55f);
 void open_folder_and_select_file(const QString & iFilePath, const QString & iFallbackDir);

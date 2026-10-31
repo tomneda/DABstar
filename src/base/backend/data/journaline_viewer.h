@@ -35,15 +35,13 @@ public:
 
   using TMapData = QMap<i32, STableElement>;
 
-  JournalineViewer(TMapData & ioTableVec, i32 iSubChannel);
+  explicit JournalineViewer(TMapData & ioTableVec);
   ~JournalineViewer() override;
 
-protected:
-  bool eventFilter(QObject * watched, QEvent * event) override;
+  [[nodiscard]] QWidget * get_widget() { return &mFrame; }
 
 private:
   TMapData & mDataMap;
-  const i32 mSubChannel;
   STableElement mCurrTableElement;
   QTimer * mpTimerRecMarker;
   QTimer * mpTimerHtmlRebuild;
@@ -72,7 +70,4 @@ private slots:
   void _slot_colorize_receive_marker_timeout() const;
   void _slot_html_rebuild_timeout() const;
   void _slot_html_link_activated(const QString & iLink);
-
-signals:
-  void signal_window_closed(i32 oSubChannel);
 };

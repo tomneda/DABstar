@@ -145,7 +145,8 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 #endif
 
   connect(ui->btnHttpServer, &QPushButton::clicked, this,  &DabRadio::_slot_handle_http_button);
-  connect(mpTechDataWidget.get(), &TechData::signal_handle_timeTable, this, &DabRadio::_slot_handle_time_table);
+  connect(ui->btnEpg, &QPushButton::clicked, this, &DabRadio::_slot_handle_time_table);
+  connect(ui->btnJournaline, &QPushButton::clicked, this, &DabRadio::_slot_handle_journaline_button);
   connect(this, &DabRadio::signal_dab_processor_started, mpSpectrumViewer.get(), &SpectrumViewer::slot_update_settings);
   connect(ui->configButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_config_button);
 
@@ -613,7 +614,7 @@ bool DabRadio::_start_primary_and_secondary_service(const u32 iSId, const bool i
     // TODO: how handle EPG?
     // if (mpDabProcessor->get_fib_decoder()->has_time_table(ad.SId))
     // {
-    //   mpTechDataWidget->slot_show_timetableButton(true);
+    //   ui->btnEpg->setEnabled(true);
     // }
 
     // Now try to find and create the secondary service(s)
@@ -1238,6 +1239,8 @@ void DabRadio::_initialize_audio_output()
   cfg.pLevelMeterRight        = ui->levelMeterRight;
   cfg.pSliderVolume           = ui->sliderVolume;
   cfg.pOpenFileDialog         = &mOpenFileDialog;
+  cfg.pFrameDumpButton        = ui->btnDumpFrame;
+  cfg.pAudioDumpButton        = ui->btnDumpAudio;
 
   mpAudioManager.reset(new AudioManager(cfg, this));
 
@@ -1270,6 +1273,7 @@ void DabRadio::_initialize_epg_mot_handler()
   cfg.pConfig           = mpConfig.get();
   cfg.pPictureLabel     = ui->pictureLabel;
   cfg.pBtnOpenPicFolder = ui->btnOpenPicFolder;
+  cfg.pBtnDlText        = ui->btnDlText;
   cfg.pOpenFileDialog   = &mOpenFileDialog;
   mpEpgMotHandler.reset(new EpgMotHandler(cfg, this));
 
@@ -1444,8 +1448,8 @@ void DabRadio::_initialize_signal_slot_connections()
   connect(mpConfig->cbTestTone, &QPushButton::clicked, mpAudioManager.get(), &AudioManager::slot_set_test_tone);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, mpAudioManager.get(), &AudioManager::slot_update_peak_level_delay);
   connect(mpConfig->resetButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_reset_button);
-  connect(mpConfig->dumpButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_source_dump_button);
-  connect(mpConfig->etiButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_button);
+  connect(ui->btnDumpRaw, &QPushButton::clicked, this, &DabRadio::_slot_handle_source_dump_button);
+  connect(ui->btnDumpEti, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_button);
   connect(mpConfig->loadTableButton, &QPushButton::clicked, this, &DabRadio::slot_load_table);
   connect(mpConfig->cmbSoundOutput, qOverload<i32>(&QComboBox::activated), this, &DabRadio::slot_set_stream_selector);
   connect(mpConfig.get(), &Configuration::signal_coordinates_changed, this, [this]() { _get_local_position_from_config(mLocalPos); mpTiiManager->set_local_pos(mLocalPos); });
@@ -1454,15 +1458,13 @@ void DabRadio::_initialize_signal_slot_connections()
   connect(mpConfig->cbTiiCollisions, &QCheckBox::clicked, mpTiiManager.get(), &TiiManager::slot_handle_tii_collisions);
   connect(mpConfig->sbTiiSubId, &QSpinBox::valueChanged, mpTiiManager.get(), &TiiManager::slot_handle_tii_subid);
   connect(mpConfig->cmbMotObjectSaving5, qOverload<i32>(&QComboBox::activated), mpEpgMotHandler.get(), &EpgMotHandler::slot_handle_mot_saving_selector);
-  connect(mpConfig->dlTextButton, &QPushButton::clicked, mpEpgMotHandler.get(), &EpgMotHandler::slot_handle_dl_text_button);
+  connect(ui->btnDlText, &QPushButton::clicked, mpEpgMotHandler.get(), &EpgMotHandler::slot_handle_dl_text_button);
   connect(mpConfig.get(), &Configuration::signal_data_base_path_changed, mpEpgMotHandler.get(), &EpgMotHandler::slot_init_paths);
   connect(mpConfig->btnCheckForUpdate, &QPushButton::clicked, this, &DabRadio::slot_check_for_update);
   connect(mpConfig->cbUseStrongestPeak, &QCheckBox::stateChangedSubst, mpTiiManager.get(), &TiiManager::slot_use_strongest_peak);
 
   // Tech data connections
   assert(mpTechDataWidget != nullptr);
-  connect(mpTechDataWidget.get(), &TechData::signal_handle_audioDumping, mpAudioManager.get(), &AudioManager::slot_handle_audio_dump_button);
-  connect(mpTechDataWidget.get(), &TechData::signal_handle_frameDumping, mpAudioManager.get(), &AudioManager::slot_handle_frame_dump_button);
 
   // Service list connections
   assert(mpServiceListHandler != nullptr);

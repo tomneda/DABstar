@@ -17,7 +17,6 @@
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QDesktopServices>
-#include <QEvent>
 
 static const QString cColorHeader    = QSL("#87CEFA");  // header elements
 static const QString cColorNotLoaded = QSL("#909090");  // data not loaded yet
@@ -26,9 +25,8 @@ static const QString cColorVisiting  = QSL("#FFFF00");  // opened and actual vis
 static const QString cColorVisited   = QSL("#FF6060");  // closed but visited before
 static const QString cColorText      = QSL("#FFFFFF");  // information text
 
-JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
+JournalineViewer::JournalineViewer(TMapData & ioTableVec)
   : mDataMap(ioTableVec)
-  , mSubChannel(iSubChannel)
 {
   mFrame.setWindowFlag(Qt::Tool, true);
   Settings::Journaline::posAndSize.read_widget_geometry(&mFrame);
@@ -110,25 +108,13 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec, const i32 iSubChannel)
   connect(mpTimerRecMarker, &QTimer::timeout, this, &JournalineViewer::_slot_colorize_receive_marker_timeout);
   connect(mpTimerHtmlRebuild, &QTimer::timeout, this, &JournalineViewer::_slot_html_rebuild_timeout);
 
-  mFrame.installEventFilter(this);
-
-  mFrame.show();
+  // the window is opened via the JOUR button on the main window, closing it only hides it (data are still collected)
 }
 
 JournalineViewer::~JournalineViewer()
 {
-  mFrame.removeEventFilter(this);
   Settings::Journaline::posAndSize.write_widget_geometry(&mFrame);
   mFrame.hide();
-}
-
-bool JournalineViewer::eventFilter(QObject * watched, QEvent * event)
-{
-  if (watched == &mFrame && event->type() == QEvent::Close)
-  {
-    emit signal_window_closed(mSubChannel);
-  }
-  return QObject::eventFilter(watched, event);
 }
 
 void JournalineViewer::slot_new_data()

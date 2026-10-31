@@ -53,17 +53,23 @@ static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * c
   pDataHandler->add_to_dataBase(pNml);
 }
 
-JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR, const i32 iSubChannel)
-  : mJournalineViewer(mDataMap, iSubChannel)
+JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR)
+  : mpDabRadio(ipDR)
+  , mJournalineViewer(mDataMap)
 {
   mDataGroupDecoder = DAB_DATAGROUP_DECODER_createDec(callback_func, this);
 
   connect(this, &JournalineDataHandler::signal_new_data, &mJournalineViewer, &JournalineViewer::slot_new_data);
-  connect(&mJournalineViewer, &JournalineViewer::signal_window_closed, ipDR, &DabRadio::slot_handle_journaline_viewer_closed, Qt::QueuedConnection);
+
+  // the JOUR button on the main window is enabled with the first received Journaline object
+  const QWidget * const pViewerWidget = mJournalineViewer.get_widget();
+  connect(this, &JournalineDataHandler::signal_new_data, ipDR, [ipDR, pViewerWidget]() { ipDR->set_journaline_data_received(pViewerWidget); });
+  ipDR->register_journaline_viewer(mJournalineViewer.get_widget());
 }
 
 JournalineDataHandler::~JournalineDataHandler()
 {
+  mpDabRadio->unregister_journaline_viewer(mJournalineViewer.get_widget());
   DAB_DATAGROUP_DECODER_deleteDec(mDataGroupDecoder);
   _destroy_database();
 }

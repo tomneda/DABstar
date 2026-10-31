@@ -31,10 +31,6 @@
     <file>res/icons/rb_on_hover.svg</file>
     <file>res/icons/rb_disabled_off.svg</file>
     <file>res/icons/rb_disabled_on.svg</file>
-    <file>res/icons/fib32.svg</file>
-    <file>res/icons/cir32.svg</file>
-    <file>res/icons/tii32.svg</file>
-    <file>res/icons/el32.svg</file>
     <file>res/icons/combo_arrow.svg</file>
     <file>res/icons/combo_arrow_on.svg</file>
     <file>res/icons/spin_up.svg</file>

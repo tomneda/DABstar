@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>836</width>
-    <height>503</height>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,67 +18,6 @@
     <layout class="QHBoxLayout" name="hl_columns" stretch="0,1,1">
      <item>
       <layout class="QVBoxLayout" name="vl_col1">
-       <item>
-        <widget class="QGroupBox" name="gbActions">
-         <property name="title">
-          <string>Actions</string>
-         </property>
-         <layout class="QVBoxLayout" name="vl_actions">
-          <item>
-           <layout class="QHBoxLayout" name="hl_a1">
-            <item>
-             <widget class="QPushButton" name="dumpButton">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the raw input signal to a file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;A file selection dialog will open to choose a filename. Note that the file sizes can be very large.&lt;/p&gt;&lt;p&gt;Click again to stop recording. The file can be reloaded using the &amp;quot;Ensemble List&amp;quot; (&amp;quot;EL&amp;quot; button).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Dump RAW</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="etiButton">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Generate an ETI file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Note that generating an ETI file requires considerable resources.&lt;/p&gt;&lt;p&gt;Clicking this button opens a file selection dialog. After selecting a file, the ensemble content is written in ETI format. The ETI session stops when this button is clicked again or when switching to another channel.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Dump ETI</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QPushButton" name="resetButton">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Restart synchronization&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
-             </string>
-              </property>
-              <property name="text">
-               <string>Reset Synchronization</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="dlTextButton">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the dynamic label text to a file&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Save DL Text</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item>
         <widget class="QGroupBox" name="gbAudio">
          <property name="title">
@@ -239,6 +178,58 @@
              </widget>
             </item>
            </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gbUpdates">
+         <property name="title">
+          <string>Updates</string>
+         </property>
+         <layout class="QVBoxLayout" name="vl_updates">
+          <item>
+           <layout class="QHBoxLayout" name="hl_updates" stretch="1,0">
+            <item>
+             <widget class="QCheckBox" name="cbCheckForUpdates">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically check for a new version of DABstar after startup&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Check for updates every:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sbUpdateCheckDays">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Interval in days between automatic update checks&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="suffix">
+               <string> days</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>30</number>
+              </property>
+              <property name="value">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnCheckForUpdate">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Check for an update on GitHub immediately&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Check for Update Now</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -418,58 +409,6 @@
             </property>
             <property name="text">
              <string>Use native IQ format (Dump RAW)</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="gbUpdates">
-         <property name="title">
-          <string>Updates</string>
-         </property>
-         <layout class="QVBoxLayout" name="vl_updates">
-          <item>
-           <layout class="QHBoxLayout" name="hl_updates" stretch="1,0">
-            <item>
-             <widget class="QCheckBox" name="cbCheckForUpdates">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Automatically check for a new version of DABstar after startup&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Check for updates every:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="sbUpdateCheckDays">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Interval in days between automatic update checks&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="suffix">
-               <string> days</string>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>30</number>
-              </property>
-              <property name="value">
-               <number>1</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnCheckForUpdate">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Check for an update on GitHub immediately&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Check for Update Now</string>
             </property>
            </widget>
           </item>
@@ -666,6 +605,37 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="hl_bottom">
+         <item>
+          <spacer name="sp_bottom_left">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="resetButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Restart synchronization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Stops and restarts the current channel and service from scratch.&lt;/p&gt;&lt;p&gt;Use this if the synchronization got stuck or to reload the ensemble information.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
+          </string>
+           </property>
+           <property name="text">
+            <string>Reset Synchronization</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>

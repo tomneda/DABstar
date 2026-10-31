@@ -59,9 +59,6 @@ public:
   bool isHidden() const;
   [[nodiscard]] QWidget * get_widget() { return &mFrame; }
 
-  void set_audio_dump_button_emphasized(bool iEmphasized) const;
-  void set_frame_dump_button_emphasized(bool iEmphasized) const;
-
 private:
   static constexpr i32 cDefaultPlotWindowHeight = 560;
   static constexpr i32 cMinPlotWindowHeight     = 450;
@@ -85,16 +82,10 @@ private:
 
 public slots:
   void slot_show_rs_corrections(i32, i32) const;
-  void slot_show_timetableButton(bool) const;
   void slot_show_language(i32) const;
   void slot_show_fm(i32) const;
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed) const;
   void slot_audio_data_available(i32, i32) const;
-
-signals:
-  void signal_handle_timeTable();
-  void signal_handle_audioDumping();
-  void signal_handle_frameDumping();
 };
 
 
