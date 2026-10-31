@@ -23,6 +23,8 @@
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <QDir>
+#include <QProxyStyle>
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
@@ -172,6 +174,7 @@ void DabRadio::_initialize_ui_elements()
   ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0)); // slate blue — meter mode toggle
   ui->btnEpg->setStyleSheet(get_bg_style_sheet(0xB89028));             // amber    — EPG
   ui->btnJournaline->setStyleSheet(get_bg_style_sheet(0xD86A5A));      // coral    — Journaline
+  ui->btnFilePlayPause->setStyleSheet(get_bg_style_sheet(0x3C9C64));   // jade     — file play/pause
   _set_dump_button_emphasized(ui->btnDumpRaw, false, cRawDumpColor);
   _set_dump_button_emphasized(ui->btnDumpEti, false, cEtiDumpColor);
 
@@ -183,6 +186,7 @@ void DabRadio::_initialize_ui_elements()
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
 
   _set_http_server_button(EHttpButtonState::Off);
+  _initialize_file_player_bar();
   mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
 
   const auto levelMeterMode = static_cast<ELevelMeterMode>(Settings::Main::varLevelMeterMode.read().toUInt());
@@ -435,7 +439,6 @@ void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) con
 {
 #if 1
   ui->cmbDeviceSelect->setEnabled(iPlayingDevice);
-  ui->cbAutoNextService->setEnabled(!iPlayingDevice);
 #else
   ui->btnDumpRaw->setEnabled(iPlayingDevice);
   btnScanning->setEnabled(iPlayingDevice);
@@ -519,6 +522,8 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnEnsembleList->setFixedSize(QSize(32, 32));
   ui->btnOpenPicFolder->setIconSize(QSize(24, 24));
   ui->btnOpenPicFolder->setFixedSize(QSize(32, 32));
+  ui->btnFilePlayPause->setIconSize(QSize(24, 24));
+  ui->btnFilePlayPause->setFixedSize(QSize(32, 32));
   ui->btnToggleMeterMode->setFixedSize(QSize(14, 32));
   ui->btnDumpRaw->setFixedSize(QSize(32, 32));
   ui->btnDumpEti->setFixedSize(QSize(32, 32));
@@ -1216,10 +1221,133 @@ void DabRadio::_slot_handle_next_service_button()
 
 void DabRadio::_slot_handle_file_looped()
 {
-  if (!mIsScanning && mIsFileMode && ui->cbAutoNextService->isChecked())
+  // do not switch the service while the user holds the slider handle (e.g. moved to the file end)
+  if (!mIsScanning && mIsFileMode && ui->cbAutoNextService->isChecked() && !ui->sliderFilePos->isSliderDown())
   {
     _slot_handle_next_service_button();
   }
+}
+
+// Let a left click on the slider groove jump directly to the click position (instead of doing a page step)
+class FileSliderStyle : public QProxyStyle
+{
+public:
+  i32 styleHint(StyleHint iHint, const QStyleOption * ipOption, const QWidget * ipWidget, QStyleHintReturn * opReturnData) const override
+  {
+    if (iHint == SH_Slider_AbsoluteSetButtons)
+    {
+      return Qt::LeftButton;
+    }
+    return QProxyStyle::styleHint(iHint, ipOption, ipWidget, opReturnData);
+  }
+};
+
+static QString format_play_time(const f32 iTime_s)
+{
+  const i32 t = (i32)iTime_s;
+  if (t >= 3600)
+  {
+    return QString("%1:%2:%3").arg(t / 3600).arg((t / 60) % 60, 2, 10, QChar('0')).arg(t % 60, 2, 10, QChar('0'));
+  }
+  return QString("%1:%2").arg(t / 60).arg(t % 60, 2, 10, QChar('0'));
+}
+
+void DabRadio::_initialize_file_player_bar()
+{
+  ui->sliderFilePos->setFixedHeight(31);
+  ui->sliderFilePos->setStyleSheet("QSlider::handle:horizontal { width:  16px; margin-top: -9px;  margin-bottom: -9px; border-radius: 5px; }");
+  auto * const pSliderStyle = new FileSliderStyle;
+  pSliderStyle->setParent(ui->sliderFilePos); // the widget does not take the ownership of the style
+  ui->sliderFilePos->setStyle(pSliderStyle);
+
+  connect(ui->sliderFilePos, &QSlider::sliderPressed, this, &DabRadio::_slot_file_slider_pressed);
+  connect(ui->sliderFilePos, &QSlider::sliderReleased, this, &DabRadio::_slot_file_slider_released);
+  connect(ui->sliderFilePos, &QSlider::sliderMoved, this, &DabRadio::_slot_file_slider_moved);
+  connect(ui->btnFilePlayPause, &QPushButton::clicked, this, &DabRadio::_slot_handle_file_play_pause_button);
+}
+
+// called after a new file reader was created
+void DabRadio::_setup_file_player_bar(const QString & iFileName)
+{
+  // the label does not widen the window (size policy "Ignored"), so a long name is clipped and the full path is in the tooltip
+  ui->lblFileName->setText(QDir::toNativeSeparators(iFileName));
+  ui->lblFileName->setToolTip(ui->lblFileName->text());
+
+  mFileTotalTimeText = format_play_time(mpInputDevice->get_file_duration_s());
+  mFileSliderMovementPos = -1;
+  _set_file_paused(false); // a new file reader always starts playing
+  ui->sliderFilePos->setValue(0);
+  ui->lblFileTime->setText(format_play_time(0) + " / " + mFileTotalTimeText);
+  // keep the label width stable while the elapsed time is counting up (assume equal width digits)
+  ui->lblFileTime->setMinimumWidth(ui->lblFileTime->fontMetrics().horizontalAdvance(mFileTotalTimeText + " / " + mFileTotalTimeText));
+  _show_file_player_bar(true);
+}
+
+void DabRadio::_show_file_player_bar(const bool iShow)
+{
+  if (ui->frmFilePlayer->isHidden() != iShow)
+  {
+    return; // no change
+  }
+
+  ui->frmFilePlayer->setVisible(iShow);
+
+  // The main window has a fixed height (determined at startup without the bar), so add the bar height to it.
+  // Otherwise, the left (service list) and right column would stretch differently and their bottom rows would not be aligned anymore.
+  // Always calculate from the startup height, as the window may have already grown with the layout minimum size meanwhile.
+  i32 barHeight = 0;
+  if (iShow)
+  {
+    ui->frmFilePlayer->ensurePolished(); // the style (sheet) is applied not before the bar is visible
+    barHeight = ui->frmFilePlayer->sizeHint().height() + layout()->spacing();
+  }
+  setFixedHeight(mWindowBaseHeight + barHeight);
+}
+
+void DabRadio::_set_file_paused(const bool iPaused)
+{
+  mFilePaused = iPaused;
+  ui->btnFilePlayPause->setIcon(QIcon(mFilePaused ? ":res/icons/play24.svg" : ":res/icons/pause24.svg"));
+
+  if (mpInputDevice != nullptr && mIsFileMode)
+  {
+    mpInputDevice->set_file_paused(mFilePaused);
+  }
+}
+
+void DabRadio::_slot_handle_file_play_pause_button()
+{
+  _set_file_paused(!mFilePaused);
+}
+
+void DabRadio::_slot_file_progress(const i32 iPerMill, const f32 iElapsed_s)
+{
+  if (mFileSliderMovementPos < 0) // suppress slider update while mouse move on slider
+  {
+    ui->sliderFilePos->setValue(iPerMill);
+  }
+  ui->lblFileTime->setText(format_play_time(iElapsed_s) + " / " + mFileTotalTimeText);
+}
+
+void DabRadio::_slot_file_slider_pressed()
+{
+  // with a click on the groove the slider has already jumped to the click position here
+  _slot_file_slider_moved(ui->sliderFilePos->value());
+}
+
+void DabRadio::_slot_file_slider_released()
+{
+  mFileSliderMovementPos = -1;
+}
+
+void DabRadio::_slot_file_slider_moved(const i32 iPerMill)
+{
+  if (mpInputDevice == nullptr || !mIsFileMode)
+  {
+    return;
+  }
+  mFileSliderMovementPos = iPerMill; // iPerMill = [0; 1000]
+  mpInputDevice->jump_to_file_pos_per_mill(iPerMill);
 }
 
 void DabRadio::_slot_handle_target_service_button()

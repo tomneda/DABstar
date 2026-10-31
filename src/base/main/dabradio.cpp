@@ -103,7 +103,9 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
 
   setWindowTitle(PRJ_NAME);
 
-  Settings::Main::posAndSize.read_widget_geometry(this, false, true, 0, 30 /*reserve height of dyn. info fields*/);
+  ui->frmFilePlayer->hide(); // only visible while playing a file, must be hidden before the (fixed) window height is determined
+  Settings::Main::posAndSize.read_widget_geometry(this, false, true, 0, cDynInfoReserveHeight);
+  mWindowBaseHeight = height();
   Settings::Main::cbAutoNextService.register_widget_and_update_ui_from_setting(ui->cbAutoNextService, 0);
 
   mpServiceListHandler.reset(new ServiceListHandler(iServiceListDbFileName, ui->tblServiceList));

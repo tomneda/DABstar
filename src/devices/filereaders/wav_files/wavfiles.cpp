@@ -31,8 +31,6 @@
 #include "wavfiles.h"
 #include "openfiledialog.h"
 #include "setting_helper.h"
-#include <QMouseEvent>
-#include <QStyle>
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
@@ -98,18 +96,9 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
 
   lcdSampleRate->display(mSampleRate);
   lblFileName->setText(iFilename);
-  sliderFilePos->setValue(0);
-  lcdCurrTime->display(0);
   const i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
   sf_seek(mpFile, 0, SEEK_SET);
-  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (f32)mSampleRate, 0, 'f', 1));
-
-  connect(cbLoopFile, &QCheckBox::clicked, this, &WavFileHandler::slot_handle_cb_loop_file);
-  connect(sliderFilePos, &QSlider::sliderPressed, this, &WavFileHandler::slot_slider_pressed);
-  connect(sliderFilePos, &QSlider::sliderReleased, this, &WavFileHandler::slot_slider_released);
-  connect(sliderFilePos, &QSlider::sliderMoved, this, &WavFileHandler::slot_slider_moved);
-
-  sliderFilePos->installEventFilter(this);
+  mFileDuration_s = (f32)fileLength / (f32)mSampleRate;
 
   mIsRunning.store(false);
 }
@@ -139,6 +128,7 @@ bool WavFileHandler::restartReader(const i32 freq)
     return true;
   }
   mpWavReader = std::make_unique<WavReader>(this, mpFile, &mRingBuffer, mSampleRate);
+  mpWavReader->set_paused(mPaused);
   mpWavReader->start_reader();
   mIsRunning.store(true);
   return true;
@@ -217,65 +207,19 @@ QString WavFileHandler::deviceName()
   return "WavFile";
 }
 
-void WavFileHandler::slot_handle_cb_loop_file(const bool iChecked)
+void WavFileHandler::jump_to_file_pos_per_mill(const i32 iPerMill)
 {
-  (void)iChecked;
-  if (mpFile == nullptr)
+  if (mpWavReader != nullptr)
   {
-    return;
-  }
-
-  cbLoopFile->setChecked(mpWavReader->handle_continuous_button());
-}
-
-void WavFileHandler::slot_set_progress(const i32 progress, const f32 timelength) const
-{
-  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
-  {
-    sliderFilePos->setValue(progress);
-  }
-  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
-}
-
-void WavFileHandler::slot_slider_pressed()
-{
-  mSliderMovementPos = sliderFilePos->value();
-}
-
-void WavFileHandler::slot_slider_released()
-{
-  if (mSliderMovementPos >= 0)
-  {
-    // mpWavReader->jump_to_relative_position_per_mill(mSliderMovementPos); // restart from current mouse release position
-    mSliderMovementPos = -1;
+    mpWavReader->jump_to_relative_position_per_mill(iPerMill);
   }
 }
 
-void WavFileHandler::slot_slider_moved(const i32 iPos)
+void WavFileHandler::set_file_paused(const bool iPaused)
 {
-  if (mpWavReader == nullptr)
-    return;
-  mSliderMovementPos = iPos; // iPos = [0; 1000]
-  mpWavReader->jump_to_relative_position_per_mill(iPos);
-}
-
-bool WavFileHandler::eventFilter(QObject * obj, QEvent * event)
-{
-  if (obj == sliderFilePos && event->type() == QEvent::MouseButtonPress)
+  mPaused = iPaused;
+  if (mpWavReader != nullptr)
   {
-    const QMouseEvent * const mouseEvent = static_cast<QMouseEvent *>(event);
-
-    if (mouseEvent->button() == Qt::LeftButton)
-    {
-      const int newVal = QStyle::sliderValueFromPosition(sliderFilePos->minimum(), sliderFilePos->maximum(), mouseEvent->pos().x(), sliderFilePos->width());
-      sliderFilePos->setValue(newVal);
-      sliderFilePos->setSliderPosition(newVal);
-      slot_slider_moved(newVal);
-
-      // Return false to let QSlider handle the event.
-      // Since the handle is now at the mouse position, QSlider will start dragging.
-      return false;
-    }
+    mpWavReader->set_paused(iPaused);
   }
-  return QObject::eventFilter(obj, event);
 }

@@ -19,6 +19,8 @@
     <file>res/icons/tower24.png</file>
     <file>res/icons/targetwht24.png</file>
     <file>res/icons/folder24.png</file>
+    <file>res/icons/play24.svg</file>
+    <file>res/icons/pause24.svg</file>
     <file>res/icons/cb_off.svg</file>
     <file>res/icons/cb_on.svg</file>
     <file>res/icons/cb_off_hover.svg</file>

@@ -54,7 +54,7 @@ public:
   ~XmlReader() override;
   void stopReader();
   void jump_to_relative_position(i32 pos);
-  bool handle_continuousButton();
+  void set_paused(bool iPaused) { mPaused.store(iPaused); }
 
 private:
   union UCnv // to avoid warnings "dereferencing type-punned pointer will break strict-aliasing rules"
@@ -63,7 +63,6 @@ private:
     f32 floatData;
   };
 
-  std::atomic<bool> continuous;
   FILE * file;
   XmlDescriptor * fd;
   u32 filePointer;
@@ -71,6 +70,7 @@ private:
   XmlFileReader * parent;
   std::atomic<bool> running;
   std::atomic<i64> mSetNewFilePos = -1;
+  std::atomic<bool> mPaused = false;
   void run();
   i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));
   void readElements_IQ(FILE * f, cf32 *, i32 amount);

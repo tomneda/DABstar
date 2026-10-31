@@ -49,7 +49,6 @@ WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32
 {
   mFileLength = sf_seek(ipFile, 0, SEEK_END);
   sf_seek(ipFile, 0, SEEK_SET);
-  mContinuous.store(ipWavFH->cbLoopFile->isChecked());
   mCmplxBuffer.resize(cBufferSize);
 
   if (mSampleRate != INPUT_RATE)
@@ -128,7 +127,7 @@ void WavReader::jump_to_relative_position_per_mill(i32 iPerMill)
 
 void WavReader::run()
 {
-  connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::slot_set_progress);
+  connect(this, &WavReader::signal_set_progress, mpParent, &WavFileHandler::signal_file_progress);
   connect(this, &WavReader::signal_file_looped, mpParent, &WavFileHandler::signal_file_looped);
 
   sf_seek(mpFile, 0, SEEK_SET);
@@ -159,6 +158,13 @@ void WavReader::run()
       cnt = 0;
     }
 
+    if (mPaused.load())
+    {
+      usleep(10000);
+      nextStop_us = getMyTime(); // do not catch up the paused time
+      continue;
+    }
+
     nextStop_us += mPeriod_us;
 
     const i32 n = (i32)sf_readf_float(mpFile, (f32 *)mCmplxBuffer.data(), cBufferSize);
@@ -171,10 +177,6 @@ void WavReader::run()
       for (i32 i = n; i < cBufferSize; i++)
       {
         mCmplxBuffer[i] = std::complex<f32>(0, 0);
-      }
-      if (!mContinuous.load())
-      {
-        break;
       }
       emit signal_file_looped();
     }
@@ -218,11 +220,5 @@ void WavReader::run()
   }
 
   qInfo("Task for replay ended");
-}
-
-bool WavReader::handle_continuous_button()
-{
-  mContinuous.store(!mContinuous.load());
-  return mContinuous.load();
 }
 

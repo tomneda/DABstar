@@ -48,7 +48,7 @@ public:
   void start_reader();
   void stop_reader();
   void jump_to_relative_position_per_mill(i32 iPerMill);
-  bool handle_continuous_button();
+  void set_paused(bool iPaused) { mPaused.store(iPaused); }
 
 private:
   static constexpr i32 cBufferSize = 32768;
@@ -59,8 +59,8 @@ private:
   RingBuffer<cf32> * const mpRingBuffer;
   RawFileHandler * const mParent;
   std::atomic<bool> mRunning = false;
-  std::atomic<bool> continuous = false;
   std::atomic<i64> mSetNewFilePos = -1;
+  std::atomic<bool> mPaused = false;
   i64 mFileLength = 0;
 
   std::array<f32, 256> mMapTable;
