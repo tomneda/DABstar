@@ -123,6 +123,8 @@ void FibDecoder::_reset()
   mUtcTimeSet = {};
   mUnhandledFig0Set.clear();
   mUnhandledFig1Set.clear();
+  mEwsPrintedSet.clear();
+  mEwsHeartbeatReceived = false;
 }
 
 // Some collected FIG content turned out to be physically impossible, so at least one FIB was decoded wrongly
