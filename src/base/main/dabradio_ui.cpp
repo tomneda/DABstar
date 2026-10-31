@@ -284,10 +284,12 @@ void DabRadio::_initialize_status_info()
   _add_status_label_elem(mStatusInfo.MOT,           0x7F8CFF, "MOT",           "Multimedia Object Transfer<br>for slide show");
   _add_status_label_elem(mStatusInfo.EPG,           0xf2c629, "EPG",           "Electronic Program Guide");
   _add_status_label_elem(mStatusInfo.Announce,      0xf2c629, "ANN",           "Announcement");
+  _add_status_label_elem(mStatusInfo.EWS,           0xFF5040, "EWS",           "Emergency Warning System<br>(ASA in Germany)<br>is available in this ensemble");
 
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
   _reset_status_info(mStatusInfo);
+  _set_status_info_status(mStatusInfo.EWS, false);
 }
 
 void DabRadio::_initialize_dynamic_label() const

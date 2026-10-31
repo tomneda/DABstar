@@ -115,6 +115,7 @@ signals:
   void signal_change_in_configuration();
   void signal_start_announcement(const QString &, i32);
   void signal_stop_announcement(const QString &, i32);
+  void signal_ews_available();
   void signal_fib_time_info(const SUtcTimeSet & fibTimeInfo);
   void signal_fib_loaded_state(EFibLoadingState);
 };

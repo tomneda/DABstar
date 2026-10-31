@@ -44,6 +44,7 @@ FibDecoder::FibDecoder(DabRadio * mr)
   connect(this, &IFibDecoder::signal_change_in_configuration, mpRadioInterface, &DabRadio::slot_change_in_configuration);
   connect(this, &IFibDecoder::signal_start_announcement, mpRadioInterface, &DabRadio::slot_start_announcement);
   connect(this, &IFibDecoder::signal_stop_announcement, mpRadioInterface, &DabRadio::slot_stop_announcement);
+  connect(this, &IFibDecoder::signal_ews_available, mpRadioInterface, &DabRadio::slot_ews_available);
 
   mpTimerDataConsistencyCheck = new QTimer(this);
   mpTimerDataConsistencyCheck->setSingleShot(true);
@@ -124,7 +125,7 @@ void FibDecoder::_reset()
   mUnhandledFig0Set.clear();
   mUnhandledFig1Set.clear();
   mEwsPrintedSet.clear();
-  mEwsHeartbeatReceived = false;
+  mEwsAvailable = false;
 }
 
 // Some collected FIG content turned out to be physically impossible, so at least one FIB was decoded wrongly

@@ -492,6 +492,16 @@ void DabRadio::slot_stop_announcement(const QString & iName, i32 iSubChId)
   }
 }
 
+void DabRadio::slot_ews_available()
+{
+  if (!mIsChannelRunning)
+  {
+    return;
+  }
+
+  _set_status_info_status(mStatusInfo.EWS, true);
+}
+
 // Called from the service list handler when when the favorite state has changed
 void DabRadio::_slot_favorite_changed(const bool iIsFav)
 {
