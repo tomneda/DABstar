@@ -682,13 +682,15 @@ void FibDecoder::_process_Fig0s15(const u8 * const d)
 {
   const SFigHeader fh = _get_fig_header(d);
 
+  if (!mEwsAvailable) // the heartbeat is only sent while no alert is active, so also an alert marks the participation
+  {
+    qInfo() << "FIG 0/15: ensemble participates in the Emergency Warning System (EWS/ASA)";
+    mEwsAvailable = true;
+    emit signal_ews_available();
+  }
+
   if (fh.Length == 1) // heartbeat form with empty type 0 field, no alert is active
   {
-    if (!mEwsHeartbeatReceived)
-    {
-      qInfo() << "FIG 0/15: ensemble participates in the Emergency Warning System (EWS/ASA)";
-      mEwsHeartbeatReceived = true;
-    }
     mEwsPrintedSet.clear(); // allow printing of upcoming alerts again
     return;
   }

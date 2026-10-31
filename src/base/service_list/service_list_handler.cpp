@@ -304,7 +304,9 @@ void ServiceListHandler::_fill_table_view_from_db()
 
   QHeaderView * const header = mpTableView->horizontalHeader();
   header->setSectionResizeMode(QHeaderView::ResizeToContents);
-  header->setStretchLastSection(true);
+  // Do not use setStretchLastSection(): Qt never shrinks the stretched last section below the size it had when it became
+  // the last one (here the default section size of "Ch", after hiding "SId"). Stretch the service column instead.
+  header->setSectionResizeMode(ServiceDB::CI_Service, QHeaderView::Stretch);
 }
 
 void ServiceListHandler::jump_entries(i32 iSteps)

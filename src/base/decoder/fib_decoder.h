@@ -80,7 +80,7 @@ private:
   std::set<u8> mUnhandledFig0Set;
   std::set<u8> mUnhandledFig1Set;
   std::set<QString> mEwsPrintedSet;  // already printed FIG 0/15 alert contents
-  bool mEwsHeartbeatReceived = false; // FIG 0/15 heartbeat seen, ensemble is part of an EWS (ASA)
+  bool mEwsAvailable = false;        // FIG 0/15 seen, ensemble is part of an EWS (ASA)
   std::chrono::milliseconds mDiffTimeMax{};
   std::chrono::time_point<std::chrono::system_clock> mLastTimePoint{};
   FibHelper::TTP mFirstFigTimePoint{};

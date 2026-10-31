@@ -145,6 +145,7 @@ private:
     StatusInfoElem<bool> SBR;
     StatusInfoElem<bool> PS;
     StatusInfoElem<bool> Announce;
+    StatusInfoElem<bool> EWS;         // ensemble related, so it is only reset on channel stop
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
     StatusInfoElem<const char *> ProtLevel;
@@ -351,7 +352,7 @@ private:
   // Utility Functions
   QStringList _get_soft_bit_gen_names() const;
   QString _convert_links_to_clickable(const QString & iText) const;
-  void _check_on_github_for_update(bool iShowMessageBox);
+  void _check_on_github_for_update(bool iShowStatus);
 
   void _initialize_traffic_lights() const;
   void _initialize_signal_slot_connections();
@@ -417,6 +418,7 @@ public slots:
   void slot_fib_time(const IFibDecoder::SUtcTimeSet & fibTimeInfo);
   void slot_start_announcement(const QString & iName, i32 iSubChId);
   void slot_stop_announcement(const QString & iName, i32 iSubChId);
+  void slot_ews_available();
   void slot_epg_timer_timeout();
 
   // Configuration and Settings

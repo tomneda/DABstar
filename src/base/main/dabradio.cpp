@@ -494,6 +494,16 @@ void DabRadio::slot_stop_announcement(const QString & iName, i32 iSubChId)
   }
 }
 
+void DabRadio::slot_ews_available()
+{
+  if (!mIsChannelRunning)
+  {
+    return;
+  }
+
+  _set_status_info_status(mStatusInfo.EWS, true);
+}
+
 // Called from the service list handler when when the favorite state has changed
 void DabRadio::_slot_favorite_changed(const bool iIsFav)
 {
@@ -1365,12 +1375,30 @@ void DabRadio::_slot_check_for_update()
   _check_on_github_for_update(false);
 }
 
-void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
+void DabRadio::_check_on_github_for_update(const bool iShowStatus)
 {
   UpdateChecker * updateChecker = new UpdateChecker(this);
 
-  auto update_checker = [this, updateChecker, iShowMessageBox](const bool result)
+  if (iShowStatus)
   {
+    mpConfig->btnCheckForUpdate->setEnabled(false);
+    mpConfig->lblUpdateStatus->setStyleSheet("");
+    mpConfig->lblUpdateStatus->setText("Checking for update on GitHub...");
+    mpConfig->lblUpdateStatus->setVisible(true);
+  }
+
+  auto show_status = [this, iShowStatus](const QString & iText, const QString & iColor)
+  {
+    if (!iShowStatus) return;
+    mpConfig->lblUpdateStatus->setStyleSheet("color: " + iColor + ";");
+    mpConfig->lblUpdateStatus->setText(iText);
+    mpConfig->btnCheckForUpdate->setEnabled(true);
+  };
+
+  auto update_checker = [this, updateChecker, show_status](const bool result)
+  {
+    updateChecker->deleteLater();
+
     if (result)
     {
       const AppVersion verNew(updateChecker->version());
@@ -1378,7 +1406,9 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
 
       if (!verCur.isValid())
       {
-        qCCritical(sLogDabRadio) << "The current application version assignment is invalid";
+        const QString text = "The current application version assignment is invalid";
+        qCCritical(sLogDabRadio).noquote() << text;
+        show_status(text, "#E04040");
         return;
       }
 
@@ -1389,6 +1419,7 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
         if (verNew > verCur)
         {
           qCInfo(sLogDabRadio, "New application version found: %s", updateChecker->version().toUtf8().data());
+          show_status("New version " + verNew.toString() + " is available (current is " + verCur.toString() + ")", "#40C040");
 
           const i32 diffDaysWanted = Settings::Config::sbUpdateCheckDays.read().toInt();
           const auto dialog = new UpdateDialog(updateChecker->version(), updateChecker->releaseNotes(),
@@ -1400,23 +1431,28 @@ void DabRadio::_check_on_github_for_update(const bool iShowMessageBox)
         {
           const QString text = "This DABstar version " + verCur.toString() + " is up to date";
           qCInfo(sLogDabRadio).noquote() << text;
-          if (iShowMessageBox) QMessageBox::information(this, "Update", text);
+          show_status(text, "#40C040");
         }
         else
         {
           const QString text = "The latest version on GitHub is " + verNew.toString() + ", but this version is assigned as " + verCur.toString() + "! -> skip update";
           qCWarning(sLogDabRadio).noquote() << text;
-          if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
+          show_status(text, "#E0A030");
         }
+      }
+      else
+      {
+        const QString text = "Update check failed! Invalid version information on GitHub.";
+        qCWarning(sLogDabRadio).noquote() << text;
+        show_status(text, "#E04040");
       }
     }
     else
     {
       const QString text = "Update check failed! Maybe a network issue to Github?";
       qCWarning(sLogDabRadio).noquote() << text;
-      if (iShowMessageBox) QMessageBox::warning(this, "Update", text);
+      show_status(text, "#E04040");
     }
-    updateChecker->deleteLater();
   };
 
   connect(updateChecker, &UpdateChecker::finished, this, update_checker);
