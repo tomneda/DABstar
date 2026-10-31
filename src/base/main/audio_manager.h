@@ -25,6 +25,7 @@ class TechData;
 class Configuration;
 class QThread;
 class QSlider;
+class IndicatorButton;
 
 class AudioManager : public QObject
 {
@@ -43,6 +44,8 @@ public:
     LevelMeter * pLevelMeterRight;
     QSlider * pSliderVolume;
     OpenFileDialog * pOpenFileDialog;
+    IndicatorButton * pFrameDumpButton;
+    IndicatorButton * pAudioDumpButton;
   };
 
   explicit AudioManager(const SResourceConfig & cfg, QObject * parent = nullptr);
@@ -64,6 +67,9 @@ public:
   void update_dump_timers() const;  // called every second from DabRadio's display timer
 
 private:
+  static constexpr u32 cFrameDumpColor = 0x3C9060;
+  static constexpr u32 cAudioDumpColor = 0x408870;
+
   // Non-owned resources (passed in constructor)
   RingBuffer<i16> * const mpAudioBufferFromDecoder;
   RingBuffer<i16> * const mpAudioBufferToOutput;
@@ -74,6 +80,8 @@ private:
   LevelMeter * const mpLevelMeterRight;
   QSlider * const mpSliderVolume;
   OpenFileDialog * const mpOpenFileDialog;
+  IndicatorButton * const mpFrameDumpButton;
+  IndicatorButton * const mpAudioDumpButton;
 
   // Owned worker and thread
   AudioPipeline * mpAudioPipeline = nullptr;
@@ -94,6 +102,9 @@ private:
 
   void _update_level_meter(LevelMeter * ipMeter, const f32 iPeak, const f32 iRms) const;
   QString _seconds_to_timestring(const u32 iTimer) const;
+  void _set_frame_dump_button_idle() const;
+  void _set_audio_dump_button_idle() const;
+  void _set_dump_button_emphasized(IndicatorButton * ipButton, bool iEmphasized, u32 iBaseColor) const;
 
 public slots:
   // Connected from AudioPipeline
@@ -103,7 +114,7 @@ public slots:
   void slot_frame_dump_state_changed(bool iIsDumping);
   void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
 
-  // Connected from TechData buttons
+  // Connected from main window dump buttons
   void slot_handle_audio_dump_button();
   void slot_handle_frame_dump_button();
 

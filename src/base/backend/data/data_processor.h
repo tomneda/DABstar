@@ -57,7 +57,6 @@ private:
   const i16 mPacketAddress;
   const u8 mDGflag;
   const i16 mFEC_scheme;
-  const i16 mSubChannel;
   RingBuffer<u8> * const mpDataBuffer;
   QScopedPointer<VirtualDataHandler> mpDataHandler;
 

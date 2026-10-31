@@ -20,6 +20,8 @@
 #include <QThread>
 #include <cassert>
 #include "level_meter.h"
+#include "gui_helpers.h"
+#include "indicator_button.h"
 
 AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   : QObject(parent)
@@ -32,6 +34,8 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   , mpLevelMeterRight(cfg.pLevelMeterRight)
   , mpSliderVolume(cfg.pSliderVolume)
   , mpOpenFileDialog(cfg.pOpenFileDialog)
+  , mpFrameDumpButton(cfg.pFrameDumpButton)
+  , mpAudioDumpButton(cfg.pAudioDumpButton)
 {
   mAudioOutputThread = new QThread(this);
   mAudioOutputThread->setObjectName("audioOutThr");
@@ -49,6 +53,12 @@ AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
   connect(mpAudioPipeline, &AudioPipeline::signal_frame_dump_state_changed, this, &AudioManager::slot_frame_dump_state_changed);
 
   connect(mpSliderVolume, &QSlider::valueChanged, this, &AudioManager::slot_handle_volume_slider);
+  connect(mpFrameDumpButton, &QPushButton::clicked, this, &AudioManager::slot_handle_frame_dump_button);
+  connect(mpAudioDumpButton, &QPushButton::clicked, this, &AudioManager::slot_handle_audio_dump_button);
+
+  _set_dump_button_emphasized(mpFrameDumpButton, false, cFrameDumpColor);
+  _set_dump_button_emphasized(mpAudioDumpButton, false, cAudioDumpColor);
+  set_audio_frame_type(EAudioFrameType::None); // sets the button texts and disables them
   connect(mAudioOutputThread, &QThread::finished, mpAudioPipeline, &QObject::deleteLater);
 
   mAudioOutputThread->start(QThread::HighPriority);
@@ -105,6 +115,12 @@ void AudioManager::set_service_label(const QString & label)
 void AudioManager::set_audio_frame_type(const EAudioFrameType type)
 {
   mAudioFrameType = type;
+  mpFrameDumpButton->setEnabled(type != EAudioFrameType::None);
+  mpAudioDumpButton->setEnabled(type != EAudioFrameType::None);
+  if (!mFrameDumpRunning)
+  {
+    _set_frame_dump_button_idle();
+  }
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_audio_frame_type, Qt::QueuedConnection, type);
 }
 
@@ -128,13 +144,10 @@ void AudioManager::stop_all_dumping()
   mAudioDumpRunning = false;
   mFrameDumpRunning = false;
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_stop_all_dumping, Qt::QueuedConnection);
-  mpTechDataWidget->set_audio_dump_button_emphasized(false);
-  mpTechDataWidget->set_frame_dump_button_emphasized(false);
-  mpTechDataWidget->audiodumpButton->setText("Dump WAV");
-  if (mAudioFrameType == EAudioFrameType::AAC)
-    mpTechDataWidget->framedumpButton->setText("Dump AAC");
-  else
-    mpTechDataWidget->framedumpButton->setText("Dump MP2");
+  _set_dump_button_emphasized(mpAudioDumpButton, false, cAudioDumpColor);
+  _set_dump_button_emphasized(mpFrameDumpButton, false, cFrameDumpColor);
+  _set_audio_dump_button_idle();
+  _set_frame_dump_button_idle();
 }
 
 void AudioManager::slot_show_sample_rate_and_audio_flags(const i32 iSampleRate, const bool iSbrUsed, const bool iPsUsed)
@@ -149,18 +162,41 @@ void AudioManager::slot_show_sample_rate_and_audio_flags(const i32 iSampleRate, 
 
 QString AudioManager::_seconds_to_timestring(const u32 iTimer) const
 {
-  return QString::asprintf("%d:%02d:%02d", iTimer / 3600, (iTimer / 60) % 60, iTimer % 60);
+  // compact format to fit into the small dump buttons: "mm:ss", or "1h05" from one hour on
+  if (iTimer < 3600)
+  {
+    return QString::asprintf("%02d:%02d", iTimer / 60, iTimer % 60);
+  }
+  return QString::asprintf("%dh%02d", iTimer / 3600, (iTimer / 60) % 60);
+}
+
+void AudioManager::_set_frame_dump_button_idle() const
+{
+  mpFrameDumpButton->setText(mAudioFrameType == EAudioFrameType::MP2 ? "MP2" : "AAC");
+  mpFrameDumpButton->set_sub_text({});
+}
+
+void AudioManager::_set_audio_dump_button_idle() const
+{
+  mpAudioDumpButton->setText("WAV");
+  mpAudioDumpButton->set_sub_text({});
+}
+
+void AudioManager::_set_dump_button_emphasized(IndicatorButton * const ipButton, const bool iEmphasized, const u32 iBaseColor) const
+{
+  ipButton->setStyleSheet(iEmphasized ? get_active_dump_style_sheet() : get_bg_style_sheet(iBaseColor));
+  ipButton->setFixedSize(QSize(32, 32));
 }
 
 void AudioManager::update_dump_timers() const
 {
   if (mFrameDumpRunning)
   {
-    mpTechDataWidget->framedumpButton->setText(_seconds_to_timestring(mFrameDumpTimer++));
+    mpFrameDumpButton->set_sub_text(_seconds_to_timestring(mFrameDumpTimer++));
   }
   if (mAudioDumpRunning)
   {
-    mpTechDataWidget->audiodumpButton->setText(_seconds_to_timestring(mAudioDumpTimer++));
+    mpAudioDumpButton->set_sub_text(_seconds_to_timestring(mAudioDumpTimer++));
   }
 }
 
@@ -283,10 +319,10 @@ void AudioManager::slot_handle_audio_dump_button()
 void AudioManager::slot_audio_dump_state_changed(const bool iIsDumping)
 {
   mAudioDumpRunning = iIsDumping;
-  mpTechDataWidget->set_audio_dump_button_emphasized(iIsDumping);
+  _set_dump_button_emphasized(mpAudioDumpButton, iIsDumping, cAudioDumpColor);
   if (!iIsDumping)
   {
-    mpTechDataWidget->audiodumpButton->setText("Dump WAV");
+    _set_audio_dump_button_idle();
   }
 }
 
@@ -322,12 +358,9 @@ void AudioManager::slot_handle_frame_dump_button()
 void AudioManager::slot_frame_dump_state_changed(const bool iIsDumping)
 {
   mFrameDumpRunning = iIsDumping;
-  mpTechDataWidget->set_frame_dump_button_emphasized(iIsDumping);
+  _set_dump_button_emphasized(mpFrameDumpButton, iIsDumping, cFrameDumpColor);
   if (!iIsDumping)
   {
-    if (mAudioFrameType == EAudioFrameType::AAC)
-      mpTechDataWidget->framedumpButton->setText("Dump AAC");
-    else
-      mpTechDataWidget->framedumpButton->setText("Dump MP2");
+    _set_frame_dump_button_idle();
   }
 }

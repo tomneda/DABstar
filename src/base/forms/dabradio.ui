@@ -367,15 +367,11 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show the Ensemble List&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use this to scan sample files or live channels with an SDR device.&lt;/p&gt;&lt;p&gt;Select &amp;quot;Play files&amp;quot; or &amp;quot;Play on ...&amp;quot; to switch between the file list and the channel list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
-         <property name="icon">
-          <iconset resource="../../../resources.qrc">
-           <normaloff>:/res/icons/el32.svg</normaloff>:/res/icons/el32.svg</iconset>
+         <property name="text">
+          <string>EL</string>
          </property>
-         <property name="iconSize">
-          <size>
-           <width>32</width>
-           <height>32</height>
-          </size>
+         <property name="iconStyleText" stdset="0">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -470,6 +466,223 @@
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
         <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="1">
+          <widget class="IndicatorButton" name="btnDumpRaw">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the raw input signal to a file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;A file selection dialog will open to choose a filename. Note that the file sizes can be very large.&lt;/p&gt;&lt;p&gt;Click again to stop recording. The file can be reloaded using the &amp;quot;Ensemble List&amp;quot; (&amp;quot;EL&amp;quot; button).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>RAW</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="IndicatorButton" name="btnDumpEti">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Generate an ETI file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Note that generating an ETI file requires considerable resources.&lt;/p&gt;&lt;p&gt;Clicking this button opens a file selection dialog. After selecting a file, the ensemble content is written in ETI format. The ETI session stops when this button is clicked again or when switching to another channel.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>ETI</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="IndicatorButton" name="btnDumpFrame">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save audio frames to a file (AAC or MP2)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Audio services are encoded in MP2 or AAC format.&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the audio frames to a file.&lt;/p&gt;&lt;p&gt;Click again to close the output file. Programs such as VLC can play these files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>AAC</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="IndicatorButton" name="btnDumpAudio">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the audio output as an uncompressed PCM file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click to open a file selection dialog and save the PCM data.&lt;/p&gt;&lt;p&gt;The output is a standard &amp;quot;.wav&amp;quot; file compatible with most audio programs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>WAV</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="IndicatorButton" name="btnDlText">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Save the dynamic label text to a file&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click again to close the file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>DYL</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="IndicatorButton" name="btnEpg">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open SPI (formerly EPG) timetable preview&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only enabled if EPG data is received.&lt;/p&gt;&lt;p&gt;Note: this feature is still a work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>EPG</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="IndicatorButton" name="btnJournaline">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open the Journaline window&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only enabled if Journaline data is received.&lt;/p&gt;&lt;p&gt;The yellow circle shows an open window, the orange circle flashes on receiving new Journaline data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>JOUR</string>
+           </property>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="4" column="0">
           <widget class="IndicatorButton" name="btnHttpServer">
            <property name="sizePolicy">
@@ -528,15 +741,11 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the FIB content list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click a column header to sort by that column.&lt;br/&gt;Single-click a row to start the service.&lt;br/&gt;Double-click to export the table to a CSV file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/res/icons/fib32.svg</normaloff>:/res/icons/fib32.svg</iconset>
+           <property name="text">
+            <string>FIB</string>
            </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -563,15 +772,11 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the detailed TII list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This works only if the receiver's map coordinates are set in the configuration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/res/icons/tii32.svg</normaloff>:/res/icons/tii32.svg</iconset>
+           <property name="text">
+            <string>TII</string>
            </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -598,15 +803,11 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the CIR&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Opens a window showing the Channel Impulse Response (CIR) for the whole DAB frame.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/res/icons/cir32.svg</normaloff>:/res/icons/cir32.svg</iconset>
+           <property name="text">
+            <string>CIR</string>
            </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
+           <property name="iconStyleText" stdset="0">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

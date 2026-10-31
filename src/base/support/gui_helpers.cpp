@@ -12,6 +12,7 @@
  */
 #include "gui_helpers.h"
 #include "glob_data_types.h"
+#include "qt_compat.h"
 #include <sstream>
 #include <cassert>
 #include <QFileInfo>
@@ -107,6 +108,12 @@ QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseCo
   // qDebug() <<  "*** Style sheet:" << ts.str().c_str();
 
   return { ts.str().c_str() };
+}
+
+QString get_active_dump_style_sheet()
+{
+  // used for the dump buttons while recording, same red as the mute button
+  return get_bg_style_sheet(0xFF3C3C);
 }
 
 QString get_combo_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor /*= Qt::white*/, f32 iRefLuminance /*= 0.60f*/)

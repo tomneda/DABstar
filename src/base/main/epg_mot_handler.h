@@ -39,6 +39,7 @@ public:
     Configuration * pConfig;
     QLabel * pPictureLabel;
     QPushButton * pBtnOpenPicFolder;
+    QPushButton * pBtnDlText;
     OpenFileDialog * pOpenFileDialog;
   };
 
@@ -57,6 +58,7 @@ public:
 
   void show_pause_slide() const;
   void close_dl_text_file();
+  void set_dl_text_button_emphasized(bool iEmphasized) const;
 
   // Called from DabRadio::_slot_handle_open_pic_folder_button
   QString get_pic_folder() const;
@@ -73,6 +75,7 @@ private:
   Configuration * const mpConfig;
   QLabel * const mpPictureLabel;
   QPushButton * const mpBtnOpenPicFolder;
+  QPushButton * const mpBtnDlText;
   OpenFileDialog * const mpOpenFileDialog;
 
   // Non-owned, updated via set_dab_processor()
@@ -119,7 +122,7 @@ public slots:
   void slot_init_paths(); // Called once after construction to load paths from settings
   void slot_handle_mot_saving_selector(i32 iIdx); // Connected from configuration combobox
   void slot_set_epg_data(i32 iSId, i32 iTheTime, const QString & iTheText, const QString & iTheDescr); // Connected from EpgDecoder
-  void slot_handle_dl_text_button(); // Connected from dlTextButton
+  void slot_handle_dl_text_button(); // Connected from btnDlText
 
 private slots:
   void _slot_mot_timer_timeout();

@@ -45,13 +45,14 @@ class JournalineDataHandler : public VirtualDataHandler
   Q_OBJECT
 
 public:
-  JournalineDataHandler(DabRadio * ipDR, i32 iSubChannel);
+  JournalineDataHandler(DabRadio * ipDR);
   ~JournalineDataHandler();
 
   void add_MSC_data_group(const std::vector<u8> &);
   void add_to_dataBase(const std::shared_ptr<NML> & ipNmlElement);
 
 private:
+  DabRadio * const mpDabRadio;
   JournalineViewer::TMapData mDataMap;
   JournalineViewer mJournalineViewer;
   DAB_DATAGROUP_DECODER_t mDataGroupDecoder;

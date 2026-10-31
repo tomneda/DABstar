@@ -29,9 +29,6 @@ public:
 
   void save_position_and_config();
 
-  void set_eti_button_emphasized(bool iEmphasized) const;
-  void set_dump_button_emphasized(bool iEmphasized) const;
-
 private:
   DabRadio * const mpRadioInterface;
 

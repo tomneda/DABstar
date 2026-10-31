@@ -65,6 +65,7 @@ class TimeTableHandler;
 class ServiceListHandler;
 class TechData;
 class MapHttpServer;
+class IndicatorButton;
 class EnsembleList;
 class ItuTables;
 class AudioManager;
@@ -106,6 +107,11 @@ public:
 
   AudioPipeline * get_audio_pipeline() const;
 
+  // the JOUR button opens the latest registered Journaline viewer
+  void register_journaline_viewer(QWidget * ipViewerWidget);
+  void unregister_journaline_viewer(const QWidget * ipViewerWidget);
+  void set_journaline_data_received(const QWidget * ipViewerWidget) const;
+
   enum EAudioFlags : u32
   {
     AFL_NONE     = 0x0,
@@ -118,6 +124,7 @@ private:
   static constexpr i32 cScanningTimeoutMs    = 6000; // max. waiting time for signal and FIB audio data while scanning
   static constexpr i32 cEpgTimeoutMs         = 3000;
   static constexpr i32 cClockResetTimeoutMs  = 5000;
+  static constexpr i32 cJournalineActivityMs = 300;  // shown time of the data receiving indicator on the JOUR button
 
   inline static bool sIsTerminating = false;
 
@@ -192,6 +199,7 @@ private:
   std::unique_ptr<IDeviceHandler> mpInputDevice;
   WindowVisibilityWatcher * mpDeviceWindowWatcher = nullptr;
   WindowVisibilityWatcher * mpFibWindowWatcher = nullptr;
+  WindowVisibilityWatcher * mpJournalineWindowWatcher = nullptr;
 
   // Counters and indices
   i32 mMaxDistance = -1;
@@ -202,6 +210,9 @@ private:
 
   // File handles
   FILE * mpFicDumpPointer = nullptr;
+
+  static constexpr u32 cRawDumpColor = 0x4A7898;
+  static constexpr u32 cEtiDumpColor = 0x9A6A3A;
 
   // Dump timers
   uint32_t mRawDumpTimer = 0;
@@ -293,6 +304,7 @@ private:
   void _stop_eti_handler(SDumpStatus & ioDumpStatus) const;
   void _start_source_dumping(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus);
   void _stop_source_dumping(SDumpStatus & ioDumpStatus) const;
+  void _set_dump_button_emphasized(IndicatorButton * ipButton, bool iEmphasized, u32 iBaseColor) const;
 
   // Time and Date Handling
   void _get_ymd_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const;
@@ -411,9 +423,6 @@ public slots:
   void slot_handle_dc_avoidance_algorithm(bool);
   void slot_handle_dc_and_iq_corr(bool iDcCorr, bool iIqCorr);
 
-  // UI Actions
-  void slot_handle_journaline_viewer_closed(i32 iSubChannel);
-
   // Network and Updates
   void slot_http_terminate();
   void slot_check_for_update();
@@ -425,6 +434,7 @@ private slots:
   // Button Handlers - UI Navigation
   void _slot_handle_time_table();
   void _slot_handle_content_button();
+  void _slot_handle_journaline_button() const;
   void _slot_handle_tech_detail_button();
   void _slot_handle_reset_button();
   void _slot_handle_spectrum_button();

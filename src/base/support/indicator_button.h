@@ -17,6 +17,9 @@
 #include <QPushButton>
 #include <QColor>
 
+class QPainter;
+class QTimer;
+
 class IndicatorButton : public QPushButton
 {
   Q_OBJECT
@@ -25,6 +28,7 @@ class IndicatorButton : public QPushButton
   Q_PROPERTY(f32 indicatorDiameter READ get_indicator_diameter WRITE set_indicator_diameter)
   Q_PROPERTY(f32 indicatorMarginRight READ get_indicator_margin_right WRITE set_indicator_margin_right)
   Q_PROPERTY(f32 indicatorMarginTop READ get_indicator_margin_top WRITE set_indicator_margin_top)
+  Q_PROPERTY(bool iconStyleText READ is_icon_style_text WRITE set_icon_style_text)
 
 public:
   explicit IndicatorButton(QWidget * parent = nullptr);
@@ -47,6 +51,22 @@ public:
   void set_indicator_margin_top(f32 iMargin);
   [[nodiscard]] f32 get_indicator_margin_top() const { return mIndicatorMarginTop; }
 
+  // Paint the button text in an icon-like style: bold and fitted to the button width.
+  // An optional sub text (e.g. a runtime) is shown in smaller letters below the text.
+  void set_icon_style_text(bool iIconStyleText);
+  [[nodiscard]] bool is_icon_style_text() const { return mIconStyleText; }
+
+  void set_sub_text(const QString & iSubText);
+  [[nodiscard]] const QString & get_sub_text() const { return mSubText; }
+
+  // A second indicator on the top left side, e.g. to signal data activity. It can be flashed for a given duration.
+  void set_activity_indicator_active(bool iActive);
+  [[nodiscard]] bool is_activity_indicator_active() const { return mActivityIndicatorActive; }
+  void trigger_activity_indicator(i32 iDurationMs);
+
+  void set_activity_indicator_color(const QColor & iColor);
+  [[nodiscard]] const QColor & get_activity_indicator_color() const { return mActivityIndicatorColor; }
+
 public slots:
   void slot_set_indicator_active(bool iActive) { set_indicator_active(iActive); }
 
@@ -62,4 +82,13 @@ private:
   f32 mIndicatorDiameter = 6.0f;
   f32 mIndicatorMarginRight = 3.0f;
   f32 mIndicatorMarginTop = 3.0f;
+  bool mIconStyleText = false;
+  QString mSubText;
+  bool mActivityIndicatorActive = false;
+  QColor mActivityIndicatorColor{0xFF, 0x80, 0x00}; // Orange LED
+  QTimer * mpActivityTimer = nullptr;
+
+  void _paint_icon_style_text();
+  void _paint_indicator(QPainter & iPainter, f32 iPosX, const QColor & iColor) const;
+  void _draw_fitted_text(QPainter & iPainter, const QString & iText, i32 iPixelSize, f32 iBaseline, f32 iWidth) const;
 };

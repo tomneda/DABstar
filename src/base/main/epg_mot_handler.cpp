@@ -17,6 +17,7 @@
 #include "epg_decoder.h"
 #include "mot_content_types.h"
 #include "setting_helper.h"
+#include "gui_helpers.h"
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>
@@ -35,17 +36,21 @@ EpgMotHandler::EpgMotHandler(const SResourceConfig & iCfg, QObject * ipParent)
   , mpConfig(iCfg.pConfig)
   , mpPictureLabel(iCfg.pPictureLabel)
   , mpBtnOpenPicFolder(iCfg.pBtnOpenPicFolder)
+  , mpBtnDlText(iCfg.pBtnDlText)
   , mpOpenFileDialog(iCfg.pOpenFileDialog)
 {
   assert(mpConfig != nullptr);
   assert(mpPictureLabel != nullptr);
   assert(mpBtnOpenPicFolder != nullptr);
+  assert(mpBtnDlText != nullptr);
   assert(mpOpenFileDialog != nullptr);
 
   mpEpgHandler.reset(new CEPGDecoder);
   mpEpgProcessor.reset(new EpgDecoder);
 
   connect(mpEpgProcessor.get(), &EpgDecoder::signal_set_epg_data, this, &EpgMotHandler::slot_set_epg_data);
+
+  set_dl_text_button_emphasized(false);
 
   mTimerMotReceived.setInterval(100);
   mTimerMotReceived.setSingleShot(true);
@@ -98,6 +103,13 @@ void EpgMotHandler::close_dl_text_file()
     fclose(mpDlTextFile);
     mpDlTextFile = nullptr;
   }
+  set_dl_text_button_emphasized(false);
+}
+
+void EpgMotHandler::set_dl_text_button_emphasized(const bool iEmphasized) const
+{
+  mpBtnDlText->setStyleSheet(iEmphasized ? get_active_dump_style_sheet() : get_bg_style_sheet(0x8A5878));
+  mpBtnDlText->setFixedSize(QSize(32, 32));
 }
 
 QString EpgMotHandler::get_pic_folder() const
@@ -147,7 +159,6 @@ void EpgMotHandler::slot_handle_dl_text_button()
   if (mpDlTextFile != nullptr)
   {
     close_dl_text_file();
-    mpConfig->dlTextButton->setText("dlText");
     return;
   }
 
@@ -159,7 +170,7 @@ void EpgMotHandler::slot_handle_dl_text_button()
     return;
   }
 
-  mpConfig->dlTextButton->setText("writing");
+  set_dl_text_button_emphasized(true);
 }
 
 void EpgMotHandler::_slot_mot_timer_timeout()

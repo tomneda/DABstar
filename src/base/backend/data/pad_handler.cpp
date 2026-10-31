@@ -72,7 +72,7 @@ void PadHandler::slot_set_xpad_journaline_app_type(const i16 iXPadAppTy)
   if (iXPadAppTy >= 0 && mpJournalineDataHandler == nullptr)
   {
     qInfo() << "Create Journaline data handler for X-PAD AppTy" << iXPadAppTy;
-    mpJournalineDataHandler = std::make_unique<JournalineDataHandler>(mpRadioInterface, -1); // -1: closing the viewer must not stop the audio service
+    mpJournalineDataHandler = std::make_unique<JournalineDataHandler>(mpRadioInterface);
   }
   else if (iXPadAppTy < 0)
   {

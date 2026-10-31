@@ -56,10 +56,6 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   formLayout->setLabelAlignment(Qt::AlignLeft);
   formLayout_2->setLabelAlignment(Qt::AlignLeft);
 
-  framedumpButton->setStyleSheet(get_bg_style_sheet(0x4A7898, Qt::white));
-  audiodumpButton->setStyleSheet(get_bg_style_sheet(0x408870, Qt::white));
-  timeTable_button->setStyleSheet(get_bg_style_sheet(0xB89028, Qt::white));
-  timeTable_button->setEnabled(false);
   mpAudioDisplay = new AudioDisplay(mr, plotAudioFft, &Settings::Storage::instance());
 
   cmbAudioPlotMode->addItems(AudioDisplay::get_plot_mode_names());
@@ -74,10 +70,6 @@ TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
   _update_audio_plot_mode(static_cast<EAudioPlotMode>(cmbAudioPlotMode->currentIndex()));
 
   cleanUp();
-
-  connect(framedumpButton, &QPushButton::clicked, this, &TechData::signal_handle_frameDumping);
-  connect(audiodumpButton, &QPushButton::clicked, this, &TechData::signal_handle_audioDumping);
-  connect(timeTable_button, &QPushButton::clicked, this, &TechData::signal_handle_timeTable);
 }
 
 TechData::~TechData()
@@ -98,14 +90,11 @@ void TechData::cleanUp()
   lblAscTy->setText(es);
   lblLanguage->setText(es);
   lblSbrUsed->setText(es);
-  framedumpButton->setEnabled(false);
-  audiodumpButton->setEnabled(false);
   slot_show_rs_corrections(0, 0); // call via this method to consider color change
   lblBitrate->setText("0");
   lblStartAddress->setText("0");
   lblLength->setText("0");
   lblSubChId->setText("0");
-  timeTable_button->setEnabled(false);
   lblAudioRate->setText("0");
 }
 
@@ -120,8 +109,6 @@ void TechData::show_service_data(const SAudioData * ad) const
   _show_uep_eep(ad->shortForm, ad->protLevel);
   _show_ASCTy(ad->ASCTy);
   _show_coderate(ad->shortForm, ad->protLevel);
-  framedumpButton->setEnabled(true);
-  audiodumpButton->setEnabled(true);
 }
 
 void TechData::show_service_data_addon(const SAudioDataAddOns * adon) const
@@ -157,18 +144,6 @@ void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
 
   set_val_with_col(lblRsCorrections, c);
   set_val_with_col(lblEcCorrections, ec);
-}
-
-void TechData::slot_show_timetableButton(bool b) const
-{
-  if (b)
-  {
-    timeTable_button->setEnabled(true);
-  }
-  else
-  {
-    timeTable_button->setEnabled(false);
-  }
 }
 
 void TechData::_show_service_label(const QString & s) const
@@ -210,7 +185,6 @@ void TechData::_show_ASCTy(const i32 a) const
 {
   const bool isDabPlus = (a == 077);
   lblAscTy->setText(isDabPlus ? "DAB+" : "DAB");
-  framedumpButton->setText(isDabPlus ? "Dump AAC" : "Dump MP2");
 }
 
 void TechData::_show_uep_eep(i32 shortForm, i32 protLevel) const
@@ -222,18 +196,6 @@ void TechData::_show_uep_eep(i32 shortForm, i32 protLevel) const
 void TechData::_show_coderate(i32 shortForm, i32 protLevel) const
 {
   lblCodeRate->setText(getCodeRate(shortForm, protLevel));
-}
-
-void TechData::set_audio_dump_button_emphasized(const bool iEmphasized) const
-{
-  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
-  audiodumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x408870, Qt::white));
-}
-
-void TechData::set_frame_dump_button_emphasized(const bool iEmphasized) const
-{
-  static const QString sEmphasizedStyle = QSL("background-color: #AE2B05; color: #EEEE00; font-weight: bold;");
-  framedumpButton->setStyleSheet(iEmphasized ? sEmphasizedStyle : get_bg_style_sheet(0x4A7898, Qt::white));
 }
 
 void TechData::slot_show_fm(i32 freq) const
