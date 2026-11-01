@@ -49,11 +49,8 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
   : mFrame(nullptr)
   , mRingBuffer(cBufferSize)
 {
-  mFileName = iFilename;
-  setupUi(&mFrame);
+  setupUi(&mFrame, "Play WAV File");
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-
-  Settings::FileReaderWav::posAndSize.read_widget_geometry(&mFrame);
 
   SF_INFO sf_info;
   sf_info.format = 0;
@@ -94,11 +91,13 @@ WavFileHandler::WavFileHandler(const QString & iFilename)
       throw std::runtime_error(val.toUtf8().data());
   }
 
-  lcdSampleRate->display(mSampleRate);
+  lblSampleRate->setText(QString::number(mSampleRate));
   lblFileName->setText(iFilename);
   const i64 fileLength = sf_seek(mpFile, 0, SEEK_END);
   sf_seek(mpFile, 0, SEEK_SET);
   mFileDuration_s = (f32)fileLength / (f32)mSampleRate;
+
+  Settings::FileReaderWav::posAndSize.read_widget_geometry(&mFrame);
 
   mIsRunning.store(false);
 }

@@ -55,12 +55,9 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   : Ui_xmlfile_widget(), myFrame(nullptr)
   , _I_Buffer(cInputFrameBufferSize)
 {
-  fileName = iFilename;
-
   setupUi(&myFrame);
-
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
+
   theFile = OpenFileDialog::open_file(iFilename, "rb");
 
   if (theFile == nullptr)
@@ -101,6 +98,8 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
     nrElements += theDescriptor->blockList[blocks].nrElements;
   }
   nrElementsDisplay->setText(QString::number(nrElements));
+
+  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
 
   fseek(theFile, 0, SEEK_END);
   mFileLength = ftell(theFile);

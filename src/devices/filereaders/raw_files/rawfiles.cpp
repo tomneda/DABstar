@@ -54,12 +54,8 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   : mFrame(nullptr)
   , mRingBuffer(cInputFrameBufferSize)
 {
-  mFileName = iFilename;
-
-  setupUi(&mFrame);
+  setupUi(&mFrame, "Play RAW File");
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-
-  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&mFrame);
 
   mpFile = OpenFileDialog::open_file(iFilename, "rb");
 
@@ -69,13 +65,15 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  lcdSampleRate->display(INPUT_RATE);
+  lblSampleRate->setText(QString::number(INPUT_RATE));
   lblFileName->setText(iFilename);
   fseek(mpFile, 0, SEEK_END);
   const i64 fileLength = ftell(mpFile); // 2 * 1Byte per sample
   fseek(mpFile, 0, SEEK_SET);
   mFileDuration_s = (f32)fileLength / (INPUT_RATE * 2);
   lblFormat->setText("u8");
+
+  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&mFrame);
 
   mIsRunning.store(false);
 }

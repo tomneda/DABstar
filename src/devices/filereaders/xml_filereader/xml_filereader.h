@@ -30,7 +30,6 @@
  */
 #pragma once
 
-#include <QObject>
 #include <QString>
 #include <QFrame>
 #include <atomic>
@@ -40,7 +39,6 @@
 #include "ringbuffer.h"
 #include "ui_xmlfiles.h"
 
-class QSettings;
 class XmlDescriptor;
 class XmlReader;
 
@@ -73,10 +71,8 @@ public:
 private:
   QFrame myFrame;
   std::atomic<bool> running = false;
-  QString fileName;
   RingBuffer<cf32> _I_Buffer;
   FILE * theFile = nullptr;
-  u32 filePointer = 0;
   XmlDescriptor * theDescriptor = nullptr;
   XmlReader * theReader = nullptr;
   bool mPaused = false;

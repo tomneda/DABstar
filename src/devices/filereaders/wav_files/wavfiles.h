@@ -37,7 +37,6 @@
 #include "filereader_widget.h"
 #include "wav_reader.h"
 #include <memory>
-#include <QObject>
 #include <QString>
 #include <QFrame>
 #include <sndfile.h>
@@ -69,7 +68,6 @@ public:
 
 private:
   QFrame mFrame;
-  QString mFileName;
   RingBuffer<cf32> mRingBuffer;
   i32 mBufferSize = 0;
   i32 mSampleRate = 0;

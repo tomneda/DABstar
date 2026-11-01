@@ -36,13 +36,10 @@
 #include "ringbuffer.h"
 #include "filereader_widget.h"
 #include <memory>
-#include <QObject>
 #include <QString>
 #include <QFrame>
 #include <atomic>
 
-class QLabel;
-class QSettings;
 class RawReader;
 
 class RawFileHandler final : public IDeviceNotifier, public IDeviceHandler, public FileReaderWidget
@@ -72,7 +69,6 @@ public:
 
 private:
   QFrame mFrame;
-  QString mFileName;
   RingBuffer<cf32> mRingBuffer;
   FILE * mpFile = nullptr;
   std::unique_ptr<RawReader> mpRawReader;
