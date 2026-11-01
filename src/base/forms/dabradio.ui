@@ -1600,16 +1600,28 @@
           </property>
          </widget>
         </item>
-         <item>
-          <widget class="QCheckBox" name="cbAutoNextService">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Auto Next Service&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When the file reaches its end, the next service in the service list is selected automatically instead of replaying the current one.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <item>
+         <widget class="QComboBox" name="cmbFileEndAction">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;How to proceed after file end&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Stop:&lt;/span&gt; The playback is paused at the begin of the file. Press the play button to replay it.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Loop:&lt;/span&gt; The file is replayed from its begin, the current service is kept.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ANS&lt;/span&gt; (Auto Next Service): The file is replayed from its begin and the next service in the service list is selected automatically. This way all services of the recorded ensemble can be listened to one after another.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>Stop</string>
            </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Loop</string>
+           </property>
+          </item>
+          <item>
            <property name="text">
             <string>ANS</string>
            </property>
-          </widget>
-         </item>
+          </item>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

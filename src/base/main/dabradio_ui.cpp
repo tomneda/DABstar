@@ -1221,10 +1221,17 @@ void DabRadio::_slot_handle_next_service_button()
 
 void DabRadio::_slot_handle_file_looped()
 {
-  // do not switch the service while the user holds the slider handle (e.g. moved to the file end)
-  if (!mIsScanning && mIsFileMode && ui->cbAutoNextService->isChecked() && !ui->sliderFilePos->isSliderDown())
+  // do nothing while the user holds the slider handle (e.g. moved to the file end)
+  if (mIsScanning || !mIsFileMode || ui->sliderFilePos->isSliderDown())
   {
-    _slot_handle_next_service_button();
+    return;
+  }
+
+  switch (static_cast<EFileEndAction>(ui->cmbFileEndAction->currentIndex()))
+  {
+  case EFileEndAction::Stop:            _set_file_paused(true); break; // the reader has already wrapped to the file begin
+  case EFileEndAction::Loop:            break;
+  case EFileEndAction::AutoNextService: _slot_handle_next_service_button(); break;
   }
 }
 

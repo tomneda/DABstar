@@ -252,6 +252,7 @@ private:
   EDipSyncState mDipSyncState = EDipSyncState::NotSetYet;
   enum class ELevelMeterMode : u8 { AudioLevel = 0, SnrMer = 1 };
   ELevelMeterMode mLevelMeterMode = ELevelMeterMode::AudioLevel;
+  enum class EFileEndAction { Stop = 0, Loop = 1, AutoNextService = 2 }; // same order as in cmbFileEndAction
 
   // Structures
   StatusInfo mStatusInfo{};
