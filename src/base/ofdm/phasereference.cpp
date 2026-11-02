@@ -107,7 +107,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   /**
     *   We compute the average and the max signal values
     */
-  f32 sum = 0;
+  f32 sum = 0.0f;
 
 #ifdef HAVE_SSE_OR_AVX
   volk_32fc_magnitude_32f_a(mCorrPeakValues.data(), mFftOutBuffer.data(), cTu);
@@ -124,29 +124,23 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 #endif
 
   sum /= (f32)(cTu);
-
-  if (sum == 0)
+  if (sum == 0.0f)
   {
     return -1; // avoid zero divide in case signal iV is 0
   }
 
   mIndices.clear();
   i32 maxIndex = -1;
-  f32 maxL = -1000;
+  f32 maxL = -1000.0f;
   constexpr i16 cGapSearchWidth = 10;
-  constexpr i16 cExtendedSearchRegion = 250;
-  constexpr i16 idxStart = cTg - cExtendedSearchRegion;
-  constexpr i16 idxStop  = cTg + 2 * cExtendedSearchRegion;
-  assert(idxStart >= 0);
-  assert(idxStop <= (signed)mCorrPeakValues.size());
 
-  for (i16 i = idxStart; i < idxStop; ++i)
+  for (i16 i = 0; i < cTu; ++i)
   {
     if (mCorrPeakValues[i] / sum > iThreshold)
     {
       bool foundOne = true;
 
-      for (i16 j = 1; (j < cGapSearchWidth) && (i + j < idxStop); ++j)
+      for (i16 j = 1; (j < cGapSearchWidth) && (i + j < cTu); ++j)
       {
         if (mCorrPeakValues[i + j] > mCorrPeakValues[i])
         {
@@ -207,8 +201,48 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
   else
   {
+	/* See equation 1 in
+	   "OFDM receivers - impact on coverage of inter-symbol interference and FFT window positioning"
+	*/
     assert(!mIndices.isEmpty());
-    return mIndices[0];
+    //return mIndices[0];
+	const i32 count = mIndices.length();
+	maxIndex = -1;
+	f32 maxCI = -1.0f;
+	const i32 start = mIndices[0];
+	const i32 end = mIndices[count-1];
+	for (i32 pos = start; pos <= end; pos++)
+	{
+	  f32 Ci = 0.0f; // the total power of the effective useful signal
+	  f32 Ii = 0.0f; // the total effective interfering power
+      for(i32 i=0; i<count; i++)
+      {
+        f32 wi; // the weighting coefficient
+  	    const f32 absVal = mCorrPeakValues[mIndices[i]];
+        const f32 power = absVal * absVal;
+		if(mIndices[i] < pos) // before the guard interval
+		{
+		  wi = (f32)(cTu + mIndices[i] - pos) / cTu;
+		}
+		else if(mIndices[i] > pos + cTg) // after the guard interval
+		{
+		  wi = (f32)(cTu + cTg + pos - mIndices[i]) / cTu;
+		}
+		else // in the guard interval
+		{
+		  wi = 1.0f;
+		}
+        wi *= wi;
+        Ci += wi * power;
+        Ii += (1.0f - wi) * power;
+	  }
+	  if(Ci/Ii > maxCI)
+	  {
+		maxCI = Ci/Ii;
+	    maxIndex = pos;
+	  }
+	}
+    return maxIndex;
   }
 }
 
