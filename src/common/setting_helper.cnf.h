@@ -56,7 +56,7 @@ CATEGORY_BEGIN(Main)
   DEFINE_VARIANT(Main, varPresetFSId, 0) // SId for file mode
   DEFINE_VARIANT(Main, varPresetCSId, 0) // CSId for channel mode
   DEFINE_VARIANT(Main, varUpdateCheckTime, QDateTime())
-  DEFINE_WIDGET(Main, cbAutoNextService)
+  DEFINE_WIDGET(Main, cmbFileEndAction)
   DEFINE_WIDGET(Main, sliderVolume)
 CATEGORY_END(Main)
 

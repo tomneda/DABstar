@@ -36,13 +36,10 @@
 #include "ringbuffer.h"
 #include "filereader_widget.h"
 #include <memory>
-#include <QObject>
 #include <QString>
 #include <QFrame>
 #include <atomic>
 
-class QLabel;
-class QSettings;
 class RawReader;
 
 class RawFileHandler final : public IDeviceNotifier, public IDeviceHandler, public FileReaderWidget
@@ -66,25 +63,18 @@ public:
   i32 getVFOFrequency() override;
   void resetBuffer() override;
   QString deviceName() override;
-
-protected:
-  bool eventFilter(QObject * obj, QEvent * event) override;
+  f32 get_file_duration_s() const override { return mFileDuration_s; }
+  void jump_to_file_pos_per_mill(i32 iPerMill) override;
+  void set_file_paused(bool iPaused) override;
 
 private:
   QFrame mFrame;
-  QString mFileName;
   RingBuffer<cf32> mRingBuffer;
   FILE * mpFile = nullptr;
   std::unique_ptr<RawReader> mpRawReader;
   std::atomic<bool> mIsRunning = false;
-  i32 mSliderMovementPos = -1;
-
-public slots:
-  void slot_set_progress(i32, f32);
-  void slot_handle_cb_loop_file(bool iChecked);
-  void slot_slider_pressed();
-  void slot_slider_released();
-  void slot_slider_moved(i32);
+  f32 mFileDuration_s = 0.0f;
+  bool mPaused = false;
 };
 
 

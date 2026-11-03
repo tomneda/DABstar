@@ -65,7 +65,6 @@ XmlReader::XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 fileP
   this->fd = fd;
   this->filePointer = filePointer;
   sampleBuffer = b;
-  continuous.store(mr->cbLoopFile->isChecked());
 
   if (fd->sampleRate != INPUT_RATE)
   {
@@ -158,6 +157,29 @@ void XmlReader::run()
     samplesReadToUpdate = 0;
     while ((samplesRead <= parent->samplesToRead) && running.load())
     {
+      if (mSetNewFilePos >= 0)
+      {
+        // ensure begin of I/Q position
+        i64 pos = startPoint + (((parent->mFileLength - startPoint) * mSetNewFilePos / parent->samplesToRead));
+        pos = (pos - (pos % 24)); // assume also 24bit (2*3Bytes) and 32-bit (2*4Bytes) format files (LCM of 6 and 8 = 24)
+        fseek(file, pos, SEEK_SET);
+        samplesRead = mSetNewFilePos;
+        mSetNewFilePos = -1 ;
+        samplesReadToUpdate = 0; // retrigger emit below
+      }
+
+      if (samplesRead >= samplesReadToUpdate)
+      {
+        emit signal_set_progress(samplesRead, parent->samplesToRead);
+        samplesReadToUpdate = samplesRead + fd->sampleRate / 6; // for updating 6 times per second (similar to WAV and RAW files)
+      }
+
+      if (mPaused.load())
+      {
+        usleep(10000);
+        nextStop = currentTime(); // do not catch up the paused time
+        continue;
+      }
 
       if (fd->iqOrder == "IQ")
       {
@@ -176,23 +198,6 @@ void XmlReader::run()
         samplesRead += readSamples(file, &XmlReader::readElements_Q);
       }
 
-      if (mSetNewFilePos >= 0)
-      {
-        // ensure begin of I/Q position
-        i64 pos = startPoint + (((parent->mFileLength - startPoint) * mSetNewFilePos / parent->samplesToRead));
-        pos = (pos - (pos % 24)); // assume also 24bit (2*3Bytes) and 32-bit (2*4Bytes) format files (LCM of 6 and 8 = 24)
-        fseek(file, pos, SEEK_SET);
-        samplesRead = mSetNewFilePos;
-        mSetNewFilePos = -1 ;
-        samplesReadToUpdate = 0; // retrigger emit below
-      }
-
-      if (samplesRead >= samplesReadToUpdate)
-      {
-        emit signal_set_progress(samplesRead, parent->samplesToRead);
-        samplesReadToUpdate = samplesRead + fd->sampleRate / 6; // for updating 6 times per second (similar to WAV and RAW files)
-      }
-
       // the readSamples function returns 1 msec of data, we assume taking this data does not take time
       nextStop = nextStop + (u64)1000;
       if (nextStop > currentTime())
@@ -201,20 +206,14 @@ void XmlReader::run()
       }
     }
     emit signal_set_progress(0, parent->samplesToRead);
-    if (running.load() && continuous.load())
+    if (running.load())
     {
       emit signal_file_looped();
     }
     filePointer = startPoint;
     fseek(file, filePointer, SEEK_SET);
   }
-  while (running.load() && continuous.load());
-}
-
-bool XmlReader::handle_continuousButton()
-{
-  continuous.store(!continuous.load());
-  return continuous.load();
+  while (running.load());
 }
 
 i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cf32 *, i32))

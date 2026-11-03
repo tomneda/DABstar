@@ -59,4 +59,9 @@ public:
   virtual bool hasDump() {return false;};
   virtual bool startDumping() {return false;};
   virtual void stopDumping() {};
+
+  // only used by file readers, the play position is shown and controlled in the main window
+  virtual f32 get_file_duration_s() const { return 0.0f; }
+  virtual void jump_to_file_pos_per_mill(i32 /*iPerMill*/) {}
+  virtual void set_file_paused(bool /*iPaused*/) {}
 };

@@ -70,6 +70,7 @@ void DabRadio::_clean_up_dab_processor_and_input_device()
       mpDeviceWindowWatcher->attach(nullptr);
     }
     mpInputDevice.reset();
+    _show_file_player_bar(false);
     if (!mIsFileMode)
     {
       // Give the library time to unload (a fast reload can fail afterwards)
@@ -102,6 +103,7 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
     if (mIsFileMode)
     {
       connect(pDeviceNotifier, &IDeviceNotifier::signal_file_looped, this, &DabRadio::_slot_handle_file_looped);
+      connect(pDeviceNotifier, &IDeviceNotifier::signal_file_progress, this, &DabRadio::_slot_file_progress);
     }
     else
     {
@@ -109,6 +111,11 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
       // the connection is announced here the channel is able to deliver samples.
       connect(pDeviceNotifier, &IDeviceNotifier::signal_device_connected, this, &DabRadio::_slot_device_connected, Qt::QueuedConnection);
     }
+  }
+
+  if (mIsFileMode)
+  {
+    _setup_file_player_bar(iDeviceNameOrFileName);
   }
 
   _create_and_init_dab_processor();

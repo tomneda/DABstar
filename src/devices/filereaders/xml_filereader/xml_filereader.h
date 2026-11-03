@@ -30,7 +30,6 @@
  */
 #pragma once
 
-#include <QObject>
 #include <QString>
 #include <QFrame>
 #include <atomic>
@@ -40,7 +39,6 @@
 #include "ringbuffer.h"
 #include "ui_xmlfiles.h"
 
-class QSettings;
 class XmlDescriptor;
 class XmlReader;
 
@@ -64,31 +62,25 @@ public:
   bool isFileInput() override;
   void resetBuffer() override;
   QString deviceName() override;
+  f32 get_file_duration_s() const override;
+  void jump_to_file_pos_per_mill(i32 iPerMill) override;
+  void set_file_paused(bool iPaused) override;
   i64 samplesToRead = 0;
   i64 mFileLength = 0;
-
-protected:
-  bool eventFilter(QObject * obj, QEvent * event) override;
 
 private:
   QFrame myFrame;
   std::atomic<bool> running = false;
-  QString fileName;
   RingBuffer<cf32> _I_Buffer;
   FILE * theFile = nullptr;
-  u32 filePointer = 0;
   XmlDescriptor * theDescriptor = nullptr;
   XmlReader * theReader = nullptr;
-  i32 mSliderMovementPos = -1;
+  bool mPaused = false;
   i64 compute_nrSamples(XmlDescriptor *f, i32 blockNumber);
   i32 startPoint;
 
 public slots:
   void slot_set_progress(i64, i64);
-  void slot_handle_cb_loop_file(const bool iChecked);
-  void slot_slider_pressed();
-  void slot_slider_released();
-  void slot_slider_moved(i32);
 };
 
 

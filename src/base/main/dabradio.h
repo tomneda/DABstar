@@ -121,6 +121,7 @@ public:
 
 private:
   static constexpr i32 cDisplayTimeoutMs     = 1000;
+  static constexpr i32 cDynInfoReserveHeight = 30;   // reserved window height for the dynamic info fields (sizes not known at startup)
   static constexpr i32 cScanningTimeoutMs    = 6000; // max. waiting time for signal and FIB audio data while scanning
   static constexpr i32 cEpgTimeoutMs         = 3000;
   static constexpr i32 cClockResetTimeoutMs  = 5000;
@@ -228,6 +229,10 @@ private:
 
   // Booleans
   bool mIsFileMode = false;
+  i32 mFileSliderMovementPos = -1;
+  bool mFilePaused = false;
+  i32 mWindowBaseHeight = 0; // fixed window height without the file player bar
+  QString mFileTotalTimeText;
   bool mUsingFileDevice = false;
   bool mMutingActive = false;
   bool mCurFavoriteState = false;
@@ -247,6 +252,7 @@ private:
   EDipSyncState mDipSyncState = EDipSyncState::NotSetYet;
   enum class ELevelMeterMode : u8 { AudioLevel = 0, SnrMer = 1 };
   ELevelMeterMode mLevelMeterMode = ELevelMeterMode::AudioLevel;
+  enum class EFileEndAction { Stop = 0, Loop = 1, AutoNextService = 2 }; // same order as in cmbFileEndAction
 
   // Structures
   StatusInfo mStatusInfo{};
@@ -359,6 +365,10 @@ private:
   void _initialize_ensemble_list();
   void _initialize_indicator_buttons();
   void _initialize_ui_elements();
+  void _initialize_file_player_bar();
+  void _setup_file_player_bar(const QString & iFileName);
+  void _set_file_paused(bool iPaused);
+  void _show_file_player_bar(bool iShow);
   void _initialize_status_info();
   void _initialize_dynamic_label() const;
   void _initialize_audio_output();
@@ -456,6 +466,13 @@ private slots:
   void _slot_handle_next_service_button();
   void _slot_handle_target_service_button();
   void _slot_handle_file_looped();
+
+  // File Player Bar
+  void _slot_file_progress(i32 iPerMill, f32 iElapsed_s);
+  void _slot_file_slider_pressed();
+  void _slot_file_slider_released();
+  void _slot_file_slider_moved(i32 iPerMill);
+  void _slot_handle_file_play_pause_button();
 
   // Button Handlers - Audio Control
   void _slot_handle_mute_button();

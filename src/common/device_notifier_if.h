@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "glob_defs.h"
 #include <QObject>
 
 // IDeviceHandler is a plain interface and cannot carry signals, so device handlers which want to notify
@@ -28,6 +29,9 @@ public:
 signals:
   // A file reader wrapped around to the begin of the file.
   void signal_file_looped();
+
+  // Current play position of a file reader, iPerMill = [0; 1000].
+  void signal_file_progress(i32 iPerMill, f32 iElapsed_s);
 
   // A network device established its server connection. This can happen long after the device was created,
   // so the channel has to be (re)started to make it deliver samples.

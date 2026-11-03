@@ -36,8 +36,6 @@
 #include "raw_reader.h"
 #include "openfiledialog.h"
 #include "setting_helper.h"
-#include <QMouseEvent>
-#include <QStyle>
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
@@ -56,12 +54,8 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
   : mFrame(nullptr)
   , mRingBuffer(cInputFrameBufferSize)
 {
-  mFileName = iFilename;
-
-  setupUi(&mFrame);
+  setupUi(&mFrame, "Play RAW File");
   mFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-
-  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&mFrame);
 
   mpFile = OpenFileDialog::open_file(iFilename, "rb");
 
@@ -71,22 +65,15 @@ RawFileHandler::RawFileHandler(const QString & iFilename)
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  lcdSampleRate->display(INPUT_RATE);
+  lblSampleRate->setText(QString::number(INPUT_RATE));
   lblFileName->setText(iFilename);
-  sliderFilePos->setValue(0);
-  lcdCurrTime->display(0);
   fseek(mpFile, 0, SEEK_END);
   const i64 fileLength = ftell(mpFile); // 2 * 1Byte per sample
   fseek(mpFile, 0, SEEK_SET);
-  lcdTotalTime->display(QString("%1").arg((f32)fileLength / (INPUT_RATE * 2), 0, 'f', 1));
+  mFileDuration_s = (f32)fileLength / (INPUT_RATE * 2);
   lblFormat->setText("u8");
 
-  connect(cbLoopFile, &QCheckBox::clicked, this, &RawFileHandler::slot_handle_cb_loop_file);
-  connect(sliderFilePos, &QSlider::sliderPressed, this, &RawFileHandler::slot_slider_pressed);
-  connect(sliderFilePos, &QSlider::sliderReleased, this, &RawFileHandler::slot_slider_released);
-  connect(sliderFilePos, &QSlider::sliderMoved, this, &RawFileHandler::slot_slider_moved);
-
-  sliderFilePos->installEventFilter(this);
+  Settings::FileReaderRaw::posAndSize.read_widget_geometry(&mFrame);
 
   mIsRunning.store(false);
 }
@@ -116,6 +103,7 @@ bool RawFileHandler::restartReader(const i32 freq)
     return true;
   }
   mpRawReader = std::make_unique<RawReader>(this, mpFile, &mRingBuffer);
+  mpRawReader->set_paused(mPaused);
   mpRawReader->start_reader();
   mIsRunning.store(true);
   return true;
@@ -194,66 +182,19 @@ QString RawFileHandler::deviceName()
   return "RawFile";
 }
 
-void RawFileHandler::slot_handle_cb_loop_file(const bool iChecked)
+void RawFileHandler::jump_to_file_pos_per_mill(const i32 iPerMill)
 {
-  (void)iChecked;
-  if (mpFile == nullptr)
+  if (mpRawReader != nullptr)
   {
-    return;
-  }
-
-  cbLoopFile->setChecked(mpRawReader->handle_continuous_button());
-}
-
-void RawFileHandler::slot_set_progress(const i32 progress, const f32 timelength)
-{
-  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
-  {
-    sliderFilePos->setValue(progress);
-  }
-  lcdCurrTime->display(QString("%1").arg(timelength, 0, 'f', 1));
-}
-
-void RawFileHandler::slot_slider_pressed()
-{
-  mSliderMovementPos = sliderFilePos->value();
-}
-
-void RawFileHandler::slot_slider_released()
-{
-  if (mSliderMovementPos >= 0)
-  {
-    // mpRawReader->jump_to_relative_position_per_mill(mSliderMovementPos); // restart from current mouse release position
-    mSliderMovementPos = -1;
+    mpRawReader->jump_to_relative_position_per_mill(iPerMill);
   }
 }
 
-void RawFileHandler::slot_slider_moved(const i32 iPos)
+void RawFileHandler::set_file_paused(const bool iPaused)
 {
-  if (mpRawReader == nullptr)
-    return;
-  mSliderMovementPos = iPos; // iPos = [0; 1000]
-  mpRawReader->jump_to_relative_position_per_mill(iPos);
-}
-
-bool RawFileHandler::eventFilter(QObject * obj, QEvent * event)
-{
-  if (obj == sliderFilePos && event->type() == QEvent::MouseButtonPress)
+  mPaused = iPaused;
+  if (mpRawReader != nullptr)
   {
-    const QMouseEvent * const mouseEvent = static_cast<QMouseEvent *>(event);
-
-    if (mouseEvent->button() == Qt::LeftButton)
-    {
-      const int newVal = QStyle::sliderValueFromPosition(sliderFilePos->minimum(), sliderFilePos->maximum(), mouseEvent->pos().x(), sliderFilePos->width());
-      sliderFilePos->setValue(newVal);
-      sliderFilePos->setSliderPosition(newVal);
-      slot_slider_moved(newVal);
-
-      // Return false to let QSlider handle the event.
-      // Since the handle is now at the mouse position, QSlider will start dragging.
-      return false;
-    }
+    mpRawReader->set_paused(iPaused);
   }
-  return QObject::eventFilter(obj, event);
 }
-

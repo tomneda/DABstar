@@ -48,8 +48,6 @@
 
 #include "xml_descriptor.h"
 #include "xml_reader.h"
-#include <QMouseEvent>
-#include <QStyle>
 
 constexpr u32 cInputFrameBufferSize = 8 * 32768;
 
@@ -57,15 +55,9 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   : Ui_xmlfile_widget(), myFrame(nullptr)
   , _I_Buffer(cInputFrameBufferSize)
 {
-  fileName = iFilename;
-
   setupUi(&myFrame);
-
-  sliderFilePos->setFixedHeight(31);
-  sliderFilePos->setStyleSheet("QSlider::handle:horizontal { width:  16px; margin-top: -9px;  margin-bottom: -9px; border-radius: 5px; }");
-
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
+
   theFile = OpenFileDialog::open_file(iFilename, "rb");
 
   if (theFile == nullptr)
@@ -83,8 +75,6 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
     throw std::runtime_error(val.toUtf8().data());
   }
 
-  sliderFilePos->setValue(0);
-  currentTime->display(0);
   samplerateDisplay->setText(QString::number(theDescriptor->sampleRate));
   nrBitsDisplay->setText(QString::number(theDescriptor->bitsperChannel));
   containerLabel->setText(theDescriptor->container);
@@ -108,7 +98,8 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
     nrElements += theDescriptor->blockList[blocks].nrElements;
   }
   nrElementsDisplay->setText(QString::number(nrElements));
-  totalTime->display(QString("%1").arg((float)samplesToRead / theDescriptor->sampleRate, 0, 'f', 1));
+
+  Settings::FileReaderXml::posAndSize.read_widget_geometry(&myFrame);
 
   fseek(theFile, 0, SEEK_END);
   mFileLength = ftell(theFile);
@@ -125,13 +116,6 @@ XmlFileReader::XmlFileReader(const QString & iFilename)
   if(startPoint < 2048 || startPoint > 1000000)
     startPoint = 2048;
   qDebug() << "startPoint =" << startPoint;
-
-  connect(cbLoopFile, &QCheckBox::clicked, this, &XmlFileReader::slot_handle_cb_loop_file);
-  connect(sliderFilePos, &QSlider::sliderPressed, this, &XmlFileReader::slot_slider_pressed);
-  connect(sliderFilePos, &QSlider::sliderReleased, this, &XmlFileReader::slot_slider_released);
-  connect(sliderFilePos, &QSlider::sliderMoved, this, &XmlFileReader::slot_slider_moved);
-
-  sliderFilePos->installEventFilter(this);
 
   running.store(false);
 }
@@ -165,6 +149,7 @@ bool XmlFileReader::restartReader(i32 freq)
     return true;
   }
   theReader = new XmlReader(this, theFile, theDescriptor, startPoint, &_I_Buffer);
+  theReader->set_paused(mPaused);
   running.store(true);
   return true;
 }
@@ -212,26 +197,12 @@ i32 XmlFileReader::Samples()
 
 void XmlFileReader::slot_set_progress(i64 samplesRead, i64 samplesToRead)
 {
-  if (mSliderMovementPos < 0) // suppress slider update while mouse move on slider
-  {
-    sliderFilePos->setValue((f32)samplesRead / (f32)samplesToRead * 1000.0f);
-  }
-  currentTime->display(QString("%1").arg((float)samplesRead / theDescriptor->sampleRate, 0, 'f', 1));
+  emit signal_file_progress((i32)((f32)samplesRead / (f32)samplesToRead * 1000.0f), (f32)samplesRead / (f32)theDescriptor->sampleRate);
 }
 
 i32 XmlFileReader::getVFOFrequency()
 {
   return theDescriptor->blockList[0].frequency;
-}
-
-void XmlFileReader::slot_handle_cb_loop_file(const bool /*iChecked*/)
-{
-  if (theReader == nullptr)
-  {
-    return;
-  }
-
-  cbLoopFile->setChecked(theReader->handle_continuousButton());
 }
 
 void XmlFileReader::show()
@@ -267,46 +238,17 @@ QString XmlFileReader::deviceName()
   return "XmlFile";
 }
 
-void XmlFileReader::slot_slider_pressed()
+f32 XmlFileReader::get_file_duration_s() const
 {
-  mSliderMovementPos = sliderFilePos->value();
+  return (f32)samplesToRead / (f32)theDescriptor->sampleRate;
 }
 
-void XmlFileReader::slot_slider_released()
+void XmlFileReader::jump_to_file_pos_per_mill(const i32 iPerMill)
 {
-  if (mSliderMovementPos >= 0)
+  if (theReader != nullptr)
   {
-    mSliderMovementPos = -1;
+    theReader->jump_to_relative_position(iPerMill);
   }
-}
-
-void XmlFileReader::slot_slider_moved(const i32 iPos)
-{
-  if (theReader == nullptr)
-    return;
-  mSliderMovementPos = iPos; // iPos = [0; 1000]
-  theReader->jump_to_relative_position(iPos);
-}
-
-bool XmlFileReader::eventFilter(QObject * obj, QEvent * event)
-{
-  if (obj == sliderFilePos && event->type() == QEvent::MouseButtonPress)
-  {
-    const QMouseEvent * const mouseEvent = static_cast<QMouseEvent *>(event);
-
-    if (mouseEvent->button() == Qt::LeftButton)
-    {
-      const int newVal = QStyle::sliderValueFromPosition(sliderFilePos->minimum(), sliderFilePos->maximum(), mouseEvent->pos().x(), sliderFilePos->width());
-      sliderFilePos->setValue(newVal);
-      sliderFilePos->setSliderPosition(newVal);
-      slot_slider_moved(newVal);
-
-      // Return false to let QSlider handle the event.
-      // Since the handle is now at the mouse position, QSlider will start dragging.
-      return false;
-    }
-  }
-  return QObject::eventFilter(obj, event);
 }
 
 i64 XmlFileReader::compute_nrSamples(XmlDescriptor *fd, i32 blockNumber)
@@ -332,4 +274,13 @@ i64 XmlFileReader::compute_nrSamples(XmlDescriptor *fd, i32 blockNumber)
 
   qDebug() << samplesToRead << "samples to read, order is" << fd->iqOrder.toLatin1();
   return samplesToRead;
+}
+
+void XmlFileReader::set_file_paused(const bool iPaused)
+{
+  mPaused = iPaused;
+  if (theReader != nullptr)
+  {
+    theReader->set_paused(iPaused);
+  }
 }

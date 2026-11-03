@@ -44,7 +44,7 @@
   * The class inherits from the phaseTable.
   */
 
-PhaseReference::PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam)
+PhaseReference::PhaseReference(const DabRadio* const ipRadio, const ProcessParams* const ipParam)
   : PhaseTable()
   , mpResponse(ipParam->responseBuffer)
 {
@@ -84,14 +84,14 @@ PhaseReference::~PhaseReference()
   * looking for.
   */
 
-i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const f32 iThreshold)
+i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& iV, const f32 iThreshold)
 {
   // memcpy() is considerable faster than std::copy on my i7-6700K (nearly twice as fast for size == 2048)
   memcpy(mFftInBuffer.data(), iV.data(), mFftInBuffer.size() * sizeof(cf32));
 
   fftwf_execute(mFftPlanFwd);
 
-  //    into the frequency domain, now correlate
+  // into the frequency domain, now correlate
 #ifdef HAVE_SSE_OR_AVX
   volk_32fc_x2_multiply_conjugate_32fc_a(mFftInBuffer.data(), mFftOutBuffer.data(), mRefTable.data(), cTu);
 #else
@@ -101,13 +101,11 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
 #endif
 
-  //    and, again, back into the time domain
+  // and, again, back into the time domain
   fftwf_execute(mFftPlanBwd);
 
-  /**
-    *   We compute the average and the max signal values
-    */
-  f32 sum = 0;
+  // We compute the average and the max signal values
+  f32 sum = 0.0f;
 
 #ifdef HAVE_SSE_OR_AVX
   volk_32fc_magnitude_32f_a(mCorrPeakValues.data(), mFftOutBuffer.data(), cTu);
@@ -124,29 +122,23 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 #endif
 
   sum /= (f32)(cTu);
-
-  if (sum == 0)
+  if (sum == 0.0f)
   {
     return -1; // avoid zero divide in case signal iV is 0
   }
 
   mIndices.clear();
   i32 maxIndex = -1;
-  f32 maxL = -1000;
+  f32 maxL = -1000.0f;
   constexpr i16 cGapSearchWidth = 10;
-  constexpr i16 cExtendedSearchRegion = 250;
-  constexpr i16 idxStart = cTg - cExtendedSearchRegion;
-  constexpr i16 idxStop  = cTg + 2 * cExtendedSearchRegion;
-  assert(idxStart >= 0);
-  assert(idxStop <= (signed)mCorrPeakValues.size());
 
-  for (i16 i = idxStart; i < idxStop; ++i)
+  for (i16 i = 0; i < cTu; ++i)
   {
     if (mCorrPeakValues[i] / sum > iThreshold)
     {
       bool foundOne = true;
 
-      for (i16 j = 1; (j < cGapSearchWidth) && (i + j < idxStop); ++j)
+      for (i16 j = 1; (j < cGapSearchWidth) && (i + j < cTu); ++j)
       {
         if (mCorrPeakValues[i + j] > mCorrPeakValues[i])
         {
@@ -154,6 +146,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
           break;
         }
       }
+
       if (foundOne)
       {
         mIndices.push_back(i);
@@ -197,8 +190,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   /* Tomneda: original Qt-DAB returns maximum found peak "maxIndex", but
    * I receive a channel here with up to 5 different transmitters where the nearest (earliest) does not have the maximum power.
    * The maximum peak is either the second or forth transmitter. So the maximum peak search had also decided for a quite delayed signal.
-   * This leads to a OFDM symbol interference which was clearly been seen in the IQ scope or Modulation quality.
-   * So, the theory and also the experiment says that the first found peak (above the threshold) should be used as timing marker.
+   * So I added a search for the maximum peak over the threshold.
    */
   if (mSyncOnStrongestPeak)
   {
@@ -207,8 +199,50 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
   }
   else
   {
+    /* See equation 1 in
+       "OFDM receivers - impact on coverage of inter-symbol interference and FFT window positioning"
+    */
     assert(!mIndices.isEmpty());
-    return mIndices[0];
+    //return mIndices[0];
+    const i32 count = mIndices.length();
+    maxIndex = -1;
+    f32 maxCI = -1.0f;
+    const i32 start = mIndices[0];
+    const i32 end = mIndices[count - 1];
+
+    for (i32 pos = start; pos <= end; pos++)
+    {
+      f32 Ci = 0.0f; // the total power of the effective useful signal
+      f32 Ii = 0.0f; // the total effective interfering power
+
+      for (i32 i = 0; i < count; i++)
+      {
+        f32 wi; // the weighting coefficient
+        const f32 absVal = mCorrPeakValues[mIndices[i]];
+        const f32 power = absVal * absVal;
+        if (mIndices[i] < pos) // before the guard interval
+        {
+          wi = (f32)(cTu + mIndices[i] - pos) / cTu;
+        }
+        else if (mIndices[i] > pos + cTg) // after the guard interval
+        {
+          wi = (f32)(cTu + cTg + pos - mIndices[i]) / cTu;
+        }
+        else // in the guard interval
+        {
+          wi = 1.0f;
+        }
+        wi *= wi;
+        Ci += wi * power;
+        Ii += (1.0f - wi) * power;
+      }
+      if (Ci / Ii > maxCI)
+      {
+        maxCI = Ci / Ii;
+        maxIndex = pos;
+      }
+    }
+    return maxIndex;
   }
 }
 
@@ -220,7 +254,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn & 
 //  differences between the subsequent carriers rather than the values in
 //  the segments themselves. It seems to work pretty well.
 //  The phase differences are computed once
-i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV)
+i32 PhaseReference::estimate_carrier_offset_from_sync_symbol_0(const TArrayTu& iV)
 {
   i32 index = IDX_NOT_FOUND;
   f32 max = 0;
@@ -284,7 +318,7 @@ void PhaseReference::set_sync_on_strongest_peak(bool sync)
   mSyncOnStrongestPeak = sync;
 }
 
-void PhaseReference::_calculate_relative_phase(TArrayTu & oArg, const TArrayTu & iFft) const
+void PhaseReference::_calculate_relative_phase(TArrayTu& oArg, const TArrayTu& iFft) const
 {
 #ifdef HAVE_SSE_OR_AVX
   volk_32fc_x2_multiply_conjugate_32fc(oArg.data(), iFft.data() + 1, iFft.data(), cTu - 1); // do not use the aligned variant with this +1 offset
