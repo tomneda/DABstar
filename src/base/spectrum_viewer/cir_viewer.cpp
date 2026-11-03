@@ -16,8 +16,8 @@ CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
 {
   assert(((uintptr_t)mFftInBuffer.data()  & 0x3F) == 0);
   assert(((uintptr_t)mFftOutBuffer.data() & 0x3F) == 0);
-  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
-  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
+  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_MEASURE);
+  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_MEASURE);
 
   setupUi(&mFrame);
   mFrame.setWindowFlag(Qt::Tool, true);

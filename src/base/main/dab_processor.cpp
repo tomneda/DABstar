@@ -60,7 +60,7 @@ DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevi
   , mcTiiFramesToCount(p->tiiFramesToCount)
   , mpCirBuffer(p->cirBuffer)
 {
-  mFftPlan = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
+  mFftPlan = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_MEASURE);
 
   connect(this, &DabProcessor::signal_show_spectrum, mpRadioInterface, &DabRadio::slot_show_spectrum);
   connect(this, &DabProcessor::signal_show_tii, mpRadioInterface, &DabRadio::slot_show_tii);

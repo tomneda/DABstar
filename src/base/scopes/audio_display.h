@@ -104,11 +104,11 @@ private:
 #ifdef USE_C2C_FFT
   alignas(64) std::array<cf32, cSpectrumSize> mFftInBuffer;
   alignas(64) std::array<cf32, cSpectrumSize> mFftOutBuffer;
-  fftwf_plan mFftPlan{fftwf_plan_dft_1d(cSpectrumSize, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE)};
+  fftwf_plan mFftPlan{fftwf_plan_dft_1d(cSpectrumSize, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_MEASURE)};
 #else
   alignas(64) std::array<f32,  cSpectrumSize> mFftInBuffer;
   alignas(64) std::array<cf32, cSpectrumSize/2 + 1> mFftOutBuffer;
-  fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_ESTIMATE)};
+  fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_MEASURE)};
 #endif
 
   i32 mSampleRateLast = 0;
