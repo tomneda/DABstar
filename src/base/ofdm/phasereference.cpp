@@ -127,6 +127,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
     return -1; // avoid zero divide in case signal iV is 0
   }
 
+  const f32 threshold = iThreshold * sum; // absolute threshold, avoids a division per sample
   mIndices.clear();
   i32 maxIndex = -1;
   f32 maxL = -1000.0f;
@@ -134,7 +135,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
 
   for (i16 i = 0; i < cTu; ++i)
   {
-    if (mCorrPeakValues[i] / sum > iThreshold)
+    if (mCorrPeakValues[i] > threshold)
     {
       bool foundOne = true;
 
@@ -161,7 +162,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
     }
   }
 
-  if (maxL / sum < iThreshold)
+  if (maxL < threshold)
   {
     return -1; // no (relevant) peak found
   }
@@ -182,7 +183,7 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
       }
 #endif
       mpResponse->put_data_into_ring_buffer(mMeanCorrPeakValues.data(), (i32)mMeanCorrPeakValues.size());
-      emit signal_show_correlation(sum * iThreshold, mIndices);
+      emit signal_show_correlation(threshold, mIndices);
       mDisplayCounter = 0;
     }
   }
@@ -204,9 +205,11 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
     */
     assert(!mIndices.isEmpty());
     //return mIndices[0];
-    const i32 count = mIndices.length();
+    const i32 count = (i32)mIndices.size();
+    if (count == 1)
+      return mIndices[0];
     maxIndex = -1;
-    f32 maxCI = -1.0f;
+    f32 minCI = 1e38f;
     const i32 start = mIndices[0];
     const i32 end = mIndices[count - 1];
 
@@ -218,15 +221,16 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
       for (i32 i = 0; i < count; i++)
       {
         f32 wi; // the weighting coefficient
-        const f32 absVal = mCorrPeakValues[mIndices[i]];
+        const i32 k = mIndices[i];
+        const f32 absVal = mCorrPeakValues[k];
         const f32 power = absVal * absVal;
-        if (mIndices[i] < pos) // before the guard interval
+        if (k < pos) // before the guard interval
         {
-          wi = (f32)(cTu + mIndices[i] - pos) / cTu;
+          wi = (f32)(cTu + k - pos) / cTu;
         }
-        else if (mIndices[i] > pos + cTg) // after the guard interval
+        else if (k > pos + cTg) // after the guard interval
         {
-          wi = (f32)(cTu + cTg + pos - mIndices[i]) / cTu;
+          wi = (f32)(cTu + cTg + pos - k) / cTu;
         }
         else // in the guard interval
         {
@@ -236,9 +240,9 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
         Ci += wi * power;
         Ii += (1.0f - wi) * power;
       }
-      if (Ci / Ii > maxCI)
+      if (Ii / Ci < minCI)
       {
-        maxCI = Ci / Ii;
+        minCI = Ii / Ci;
         maxIndex = pos;
       }
     }
