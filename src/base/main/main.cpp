@@ -41,9 +41,40 @@
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
+#include <fftw3.h>
 #ifdef _WIN32
   #include <windows.h>
 #endif
+
+// FFTW wisdom stores the results of the FFTW_MEASURE planning, so the (slow) measuring has to be done only once.
+// The string/callback API is used instead of the FILE* or filename variants to avoid C runtime mismatches with the
+// FFTW DLL on Windows and to handle non-ASCII paths via QFile. FFTW rejects wisdom of a different version/build itself.
+static void import_fftw_wisdom(const QString & iFileName)
+{
+  QFile file(iFileName);
+  if (!file.open(QFile::ReadOnly | QFile::Text))
+  {
+    qInfo() << "No FFTW wisdom file found, FFT planning will take a while:" << iFileName;
+    return;
+  }
+  const QByteArray wisdom = file.readAll();
+  if (fftwf_import_wisdom_from_string(wisdom.constData()) == 0)
+  {
+    qWarning() << "Could not import FFTW wisdom file, it will be rewritten:" << iFileName;
+  }
+}
+
+static void export_fftw_wisdom(const QString & iFileName)
+{
+  QByteArray wisdom;
+  fftwf_export_wisdom([](char c, void * ipData) { static_cast<QByteArray *>(ipData)->append(c); }, &wisdom);
+
+  QFile file(iFileName);
+  if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text) || file.write(wisdom) != wisdom.size())
+  {
+    qWarning() << "Could not write FFTW wisdom file:" << iFileName;
+  }
+}
 
 i32 main(i32 argc, char ** argv)
 {
@@ -71,6 +102,7 @@ i32 main(i32 argc, char ** argv)
   const QString initFileName03 = QDir::toNativeSeparators(configPath +  QSL("settings03.ini"));
   const QString dbServiceListFileName = QDir::toNativeSeparators(configPath + QSL("servicelist%1.db").arg(dBVersionNr));
   const QString dbEnsembleListFileName = QDir::toNativeSeparators(configPath + QSL("ensemblelist%1.db").arg(dBVersionNr));
+  const QString fftwWisdomFileName = QDir::toNativeSeparators(configPath + QSL("fftwf_wisdom.txt"));
 
   // Default values
   i32 dataPort = 8888;
@@ -153,10 +185,14 @@ i32 main(i32 argc, char ** argv)
                          "such as the map coordinates."));
   }
 
+  import_fftw_wisdom(fftwWisdomFileName); // must happen before any FFTW plan is created
+
   const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbServiceListFileName, dbEnsembleListFileName, dataPort, nullptr));
   radioInterface->show();
 
   QApplication::exec();
+
+  export_fftw_wisdom(fftwWisdomFileName);
 
   fflush(stdout);
   fflush(stderr);
