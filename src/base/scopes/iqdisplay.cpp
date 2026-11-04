@@ -233,12 +233,14 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
   switch (iPlotType)
   {
   case EIqPlotType::PHASE_CORR_CARR_NORMED:
-    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level.";
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level. "
+                 "With the coherent demodulation (channel estimate ready) the coherent constellation is shown, normed to the channel power of each OFDM-carrier.";
     cp.Name = "Phase Corr. Carr.";
     break;
 
   case EIqPlotType::PHASE_CORR_MEAN_NORMED:
-    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels. "
+                 "With the coherent demodulation (channel estimate ready) the coherent constellation is shown, normed to the mean channel level over all OFDM-carriers.";
     cp.Name = "Phase Corr. Mean";
     break;
 

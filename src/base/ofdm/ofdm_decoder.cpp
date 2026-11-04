@@ -181,7 +181,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
   // The coherent demodulator has to see every symbol of the frame to track the channel, also if its soft bits are not used
   if (mCoherentFrame)
   {
-    mCoherentDemod.demodulate(iV, iCurOfdmSymbIdx, iGuardCorrSum);
+    mCoherentDemod.demodulate(iV, iCurOfdmSymbIdx, iGuardCorrSum, showScopeData);
   }
   const bool useCoherent = mCoherentFrame && mCoherentDemod.is_ready();
   // The differential soft bits are not needed with the coherent ones. They are only calculated in the last symbol of the
@@ -304,8 +304,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     {
       switch (iqPlotType)
       {
-      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / meanLevelPerBinRef; break;
-      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin * invSqrtMeanPower; break;
+      // with the coherent demodulation its constellation is shown (the one that the soft bits come from)
+      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = useCoherent ? mCoherentDemod.get_constellation_carr_normed(fftIdx) : fftBin / meanLevelPerBinRef; break;
+      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = useCoherent ? mCoherentDemod.get_constellation_mean_normed(fftIdx) : fftBin * invSqrtMeanPower; break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw * invSqrtMeanPower; break;
       case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = cInvTu100 * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx * cInvIqVectorSize); break;
       case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;

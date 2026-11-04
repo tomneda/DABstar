@@ -45,15 +45,21 @@ public:
   // iV: data symbol iCurOfdmSymbIdx (1 .. cL-1) of the frame of the last PRS,
   // iGuardCorrSum: sum of x[n + cTu] * conj(x[n]) over the guard intervals (n = 0 .. cTg-1) of all data symbols of
   // this frame up to this one, for the frequency offset.
+  // iCalcConstellation: also calculate the constellation points of this symbol (only needed for the IQ scope).
   // Has to be called for every data symbol of the frame (also if is_ready() is false, so that the channel can be tracked).
   // Afterwards (if is_ready()) get_soft_bit_real(fftIdx) and get_soft_bit_imag(fftIdx) are the soft bits of the two bits
-  // of the carrier in FFT bin fftIdx, scaled to the soft bit range but not limited (> 0: bit 1), and get_decision(fftIdx)
-  // its phase difference to the previous symbol (for the constellation diagram).
-  void demodulate(const TArrayTu & iV, i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum);
+  // of the carrier in FFT bin fftIdx, scaled to the soft bit range but not limited (> 0: bit 1).
+  void demodulate(const TArrayTu & iV, i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum, bool iCalcConstellation);
 
   [[nodiscard]] f32 get_soft_bit_real(i32 iFftIdx) const { return mSoftBitRe[iFftIdx]; }
   [[nodiscard]] f32 get_soft_bit_imag(i32 iFftIdx) const { return mSoftBitIm[iFftIdx]; }
-  [[nodiscard]] cf32 get_decision(i32 iFftIdx) const { return mDecisions[iFftIdx]; }
+
+  // Constellation point of the carrier in FFT bin fftIdx (only valid after demodulate() with iCalcConstellation and if
+  // is_ready()): the channel-corrected phase difference to the previous symbol (pi/4 + n pi/2 like the differential
+  // demodulation), normalized to the channel power of this carrier (unit circle) or to the mean channel level of all
+  // carriers (shows the different carrier levels).
+  [[nodiscard]] cf32 get_constellation_carr_normed(i32 iFftIdx) const { return mConstCarrNormed[iFftIdx]; }
+  [[nodiscard]] cf32 get_constellation_mean_normed(i32 iFftIdx) const { return mConstMeanNormed[iFftIdx]; }
 
 private:
   using TArrayK = std::array<cf32, cK>;
@@ -75,7 +81,8 @@ private:
 
   std::array<f32, cTu> mSoftBitRe{};
   std::array<f32, cTu> mSoftBitIm{};
-  TArrayTu mDecisions{};
+  TArrayTu mConstCarrNormed{};
+  TArrayTu mConstMeanNormed{};
 
   i32 mFrames = 0;
   TArrayK mHRaw{};             // estimate of the last PRS only
@@ -86,6 +93,7 @@ private:
   std::array<f32, cK> mWeight{};   // 2 / mNoiseVar, smoothed
   TArrayK mCross{};            // mHRaw * conj(mHAvg)
   f32 mSnr = 0.0f;             // mean SNR of the PRS, linear
+  f32 mInvRmsChannel = 0.0f;   // 1 / RMS of |mHSmooth| over all carriers (for the constellation)
 
   // Per carrier: probabilities of the four absolute phases of the previous symbol
   std::array<std::array<f32, 4>, cK> mPrevious{};

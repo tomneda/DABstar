@@ -194,6 +194,7 @@ void CoherentDemod::process_prs(const TArrayTu & iV)
     noiseSum += n;
   }
   mSnr = (noiseSum > 0.0f ? signalSum / noiseSum : 0.0f);
+  mInvRmsChannel = (signalSum > 0.0f ? 1.0f / std::sqrt(signalSum / (f32)cK) : 0.0f);
 }
 
 f32 CoherentDemod::_timing_rotation()
@@ -330,7 +331,7 @@ void CoherentDemod::_smooth_channel()
   }
 }
 
-void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum)
+void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum, const bool iCalcConstellation)
 {
   if (!is_ready())
   {
@@ -488,8 +489,21 @@ void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, c
     mSoftBitRe[fftIdx] = -cLlrScale * std::log((pd[0] + pd[3] + tiny) / (pd[1] + pd[2] + tiny));
     mSoftBitIm[fftIdx] = -cLlrScale * std::log((pd[0] + pd[1] + tiny) / (pd[2] + pd[3] + tiny));
 
-    const i32 prevIdx = (i32)(std::max_element(q.begin(), q.end()) - q.begin());
-    mDecisions[fftIdx] = v * toDifference[prevIdx];
+    if (iCalcConstellation)
+    {
+      // v ~ |H|^2 times the absolute phase, turned by the most probable phase of the previous symbol to the phase difference
+      const i32 prevIdx = (i32)(std::max_element(q.begin(), q.end()) - q.begin());
+      const cf32 d = v * toDifference[prevIdx];
+      if (h2 > 0.0f)
+      {
+        mConstCarrNormed[fftIdx] = d / h2;
+        mConstMeanNormed[fftIdx] = d * (mInvRmsChannel / std::sqrt(h2)); // ~ |H| / RMS(|H|)
+      }
+      else
+      {
+        mConstCarrNormed[fftIdx] = mConstMeanNormed[fftIdx] = cf32(0.0f, 0.0f);
+      }
+    }
 
     mPrevious[c] = p;
   }
