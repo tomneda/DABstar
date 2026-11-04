@@ -363,7 +363,7 @@ void TiiListDisplay::_slot_save_list()
     fprintf(fp, "  <Style id=\"transmitterIcon\">\n");
     fprintf(fp, "    <IconStyle>\n");
     fprintf(fp, "      <Icon>\n");
-    fprintf(fp, "        <href>http://maps.google.com/mapfiles/kml/shapes/donut.png</href>\n");
+    fprintf(fp, "        <href>http://maps.google.com/mapfiles/kml/paddle/ylw-circle.png</href>\n");
     fprintf(fp, "      </Icon>\n");
     fprintf(fp, "    </IconStyle>\n");
     fprintf(fp, "  </Style>\n");

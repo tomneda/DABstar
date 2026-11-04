@@ -101,7 +101,7 @@ private:
 
   alignas(64) std::array<cf32, SP_SPECTRUMSIZE> mFftInBuffer;
   alignas(64) std::array<cf32, SP_SPECTRUMSIZE> mFftOutBuffer;
-  fftwf_plan mFftPlan{fftwf_plan_dft_1d(SP_SPECTRUMSIZE, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE)};
+  fftwf_plan mFftPlan{fftwf_plan_dft_1d(SP_SPECTRUMSIZE, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_MEASURE)};
 
   std::array<f32, SP_SPECTRUMSIZE> mWindowVec{ 0 };
   std::array<f32, SP_DISPLAYSIZE> mXAxisVec{ 0 };
