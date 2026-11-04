@@ -115,7 +115,7 @@ inline void simd_multiply_add(f32 * ioVal, const f32 * ipA, const f32 * ipB, con
   }
 }
 
-// exact 1 / x (not the approximation _mm_rcp_ps())
+// exact 1 / x (not the approximation _mm_rcp_ps()), fallback for VOLK < 3.3 (see SimdVec::set_reciprocal_each_element())
 inline void simd_reciprocal(f32 * opOut, const f32 * ipInp, const size_t iN)
 {
   assert(iN % 4 == 0);
@@ -587,7 +587,11 @@ public:
   typename std::enable_if_t<std::is_same_v<U, f32>, void>
   inline set_reciprocal_each_element(const SimdVec<f32> & iVec)
   {
+#if (VOLK_VERSION >= 30300)
+    volk_32f_reciprocal_32f_a(mVolkVec, iVec, cK); // exact with SSE/AVX/NEON, rcp14 approximation with AVX512 (relative error < 2^-14)
+#else
     simd_reciprocal(mVolkVec, iVec, cK);
+#endif
   }
 
   // this += iVec1 * iVec2
