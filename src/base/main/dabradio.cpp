@@ -136,6 +136,10 @@ DabRadio::DabRadio(QSettings * const ipSettings, const QString & iServiceListDbF
   mpTiiManager->set_local_pos(mLocalPos);
 
   mpConfig->cmbSoftBitGen->addItems(_get_soft_bit_gen_names()); // fill soft-bit-type combobox with text elements
+  // the items must exist before the registration, the setting is stored as text ("Optimal 3" is the default,
+  // also if the stored text is not available, e.g. "Coherent" in the SIMD build)
+  mpConfig->cmbSoftBitGen->setCurrentIndex((i32)ESoftBitType::DEFAULT);
+  Settings::Config::cmbSoftBitGen.register_widget_and_update_ui_from_setting(mpConfig->cmbSoftBitGen, "Optimal 3");
   _slot_update_coherent_traffic_light(mpConfig->cmbSoftBitGen->currentIndex());
   connect(mpConfig->cmbSoftBitGen, qOverload<i32>(&QComboBox::currentIndexChanged), this, &DabRadio::_slot_update_coherent_traffic_light);
   mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table

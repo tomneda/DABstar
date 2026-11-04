@@ -145,15 +145,13 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
     }
   }
 
-  // The coherent demodulation estimates the channel from the PRS. After switching to it (or between its methods),
+  // The coherent demodulation estimates the channel from the PRS. After switching to it,
   // the differential demodulation is used until the estimate is ready.
-  const ESoftBitType softBitType = mSoftBitType.load(std::memory_order_relaxed);
-  const bool useCoherent = (softBitType == ESoftBitType::COHERENT_1 || softBitType == ESoftBitType::COHERENT_2);
-  if (useCoherent != mCoherentFrame || softBitType != mFrameSoftBitType)
+  const bool useCoherent = (mSoftBitType.load(std::memory_order_relaxed) == ESoftBitType::COHERENT);
+  if (useCoherent != mCoherentFrame)
   {
-    mCoherentDemod.set_method(softBitType == ESoftBitType::COHERENT_2 ? CoherentDemod::EMethod::DECISION_DIRECTED : CoherentDemod::EMethod::FRAME_AVERAGE);
+    mCoherentDemod.reset();
     mCoherentFrame = useCoherent;
-    mFrameSoftBitType = softBitType;
   }
   if (mCoherentFrame)
   {
@@ -264,7 +262,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       r1 = fftBin * w1;
       w2 = -140 / mMeanValue;
     }
-    else // Optimal 3 (also used for COHERENT_1/2 until the channel estimate is ready, and to keep mMeanValue valid)
+    else // Optimal 3 (also used for COHERENT until the channel estimate is ready, and to keep mMeanValue valid)
     {
       const f32 fftBinAbs = std::sqrt(fftBinPower);
       f32 w1 = std::sqrt(fftBinAbs * PhaseReferenceAbs) * meanLevelPerBinRef;
