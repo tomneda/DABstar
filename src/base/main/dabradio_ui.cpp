@@ -384,11 +384,11 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
 
   // ATTENTION: use same sequence as in ESoftBitType
 #ifndef HAVE_SSE_OR_AVX
-  sl << "Coherent";        // ESoftBitType::COHERENT
+  sl << "Coherent";                 // ESoftBitType::COHERENT
 #endif
-  sl << "Optimal 3";       // ESoftBitType::SOFTDEC1
-  sl << "Optimal 2";       // ESoftBitType::SOFTDEC2
-  sl << "Optimal 1";       // ESoftBitType::SOFTDEC3
+  sl << "Differential, Optimal 3";  // ESoftBitType::SOFTDEC1
+  sl << "Differential, Optimal 2";  // ESoftBitType::SOFTDEC2
+  sl << "Differential, Optimal 1";  // ESoftBitType::SOFTDEC3
   return sl;
 }
 

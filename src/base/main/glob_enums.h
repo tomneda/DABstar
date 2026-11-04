@@ -55,7 +55,7 @@ enum class ESoftBitType  // adapt DabRadio::_get_soft_bit_gen_names() too if cha
   SOFTDEC2,
   SOFTDEC3,
 
-  DEFAULT = SOFTDEC1 // "Optimal 3"
+  DEFAULT = SOFTDEC1 // "Differential, Optimal 3"
 };
 
 enum class EInfoReason // this is the info given back from DabRadio to the EnsembleList
