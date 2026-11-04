@@ -34,8 +34,10 @@ constexpr f32 cLlrScale = 16.0f;
 
 CoherentDemod::CoherentDemod(const FreqInterleaver & iFreqInterleaver, const TArrayTu & iRefTable)
 {
-  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
-  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
+  // FFTW_MEASURE overwrites the buffers while planning, so the plans have to be created before the buffers are used
+  // (the same plans as in PhaseReference, so they are taken from the FFTW wisdom)
+  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_MEASURE);
+  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_MEASURE);
 
   // carrier number k of the frequency index c = 0 .. cK-1 (lowest frequency first, no carrier at k = 0)
   auto carrier_of_freq_idx = [](const i32 iC) { return iC < cK / 2 ? iC - cK / 2 : iC - cK / 2 + 1; };

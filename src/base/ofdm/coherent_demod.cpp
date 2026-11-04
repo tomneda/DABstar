@@ -47,8 +47,10 @@ constexpr f32 cLlrScale = 16.0f;
 CoherentDemod::CoherentDemod()
   : PhaseTable()
 {
-  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_ESTIMATE);
-  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_ESTIMATE);
+  // FFTW_MEASURE overwrites the buffers while planning, so the plans have to be created before the buffers are used
+  // (the same plans as in PhaseReference, so they are taken from the FFTW wisdom)
+  mFftPlanFwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_FORWARD, FFTW_MEASURE);
+  mFftPlanBwd = fftwf_plan_dft_1d(cTu, (fftwf_complex*)mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_BACKWARD, FFTW_MEASURE);
 
   i32 c = 0;
   for (i32 k = -cK / 2; k <= cK / 2; ++k)
