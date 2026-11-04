@@ -19,9 +19,17 @@
 #pragma once
 
 #include "glob_defs.h"
-#include <pmmintrin.h>
-//#include <immintrin.h>
 #include <volk/volk.h>
+#include <algorithm>
+#include <cmath>
+
+/*
+ * Most vector operations below use VOLK, which selects the best kernel for the CPU at runtime (also NEON on ARM).
+ * The few helpers without a VOLK kernel are written with SSE/SSE2 intrinsics on x86 (__SSE2__ is always defined on
+ * x86-64, Intel and AMD) and as plain C++ loops on other architectures like ARM (the compiler can vectorize them, e.g. with NEON).
+ */
+#if defined(__SSE2__)
+#include <pmmintrin.h>
 
 // we try to use the older SSE3 commands to let also older HW be working with that
 
@@ -126,6 +134,81 @@ inline void simd_reciprocal(f32 * opOut, const f32 * ipInp, const size_t iN)
     _mm_store_ps(opOut + i, _mm_div_ps(one, _mm_load_ps(ipInp + i)));
   }
 }
+
+#else // !__SSE2__: portable versions of the helpers above with the same results (apart from the rounding in simd_normalize())
+
+// perform abs() on f32 input vector (remove sign)
+inline void simd_abs(f32 * opOut, const f32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    opOut[i] = std::abs(ipInp[i]);
+  }
+}
+
+inline void simd_normalize(cf32 * opOut, const cf32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    // exact 1 / sqrt() here, the SSE version uses the approximation _mm_rsqrt_ps() (no element may be 0)
+    opOut[i] = ipInp[i] * (1.0f / std::sqrt(std::norm(ipInp[i])));
+  }
+}
+
+// see SSE version above
+inline void simd_fold_to_positive_real_axis(cf32 * opOut, const cf32 * ipInp, const size_t iN)
+{
+  assert(iN % 2 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    const f32 re = ipInp[i].real();
+    const f32 im = ipInp[i].imag();
+    // nearer to the real axis: keep, else turn by -90 degrees (v * (-j))
+    f32 tRe = re;
+    f32 tIm = im;
+    if (!(std::abs(re) >= std::abs(im)))
+    {
+      tRe = im;
+      tIm = -re;
+    }
+    // negative real part (sign bit set, as in the SSE version): turn by 180 degrees
+    if (std::signbit(tRe))
+    {
+      tRe = -tRe;
+      tIm = -tIm;
+    }
+    opOut[i] = cf32(tRe, tIm);
+  }
+}
+
+// ioVal += iA * iB
+inline void simd_multiply_add(f32 * ioVal, const f32 * ipA, const f32 * ipB, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    ioVal[i] += ipA[i] * ipB[i];
+  }
+}
+
+// exact 1 / x, fallback for VOLK < 3.3 (see SimdVec::set_reciprocal_each_element())
+inline void simd_reciprocal(f32 * opOut, const f32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    opOut[i] = 1.0f / ipInp[i];
+  }
+}
+
+#endif // __SSE2__
 
 template<typename T>
 class SimdVec
