@@ -20,6 +20,7 @@
 #include "ringbuffer.h"
 #include "phasetable.h"
 #include "simd_extensions.h"
+#include "coherent_demod_simd.h"
 #include <QObject>
 #include <vector>
 #include <atomic>
@@ -41,6 +42,7 @@ public:
     f32 MeanSigmaSqFreqCorr;
     f32 TestData1;
     f32 TestData2;
+    bool CoherentReady; // coherent demodulation is selected and its channel estimate is ready
   };
 
   void reset();
@@ -102,6 +104,9 @@ private:
   SimdVec<f32> mSimdVecPhaseErr{0};
   SimdVec<f32> mSimdVecPhaseConst{0};
 
+  CoherentDemod mCoherentDemod; // uses mFreqInterleaver and the PhaseTable, has to be constructed after them
+  bool mCoherentFrame = false;  // coherent demodulation selected for the current frame (chosen at its PRS)
+
   f32 mMeanPowerOvrAll = 1.0f;
   f32 mAbsNullLevelMin = 0.0f;
   f32 mAbsNullLevelGain = 0.0f;
@@ -120,7 +125,7 @@ private:
 
   void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
-  void _display_iq_and_carr_vectors();
+  void _display_iq_and_carr_vectors(bool iUseCoherent);
 
   static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 

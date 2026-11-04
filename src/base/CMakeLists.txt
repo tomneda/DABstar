@@ -25,10 +25,12 @@ if (SSE_OR_AVX)
             ${${baseLibName}_HDRS}
             support/simd_extensions.h
             ofdm/ofdm_decoder_simd.h
+            ofdm/coherent_demod_simd.h
     )
     set(${baseLibName}_SRCS
             ${${baseLibName}_SRCS}
             ofdm/ofdm_decoder_simd.cpp
+            ofdm/coherent_demod_simd.cpp
     )
     find_package(Volk REQUIRED)
     list(APPEND baseExtraLibs ${VOLK_LIBRARIES})
