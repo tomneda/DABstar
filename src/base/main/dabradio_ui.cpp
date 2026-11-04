@@ -132,6 +132,7 @@ void DabRadio::_initialize_traffic_lights() const
   //                   |                                   | 600 - 1200 ms MP2    |                            |
   // ui->tlRsError     | Mp4Processor (signal_show_rs_err) | 3120 ms (26 supfr)   | ~4000 - 5500 ms (drop/jit) | 6000 ms
   // ui->tlAacError    | Mp4Processor (signal_show_aac)    | 520 - 1560 ms (26 AU)| ~3000 - 5000 ms (CRC errs) | 6000 ms
+  // ui->tlCoherent    | OfdmDecoder (signal_show_lcd_data)| ~500 - 600 ms        | ~600 - 700 ms (drop/jit)   | 3000 ms
   // -----------------------------------------------------------------------------------------------------------------
   ui->tlFicError->set_timeout(3000, TrafficLight::EStage::Off);    // make timeout bigger that the LED is not flickering while service change
   ui->tlAudioBuffer->set_timeout(3000, TrafficLight::EStage::Off);
@@ -139,6 +140,7 @@ void DabRadio::_initialize_traffic_lights() const
   ui->tlFrameError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlRsError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlAacError->set_timeout(6000, TrafficLight::EStage::Off);
+  ui->tlCoherent->set_timeout(3000, TrafficLight::EStage::Off);
 }
 
 void DabRadio::_initialize_ui_elements()
@@ -377,10 +379,23 @@ QStringList DabRadio::_get_soft_bit_gen_names() const
   QStringList sl;
 
   // ATTENTION: use same sequence as in ESoftBitType
-  sl << "Optimal 3";       // ESoftBitType::SOFTDEC1
-  sl << "Optimal 2";       // ESoftBitType::SOFTDEC2
-  sl << "Optimal 1";       // ESoftBitType::SOFTDEC3
+  sl << "Coherent";                 // ESoftBitType::COHERENT
+  sl << "Differential, Optimal 3";  // ESoftBitType::SOFTDEC1
+  sl << "Differential, Optimal 2";  // ESoftBitType::SOFTDEC2
+  sl << "Differential, Optimal 1";  // ESoftBitType::SOFTDEC3
   return sl;
+}
+
+void DabRadio::_slot_update_coherent_traffic_light(const i32 iSoftBitTypeIdx) const
+{
+  // The traffic light is disabled (shown off) if the coherent demodulation is not selected at all
+  const ESoftBitType softBitType = (ESoftBitType)iSoftBitTypeIdx;
+  const bool isCoherent = (softBitType == ESoftBitType::COHERENT);
+  ui->tlCoherent->setEnabled(isCoherent);
+  if (isCoherent)
+  {
+    ui->tlCoherent->set_stage(TrafficLight::EStage::RedYellow); // the channel estimate has to be built up first
+  }
 }
 
 void DabRadio::_cleanup_ui() const
@@ -391,6 +406,7 @@ void DabRadio::_cleanup_ui() const
   ui->tlFrameError->set_stage(TrafficLight::EStage::Red);
   ui->tlRsError->set_stage(TrafficLight::EStage::Red);
   ui->tlAacError->set_stage(TrafficLight::EStage::Red);
+  ui->tlCoherent->set_stage(TrafficLight::EStage::RedYellow);
 
   if (mLevelMeterMode == ELevelMeterMode::SnrMer)
   {
@@ -1062,6 +1078,8 @@ void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData & iQD)
 
   mChannelDesc.snrLast = iQD.SNR;
   mChannelDesc.merLast = iQD.MER;
+
+  ui->tlCoherent->set_stage(iQD.CoherentReady ? TrafficLight::EStage::Green : TrafficLight::EStage::RedYellow);
 
   if (mLevelMeterMode == ELevelMeterMode::SnrMer)
   {

@@ -580,8 +580,10 @@ volk	{
     SOURCES		+= src/base/ofdm/ofdm_decoder_simd.cpp
     LIBS		+= -lvolk.dll
 }else	{
-    HEADERS		+= src/base/ofdm/ofdm_decoder.h
-    SOURCES		+= src/base/ofdm/ofdm_decoder.cpp
+    HEADERS		+= src/base/ofdm/ofdm_decoder.h \
+               src/base/ofdm/coherent_demod.h
+    SOURCES		+= src/base/ofdm/ofdm_decoder.cpp \
+               src/base/ofdm/coherent_demod.cpp
 }
 
 liquid	{

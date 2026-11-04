@@ -496,18 +496,20 @@
             <item>
              <widget class="QLabel" name="lbl_soft_bit_gen">
               <property name="text">
-               <string>Soft bit generation:</string>
+               <string>Demodulation:</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QComboBox" name="cmbSoftBitGen">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;
-                 The designations refer to the document &quot;SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES&quot;.
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select demodulation and soft bit generation type&lt;/span&gt;&lt;/p&gt;&lt;p&gt;
+                 &lt;b&gt;Differential&lt;/b&gt;: the previous symbol is the reference for the phase difference. The designations Optimal 1 to 3 of the soft bit generation refer to the document &quot;SOFT DECISIONS FOR DQPSK DEMODULATION FOR THE VITERBI DECODING OF THE CONVOLUTIONAL CODES&quot;.
                  The use of an optimal soft decision algorithm compared to the conventional soft decision algorithm gives a performance improvement equivalent to an SNR gain of up to 5dB. 
                  In a time invariant propagation environment, Optimal 3 gives the best performance whereas in time selective environment, Optimal 2 gives the best performance.&lt;/p&gt;&lt;p&gt;
-                 See the &amp;quot;Soft-Bit Weight&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;As the first entry should provide almost the best result, the value is not stored persistently.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 See the &amp;quot;Soft-bit weight (%)&amp;quot; of the Carrier Plot for the calculation results.&lt;/p&gt;&lt;p&gt;
+                 &lt;b&gt;Coherent&lt;/b&gt; (from welle.io) uses a channel estimate instead of the previous symbol as reference. It needs less SNR for weak, stationary signals: the channel estimate of the phase reference symbol is averaged over frames, the phase and timing drift is tracked within the frame.&lt;br/&gt;
+                 Until the channel estimate is ready, &amp;quot;Differential, Optimal 3&amp;quot; is used (see the coherent traffic light in the main window).&lt;/p&gt;&lt;p&gt;The selection is stored persistently, the default is &amp;quot;Differential, Optimal 3&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>

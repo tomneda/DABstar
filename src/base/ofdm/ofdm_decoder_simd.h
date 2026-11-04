@@ -20,6 +20,7 @@
 #include "ringbuffer.h"
 #include "phasetable.h"
 #include "simd_extensions.h"
+#include "coherent_demod_simd.h"
 #include <QObject>
 #include <vector>
 #include <atomic>
@@ -41,13 +42,14 @@ public:
     f32 MeanSigmaSqFreqCorr;
     f32 TestData1;
     f32 TestData2;
+    bool CoherentReady; // coherent demodulation is selected and its channel estimate is ready
   };
 
   void reset();
   void store_null_symbol_with_tii(const TArrayTu & iV);
   void store_null_symbol_without_tii(const TArrayTu & iV);
   void store_reference_symbol_0(const TArrayTu & iFftBuffer);
-  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits);
+  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
@@ -102,6 +104,9 @@ private:
   SimdVec<f32> mSimdVecPhaseErr{0};
   SimdVec<f32> mSimdVecPhaseConst{0};
 
+  CoherentDemod mCoherentDemod; // uses mFreqInterleaver and the PhaseTable, has to be constructed after them
+  bool mCoherentFrame = false;  // coherent demodulation selected for the current frame (chosen at its PRS)
+
   f32 mMeanPowerOvrAll = 1.0f;
   f32 mAbsNullLevelMin = 0.0f;
   f32 mAbsNullLevelGain = 0.0f;
@@ -120,7 +125,7 @@ private:
 
   void _eval_null_symbol_statistics(const TArrayTu & iV);
   void _reset_null_symbol_statistics();
-  void _display_iq_and_carr_vectors();
+  void _display_iq_and_carr_vectors(bool iUseCoherent);
 
   static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
 

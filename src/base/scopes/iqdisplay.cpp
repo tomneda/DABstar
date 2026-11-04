@@ -211,7 +211,7 @@ void IQDisplay::select_plot_type(const EIqPlotType iPlotType)
   {
     mPlotType = iPlotType;
     const SCustPlot cp = _get_plot_type_data(iPlotType);
-    setToolTip(cp.ToolTip);
+    setToolTip(QString("<p>%1</p>").arg(cp.ToolTip)); // as rich text the tooltip is word-wrapped as a block
   }
 }
 
@@ -233,28 +233,30 @@ IQDisplay::SCustPlot IQDisplay::_get_plot_type_data(const EIqPlotType iPlotType)
   switch (iPlotType)
   {
   case EIqPlotType::PHASE_CORR_CARR_NORMED:
-    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level.";
-    cp.Name = "Phase Corr. Carr.";
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to each OFDM-carrier level."
+                 "<p>With the coherent demodulation (channel estimate ready) the coherent constellation is shown, normed to the channel power of each OFDM-carrier.</p>";
+    cp.Name = "Phase corr., per carrier";
     break;
 
   case EIqPlotType::PHASE_CORR_MEAN_NORMED:
-    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
-    cp.Name = "Phase Corr. Mean";
+    cp.ToolTip = "Shows the phase-corrected PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels."
+                 "<p>With the coherent demodulation (channel estimate ready) the coherent constellation is shown, normed to the mean channel level over all OFDM-carriers.</p>";
+    cp.Name = "Phase corr., mean";
     break;
 
   case EIqPlotType::RAW_MEAN_NORMED:
     cp.ToolTip = "Shows the real (no phase corrected) PI/4-DPSK decoded signal normed to the mean over all OFDM-carrier levels.";
-    cp.Name = "Real Mean";
+    cp.Name = "Uncorr., mean";
     break;
 
   case EIqPlotType::DC_OFFSET_FFT_100:
     cp.ToolTip = "Shows the DC offset of the input signal after OFDM-FFT at FFT-bin 0. See the effect of 'DC removal filter'. The trace is the distance to the last OFDM-symbol. The value is 100 times magnified.";
-    cp.Name = "DC Off. (FFT) 100x";
+    cp.Name = "DC offset FFT (100x)";
     break;
 
   case EIqPlotType::DC_OFFSET_ADC_100:
     cp.ToolTip = "Shows the DC offset of the input signal after ADC (before DC removal filtering). The 'DC removal filter' has to be activated to see changes. The value is 100 times magnified.";
-    cp.Name = "DC Off. (ADC) 100x";
+    cp.Name = "DC offset ADC (100x)";
     break;
 
   default:

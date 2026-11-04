@@ -97,6 +97,8 @@ void OfdmDecoder::reset()
 
   mMeanPowerOvrAll = 1.0f;
 
+  mCoherentDemod.reset();
+
   _reset_null_symbol_statistics();
 }
 
@@ -142,9 +144,22 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
       mPRSBuffer[fftIdx] = mPhaseReference[fftIdx] * std::conj(PhaseTable::mRefTable[fftIdx]);
     }
   }
+
+  // The coherent demodulation estimates the channel from the PRS. After switching to it,
+  // the differential demodulation is used until the estimate is ready.
+  const bool useCoherent = (mSoftBitType.load(std::memory_order_relaxed) == ESoftBitType::COHERENT);
+  if (useCoherent != mCoherentFrame)
+  {
+    mCoherentDemod.reset();
+    mCoherentFrame = useCoherent;
+  }
+  if (mCoherentFrame)
+  {
+    mCoherentDemod.process_prs(iBuffer);
+  }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K:
   // phase correction via:
@@ -162,6 +177,16 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
   const f32 invSqrtMeanPower = (mMeanPowerOvrAll > 0.0f) ? (1.0f / std::sqrt(mMeanPowerOvrAll)) : 1.0f;
   constexpr f32 cInvTu100 = 100.0f / (f32)cTu;
   const f32 cInvIqVectorSize = (mIqVector.size() > 1) ? (1.0f / (f32)(mIqVector.size() - 1)) : 1.0f;
+
+  // The coherent demodulator has to see every symbol of the frame to track the channel, also if its soft bits are not used
+  if (mCoherentFrame)
+  {
+    mCoherentDemod.demodulate(iV, iCurOfdmSymbIdx, iGuardCorrSum, showScopeData);
+  }
+  const bool useCoherent = mCoherentFrame && mCoherentDemod.is_ready();
+  // The differential soft bits are not needed with the coherent ones. They are only calculated in the last symbol of the
+  // frame to keep mMeanValue up to date for a fallback to the differential demodulation with the next frame.
+  const bool calcDifferential = !useCoherent || iCurOfdmSymbIdx == cL - 1;
 
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
@@ -222,45 +247,66 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     f32 & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
     mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
 
-    f32 signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
-    if (signalPower <= 0.0f) signalPower = 0.1f;
+    // The statistics above are always needed (plots, MER, SNR and the fallback from the coherent demodulation)
+    f32 softBitReal = 0.0f;
+    f32 softBitImag = 0.0f;
 
-    // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    cf32 r1;
-    f32 w2;
-    if(softBitType == ESoftBitType::SOFTDEC3) //Optimal 1
+    if (calcDifferential)
     {
-      r1 = fftBin * PhaseReferenceAbs; // input level
-      w2 = -140 / mMeanValue;
-    }
-    else if(softBitType == ESoftBitType::SOFTDEC2) //Optimal 2
-    {
-      f32 w1 = PhaseReferenceAbs / meanSigmaSqPerBinRef;
-      w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
-      r1 = fftBin * w1;
-      w2 = -140 / mMeanValue;
-    }
-    else // Optimal 3
-    {
-      const f32 fftBinAbs = std::sqrt(fftBinPower);
-      f32 w1 = std::sqrt(fftBinAbs * PhaseReferenceAbs) * meanLevelPerBinRef;
-      w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
-      w1 /= meanSigmaSqPerBinRef * fftBinAbs;
-      r1 = fftBin * w1;
-      w2 = -100 / mMeanValue;
+      f32 signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
+      if (signalPower <= 0.0f) signalPower = 0.1f;
+
+      // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
+      cf32 r1;
+      f32 w2;
+      if(softBitType == ESoftBitType::SOFTDEC3) //Optimal 1
+      {
+        r1 = fftBin * PhaseReferenceAbs; // input level
+        w2 = -140 / mMeanValue;
+      }
+      else if(softBitType == ESoftBitType::SOFTDEC2) //Optimal 2
+      {
+        f32 w1 = PhaseReferenceAbs / meanSigmaSqPerBinRef;
+        w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
+        r1 = fftBin * w1;
+        w2 = -140 / mMeanValue;
+      }
+      else // Optimal 3 (also used for COHERENT until the channel estimate is ready)
+      {
+        const f32 fftBinAbs = std::sqrt(fftBinPower);
+        f32 w1 = std::sqrt(fftBinAbs * PhaseReferenceAbs) * meanLevelPerBinRef;
+        w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
+        w1 /= meanSigmaSqPerBinRef * fftBinAbs;
+        r1 = fftBin * w1;
+        w2 = -100 / mMeanValue;
+      }
+
+      // split the real and the imaginary part and scale it
+      softBitReal = real(r1) * w2;
+      softBitImag = imag(r1) * w2;
+      sum += std::abs(r1);
     }
 
-    // split the real and the imaginary part and scale it
-    oBits[0  + nomCarrIdx] = (i16)(real(r1) * w2);
-    oBits[cK + nomCarrIdx] = (i16)(imag(r1) * w2);
-    sum += std::abs(r1);
+    if (useCoherent)
+    {
+      // The soft bits of the coherent demodulator are already scaled to the range of the soft bits
+      softBitReal = mCoherentDemod.get_soft_bit_real(fftIdx);
+      softBitImag = mCoherentDemod.get_soft_bit_imag(fftIdx);
+    }
+
+    limit_symmetrically(softBitReal, F_VITERBI_SOFT_BIT_VALUE_MAX);
+    limit_symmetrically(softBitImag, F_VITERBI_SOFT_BIT_VALUE_MAX);
+
+    oBits[0  + nomCarrIdx] = (i16)softBitReal;
+    oBits[cK + nomCarrIdx] = (i16)softBitImag;
 
     if (showScopeData)
     {
       switch (iqPlotType)
       {
-      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = fftBin / meanLevelPerBinRef; break;
-      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = fftBin * invSqrtMeanPower; break;
+      // with the coherent demodulation its constellation is shown (the one that the soft bits come from)
+      case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = useCoherent ? mCoherentDemod.get_constellation_carr_normed(fftIdx) : fftBin / meanLevelPerBinRef; break;
+      case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = useCoherent ? mCoherentDemod.get_constellation_mean_normed(fftIdx) : fftBin * invSqrtMeanPower; break;
       case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = fftBinRaw * invSqrtMeanPower; break;
       case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = cInvTu100 * _interpolate_2d_plane(mPhaseReference[0], iV[0], (f32)nomCarrIdx * cInvIqVectorSize); break;
       case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;
@@ -268,12 +314,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
       switch (carrPlotType)
       {
-      case ECarrierPlotType::SB_WEIGHT:
-        // Convert and limit the soft bit weigth to percent
-        w2 = (std::abs(real(r1)) + std::abs(imag(r1))) / 2.0f * (-w2);
-        limit_min_max(w2, 0.0f, F_VITERBI_SOFT_BIT_VALUE_MAX);
-        mCarrVector[realCarrRelIdx] = 100.0f / VITERBI_SOFT_BIT_VALUE_MAX * w2;
-        break;
+      case ECarrierPlotType::SB_WEIGHT:       mCarrVector[realCarrRelIdx] = (std::abs(softBitReal) + std::abs(softBitImag)) / 2.0f * 100.0f / VITERBI_SOFT_BIT_VALUE_MAX; break;
       case ECarrierPlotType::EVM_PER:         mCarrVector[realCarrRelIdx] = 100.0f * std::sqrt(meanSigmaSqPerBinRef) / meanLevelPerBinRef; break;
       case ECarrierPlotType::EVM_DB:          mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanSigmaSqPerBinRef / meanPowerPerBinRef); break;
       case ECarrierPlotType::STD_DEV:         mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::sqrt(stdDevSqRef)); break;
@@ -291,7 +332,10 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     }
   } // for (nomCarrIdx...
 
-  mMeanValue = sum / cK;
+  if (calcDifferential)
+  {
+    mMeanValue = sum / cK;
+  }
 
   if (iCurOfdmSymbIdx == 1)
   {
@@ -343,6 +387,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cCarrDiff;
+    mLcdData.CoherentReady = useCoherent;
 
     emit signal_show_lcd_data(mLcdData);
 

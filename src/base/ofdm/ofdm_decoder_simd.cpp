@@ -25,6 +25,7 @@ OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuf
   , mpRadioInterface(ipMr)
   , mpIqBuffer(ipIqBuffer)
   , mpCarrBuffer(ipCarrBuffer)
+  , mCoherentDemod(mFreqInterleaver, PhaseTable::mRefTable)
 {
   mIqVector.resize(cK);
   mCarrVector.resize(cK);
@@ -74,6 +75,8 @@ void OfdmDecoder::reset()
 
   mMeanPowerOvrAll = 1.0f;
 
+  mCoherentDemod.reset();
+
   _reset_null_symbol_statistics();
 }
 
@@ -119,9 +122,22 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
       mPRSBuffer[nomCarrIdx] = iFftBuffer[fftIdx] * std::conj(PhaseTable::mRefTable[fftIdx]);
     }
   }
+
+  // The coherent demodulation estimates the channel from the PRS (already collected in nominal carrier order above).
+  // After switching to it, the differential demodulation is used until the estimate is ready.
+  const bool useCoherent = (mSoftBitType.load(std::memory_order_relaxed) == ESoftBitType::COHERENT);
+  if (useCoherent != mCoherentFrame)
+  {
+    mCoherentDemod.reset();
+    mCoherentFrame = useCoherent;
+  }
+  if (mCoherentFrame)
+  {
+    mCoherentDemod.process_prs(mSimdVecPhaseReference);
+  }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
@@ -135,6 +151,22 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
     mSimdVecNomCarrier[nomCarrIdx] = iFftBuffer[fftIdx];
   }
+
+  // displaying IQ scope and carrier scope
+  ++mShowCntIqScope;
+  ++mShowCntStatistics;
+  const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+  const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
+
+  // The coherent demodulator has to see every symbol of the frame to track the channel, also if its soft bits are not used
+  if (mCoherentFrame)
+  {
+    mCoherentDemod.demodulate(mSimdVecNomCarrier, iCurOfdmSymbIdx, iGuardCorrSum, showScopeData);
+  }
+  const bool useCoherent = mCoherentFrame && mCoherentDemod.is_ready();
+  // The differential soft bits are not needed with the coherent ones. They are only calculated in the last symbol of the
+  // frame to keep mMeanValue up to date for a fallback to the differential demodulation with the next frame.
+  const bool calcDifferential = !useCoherent || iCurOfdmSymbIdx == cL - 1;
 
   mSimdVecPhaseErr.set_multiply_vector_and_scalar_each_element(mSimdVecPhaseConst, iClockErr);
 
@@ -179,45 +211,58 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   mSimdVecSigmaSq.set_squared_distance_to_nearest_constellation_point_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecFftBinPhaseCorrImag, mSimdVecMeanLevel);
   mSimdVecMeanSigmaSq.modify_mean_filter_each_element(mSimdVecSigmaSq, cAlpha);
 
-  // -------------------------------
-  mSimdVecMeanNettoPower.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
-  mSimdVecMeanNettoPower.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
-  mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecMeanNettoPower);  // T2 = 1/SNR
-  mSimdVecTemp2Float.modify_add_scalar_each_element(0.7f); // T2 += 0.7
-  mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference); // T1 = abs(phaseRef)
+  // ------------------------------- differential soft bits
+  // (the statistics above are always needed: plots, MER, SNR and the fallback from the coherent demodulation)
+  if (calcDifferential)
+  {
+    mSimdVecMeanNettoPower.set_subtract_each_element(mSimdVecMeanPower, mSimdVecMeanNullPowerWithoutTII);
+    mSimdVecMeanNettoPower.modify_check_negative_or_zero_values_and_fallback_each_element(0.1f);
+    mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanNullPowerWithoutTII, mSimdVecMeanNettoPower);  // T2 = 1/SNR
+    mSimdVecTemp2Float.modify_add_scalar_each_element(0.7f); // T2 += 0.7
+    mSimdVecTemp1Float.set_magnitude_each_element(mSimdVecPhaseReference); // T1 = abs(phaseRef)
 
-  int factor;
-  if(mSoftBitType == ESoftBitType::SOFTDEC1) // Optimal 3
-  {
-    factor = -100;
-    mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecFftBinLevel);   // T1 /= abs(fftBin)
-    mSimdVecTemp1Float.modify_sqrt_each_element();                                         // T1 = sqrt(T1)
-    mSimdVecTemp2Float.set_multiply_each_element(mSimdVecTemp2Float, mSimdVecMeanSigmaSq); // T2 *= meanSigmaSqPerBinRef
-    mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanLevel, mSimdVecTemp2Float);     // T2 = meanLevelPerBinRef / T2;
-    mSimdVecTemp1Float.set_multiply_each_element(mSimdVecTemp1Float, mSimdVecTemp2Float);  // T1 *= T2
-  }
-  else
-  {
-    factor = -140;
-    if(mSoftBitType == ESoftBitType::SOFTDEC2) // Optimal 2
+    int factor;
+    if(mSoftBitType == ESoftBitType::SOFTDEC1) // Optimal 3
     {
-      mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecTemp2Float);   // T1 /= T2
-      mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecMeanSigmaSq);  // T1 /= meanSigmaSqPerBinRef
+      factor = -100;
+      mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecFftBinLevel);   // T1 /= abs(fftBin)
+      mSimdVecTemp1Float.modify_sqrt_each_element();                                         // T1 = sqrt(T1)
+      mSimdVecTemp2Float.set_multiply_each_element(mSimdVecTemp2Float, mSimdVecMeanSigmaSq); // T2 *= meanSigmaSqPerBinRef
+      mSimdVecTemp2Float.set_divide_each_element(mSimdVecMeanLevel, mSimdVecTemp2Float);     // T2 = meanLevelPerBinRef / T2;
+      mSimdVecTemp1Float.set_multiply_each_element(mSimdVecTemp1Float, mSimdVecTemp2Float);  // T1 *= T2
     }
+    else
+    {
+      factor = -140;
+      if(mSoftBitType == ESoftBitType::SOFTDEC2) // Optimal 2
+      {
+        mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecTemp2Float);   // T1 /= T2
+        mSimdVecTemp1Float.set_divide_each_element(mSimdVecTemp1Float, mSimdVecMeanSigmaSq);  // T1 /= meanSigmaSqPerBinRef
+      }
+    }
+    mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecTemp1Float); // real *= T1
+    mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecTemp1Float); // imag *= T1
+
+    // -------------------------------
+    mSimdVecTemp1Float.set_squared_magnitude_of_elements(mSimdVecDecodingReal, mSimdVecDecodingImag);
+    mSimdVecTemp1Float.set_sqrt_each_element(mSimdVecTemp1Float);
+    mMeanValue = mSimdVecTemp1Float.get_sum_of_elements() / cK;
+
+    // -------------------------------
+    // apply weight w2 to be conform to the viterbi input range
+    const f32 w2 = factor / mMeanValue;
+    mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
+    mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
   }
-  mSimdVecDecodingReal.set_multiply_each_element(mSimdVecFftBinPhaseCorrReal, mSimdVecTemp1Float); // real *= T1
-  mSimdVecDecodingImag.set_multiply_each_element(mSimdVecFftBinPhaseCorrImag, mSimdVecTemp1Float); // imag *= T1
 
-  // -------------------------------
-  mSimdVecTemp1Float.set_squared_magnitude_of_elements(mSimdVecDecodingReal, mSimdVecDecodingImag);
-  mSimdVecTemp1Float.set_sqrt_each_element(mSimdVecTemp1Float);
-  mMeanValue = mSimdVecTemp1Float.get_sum_of_elements() / cK;
-
-  // -------------------------------
-  // apply weight w2 to be conform to the viterbi input range
-  const f32 w2 = factor / mMeanValue;
-  mSimdVecDecodingReal.modify_multiply_scalar_each_element(w2);
-  mSimdVecDecodingImag.modify_multiply_scalar_each_element(w2);
+  if (useCoherent)
+  {
+    // The soft bits of the coherent demodulator are already scaled to the range of the soft bits (and in nominal carrier order)
+    mSimdVecDecodingReal.set_copy(mCoherentDemod.get_soft_bits_real());
+    mSimdVecDecodingImag.set_copy(mCoherentDemod.get_soft_bits_imag());
+    mSimdVecDecodingReal.modify_limit_symmetrically_each_element(F_VITERBI_SOFT_BIT_VALUE_MAX);
+    mSimdVecDecodingImag.modify_limit_symmetrically_each_element(F_VITERBI_SOFT_BIT_VALUE_MAX);
+  }
   // -------------------------------
 
   // extract coding bits
@@ -236,12 +281,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     mean_filter(mMeanSigmaSqFreqCorr, FreqCorr * FreqCorr, 0.2f);
   }
 
-  // displaying IQ scope and carrier scope
-  ++mShowCntIqScope;
-  ++mShowCntStatistics;
-  const bool showScopeData = (mShowCntIqScope > cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
-  const bool showStatisticData = (mShowCntStatistics > 5 * cL && iCurOfdmSymbIdx == mNextShownOfdmSymbIdx);
-
   if (showScopeData || showStatisticData)
   {
     mMeanPowerOvrAll = mSimdVecMeanPower.get_sum_of_elements() / cK;
@@ -249,7 +288,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
 
   if (showScopeData)
   {
-    _display_iq_and_carr_vectors();
+    _display_iq_and_carr_vectors(useCoherent);
 
     // From time to time we show the constellation of the current symbol
     mpIqBuffer->put_data_into_ring_buffer(mIqVector.data(), cK);
@@ -269,6 +308,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
     mLcdData.SNR = 10.0f * std::log10(snr);
     mLcdData.TestData1 = mMeanValue;
     mLcdData.TestData2 = iPhaseCorr / F_2_M_PI * (f32)cK;
+    mLcdData.CoherentReady = useCoherent;
 
     emit signal_show_lcd_data(mLcdData);
 
@@ -373,7 +413,7 @@ cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, 
   return { c_r, c_i };
 }
 
-void OfdmDecoder::_display_iq_and_carr_vectors()
+void OfdmDecoder::_display_iq_and_carr_vectors(const bool iUseCoherent)
 {
   const EIqPlotType iqPlotType = mIqPlotType.load(std::memory_order_relaxed);
   const ECarrierPlotType carrPlotType = mCarrierPlotType.load(std::memory_order_relaxed);
@@ -385,8 +425,9 @@ void OfdmDecoder::_display_iq_and_carr_vectors()
   {
     switch (iqPlotType)
     {
-    case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] / mSimdVecMeanLevel[nomCarrIdx]; break;
-    case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = mSimdVecFftBinPhaseCorr[nomCarrIdx] * invSqrtMeanPower; break;
+    // with the coherent demodulation its constellation is shown (the one that the soft bits come from)
+    case EIqPlotType::PHASE_CORR_CARR_NORMED: mIqVector[nomCarrIdx] = iUseCoherent ? mCoherentDemod.get_constellation_carr_normed(nomCarrIdx) : mSimdVecFftBinPhaseCorr[nomCarrIdx] / mSimdVecMeanLevel[nomCarrIdx]; break;
+    case EIqPlotType::PHASE_CORR_MEAN_NORMED: mIqVector[nomCarrIdx] = iUseCoherent ? mCoherentDemod.get_constellation_mean_normed(nomCarrIdx) : mSimdVecFftBinPhaseCorr[nomCarrIdx] * invSqrtMeanPower; break;
     case EIqPlotType::RAW_MEAN_NORMED:        mIqVector[nomCarrIdx] = mSimdVecFftBinRaw[nomCarrIdx] * invSqrtMeanPower; break;
     case EIqPlotType::DC_OFFSET_FFT_100:      mIqVector[nomCarrIdx] = cInvTu100 * _interpolate_2d_plane(mDcFftLast, mDcFft, (f32)nomCarrIdx * cInvIqVectorSize); break;
     case EIqPlotType::DC_OFFSET_ADC_100:      mIqVector[nomCarrIdx] = 100.0f * mDcAdc; break;

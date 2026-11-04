@@ -19,9 +19,17 @@
 #pragma once
 
 #include "glob_defs.h"
-#include <pmmintrin.h>
-//#include <immintrin.h>
 #include <volk/volk.h>
+#include <algorithm>
+#include <cmath>
+
+/*
+ * Most vector operations below use VOLK, which selects the best kernel for the CPU at runtime (also NEON on ARM).
+ * The few helpers without a VOLK kernel are written with SSE/SSE2 intrinsics on x86 (__SSE2__ is always defined on
+ * x86-64, Intel and AMD) and as plain C++ loops on other architectures like ARM (the compiler can vectorize them, e.g. with NEON).
+ */
+#if defined(__SSE2__)
+#include <pmmintrin.h>
 
 // we try to use the older SSE3 commands to let also older HW be working with that
 
@@ -72,6 +80,135 @@ inline void simd_normalize(cf32 * opOut, const cf32 * ipInp, const size_t iN)
     _mm_store_ps(pOut, normalized);
   }
 }
+
+// Turn each complex input value by a multiple of 90 degrees into the sector -45..45 degrees around the positive real axis
+// (removes a QPSK decision on the axes: the result is v * conj(nearest axis direction)).
+inline void simd_fold_to_positive_real_axis(cf32 * opOut, const cf32 * ipInp, const size_t iN)
+{
+  assert(iN % 2 == 0);
+
+  const f32 * pInp = reinterpret_cast<const f32 *>(ipInp);
+  f32 * pOut = reinterpret_cast<f32 *>(opOut);
+
+  const __m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF));
+  const __m128 signMask = _mm_castsi128_ps(_mm_set1_epi32((i32)0x80000000));
+  const __m128 signImag = _mm_castsi128_ps(_mm_set_epi32((i32)0x80000000, 0, (i32)0x80000000, 0)); // sign bit of the imaginary parts
+
+  for (size_t i = 0; i < iN; i += 2, pInp += 4, pOut += 4)
+  {
+    const __m128 v = _mm_load_ps(pInp);                                  // [r0, i0, r1, i1]
+    const __m128 vAbs = _mm_and_ps(v, absMask);                          // [|r0|, |i0|, |r1|, |i1|]
+    const __m128 vAbsSw = _mm_shuffle_ps(vAbs, vAbs, _MM_SHUFFLE(2, 3, 0, 1)); // [|i0|, |r0|, |i1|, |r1|]
+    __m128 nearReal = _mm_cmpge_ps(vAbs, vAbsSw);                        // lane 0 and 2: |r| >= |i|
+    nearReal = _mm_shuffle_ps(nearReal, nearReal, _MM_SHUFFLE(2, 2, 0, 0)); // broadcast to both parts of each complex value
+    const __m128 vSw = _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 3, 0, 1));    // [i0, r0, i1, r1]
+    const __m128 vMulMinusJ = _mm_xor_ps(vSw, signImag);                 // v * (-j) = [i0, -r0, i1, -r1]
+    __m128 t = _mm_or_ps(_mm_and_ps(nearReal, v), _mm_andnot_ps(nearReal, vMulMinusJ)); // nearer to the real axis now
+    __m128 realSign = _mm_shuffle_ps(t, t, _MM_SHUFFLE(2, 2, 0, 0));     // real parts broadcast
+    realSign = _mm_and_ps(realSign, signMask);
+    t = _mm_xor_ps(t, realSign);                                         // negative real part: turn by 180 degrees
+    _mm_store_ps(pOut, t);
+  }
+}
+
+// ioVal += iA * iB
+inline void simd_multiply_add(f32 * ioVal, const f32 * ipA, const f32 * ipB, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; i += 4)
+  {
+    const __m128 prod = _mm_mul_ps(_mm_load_ps(ipA + i), _mm_load_ps(ipB + i));
+    _mm_store_ps(ioVal + i, _mm_add_ps(_mm_load_ps(ioVal + i), prod));
+  }
+}
+
+// exact 1 / x (not the approximation _mm_rcp_ps()), fallback for VOLK < 3.3 (see SimdVec::set_reciprocal_each_element())
+inline void simd_reciprocal(f32 * opOut, const f32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  const __m128 one = _mm_set1_ps(1.0f);
+  for (size_t i = 0; i < iN; i += 4)
+  {
+    _mm_store_ps(opOut + i, _mm_div_ps(one, _mm_load_ps(ipInp + i)));
+  }
+}
+
+#else // !__SSE2__: portable versions of the helpers above with the same results (apart from the rounding in simd_normalize())
+
+// perform abs() on f32 input vector (remove sign)
+inline void simd_abs(f32 * opOut, const f32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    opOut[i] = std::abs(ipInp[i]);
+  }
+}
+
+inline void simd_normalize(cf32 * opOut, const cf32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    // exact 1 / sqrt() here, the SSE version uses the approximation _mm_rsqrt_ps() (no element may be 0)
+    opOut[i] = ipInp[i] * (1.0f / std::sqrt(std::norm(ipInp[i])));
+  }
+}
+
+// see SSE version above
+inline void simd_fold_to_positive_real_axis(cf32 * opOut, const cf32 * ipInp, const size_t iN)
+{
+  assert(iN % 2 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    const f32 re = ipInp[i].real();
+    const f32 im = ipInp[i].imag();
+    // nearer to the real axis: keep, else turn by -90 degrees (v * (-j))
+    f32 tRe = re;
+    f32 tIm = im;
+    if (!(std::abs(re) >= std::abs(im)))
+    {
+      tRe = im;
+      tIm = -re;
+    }
+    // negative real part (sign bit set, as in the SSE version): turn by 180 degrees
+    if (std::signbit(tRe))
+    {
+      tRe = -tRe;
+      tIm = -tIm;
+    }
+    opOut[i] = cf32(tRe, tIm);
+  }
+}
+
+// ioVal += iA * iB
+inline void simd_multiply_add(f32 * ioVal, const f32 * ipA, const f32 * ipB, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    ioVal[i] += ipA[i] * ipB[i];
+  }
+}
+
+// exact 1 / x, fallback for VOLK < 3.3 (see SimdVec::set_reciprocal_each_element())
+inline void simd_reciprocal(f32 * opOut, const f32 * ipInp, const size_t iN)
+{
+  assert(iN % 4 == 0);
+
+  for (size_t i = 0; i < iN; ++i)
+  {
+    opOut[i] = 1.0f / ipInp[i];
+  }
+}
+
+#endif // __SSE2__
 
 template<typename T>
 class SimdVec
@@ -127,6 +264,16 @@ public:
   void fill_zeros()
   {
     std::fill_n(mVolkVec, cK, T());
+  }
+
+  void fill(const T & iValue)
+  {
+    std::fill_n(mVolkVec, cK, iValue);
+  }
+
+  void set_copy(const SimdVec<T> & iVec)
+  {
+    std::copy_n(iVec.mVolkVec, cK, mVolkVec);
   }
 
   const T &operator[](u32 iIdx) const
@@ -399,9 +546,152 @@ public:
 
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, cf32>, void>
-  inline store_to_real_and_imag_each_element(SimdVec<f32> & oRealVec, SimdVec<f32> & oImagVec)
+  inline store_to_real_and_imag_each_element(SimdVec<f32> & oRealVec, SimdVec<f32> & oImagVec) const
   {
     volk_32fc_deinterleave_32f_x2_a(oRealVec, oImagVec, mVolkVec, cK);
+  }
+
+  // ---- complex vectors
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_multiply_each_element(const SimdVec<cf32> & iVec1, const SimdVec<cf32> & iVec2)
+  {
+    volk_32fc_x2_multiply_32fc_a(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  // complex vector times real vector
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_multiply_real_each_element(const SimdVec<cf32> & iVec, const SimdVec<f32> & iRealVec)
+  {
+    volk_32fc_32f_multiply_32fc_a(mVolkVec, iVec, iRealVec, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline modify_multiply_scalar_each_element(const cf32 & iScalar)
+  {
+#if (VOLK_VERSION >= 30000)
+    volk_32fc_s32fc_multiply2_32fc_a(mVolkVec, mVolkVec, &iScalar, cK);
+#else
+    volk_32fc_s32fc_multiply_32fc_a(mVolkVec, mVolkVec, iScalar, cK);
+#endif
+  }
+
+  // exp(j * iPhaseVec) of each element
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_unit_phasor_each_element(const SimdVec<f32> & iPhaseVec)
+  {
+    assert(mVolkTempFloat1Vec != nullptr);
+    assert(mVolkTempFloat2Vec != nullptr);
+
+#if (VOLK_VERSION >= 30300)
+    volk_32f_sincos_32f_x2_a(mVolkTempFloat2Vec, mVolkTempFloat1Vec, iPhaseVec, cK);
+#else
+    volk_32f_cos_32f_a(mVolkTempFloat1Vec, iPhaseVec, cK);
+    volk_32f_sin_32f_a(mVolkTempFloat2Vec, iPhaseVec, cK);
+#endif
+    volk_32f_x2_interleave_32fc_a(mVolkVec, mVolkTempFloat1Vec, mVolkTempFloat2Vec, cK);
+  }
+
+  // turn each element by a multiple of 90 degrees into the sector -45..45 degrees around the positive real axis
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, void>
+  inline set_fold_to_positive_real_axis_each_element(const SimdVec<cf32> & iVec)
+  {
+    simd_fold_to_positive_real_axis(mVolkVec, iVec, cK);
+  }
+
+  // sum of this[i] * iVec[i] over the first iN elements
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, cf32>
+  inline get_dot_product(const SimdVec<cf32> & iVec, const u32 iN = cK) const
+  {
+    assert(iN <= cK);
+    cf32 result;
+    volk_32fc_x2_dot_prod_32fc_a(&result, mVolkVec, iVec, iN);
+    return result;
+  }
+
+  // sum of this[i] * conj(iVec[i]) over the first iN elements
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, cf32>, cf32>
+  inline get_conj_dot_product(const SimdVec<cf32> & iVec, const u32 iN = cK) const
+  {
+    assert(iN <= cK);
+    cf32 result;
+    volk_32fc_x2_conjugate_dot_prod_32fc_a(&result, mVolkVec, iVec, iN);
+    return result;
+  }
+
+  // ---- real vectors
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_abs_each_element(const SimdVec<f32> & iVec)
+  {
+    simd_abs(mVolkVec, iVec, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_max_each_element(const SimdVec<f32> & iVec1, const SimdVec<f32> & iVec2)
+  {
+    volk_32f_x2_max_32f_a(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_clamp_each_element(const f32 iMin, const f32 iMax)
+  {
+    volk_32f_s32f_x2_clamp_32f_a(mVolkVec, mVolkVec, iMin, iMax, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_exp_each_element(const SimdVec<f32> & iVec)
+  {
+    volk_32f_exp_32f_a(mVolkVec, iVec, cK);
+  }
+
+  // natural logarithm, all elements have to be > 0
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_ln_each_element(const SimdVec<f32> & iVec)
+  {
+    constexpr f32 cLn2 = 0.69314718055994530942f;
+    volk_32f_log2_32f_a(mVolkVec, iVec, cK);
+    volk_32f_s32f_multiply_32f_a(mVolkVec, mVolkVec, cLn2, cK);
+  }
+
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline set_reciprocal_each_element(const SimdVec<f32> & iVec)
+  {
+#if (VOLK_VERSION >= 30300)
+    volk_32f_reciprocal_32f_a(mVolkVec, iVec, cK); // exact with SSE/AVX/NEON, rcp14 approximation with AVX512 (relative error < 2^-14)
+#else
+    simd_reciprocal(mVolkVec, iVec, cK);
+#endif
+  }
+
+  // this += iVec1 * iVec2
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, void>
+  inline modify_add_product_each_element(const SimdVec<f32> & iVec1, const SimdVec<f32> & iVec2)
+  {
+    simd_multiply_add(mVolkVec, iVec1, iVec2, cK);
+  }
+
+  // sum of this[i] * iVec[i]
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, f32>, f32>
+  inline get_dot_product(const SimdVec<f32> & iVec) const
+  {
+    volk_32f_x2_dot_prod_32f_a(mVolkSingleFloat, mVolkVec, iVec, cK);
+    return mVolkSingleFloat[0];
   }
 
 private:
