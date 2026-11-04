@@ -184,6 +184,9 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     mCoherentDemod.demodulate(iV, iCurOfdmSymbIdx, iGuardCorrSum);
   }
   const bool useCoherent = mCoherentFrame && mCoherentDemod.is_ready();
+  // The differential soft bits are not needed with the coherent ones. They are only calculated in the last symbol of the
+  // frame to keep mMeanValue up to date for a fallback to the differential demodulation with the next frame.
+  const bool calcDifferential = !useCoherent || iCurOfdmSymbIdx == cL - 1;
 
   for (i16 nomCarrIdx = 0; nomCarrIdx < cK; ++nomCarrIdx)
   {
@@ -244,37 +247,45 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     f32 & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
     mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
 
-    f32 signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
-    if (signalPower <= 0.0f) signalPower = 0.1f;
+    // The statistics above are always needed (plots, MER, SNR and the fallback from the coherent demodulation)
+    f32 softBitReal = 0.0f;
+    f32 softBitImag = 0.0f;
 
-    // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
-    cf32 r1;
-    f32 w2;
-    if(softBitType == ESoftBitType::SOFTDEC3) //Optimal 1
+    if (calcDifferential)
     {
-      r1 = fftBin * PhaseReferenceAbs; // input level
-      w2 = -140 / mMeanValue;
-    }
-    else if(softBitType == ESoftBitType::SOFTDEC2) //Optimal 2
-    {
-      f32 w1 = PhaseReferenceAbs / meanSigmaSqPerBinRef;
-      w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
-      r1 = fftBin * w1;
-      w2 = -140 / mMeanValue;
-    }
-    else // Optimal 3 (also used for COHERENT until the channel estimate is ready, and to keep mMeanValue valid)
-    {
-      const f32 fftBinAbs = std::sqrt(fftBinPower);
-      f32 w1 = std::sqrt(fftBinAbs * PhaseReferenceAbs) * meanLevelPerBinRef;
-      w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
-      w1 /= meanSigmaSqPerBinRef * fftBinAbs;
-      r1 = fftBin * w1;
-      w2 = -100 / mMeanValue;
-    }
+      f32 signalPower = meanPowerPerBinRef - mMeanNullPowerWithoutTII[fftIdx];
+      if (signalPower <= 0.0f) signalPower = 0.1f;
 
-    // split the real and the imaginary part and scale it
-    f32 softBitReal = real(r1) * w2;
-    f32 softBitImag = imag(r1) * w2;
+      // Calculate a soft-bit weight. The viterbi decoder will limit the soft-bit values to +/-127.
+      cf32 r1;
+      f32 w2;
+      if(softBitType == ESoftBitType::SOFTDEC3) //Optimal 1
+      {
+        r1 = fftBin * PhaseReferenceAbs; // input level
+        w2 = -140 / mMeanValue;
+      }
+      else if(softBitType == ESoftBitType::SOFTDEC2) //Optimal 2
+      {
+        f32 w1 = PhaseReferenceAbs / meanSigmaSqPerBinRef;
+        w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
+        r1 = fftBin * w1;
+        w2 = -140 / mMeanValue;
+      }
+      else // Optimal 3 (also used for COHERENT until the channel estimate is ready)
+      {
+        const f32 fftBinAbs = std::sqrt(fftBinPower);
+        f32 w1 = std::sqrt(fftBinAbs * PhaseReferenceAbs) * meanLevelPerBinRef;
+        w1 /= (mMeanNullPowerWithoutTII[fftIdx] / signalPower) + 0.7f; // 1/SNR + 0.7
+        w1 /= meanSigmaSqPerBinRef * fftBinAbs;
+        r1 = fftBin * w1;
+        w2 = -100 / mMeanValue;
+      }
+
+      // split the real and the imaginary part and scale it
+      softBitReal = real(r1) * w2;
+      softBitImag = imag(r1) * w2;
+      sum += std::abs(r1);
+    }
 
     if (useCoherent)
     {
@@ -288,7 +299,6 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
 
     oBits[0  + nomCarrIdx] = (i16)softBitReal;
     oBits[cK + nomCarrIdx] = (i16)softBitImag;
-    sum += std::abs(r1);
 
     if (showScopeData)
     {
@@ -321,7 +331,10 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     }
   } // for (nomCarrIdx...
 
-  mMeanValue = sum / cK;
+  if (calcDifferential)
+  {
+    mMeanValue = sum / cK;
+  }
 
   if (iCurOfdmSymbIdx == 1)
   {
