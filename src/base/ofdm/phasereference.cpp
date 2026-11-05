@@ -204,46 +204,51 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
        "OFDM receivers - impact on coverage of inter-symbol interference and FFT window positioning"
     */
     assert(!mIndices.isEmpty());
-    //return mIndices[0];
     const i32 count = (i32)mIndices.size();
     if (count == 1)
       return mIndices[0];
     maxIndex = -1;
     f32 minCI = 1e38f;
     const i32 start = mIndices[0];
-    const i32 end = mIndices[count - 1];
-
-    for (i32 pos = start; pos <= end; pos++)
+    //const i32 end = mIndices[count - 1];
+    //for (i32 pos = start; pos <= end; pos++)
+    for (i32 j = 0; j < count; j++)
     {
-      f32 Ci = 0.0f; // the total power of the effective useful signal
-      f32 Ii = 0.0f; // the total effective interfering power
+      for (i32 l = 0; l < 2; l++)
+      {
+        //const i32 pos = mIndices[j];
+        const i32 pos = mIndices[j] - l * cTg;
+        if (pos < start) continue;
+        f32 Ci = 0.0f; // the total power of the effective useful signal
+        f32 Ii = 0.0f; // the total effective interfering power
 
-      for (i32 i = 0; i < count; i++)
-      {
-        f32 wi; // the weighting coefficient
-        const i32 k = mIndices[i];
-        const f32 absVal = mCorrPeakValues[k];
-        const f32 power = absVal * absVal;
-        if (k < pos) // before the guard interval
+        for (i32 i = 0; i < count; i++)
         {
-          wi = (f32)(cTu + k - pos) / cTu;
+          f32 wi; // the weighting coefficient
+          const i32 k = mIndices[i];
+          const f32 absVal = mCorrPeakValues[k];
+          const f32 power = absVal * absVal;
+          if (k < pos) // before the guard interval
+          {
+            wi = (f32)(cTu + k - pos) / cTu;
+          }
+          else if (k > pos + cTg) // after the guard interval
+          {
+            wi = (f32)(cTu + cTg + pos - k) / cTu;
+          }
+          else // in the guard interval
+          {
+            wi = 1.0f;
+          }
+          wi *= wi;
+          Ci += wi * power;
+          Ii += (1.0f - wi) * power;
         }
-        else if (k > pos + cTg) // after the guard interval
+        if (Ii / Ci < minCI)
         {
-          wi = (f32)(cTu + cTg + pos - k) / cTu;
+          minCI = Ii / Ci;
+          maxIndex = pos;
         }
-        else // in the guard interval
-        {
-          wi = 1.0f;
-        }
-        wi *= wi;
-        Ci += wi * power;
-        Ii += (1.0f - wi) * power;
-      }
-      if (Ii / Ci < minCI)
-      {
-        minCI = Ii / Ci;
-        maxIndex = pos;
       }
     }
     return maxIndex;
