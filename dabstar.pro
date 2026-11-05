@@ -1,7 +1,7 @@
 TARGET		= dabstar
 TEMPLATE	= app
-QT			+= widgets xml sql multimedia charts network
-CONFIG		+= console c++17
+QT		+= widgets xml sql multimedia charts network
+CONFIG		+= console c++20
 #CONFIG		+= debug
 
 # switch off to save compile/link time while development
@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.8.0\\\"
+DEFINES		+= PRJ_VERS=\\\"5.8.2\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -576,14 +576,16 @@ fdk-aac {
 volk	{
     DEFINES		+= HAVE_SSE_OR_AVX
     HEADERS		+= src/base/support/simd_extensions.h \
-               src/base/ofdm/ofdm_decoder_simd.h
-    SOURCES		+= src/base/ofdm/ofdm_decoder_simd.cpp
+			src/base/ofdm/ofdm_decoder_simd.h \
+			src/base/ofdm/coherent_demod_simd.h
+    SOURCES		+= src/base/ofdm/ofdm_decoder_simd.cpp \
+			src/base/ofdm/coherent_demod_simd.cpp
     LIBS		+= -lvolk.dll
 }else	{
     HEADERS		+= src/base/ofdm/ofdm_decoder.h \
-               src/base/ofdm/coherent_demod.h
+			src/base/ofdm/coherent_demod.h
     SOURCES		+= src/base/ofdm/ofdm_decoder.cpp \
-               src/base/ofdm/coherent_demod.cpp
+			src/base/ofdm/coherent_demod.cpp
 }
 
 liquid	{
