@@ -321,7 +321,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
       case ECarrierPlotType::PHASE_ERROR:     mCarrVector[realCarrRelIdx] = conv_rad_to_deg(phaseErr); break;
       case ECarrierPlotType::PRS_PHASE_UNWRAP:
       case ECarrierPlotType::PRS_PHASE:       mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[fftIdx])); break;
-      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(fftBin)); break;
+      case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(useCoherent ? mCoherentDemod.get_constellation_carr_normed(fftIdx) : fftBin)); break;
       case ECarrierPlotType::REL_POWER:       mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanPowerOvrAll); break;
       case ECarrierPlotType::SNR:             mCarrVector[realCarrRelIdx] = 10.0f * std::log10(meanPowerPerBinRef / mMeanNullPowerWithoutTII[fftIdx]); break;
       case ECarrierPlotType::NULL_TII_LIN:

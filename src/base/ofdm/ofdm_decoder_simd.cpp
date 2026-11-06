@@ -451,7 +451,7 @@ void OfdmDecoder::_display_iq_and_carr_vectors(const bool iUseCoherent)
     case ECarrierPlotType::PHASE_ERROR:     mCarrVector[realCarrRelIdx] = conv_rad_to_deg(mSimdVecPhaseErr[nomCarrIdx]); break;
     case ECarrierPlotType::PRS_PHASE_UNWRAP:
     case ECarrierPlotType::PRS_PHASE:       mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(mPRSBuffer[nomCarrIdx])); break;
-    case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(mSimdVecFftBinPhaseCorr[nomCarrIdx])); break;
+    case ECarrierPlotType::FOUR_QUAD_PHASE: mCarrVector[realCarrRelIdx] = conv_rad_to_deg(std::arg(iUseCoherent ? mCoherentDemod.get_constellation_carr_normed(nomCarrIdx) : mSimdVecFftBinPhaseCorr[nomCarrIdx])); break;
     case ECarrierPlotType::REL_POWER:       mCarrVector[realCarrRelIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mMeanPowerOvrAll); break;
     case ECarrierPlotType::SNR:             mCarrVector[realCarrRelIdx] = 10.0f * std::log10(mSimdVecMeanPower[nomCarrIdx] / mSimdVecMeanNullPowerWithoutTII[nomCarrIdx]); break;
     case ECarrierPlotType::NULL_TII_LIN:
