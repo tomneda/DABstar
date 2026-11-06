@@ -20,7 +20,7 @@ project(DABstar VERSION 5.8.1)
 ##############################
 
 set(objectName "dabstar")
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(USE_SANITIZERS "Enable address/undefined sanitizers in Debug builds" OFF)
