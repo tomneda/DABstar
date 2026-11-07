@@ -130,7 +130,6 @@ void DabRadio::_initialize_traffic_lights() const
   // ui->tlRsCrcError  | Mp4Processor (signal_show_rs)     | 1000 - 4000 ms       | ~4080 - 6000 ms (<=24kbps) | 6000 ms
   // ui->tlFrameError  | Mp4Processor / Mp2Processor       | 3000 ms DAB+ (25 sf) | ~3000 - 4500 ms (drop/jit) | 6000 ms
   //                   |                                   | 600 - 1200 ms MP2    |                            |
-  // ui->tlRsError     | Mp4Processor (signal_show_rs_err) | 3120 ms (26 supfr)   | ~4000 - 5500 ms (drop/jit) | 6000 ms
   // ui->tlAacError    | Mp4Processor (signal_show_aac)    | 520 - 1560 ms (26 AU)| ~3000 - 5000 ms (CRC errs) | 6000 ms
   // ui->tlCoherent    | OfdmDecoder (signal_show_lcd_data)| ~500 - 600 ms        | ~600 - 700 ms (drop/jit)   | 3000 ms
   // -----------------------------------------------------------------------------------------------------------------
@@ -138,7 +137,6 @@ void DabRadio::_initialize_traffic_lights() const
   ui->tlAudioBuffer->set_timeout(3000, TrafficLight::EStage::Off);
   ui->tlRsCrcError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlFrameError->set_timeout(6000, TrafficLight::EStage::Off);
-  ui->tlRsError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlAacError->set_timeout(6000, TrafficLight::EStage::Off);
   ui->tlCoherent->set_timeout(3000, TrafficLight::EStage::Off);
 }
@@ -404,7 +402,6 @@ void DabRadio::_cleanup_ui() const
   ui->tlAudioBuffer->set_stage(TrafficLight::EStage::Red);
   ui->tlRsCrcError->set_stage(TrafficLight::EStage::Red);
   ui->tlFrameError->set_stage(TrafficLight::EStage::Red);
-  ui->tlRsError->set_stage(TrafficLight::EStage::Red);
   ui->tlAacError->set_stage(TrafficLight::EStage::Red);
   ui->tlCoherent->set_stage(TrafficLight::EStage::RedYellow);
 
@@ -859,16 +856,6 @@ void DabRadio::slot_show_frame_errors(i32 iFrameErrors)
     return;
   }
   ui->tlFrameError->set_stage(_error_to_traffic_light_stage(iFrameErrors));
-}
-
-// called from the MP4 decoder
-void DabRadio::slot_show_rs_errors(i32 iRsErrors)
-{
-  if (!mIsChannelRunning.load())
-  {    // should not happen
-    return;
-  }
-  ui->tlRsError->set_stage(_error_to_traffic_light_stage(iRsErrors));
 }
 
 // called from the aac decoder

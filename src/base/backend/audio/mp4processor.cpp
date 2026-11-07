@@ -63,7 +63,6 @@ Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> *
   , mRsDecoder(8, 0435, 0, 1, 10)
 {
   connect(this, &Mp4Processor::signal_show_frame_errors, iRI, &DabRadio::slot_show_frame_errors);
-  connect(this, &Mp4Processor::signal_show_rs_errors, iRI, &DabRadio::slot_show_rs_errors);
   connect(this, &Mp4Processor::signal_show_aac_errors, iRI, &DabRadio::slot_show_aac_errors);
   connect(this, &Mp4Processor::signal_is_stereo, iRI, &DabRadio::slot_set_stereo);
   if (iRI != nullptr && iRI->get_audio_pipeline() != nullptr)

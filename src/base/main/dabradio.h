@@ -393,7 +393,6 @@ public slots:
 
   // Error and Status Display
   void slot_show_frame_errors(i32 iFrameErrors);
-  void slot_show_rs_errors(i32 iRsErrors);
   void slot_show_aac_errors(i32 iAacErrors);
   void slot_show_fic_status(i32 iSuccessPercent, f32 iBER) const;
   void slot_show_rs_corrections(i32 iRsError, i32 iCrcError);
