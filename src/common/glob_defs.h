@@ -150,24 +150,61 @@ inline cf32 cmplx_from_phase(const f32 iPhase)
   //return std::exp(cf32(0.0f, iPhase));
 }
 
+// Assumes x > 0 and that it's not a subnormal.
+// Results for 0 or negative x won't be -Infinity or NaN
+// fast_log abs(rel) : avgError = 2.85911e-06(3.32628e-08), MSE = 4.67298e-06(5.31012e-08), maxError = 1.52588e-05(1.7611e-07)
+// This works about 2.3 times faster than std::log() on my machine (i7-6700K)
+inline f32 fast_log(f32 x)
+{
+  constexpr f32 s_log_C0 = -19.645704f;
+  constexpr f32 s_log_C1 = 0.767002f;
+  constexpr f32 s_log_C2 = 0.3717479f;
+  constexpr f32 s_log_C3 = 5.2653985f;
+  constexpr f32 s_log_C4 = -(1.0f + s_log_C0) * (1.0f + s_log_C1) / ((1.0f + s_log_C2) * (1.0f + s_log_C3)); //ensures that log(1) == 0
+  constexpr f32 s_log_2 = 0.6931472f;
+  unsigned int ux = std::bit_cast<unsigned int>(x);
+  const int e = static_cast<int>(ux - 0x3f800000) >> 23; //e = exponent part can be negative
+  ux |= 0x3f800000;
+  ux &= 0x3fffffff; // 1 <= x < 2  after replacing the exponent field
+  x = std::bit_cast<f32>(ux);
+  const f32 a = (x + s_log_C0) * (x + s_log_C1);
+  const f32 b = (x + s_log_C2) * (x + s_log_C3);
+  const f32 c = static_cast<f32>(e) + s_log_C4;
+  const f32 d = a / b;
+  const f32 result = (c + d) * s_log_2;
+  return result;
+}
+
+inline f32 fast_log10(f32 x)
+{
+  constexpr f32 cLog10E = 0.4342944819f;  // == 1.0f / std::log(10.0f)
+  return fast_log(x) * cLog10E;
+}
+
 inline f32 log10_times_10(const f32 iVal)
 {
-  return 10.0f * std::log10(iVal + 1.0e-20f);
+  constexpr f32 cLog10E = 10.0f * 0.4342944819f;
+  return cLog10E * fast_log(iVal + 1.0e-20f);
+  // return 10.0f * std::log10(iVal + 1.0e-20f);
 }
 
 inline f32 log10_times_20(const f32 iVal)
 {
-  return 20.0f * std::log10(iVal + 1.0e-20f);
+  constexpr f32 cLog20E = 20.0f * 0.4342944819f;
+  return cLog20E * fast_log(iVal + 1.0e-20f);
+  // return 20.0f * std::log10(iVal + 1.0e-20f);
 }
 
 inline cf32 abs_log10_with_offset_and_phase(const cf32 & iVal)
 {
-  return std::log10(std::abs(iVal) + 1.0f) * std::exp(cf32(0.0f, std::arg(iVal)));
+  return fast_log10(std::abs(iVal) + 1.0f) * std::exp(cf32(0.0f, std::arg(iVal)));
+  // return std::log10(std::abs(iVal) + 1.0f) * std::exp(cf32(0.0f, std::arg(iVal)));
 }
 
 template<typename T> inline f32 abs_log10_with_offset(const T iVal)
 {
-  return std::log10(std::abs(iVal) + 1);
+  return fast_log10(std::abs(iVal) + 1);
+  // return std::log10(std::abs(iVal) + 1);
 }
 
 inline f32 turn_phase_to_first_quadrant(f32 iPhase)

@@ -87,30 +87,6 @@ f32 CoherentDemod::fast_exp(f32 x)
     return std::bit_cast<float>(static_cast<uint32_t>(x));
 }
 
-// assumes x > 0 and that it's not a subnormal.
-// Results for 0 or negative x won't be -Infinity or NaN
-// fast_log abs(rel) : avgError = 2.85911e-06(3.32628e-08), MSE = 4.67298e-06(5.31012e-08), maxError = 1.52588e-05(1.7611e-07)
-f32 CoherentDemod::fast_log(f32 x)
-{
-  const f32 s_log_C0 = -19.645704f;
-  const f32 s_log_C1 = 0.767002f;
-  const f32 s_log_C2 = 0.3717479f;
-  const f32 s_log_C3 = 5.2653985f;
-  const f32 s_log_C4 = -(1.0f + s_log_C0) * (1.0f + s_log_C1) / ((1.0f + s_log_C2) * (1.0f + s_log_C3)); //ensures that log(1) == 0
-  const f32 s_log_2 = 0.6931472f;
-  unsigned int ux = std::bit_cast<unsigned int>(x);
-  int e = static_cast<int>(ux - 0x3f800000) >> 23; //e = exponent part can be negative
-  ux |= 0x3f800000;
-  ux &= 0x3fffffff; // 1 <= x < 2  after replacing the exponent field
-  x = std::bit_cast<f32>(ux);
-  const f32 a = (x + s_log_C0) * (x + s_log_C1);
-  const f32 b = (x + s_log_C2) * (x + s_log_C3);
-  const f32 c = f32(e) + s_log_C4;
-  const f32 d = a / b;
-  const f32 result = (c + d) * s_log_2;
-  return result;
-}
-
 void CoherentDemod::_ifft()
 {
   fftwf_execute(mFftPlanBwd);

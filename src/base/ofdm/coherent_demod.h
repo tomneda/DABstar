@@ -113,5 +113,4 @@ private:
   [[nodiscard]] f32 _timing_rotation(); // Phase per carrier between the new and the averaged estimate
   void _ifft(); // normalized backward FFT from mFftInBuffer to mFftOutBuffer
   f32 fast_exp(f32 x);
-  f32 fast_log(f32 x);
 };
