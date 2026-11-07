@@ -7,6 +7,7 @@
     * [Main window](#main-window)
       * [Traffic Light indicators in the main window](#traffic-light-indicators-in-the-main-window)
       * [SNR and MER bar graph in the main window](#snr-and-mer-bar-graph-in-the-main-window)
+      * [File player in the main window](#file-player-in-the-main-window)
     * [Ensemble List window (device mode)](#ensemble-list-window-device-mode)
     * [Ensemble List window (file mode)](#ensemble-list-window-file-mode)
     * [Configuration window](#configuration-window)
@@ -22,6 +23,7 @@
     * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
   * [Introduction and history](#introduction-and-history)
+  * [Contributions of old-dab](#contributions-of-old-dab)
   * [Ensemble List](#ensemble-list)
     * [Two operation modes](#two-operation-modes)
     * [Controls](#controls)
@@ -33,8 +35,9 @@
     * [Sorting](#sorting)
     * [Channel Buttons](#channel-buttons)
     * [Target Button](#target-button)
-    * [ANS (Automatic Next Service)](#ans-automatic-next-service)
+    * [File end action (Stop / Loop / ANS)](#file-end-action-stop--loop--ans)
     * [Some help for scanning](#some-help-for-scanning)
+  * [Coherent demodulation](#coherent-demodulation)
   * [Configuration and Data Files](#configuration-and-data-files)
   * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
     * [Installing VOLK](#installing-volk)
@@ -74,7 +77,8 @@ The status bar below the MOT picture shows:
 | SBR       | Whether Spectral Band Replication mode is active                                   |
 | MOT       | A Media Object Transfer is currently happening                                     |
 | EPG       | Whether Electronic Program Guide data are available (needs further implementation) |
-| ANN        | Whether an announcement is currently being broadcast                               |
+| ANN       | Whether an announcement is currently being broadcast                               |
+| EWS       | The ensemble participates in the Emergency Warning System (ASA in Germany)         |
 
 #### Traffic Light indicators in the main window
 
@@ -85,15 +89,32 @@ The traffic light indicators provide real-time diagnostic information on signal 
 | **FIC**   | FIC/FIB (Fast Information Channel/Block) quality indicator | **Green**: ≥ 95% FIB CRC success<br>**Yellow-Green**: ≥ 85% FIB CRC success<br>**Yellow**: ≥ 65% FIB CRC success<br>**Red-Yellow**: ≥ 45% FIB CRC success<br>**Red**: < 45% FIB CRC success *(if not green, reception is very unlikely)* |
 | **FRM**   | Frame / superframe synchronization and Fire Code header quality indicator | **Green**: 0 frame / superframe errors<br>**Yellow-Green**: 1 error<br>**Yellow**: 2–3 errors<br>**Red-Yellow**: 4–5 errors<br>**Red**: > 5 errors |
 | **AAC**   | AAC core decoding syntax / bitstream quality indicator *(DAB+ only)* | **Green**: 0 AAC decoding errors<br>**Yellow-Green**: 1 error<br>**Yellow**: 2–3 errors<br>**Red-Yellow**: 4–5 errors<br>**Red**: > 5 errors |
-| **RSE**   | Reed-Solomon uncorrectable error indicator *(DAB+ only)* | **Green**: 0 uncorrectable RS errors<br>**Yellow-Green**: 1 error<br>**Yellow**: 2–3 errors<br>**Red-Yellow**: 4–5 errors<br>**Red**: > 5 errors |
 | **RSC**   | Reed-Solomon / CRC error indicator *(DAB+ only)* | **Green**: Error-free reception (no RS or CRC errors)<br>**Yellow**: Errors detected but successfully repaired by Reed-Solomon<br>**Red**: Uncorrectable errors (audible audio drops will occur) |
 | **ABS**   | Audio buffer state indicator (Audio Bit Stream) | **Green**: Buffer fill level normal<br>**Red**: Buffer fill level critical (too low or too high)<br>**Yellow-Green** / **Red-Yellow**: Audio rate adaptation active (~1% audio speed adjustment) |
+| **COH**   | Coherent demodulation state indicator *(only active if "Coherent" is selected in the "Demodulation" setting)* | **Green**: Channel estimate ready, coherent demodulation in use<br>**Red-Yellow**: Channel estimate not ready yet, differential demodulation ("Differential, Optimal 3") in use<br>**Off**: Differential demodulation selected |
                          
 #### SNR and MER bar graph in the main window
 
 With the toggle button **A/Q** you can switch between audio level and SNR/MER bar graph.
 
 ![](res/for_readme/mainwidget_snr_mer.png)
+
+#### File player in the main window
+
+![](res/for_readme/mainwidget_fileplayer.png)
+
+When a recorded IQ sample file (RAW, WAV/SDR or XML) is played, a file player bar is shown in the main window
+(it is hidden in device mode). It shows:
+
+| Element            | Meaning                                                                                       |
+|--------------------|-----------------------------------------------------------------------------------------------|
+| File name          | The full path of the played file                                            |
+| Play/Pause button  | Pauses or resumes the playback of the file                                                    |
+| Time               | Elapsed time / total time of the file                                                         |
+| Position slider    | Shows the current position within the file. Grab the handle (or click on the groove) to jump to another position |
+| File end action    | What to do when the file end is reached: **Stop**, **Loop** or **ANS** (see [File end action](#file-end-action-stop--loop--ans)) |
+
+This replaces the former separate file reader windows.
 
 ### Ensemble List window (device mode)
 
@@ -132,6 +153,8 @@ Shows the spectrum scope, IQ constellation, impulse response/correlation and car
 ### Journaline window
 
 ![](res/for_readme/journaline.png)
+
+Journaline is supported as a separate data service and also when it is transmitted within the X-PAD of an audio service (signaled via FIG 0/13).
 
 ### TII-list window which shows received transmitter details
 
@@ -197,6 +220,31 @@ They are intended for development, backups and tests and will not always work in
 
 Recommended is to checkout a [Tag](https://github.com/tomneda/DABstar/tags) of a released version, these are better tested.
 
+
+## Contributions of old-dab
+
+DABstar would not be what it is today without [old-dab](https://github.com/old-dab).
+Since autumn 2024 old-dab has been working on DABstar continuously: first his changes were taken over by me,
+and since December 2024 he contributes directly with well over 100 commits of his own.
+He also maintains the [Windows releases](https://github.com/old-dab/DABstar/releases) and an improved
+[RTL-SDR driver](https://github.com/old-dab/rtlsdr).
+
+His main contributions are:
+
+| Area                                  | Contributions                                                                                                                                                                                                                                                         |
+|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Synchronization and OFDM              | Frequency correction proposal, faster and more accurate coarse frequency synchronization, exact fine frequency correction, phase shift calculation from the sampling rate deviation, positioning of the FFT window with "Maximum C/I", avoiding 1.5 FFTs per DAB frame, optimized OFDM decoder and phase reference |
+| Soft bits and error correction        | Faster Viterbi decoder and its SSE/AVX optimization, optimized soft bit generation ("Optimal 2" and "Optimal 3"), faster CRC check and additional error correction in the Fire Code, better SNR calculation                                                         |
+| Performance                           | Use of VOLK in the sample reader, the frequency correction and the new phase shift, fast approximations for `log()`, `exp()` and `cmplx_from_phase()`, many math optimizations and CPU load reductions                                                              |
+| Scopes and analysis                   | Channel Impulse Response (CIR) view of a whole DAB frame, display of the decoded PRS phase, standard deviation of the frequency correction, TII level and phase also for transmitters not in the database, TII accumulation time independent of the signal level      |
+| Journaline and PAD                    | Journaline code (fetched from Qt-DAB), making DLF Journaline work again, internet links in Journaline, PAD decoder bugfixes                                                                                                                                          |
+| SDR devices                           | Refactored Lime, Pluto and Soapy handlers (ppm, gain and bandwidth settings), SDRplay adaptions (driver 3.15, RSPduo antenna switch), RTL-SDR improvements (optional library functions, dongle serial number), RTL-TCP fixes and XML dump                            |
+| File input and output                 | RF64 files and the sample format "float", big XML files, loop switch and position slider for files, ETI dump reactivated, display of the sample format of all file devices                                                                                         |
+| Portability                           | Windows adaptions and the `dabstar.pro` project file, replacing `dlfcn` with `QLibrary`, fixes for older Qt versions and for the Clang compiler, removal of many compiler warnings                                                                                   |
+
+Besides that, there were countless bug fixes, tests, ideas and discussions.
+
+**Many, many thanks to old-dab for his great, tireless and very valuable work!** :+1:
 
 ## Ensemble List
 
@@ -304,10 +352,17 @@ Change the sorting of the list if you only want mainly to step within the favori
 If you "lose" the current service selection you can click this button ![](./res/for_readme/target-button.png).
 The current service will be shown in the list center (if possible).
 
-### ANS (Automatic Next Service)
+### File end action (Stop / Loop / ANS)
 
-This is only active in file mode. If active and the file runs to its end, the next service will be played automatically before the file loops again.
-This way you can listen to each service in a continuous stream.
+This is only active in file mode. With the combo box in the file player bar of the main window you select what happens when the file runs to its end:
+
+| Action | Description                                                                                                   |
+|--------|---------------------------------------------------------------------------------------------------------------|
+| Stop   | The playback is paused at the beginning of the file. Press the play button to replay it.                      |
+| Loop   | The file is replayed from its beginning, the current service is kept (default).                               |
+| ANS    | Automatic Next Service: the file is replayed from its beginning and the next service in the service list is selected. |
+
+With ANS you can listen to each service in a continuous stream.
 Additionally, all slideshow pictures of the services within the files can be captured.
 
 
@@ -323,6 +378,22 @@ Also, the clock on the top of the service list can be used as indicator. Its tim
 can be received.
 
 
+## Coherent demodulation
+
+Besides the classical differential demodulation (DQPSK, the previous OFDM symbol is the phase reference), DABstar offers a **coherent demodulation**.
+Select it in the configuration window with the "Demodulation" setting:
+
+| Setting                        | Description                                                                                                                       |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| Coherent                       | Uses a channel estimate as phase reference instead of the previous symbol. Needs less SNR for weak, stationary signals.           |
+| Differential, Optimal 1 to 3   | Differential demodulation with different soft bit generations (default is "Differential, Optimal 3")                              |
+
+With coherent demodulation, the channel estimate of the phase reference symbol is averaged over several frames, and the phase and timing drift is tracked within the frame.
+Until the channel estimate is ready, "Differential, Optimal 3" is used. The **COH** traffic light in the main window shows the current state.
+
+The coherent demodulation was taken from [welle.io](https://github.com/AlbrechtL/welle.io).
+Many thanks to the welle.io developers for this great work!
+
 ## Configuration and Data Files
 
 DABstar stores its configuration and databases in the `~/.config/dabstar` directory:
@@ -330,10 +401,13 @@ DABstar stores its configuration and databases in the `~/.config/dabstar` direct
 - `settings03.ini`: Application configuration, window layouts, SDR settings, coordinates, and color schemes.
 - `servicelist04.db`: SQLite database containing scanned services, multiplex info, and favorites.
 - `ensemblelist04.db`: SQLite database containing channel and file scan records for the Ensemble List.
+- `fftwf_wisdom.txt`: FFTW wisdom file. It stores the results of the FFT planning (FFTW_MEASURE), so the (slow) measuring is done only once.
+  Therefore, the very first start of DABstar (or the first start after an FFTW update) takes a bit longer.
 
 ## Installing on Linux from current mainline
 
-This is what is needed to install DABstar on Ubuntu (tested on Ubuntu 24.04):
+This is what is needed to install DABstar on Ubuntu (tested on Ubuntu 24.04).
+A C++20 capable compiler is required (e.g. GCC ≥ 11, the default GCC 13 of Ubuntu 24.04 is fine).
 
 ```bash
 sudo apt-get update
@@ -432,6 +506,12 @@ cmake .. -DRTLSDR=ON -DVITERBI_AVX2=ON -DSSE_OR_AVX=ON
 To speed up compilation you can provide `-j<n>` as argument with `<n>` number of threads after the `make` command. E.G. `make -j4`.
 Do not choose a too high number, as the system can run out of memory!
 
+Optionally, you can run the unit tests in the build folder with
+```bash
+ctest
+```
+(disable building them with `-DBUILD_TESTING=OFF`).
+
 Finally, in the build folder you can find the program file which you can start with
 ```bash
 ./dabstar
@@ -496,11 +576,11 @@ sudo ldconfig
 
 ## Licences
 
-Rights of Qt-DAB, AbracaDABra, Qt, FFTW, VOLK, FDK-AAC, libfaad, and libsndfile gratefully acknowledged.
+Rights of Qt-DAB, AbracaDABra, welle.io, Qt, FFTW, VOLK, FDK-AAC, libfaad, and libsndfile gratefully acknowledged.
 
 Rights of developers of RTLSDR library, SDRplay libraries, AIRspy library and others gratefully acknowledged.
 
-Rights of other contributors gratefully acknowledged.
+Rights of old-dab and other contributors gratefully acknowledged.
 
 As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The work of the icon authors is gratefully acknowledged:
 
