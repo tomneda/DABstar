@@ -19,9 +19,11 @@
 #pragma once
 
 #include "glob_data_types.h"
+#include <bit>
 #include <complex>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <iomanip>
 
 
@@ -148,6 +150,27 @@ inline cf32 cmplx_from_phase(const f32 iPhase)
 {
   return {std::cos(iPhase), std::sin(iPhase)};
   //return std::exp(cf32(0.0f, iPhase));
+}
+
+inline f32 fast_exp(f32 x)
+{
+  constexpr f32 a = (1 << 23) / 0.69314718f;
+  constexpr f32 b = (1 << 23) * (127 - 0.043677448f);
+  x = a * x + b;
+
+  // Remove these lines if bounds checking is not needed
+  constexpr f32 c = (1 << 23);
+  constexpr f32 d = (1 << 23) * 255;
+  if (x < c)
+  {
+    x = 0.0f;
+  }
+  if (x > d)
+  {
+    x = d;
+  }
+
+  return std::bit_cast<f32>(static_cast<std::uint32_t>(x));
 }
 
 // Assumes x > 0 and that it's not a subnormal.

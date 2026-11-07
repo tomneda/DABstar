@@ -70,23 +70,6 @@ CoherentDemod::~CoherentDemod()
   fftwf_destroy_plan(mFftPlanFwd);
 }
 
-f32 CoherentDemod::fast_exp(f32 x)
-{
-    constexpr f32 a = (1 << 23) / 0.69314718f;
-    constexpr f32 b = (1 << 23) * (127 - 0.043677448f);
-    x = a * x + b;
-
-    // Remove these lines if bounds checking is not needed
-    constexpr f32 c = (1 << 23);
-    constexpr f32 d = (1 << 23) * 255;
-    if (x < c)
-        x = 0.0f;
-    if (x > d)
-        x = d;
-
-    return std::bit_cast<float>(static_cast<uint32_t>(x));
-}
-
 void CoherentDemod::_ifft()
 {
   fftwf_execute(mFftPlanBwd);

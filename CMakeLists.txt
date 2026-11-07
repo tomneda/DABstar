@@ -285,6 +285,13 @@ target_link_libraries(${objectName}
 
 install(TARGETS ${objectName} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
+include(CTest)
+if (BUILD_TESTING)
+  add_executable(fast_math_test tests/fast_log_test.cpp)
+  target_include_directories(fast_math_test PRIVATE ${CMAKE_SOURCE_DIR})
+  add_test(NAME fast_math_test COMMAND fast_math_test)
+endif ()
+
 configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
