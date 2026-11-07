@@ -324,7 +324,7 @@ folder `~/.config/dabstar`.
 ![](./res/for_readme/service-selector.png)
 
 The current selected service is shown with a light blue background and bold yellow text.
-With the dark blue colored entries, you will find other services from the same channel (here 12D).
+With the dark blue colored entries, you will find other services from the same channel.
 When you click on such services the switching time is quite short.
 
 The services with a gray background are from another channel.
