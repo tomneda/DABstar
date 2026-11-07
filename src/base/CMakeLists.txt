@@ -363,7 +363,6 @@ target_include_directories(${baseLibName}
         backend/data/epg
         support
         support/tii_library
-        support/buttons
         support/viterbi_spiral
         audio
         scopes

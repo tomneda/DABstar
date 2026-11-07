@@ -19,7 +19,7 @@ QMAKE_CFLAGS	+= -ffast-math
 QMAKE_CXXFLAGS	+= -Wall -Werror=return-type -ffast-math -fsingle-precision-constant
 QMAKE_LFLAGS	+= -ffast-math
 
-QMAKE_CXXFLAGS	+= -Wvla
+QMAKE_CXXFLAGS	+= -Wvla -Werror=vla
 
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]
 RC_ICONS	=  res/logo/dabstar.ico
@@ -27,7 +27,7 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.8.2\\\"
+DEFINES		+= PRJ_VERS=\\\"5.9.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
@@ -112,7 +112,6 @@ INCLUDEPATH += \
     src/base/service_list \
     src/base/spectrum_viewer \
     src/base/support \
-    src/base/support/buttons \
     src/base/support/tii_library \
     src/base/support/viterbi_spiral \
     src/base/update
