@@ -23,7 +23,6 @@
     * [Some of the device windows](#some-of-the-device-windows)
   * [Releases](#releases)
   * [Introduction and history](#introduction-and-history)
-  * [Contributions of old-dab](#contributions-of-old-dab)
   * [Ensemble List](#ensemble-list)
     * [Two operation modes](#two-operation-modes)
     * [Controls](#controls)
@@ -220,31 +219,8 @@ They are intended for development, backups and tests and will not always work in
 
 Recommended is to checkout a [Tag](https://github.com/tomneda/DABstar/tags) of a released version, these are better tested.
 
+Since autumn 2024 [old-dab](https://github.com/old-dab) contributes significantly to DABstar, especially to synchronization, decoding and performance – many thanks for that!
 
-## Contributions of old-dab
-
-DABstar would not be what it is today without [old-dab](https://github.com/old-dab).
-Since autumn 2024 old-dab has been working on DABstar continuously: first his changes were taken over by me,
-and since December 2024 he contributes directly with well over 100 commits of his own.
-He also maintains the [Windows releases](https://github.com/old-dab/DABstar/releases) and an improved
-[RTL-SDR driver](https://github.com/old-dab/rtlsdr).
-
-His main contributions are:
-
-| Area                                  | Contributions                                                                                                                                                                                                                                                         |
-|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Synchronization and OFDM              | Frequency correction proposal, faster and more accurate coarse frequency synchronization, exact fine frequency correction, phase shift calculation from the sampling rate deviation, positioning of the FFT window with "Maximum C/I", avoiding 1.5 FFTs per DAB frame, optimized OFDM decoder and phase reference |
-| Soft bits and error correction        | Faster Viterbi decoder and its SSE/AVX optimization, optimized soft bit generation ("Optimal 2" and "Optimal 3"), faster CRC check and additional error correction in the Fire Code, better SNR calculation                                                         |
-| Performance                           | Use of VOLK in the sample reader, the frequency correction and the new phase shift, fast approximations for `log()`, `exp()` and `cmplx_from_phase()`, many math optimizations and CPU load reductions                                                              |
-| Scopes and analysis                   | Channel Impulse Response (CIR) view of a whole DAB frame, display of the decoded PRS phase, standard deviation of the frequency correction, TII level and phase also for transmitters not in the database, TII accumulation time independent of the signal level      |
-| Journaline and PAD                    | Journaline code (fetched from Qt-DAB), making DLF Journaline work again, internet links in Journaline, PAD decoder bugfixes                                                                                                                                          |
-| SDR devices                           | Refactored Lime, Pluto and Soapy handlers (ppm, gain and bandwidth settings), SDRplay adaptions (driver 3.15, RSPduo antenna switch), RTL-SDR improvements (optional library functions, dongle serial number), RTL-TCP fixes and XML dump                            |
-| File input and output                 | RF64 files and the sample format "float", big XML files, loop switch and position slider for files, ETI dump reactivated, display of the sample format of all file devices                                                                                         |
-| Portability                           | Windows adaptions and the `dabstar.pro` project file, replacing `dlfcn` with `QLibrary`, fixes for older Qt versions and for the Clang compiler, removal of many compiler warnings                                                                                   |
-
-Besides that, there were countless bug fixes, tests, ideas and discussions.
-
-**Many, many thanks to old-dab for his great, tireless and very valuable work!** :+1:
 
 ## Ensemble List
 
