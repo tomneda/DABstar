@@ -17,6 +17,7 @@
 #include <QTableView>
 #include <QPainter>
 #include <QHeaderView>
+#include <QScrollBar>
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogFilePlayerDbHandler, "FilePlayerDbHandler", QtDebugMsg)
@@ -275,8 +276,12 @@ i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, co
       emit signal_selection_changed(mFIdOrChLast);
     }
 
+    // scrollTo() would also scroll horizontally to the FId/channel column, keep the horizontal position as it is
+    QScrollBar * const hScrollBar = mpTableView->horizontalScrollBar();
+    const i32 hScrollPos = hScrollBar->value();
     mpTableView->scrollTo(mProxyModel.index(rowIdxFound, _get_fid_or_ch_col_idx()),
                           (iCenterContent ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible));
+    hScrollBar->setValue(hScrollPos);
     mpTableView->update();
   }
 
