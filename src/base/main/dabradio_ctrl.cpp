@@ -70,9 +70,10 @@ void DabRadio::_clean_up_dab_processor_and_input_device()
       mpDeviceWindowWatcher->attach(nullptr);
     }
     mpInputDevice.reset();
-    _show_file_player_bar(false);
     if (!mIsFileMode)
     {
+      // In file mode, the bar is kept visible as usually a new file reader follows directly (avoids a flicker and window height jumps)
+      _show_file_player_bar(false);
       // Give the library time to unload (a fast reload can fail afterwards)
       usleep(250'000);
     }
@@ -90,6 +91,7 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
 
   if (mpInputDevice == nullptr) // something went wrong with the device creation
   {
+    _show_file_player_bar(false);
     if (!mIsScanning)
     {
       _write_warning_message(mpDeviceSelector->get_message());

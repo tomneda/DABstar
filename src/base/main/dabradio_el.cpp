@@ -354,6 +354,7 @@ void DabRadio::_slot_service_list_src_change(int iIdClicked)
     disconnect(ui->cmbDeviceSelect, &QComboBox::textActivated, this, &DabRadio::_slot_device_selected);
     // _create_new_input_device_and_dab_processor is called later as the file path is not known yet, but we can stop current processes
     _clean_up_dab_processor_and_input_device();
+    _show_file_player_bar(false); // the cleanup keeps it in file mode, but no file reader follows directly here
     mpEnsembleList->set_list_mode(EnsembleList::EListMode::PlayFromFiles);
     mpServiceListHandler->set_data_mode(ServiceListHandler::EDataMode::FilePlayer);
     const QString fId = Settings::Main::varPresetFId.read().toString();
