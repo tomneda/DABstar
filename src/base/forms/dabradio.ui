@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>779</width>
-    <height>528</height>
+    <height>626</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -976,8 +976,11 @@
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,3,1,1,1">
-           <item>
+          <layout class="QGridLayout" name="gridLayoutRight">
+           <property name="horizontalSpacing">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
             <widget class="QPushButton" name="btnMuteAudio">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1012,8 +1015,14 @@
              </property>
             </widget>
            </item>
-           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+           <item row="1" column="0" rowspan="4" alignment="Qt::AlignmentFlag::AlignHCenter">
             <widget class="QSlider" name="sliderVolume">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio volume&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Typically leave this at maximum and use the OS volume control. Reduce this level to lower the volume relative to other audio applications.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -1031,20 +1040,71 @@
              </property>
             </widget>
            </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+           <item row="1" column="1">
+            <widget class="QWidget" name="rowPlaceholderRight1" native="true">
+             <property name="minimumSize">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>0</width>
+               <height>32</height>
               </size>
              </property>
-            </spacer>
+             <property name="maximumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item>
+           <item row="2" column="1">
+            <widget class="QWidget" name="rowPlaceholderRight2" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QWidget" name="rowPlaceholderRight3" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QWidget" name="rowPlaceholderRight4" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>0</width>
+               <height>32</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
             <widget class="QPushButton" name="btnOpenPicFolder">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1084,7 +1144,7 @@
              </property>
             </widget>
            </item>
-           <item>
+           <item row="6" column="0">
             <widget class="IndicatorButton" name="configButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1266,21 +1326,21 @@
             </widget>
            </item>
            <item row="1" column="2">
-          <widget class="TrafficLight" name="tlCoherent" native="true">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Coherent demodulation state indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(Only active if &amp;quot;Coherent&amp;quot; is selected in the &amp;quot;Demodulation&amp;quot; setting)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Channel estimate ready, coherent demodulation in use.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Channel estimate not ready yet, differential demodulation in use.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text" stdset="0">
-            <string>COH:</string>
-           </property>
-           <property name="pixmap" stdset="0">
-            <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
-           </property>
-           <property name="scaledContents" stdset="0">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
+            <widget class="TrafficLight" name="tlCoherent" native="true">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Coherent demodulation state indicator&lt;/span&gt;&lt;br/&gt;&lt;i&gt;(Only active if &amp;quot;Coherent&amp;quot; is selected in the &amp;quot;Demodulation&amp;quot; setting)&lt;/i&gt;&lt;/p&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_green.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Channel estimate ready, coherent demodulation in use.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td valign=&quot;middle&quot;&gt;&lt;img src=&quot;:/res/icons/tl_orange.png&quot; width=&quot;13&quot; height=&quot;13&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;p&gt;Channel estimate not ready yet, differential demodulation in use.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text" stdset="0">
+              <string>COH:</string>
+             </property>
+             <property name="pixmap" stdset="0">
+              <pixmap resource="../../../resources.qrc">:/res/icons/tl_off.svg</pixmap>
+             </property>
+             <property name="scaledContents" stdset="0">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="0">
             <widget class="TrafficLight" name="tlRsCrcError" native="true">
              <property name="toolTip">
@@ -1583,7 +1643,7 @@
            <string>0:00 / 0:00</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set>
+           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
          </widget>
         </item>

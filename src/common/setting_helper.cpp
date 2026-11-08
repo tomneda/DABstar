@@ -258,7 +258,7 @@ PosAndSize::PosAndSize(const QString & iCat, const QString & iName)
 : mKey(iCat + "/" + iName)
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, i32 iWidthOffs /*= 0*/, i32 iHeightOffs /*= 0*/) const
+void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, const i32 iWidthOffs /*= 0*/, const i32 iHeightOffs /*= 0*/) const
 {
   if (iopWidget == nullptr)
   {
@@ -283,7 +283,7 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsF
   // const i32 curHeight = iopWidget->height();
   iopWidget->adjustSize();
   i32 newWidth = iopWidget->width();
-  i32 newHeight = iopWidget->height();
+  const i32 newHeight = iopWidget->height();
 
   // qDebug() << "Window adjustment" << iopWidget->objectName() << curWidth << curHeight << "->" << newWidth << newHeight << iHeightOffs;
 
