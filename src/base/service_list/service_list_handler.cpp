@@ -228,13 +228,26 @@ void ServiceListHandler::delete_not_existing_channel(const TChannelList & iChLis
   }
 }
 
-void ServiceListHandler::delete_table(const bool iDeleteFavorites)
+void ServiceListHandler::delete_channel(const QString & iChannel)
+{
+  if (mServiceDB.delete_channel(iChannel)) // true if channel entries were deleted
+  {
+    qCDebug(sLogServiceListHandler) << "Deleted in database: channel" << iChannel;
+    _fill_table_view_from_db();
+  }
+}
+
+void ServiceListHandler::clear_selector()
 {
   // avoid coloring list while scan
   mChannelLast.clear();
   mServiceIdLast = 0;
   mCustomItemDelegate.set_current_service(mChannelLast, mServiceIdLast);
+}
 
+void ServiceListHandler::delete_table(const bool iDeleteFavorites)
+{
+  clear_selector();
   mServiceDB.delete_table(iDeleteFavorites);
 }
 

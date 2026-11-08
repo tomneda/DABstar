@@ -31,6 +31,12 @@ void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo)
 
   const bool fIdOrChHasChanged = mChannelDesc.set_ident_info(iIdentInfo);
 
+  if (mIsScanning)
+  {
+    // renew only the service list entries of the currently scanned channel/file (favorites are restored after the scan)
+    mpServiceListHandler->delete_channel(iIdentInfo.fIdOrCh);
+  }
+
   if (mIsFileMode)
   {
     if (mpInputDevice == nullptr || mpDabProcessor == nullptr || fIdOrChHasChanged) // if the file has changed

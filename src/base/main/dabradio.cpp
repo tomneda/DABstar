@@ -991,8 +991,9 @@ void DabRadio::_start_scanning(SChannelDescriptor & ioChannelDesc)
   ui->rbFilePlayer->setEnabled(false);
   ui->cmbDeviceSelect->setEnabled(false);
 
-  mpServiceListHandler->delete_table(false);
-  mpServiceListHandler->create_new_table();
+  // Do not delete the whole service list here, only the entries of the scanned channels/files are renewed
+  // (see _slot_file_or_channel_to_play()). The ensemble list filter may restrict the scan to a subset of entries.
+  mpServiceListHandler->clear_selector();
   mScanSecurityTimer.start();
 }
 

@@ -63,6 +63,8 @@ public:
   void add_entry(const QString & iChannel, const QString & iServiceLabel, u32 iSId);
   void delete_not_existing_SId_at_channel(const QString & iChannel, const TSIdList & iSIdList);
   void delete_not_existing_channel(const TChannelList & iChList);
+  void delete_channel(const QString & iChannel);
+  void clear_selector();
   void set_selector(const QString & iChannel, u32 iSId);
   void set_selector_channel_only(const QString & iChannel);
   void set_favorite_state(const bool iIsFavorite);
