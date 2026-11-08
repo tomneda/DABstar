@@ -438,10 +438,11 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
   }
   else
   {
-    if (mRowIdxClickOnList >= 0 && ed.S0Ws.get_sid_played() > 0)
+    if (!mFIdOrChClickOnList.isEmpty() && mFIdOrChClickOnList == ed.key.fIdOrCh && ed.S0Ws.get_sid_played() > 0)
     {
-      qDebug() << "Call _signal_fid_or_ch_from_table_index() again with SId" << ed.S0Ws.sIdPlayed;
-      _signal_fid_or_ch_from_table_index(mRowIdxClickOnList, ed.S0Ws.get_sid_played());
+      qDebug() << "Call slot_select_fid_or_ch() again with SId" << ed.S0Ws.sIdPlayed;
+      // use the FId/channel (not a row index) as the table may have been refilled/resorted meanwhile (e.g. by adding files)
+      slot_select_fid_or_ch(mFIdOrChClickOnList, ed.S0Ws.get_sid_played());
     }
     _setup_ui_regarding_scan_mode(false);
   }
@@ -617,12 +618,8 @@ void EnsembleList::_slot_handle_add_single_file()
     // start the new file immediately
     if (!fid.isEmpty())
     {
-      const i32 rowIdx = mpDbHandler->set_selector(fid);
-      if (rowIdx >= 0)
-      {
-        ui->cbShowSLCurChOnly->setChecked(true);
-        _signal_fid_or_ch_from_table_index(rowIdx);
-      }
+      ui->cbShowSLCurChOnly->setChecked(true);
+      slot_select_fid_or_ch(fid, 0); // opens the filter if the new ("Not scanned") entry is hidden
     }
   }
 }
@@ -720,7 +717,7 @@ void EnsembleList::_signal_fid_or_ch_from_table_index(const i32 iRowIdx, const u
     ii.sIdToPlay = iSId;
   }
 
-  mRowIdxClickOnList = (ii.sIdToPlay == 0 && !mIsScanning ? iRowIdx : -1); // triggers a reload with the first SId
+  mFIdOrChClickOnList = (ii.sIdToPlay == 0 && !mIsScanning ? ii.fIdOrCh : QString()); // triggers a reload with the first SId
 
   _signal_ident_info(ii);
 }

@@ -81,7 +81,7 @@ private:
   QString mFIdOrChLast;
   BandHandler mBandHandler;
   EnsembleListDB::SDataFilter mDataFilter{};
-  i32 mRowIdxClickOnList = -1;
+  QString mFIdOrChClickOnList; // FId/channel clicked without known SId, waits for the first SId to replay (not empty if active)
 
   enum class ELogType { WARN, ERROR2, INFONEUT, INFOACK, INFONACK }; // ERROR is not working on Windows -> renamed to ERROR2
   void _log_to_result_display(ELogType iLogType, const QString & iMessage, i32 iAddIndent = 0) const;
