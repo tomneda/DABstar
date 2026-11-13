@@ -60,10 +60,14 @@ PhaseReference::PhaseReference(const DabRadio* const ipRadio, const ProcessParam
 
   fftwf_execute(mFftPlanBwd);
 
+#ifdef HAVE_SSE_OR_AVX
+  volk_32fc_conjugate_32fc_a(mRefArgConj.data(), mFftOutBuffer.data(), cTu);
+#else
   for (i32 i = 0; i < cTu; ++i)
   {
     mRefArgConj[i] = std::conj(mFftOutBuffer[i]);
   }
+#endif
 
   connect(this, &PhaseReference::signal_show_correlation, ipRadio, &DabRadio::slot_show_correlation);
 }
@@ -205,18 +209,16 @@ i32 PhaseReference::correlate_with_phase_ref_and_find_max_peak(const TArrayTn& i
     */
     assert(!mIndices.isEmpty());
     const i32 count = (i32)mIndices.size();
-    if (count == 1)
-      return mIndices[0];
+    const i32 start = mIndices[0];
+    const i32 end = mIndices[count - 1];
+    if (end - start <= cTg) // No need to use "Maximum C/I" if all peaks are in the guard interval
+      return start;
     maxIndex = -1;
     f32 minCI = 1e38f;
-    const i32 start = mIndices[0];
-    //const i32 end = mIndices[count - 1];
-    //for (i32 pos = start; pos <= end; pos++)
     for (i32 j = 0; j < count; j++)
     {
       for (i32 l = 0; l < 2; l++)
       {
-        //const i32 pos = mIndices[j];
         const i32 pos = mIndices[j] - l * cTg;
         if (pos < start) continue;
         f32 Ci = 0.0f; // the total power of the effective useful signal
