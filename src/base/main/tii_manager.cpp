@@ -14,7 +14,7 @@
 #include "dabradio.h"
 #include "configuration.h"
 #include "dab_processor.h"
-#include "map_http_server.h"
+#include "map_viewer.h"
 #include "setting_helper.h"
 #include "compass_direction.h"
 #include "window_visibility_watcher.h"
@@ -272,13 +272,9 @@ void TiiManager::show_tii(const std::vector<STiiResult>& iTiiList)
       }
     }
 
-    if (mpHttpHandler != nullptr && dataValid)
+    if (mpMapViewer != nullptr && dataValid)
     {
-      const QDateTime theTime = (Settings::Config::cbUseUtcTime.read().toBool()
-                                 ? QDateTime::currentDateTimeUtc()
-                                 : QDateTime::currentDateTime());
-      mpHttpHandler->add_transmitter_location_entry(MAP_NORM_TRANS, pTr, theTime.toString(Qt::TextDate),
-                                                    bd.strength_dB, bd.distance_km, bd.corner_deg, bd.isNonEtsiPhase);
+      mpMapViewer->add_transmitter(*pTr, bd.strength_dB, bd.distance_km, bd.corner_deg, bd.isNonEtsiPhase);
     }
   }
 

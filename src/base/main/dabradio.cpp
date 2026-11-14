@@ -37,7 +37,7 @@
 #include "setting_helper.h"
 #include "qt_compat.h"
 #include "time_table.h"
-#include "map_http_server.h"
+#include "map_viewer.h"
 #include "updatechecker.h"
 #include "updatedialog.h"
 #include "appversion.h"
@@ -150,7 +150,7 @@ DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFil
   (void)iDataPort;
 #endif
 
-  connect(ui->btnHttpServer, &QPushButton::clicked, this,  &DabRadio::_slot_handle_http_button);
+  connect(ui->btnMap, &QPushButton::clicked, this,  &DabRadio::_slot_handle_map_button);
   connect(ui->btnEpg, &QPushButton::clicked, this, &DabRadio::_slot_handle_time_table);
   connect(ui->btnJournaline, &QPushButton::clicked, this, &DabRadio::_slot_handle_journaline_button);
   connect(this, &DabRadio::signal_dab_processor_started, mpSpectrumViewer.get(), &SpectrumViewer::slot_update_settings);
@@ -291,7 +291,7 @@ void DabRadio::_slot_terminate_process()
     _stop_scanning(mChannelDesc);
   }
 
-  slot_http_terminate();
+  slot_map_terminate();
 
   mIsChannelRunning.store(false);
   _adapt_gui_for_device_or_file_play(false);
@@ -305,11 +305,6 @@ void DabRadio::_slot_terminate_process()
   fprintf (stdout, "going to close the dataStreamer\n");
   delete        dataStreamer;
 #endif
-
-  if (mpHttpHandler != nullptr)
-  {
-    mpHttpHandler->stop();
-  }
 
   mDisplayTimer.stop();
   mEnsListRetriggerTimer.stop();
@@ -1146,7 +1141,7 @@ void DabRadio::slot_load_table()
 }
 
 // ensure that we only get a handler if we have a start location
-void DabRadio::_slot_handle_http_button()
+void DabRadio::_slot_handle_map_button()
 {
   if (std::real(mLocalPos) == 0 || std::imag(mLocalPos) == 0)
   {
@@ -1154,32 +1149,24 @@ void DabRadio::_slot_handle_http_button()
     return;
   }
 
-  if (mpHttpHandler == nullptr)
+  if (mpMapViewer == nullptr)
   {
-    const QString browserAddress = Settings::Config::varBrowserAddress.read().toString();
-    const QString mapPort = Settings::Config::varMapPort.read().toString();
-
-    mpHttpHandler.reset(new MapHttpServer(this, mapPort, browserAddress, mLocalPos, Settings::Config::cbManualBrowserStart.read().toBool()));
+    mpMapViewer.reset(new MapViewer(this, mLocalPos));
     mMaxDistance = -1;
-
-    if (mpHttpHandler != nullptr)
-    {
-      mpTiiManager->set_http_handler(mpHttpHandler.get());
-      _set_http_server_button(EHttpButtonState::On);
-    }
+    mpTiiManager->set_map_viewer(mpMapViewer.get());
+    _set_map_button(EMapButtonState::On);
   }
   else
   {
-    _set_http_server_button(EHttpButtonState::Waiting); // closing browser could be taken some seconds
-    mpHttpHandler->add_transmitter_location_entry(MAP_CLOSE, nullptr, "", 0, 0, 0, false);
+    slot_map_terminate();
   }
 }
 
-void DabRadio::slot_http_terminate()
+void DabRadio::slot_map_terminate()
 {
-  mpTiiManager->set_http_handler(nullptr);
-  mpHttpHandler.reset();
-  _set_http_server_button(EHttpButtonState::Off);
+  mpTiiManager->set_map_viewer(nullptr);
+  mpMapViewer.reset();
+  _set_map_button(EMapButtonState::Off);
 }
 
 QString DabRadio::_convert_links_to_clickable(const QString& iText) const
@@ -1327,10 +1314,10 @@ void DabRadio::_initialize_tii_manager()
 
   connect(mpTiiManager.get(), &TiiManager::signal_tii_file_status, this, [this](bool valid, const QString& toolTip) {
     mChannelDesc.tiiFile = valid;
-    ui->btnHttpServer->setEnabled(valid);
+    ui->btnMap->setEnabled(valid);
     if (!valid)
     {
-      ui->btnHttpServer->setToolTip(toolTip);
+      ui->btnMap->setToolTip(toolTip);
     }
   });
 }

@@ -663,7 +663,7 @@
             </widget>
            </item>
            <item row="4" column="0">
-            <widget class="IndicatorButton" name="btnHttpServer">
+            <widget class="IndicatorButton" name="btnMap">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>

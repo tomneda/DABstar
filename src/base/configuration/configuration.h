@@ -36,7 +36,6 @@ private slots:
   void _slot_handle_dc_corr(bool iChecked);
   void _slot_handle_dc_and_iq_corr(bool iChecked);
   void _slot_coordinate_edited();
-  void _slot_map_port_edited();
   void _slot_select_base_path();
 
 signals:

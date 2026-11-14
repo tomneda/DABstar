@@ -192,7 +192,9 @@ set(${baseLibName}_HDRS
         support/content_table.h
         support/dl_cache.h
         support/itu_regions.h
-        support/map_http_server.h
+        support/map_projection.h
+        support/map_viewer.h
+        support/tile_map_widget.h
         support/tii_library/tii_codes.h
         support/gui_helpers.h
         support/wav_writer.h
@@ -300,7 +302,8 @@ set(${baseLibName}_SRCS
         support/content_table.cpp
         support/dl_cache.cpp
         support/itu_regions.cpp
-        support/map_http_server.cpp
+        support/map_viewer.cpp
+        support/tile_map_widget.cpp
         support/tii_list_display.cpp
         support/tii_library/tii_codes.cpp
         support/gui_helpers.cpp

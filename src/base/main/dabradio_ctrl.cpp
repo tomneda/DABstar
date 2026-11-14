@@ -6,7 +6,7 @@
 #include "spectrum_viewer.h"
 #include "cir_viewer.h"
 #include "service_list_handler.h"
-#include "map_http_server.h"
+#include "map_viewer.h"
 #include "setting_helper.h"
 #include "techdata.h"
 #include "ui_dabradio.h"
@@ -198,10 +198,10 @@ void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)
 
   mpServiceListHandler->set_selector(iFIdOrCh, iSId); // this highlights the suitable row in the service list
 
-  // Deletes the transmitter entries in the HTTP map
-  if (mpHttpHandler != nullptr)
+  // Deletes the transmitter entries in the map
+  if (mpMapViewer != nullptr)
   {
-    mpHttpHandler->add_transmitter_location_entry(MAP_RESET, nullptr, "", 0, 0, 0, false);
+    mpMapViewer->reset();
   }
 
   // No waiting for the tuner to swing-in here: blocking the GUI thread stops the sample delivery of devices which
@@ -265,9 +265,9 @@ void DabRadio::_stop_channel()
   mEnsListRetriggerTimer.stop();
   mScanSecurityTimer.stop();
 
-  if (mpHttpHandler != nullptr)
+  if (mpMapViewer != nullptr)
   {
-    mpHttpHandler->add_transmitter_location_entry(MAP_RESET, nullptr, "", 0, 0, 0, false);
+    mpMapViewer->reset();
   }
 
   ui->lblEnsName->setText("");

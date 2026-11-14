@@ -87,19 +87,9 @@
        <item>
         <widget class="QGroupBox" name="gbMapNetwork">
          <property name="title">
-          <string>Map Network</string>
+          <string>Map</string>
          </property>
          <layout class="QVBoxLayout" name="vl_map">
-          <item>
-           <widget class="QCheckBox" name="cbManualBrowserStart">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start map browser manually&lt;/span&gt;&lt;/p&gt;&lt;p&gt;When enabled, a browser must be started manually when the map HTTP service starts. By default, a browser is opened automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Start map browser manually</string>
-            </property>
-           </widget>
-          </item>
           <item>
            <widget class="QLabel" name="lblMapUrlHint">
             <property name="text">
@@ -150,27 +140,6 @@
              <widget class="QLineEdit" name="leLongitudeVal">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Home longitude coordinate&lt;/span&gt;&lt;/p&gt;&lt;p&gt;decimal, -180° to 180°&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignRight</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLabel" name="lblPortPrefix">
-              <property name="text">
-               <string>Web server port:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="leMapPortVal">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Maps HTTP server port number (1-65535)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignRight</set>

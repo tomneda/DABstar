@@ -290,6 +290,10 @@ if (BUILD_TESTING)
   add_executable(fast_math_test tests/fast_log_test.cpp)
   target_include_directories(fast_math_test PRIVATE ${CMAKE_SOURCE_DIR})
   add_test(NAME fast_math_test COMMAND fast_math_test)
+
+  add_executable(map_projection_test tests/map_projection_test.cpp)
+  target_include_directories(map_projection_test PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src/common)
+  add_test(NAME map_projection_test COMMAND map_projection_test)
 endif ()
 
 configure_file(

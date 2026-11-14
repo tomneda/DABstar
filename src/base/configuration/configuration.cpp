@@ -67,7 +67,6 @@ Configuration::Configuration(DabRadio* ipRI) :
   Settings::Config::cbUseNativeIqFormat.register_widget_and_update_ui_from_setting(cbUseNativeIqFormat, 2);
   Settings::Config::cbUseUtcTime.register_widget_and_update_ui_from_setting(cbUseUtcTime, 0);
   Settings::Config::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
-  Settings::Config::cbManualBrowserStart.register_widget_and_update_ui_from_setting(cbManualBrowserStart, 0);
   Settings::Config::cmbMotObjectSaving5.register_widget_and_update_ui_from_setting(cmbMotObjectSaving5, "");
   Settings::Config::cmbEpgObjectSaving5.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving5, "");
   Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
@@ -94,16 +93,12 @@ Configuration::Configuration(DabRadio* ipRI) :
   connect(cbDoDcAndIqCorr, &QCheckBox::clicked, this, &Configuration::_slot_handle_dc_and_iq_corr);
   connect(leLatitudeVal, &QLineEdit::editingFinished, this, &Configuration::_slot_coordinate_edited);
   connect(leLongitudeVal, &QLineEdit::editingFinished, this, &Configuration::_slot_coordinate_edited);
-  connect(leMapPortVal, &QLineEdit::editingFinished, this, &Configuration::_slot_map_port_edited);
 
   leLatitudeVal->setValidator(new CoordDoubleValidator(-90.0, 90.0, 5, leLatitudeVal));
   leLatitudeVal->setText(Settings::Config::varLatitude.read().toString());
 
   leLongitudeVal->setValidator(new CoordDoubleValidator(-180.0, 180.0, 5, leLongitudeVal));
   leLongitudeVal->setText(Settings::Config::varLongitude.read().toString());
-
-  leMapPortVal->setValidator(new QIntValidator(1, 65535, leMapPortVal));
-  leMapPortVal->setText(Settings::Config::varMapPort.read().toString());
 
   btnCheckForUpdate->setStyleSheet(get_bg_style_sheet(0x2878C0, Qt::white));
   loadTableButton->setStyleSheet(get_bg_style_sheet(0x607898, Qt::white));
@@ -126,11 +121,6 @@ void Configuration::_slot_handle_dc_corr(const bool iChecked)
     cbDoDcAndIqCorr->setChecked(false); // fields are mutual excluded to be active
   }
   emit signal_handle_dc_and_iq_corr(iChecked, false);
-}
-
-void Configuration::_slot_map_port_edited()
-{
-  Settings::Config::varMapPort.write(leMapPortVal->text());
 }
 
 void Configuration::_slot_coordinate_edited()

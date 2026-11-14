@@ -65,8 +65,6 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_VARIANT_NODEF(Config, varDataBasePath5) // with ..._NODEF the default is set later in the code, "5" is for >= v5 DABstar version
   DEFINE_VARIANT_NODEF(Config, varSkipFile)
   DEFINE_VARIANT_NODEF(Config, varTiiFile)
-  DEFINE_VARIANT(Config, varBrowserAddress, "http://localhost")
-  DEFINE_VARIANT(Config, varMapPort, 8080)
   DEFINE_VARIANT(Config, varLatitude, 0)
   DEFINE_VARIANT(Config, varLongitude, 0)
   DEFINE_WIDGET(Config, cbCloseDirect)
@@ -75,7 +73,6 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_WIDGET(Config, cbUseNativeIqFormat)
   DEFINE_WIDGET(Config, cbUseUtcTime)
   DEFINE_WIDGET(Config, cbAlwaysOnTop)
-  DEFINE_WIDGET(Config, cbManualBrowserStart)
   DEFINE_WIDGET(Config, cmbMotObjectSaving5)
   DEFINE_WIDGET(Config, cmbEpgObjectSaving5)
   DEFINE_WIDGET(Config, cbUseDcAvoidance)
@@ -115,6 +112,10 @@ CATEGORY_BEGIN(TiiViewer)
   DEFINE_WIDGET(TiiViewer, cbKeepPersistent)
   DEFINE_WIDGET(TiiViewer, cbIgnoreNoDb)
 CATEGORY_END(TiiViewer)
+
+CATEGORY_BEGIN(MapViewer)
+  DEFINE_POS_SIZE(MapViewer)
+CATEGORY_END(MapViewer)
 
 CATEGORY_BEGIN(ServiceList)
   DEFINE_VARIANT(ServiceList, varSortCol, 0)

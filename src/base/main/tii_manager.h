@@ -24,7 +24,7 @@
 
 class Configuration;
 class DabProcessor;
-class MapHttpServer;
+class MapViewer;
 class QComboBox;
 class QLabel;
 class QWidget;
@@ -46,7 +46,7 @@ public:
 
   // State update methods called by DabRadio when state changes
   void set_dab_processor(DabProcessor* p)  { mpDabProcessor = p; }
-  void set_http_handler(MapHttpServer* p)   { mpHttpHandler = p; }
+  void set_map_viewer(MapViewer* p)        { mpMapViewer = p; }
   void set_channel_running(bool isRunning)   { mIsChannelRunning = isRunning; }
   void set_file_mode(bool isFileMode)        { mIsFileMode = isFileMode; }
   void set_suppress_visibility_store(bool iSuppress) { mSuppressVisibilityStore = iSuppress; }
@@ -80,7 +80,7 @@ public slots:
   void slot_handle_tii_button();
 
 signals:
-  void signal_tii_file_status(bool valid, const QString& toolTip);  // for btnHttpServer enabled/tooltip
+  void signal_tii_file_status(bool valid, const QString& toolTip);  // for btnMap enabled/tooltip
 
 private:
   // Non-owned resources (from config)
@@ -91,7 +91,7 @@ private:
 
   // Non-owned, updated via set_*() methods
   DabProcessor* mpDabProcessor = nullptr;
-  MapHttpServer* mpHttpHandler  = nullptr;
+  MapViewer* mpMapViewer = nullptr;
 
   // Owned objects
   TiiHandler    mTiiHandler{};

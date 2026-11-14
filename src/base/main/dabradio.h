@@ -64,7 +64,7 @@ class Qt_Audio;
 class TimeTableHandler;
 class ServiceListHandler;
 class TechData;
-class MapHttpServer;
+class MapViewer;
 class IndicatorButton;
 class EnsembleList;
 class ItuTables;
@@ -185,7 +185,7 @@ private:
 
   QScopedPointer<SpectrumViewer> mpSpectrumViewer;
   QScopedPointer<CirViewer> mpCirViewer;
-  QScopedPointer<MapHttpServer> mpHttpHandler;
+  QScopedPointer<MapViewer> mpMapViewer;
   QScopedPointer<FibContentTable> mpFibContentTable;
   QScopedPointer<TechData> mpTechDataWidget;
   QScopedPointer<Configuration> mpConfig;
@@ -337,8 +337,8 @@ private:
   void _set_favorite_button_style();
   void _set_level_meter_mode(ELevelMeterMode iMode, bool iStoreSetting = true);
   void _show_epg_label(const bool iShowLabel);
-  enum class EHttpButtonState { Off, On, Waiting };
-  void _set_http_server_button(EHttpButtonState iHttpServerState) const;
+  enum class EMapButtonState { Off, On };
+  void _set_map_button(EMapButtonState iMapButtonState) const;
   void _set_clock_text(const QString& iText = QString());
   void _enable_ui_elements_for_safety(bool iEnable) const;
   void _adapt_gui_for_device_or_file_play(bool iPlayingDevice) const;
@@ -439,7 +439,7 @@ public slots:
   void slot_handle_dc_and_iq_corr(bool iDcCorr, bool iIqCorr);
 
   // Network and Updates
-  void slot_http_terminate();
+  void slot_map_terminate();
   void slot_check_for_update();
 
 protected slots:
@@ -457,7 +457,7 @@ private slots:
   void _slot_handle_open_pic_folder_button() const;
   void _slot_handle_device_widget_button() const;
   void _slot_handle_config_button();
-  void _slot_handle_http_button();
+  void _slot_handle_map_button();
   void _slot_handle_ensemble_list_button() const;
 
   // Button Handlers - Dumping and Recording

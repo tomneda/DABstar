@@ -8,7 +8,6 @@
 #include "techdata.h"
 #include "itu_regions.h"
 #include "copyright_info.h"
-#include "map_http_server.h"
 #include "spectrum_viewer.h"
 #include "cir_viewer.h"
 #include "configuration.h"
@@ -170,7 +169,7 @@ void DabRadio::_initialize_ui_elements()
   ui->btnCir->setStyleSheet(get_bg_style_sheet(0xB030A0));             // magenta  — CIR view
   ui->btnEnsembleList->setStyleSheet(get_bg_style_sheet(0x4848C8));    // indigo   — ensemble list
   ui->btnOpenPicFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D));   // gold     — picture folder
-  ui->btnHttpServer->setStyleSheet(get_bg_style_sheet(0x45bb24));      // green    — map web server
+  ui->btnMap->setStyleSheet(get_bg_style_sheet(0x45bb24));             // green    — transmitter map
   ui->btnToggleMeterMode->setStyleSheet(get_bg_style_sheet(0x5060A0)); // slate blue — meter mode toggle
   ui->btnEpg->setStyleSheet(get_bg_style_sheet(0xB89028));             // amber    — EPG
   ui->btnJournaline->setStyleSheet(get_bg_style_sheet(0xD86A5A));      // coral    — Journaline
@@ -185,7 +184,7 @@ void DabRadio::_initialize_ui_elements()
   // ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
 
-  _set_http_server_button(EHttpButtonState::Off);
+  _set_map_button(EMapButtonState::Off);
   _initialize_file_player_bar();
   mpEpgMotHandler->slot_handle_mot_saving_selector(mpConfig->cmbMotObjectSaving5->currentIndex());
 
@@ -573,8 +572,8 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnTargetService->setFixedSize(QSize(32, 32));
   ui->btnTechDetails->setIconSize(QSize(24, 24));
   ui->btnTechDetails->setFixedSize(QSize(32, 32));
-  ui->btnHttpServer->setIconSize(QSize(24, 24));
-  ui->btnHttpServer->setFixedSize(QSize(32, 32));
+  ui->btnMap->setIconSize(QSize(24, 24));
+  ui->btnMap->setFixedSize(QSize(32, 32));
   ui->btnDeviceWidget->setIconSize(QSize(24, 24));
   ui->btnDeviceWidget->setFixedSize(QSize(32, 32));
   ui->btnSpectrumScope->setIconSize(QSize(24, 24));
@@ -1447,25 +1446,21 @@ void DabRadio::_slot_update_mute_state(const bool iMute)
   mpAudioManager->slot_set_mute(mMutingActive);
 }
 
-void DabRadio::_set_http_server_button(const EHttpButtonState iHttpServerState) const
+void DabRadio::_set_map_button(const EMapButtonState iMapButtonState) const
 {
-  switch (iHttpServerState)
+  switch (iMapButtonState)
   {
-  case EHttpButtonState::Off:
-    ui->btnHttpServer->set_indicator_active(false);
-    ui->btnHttpServer->setEnabled(true);
+  case EMapButtonState::Off:
+    ui->btnMap->set_indicator_active(false);
+    ui->btnMap->setEnabled(true);
     break;
-  case EHttpButtonState::On:
-    ui->btnHttpServer->set_indicator_active(true);
-    ui->btnHttpServer->setEnabled(true);
-    break;
-  case EHttpButtonState::Waiting:
-    ui->btnHttpServer->set_indicator_active(false);
-    ui->btnHttpServer->setEnabled(false);
+  case EMapButtonState::On:
+    ui->btnMap->set_indicator_active(true);
+    ui->btnMap->setEnabled(true);
     break;
   }
 
-  ui->btnHttpServer->setFixedSize(QSize(32, 32));
+  ui->btnMap->setFixedSize(QSize(32, 32));
 }
 
 QString DabRadio::_get_scan_message(const bool iEndMsg) const

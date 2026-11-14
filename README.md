@@ -165,6 +165,9 @@ Displays detected Transmitter Identification Information (TII), including main/s
 
 ![](res/for_readme/map.png)
 
+The map is shown in its own DABstar window (map tiles are loaded from OpenStreetMap and cached locally). 
+Drag to pan, use the mouse wheel or double-click to zoom, and click a transmitter to show its details.
+
 ### Application update dialog
 
 ![](res/for_readme/update.png)

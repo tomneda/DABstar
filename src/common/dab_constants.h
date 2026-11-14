@@ -83,15 +83,6 @@ enum ETMId // TransportMechanismMode
   PacketModeData  = 0x3
 };
 
-enum EMapType
-{
-  MAP_RESET      = 0,
-  // MAP_FRAME      = 1,
-  // MAP_MAX_TRANS  = 2,
-  MAP_NORM_TRANS = 4,
-  MAP_CLOSE      = 5
-};
-
 template<typename T>
 struct SpecViewLimits
 {
