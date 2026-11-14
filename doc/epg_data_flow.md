@@ -7,6 +7,10 @@ Dashed arrows are queued signals (thread change from the `DabProcessor` thread t
 is not threaded (`__THREADED_BACKEND__` is not defined), so the decoding up to the complete MOT object runs within the
 `DabProcessor` thread.
 
+![EPG data flow](epg_data_flow.png)
+
+Mermaid source of the chart above (keep both in sync):
+
 ```mermaid
 sequenceDiagram
     autonumber
