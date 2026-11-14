@@ -138,10 +138,10 @@ typedef struct
  */
 typedef void(DAB_DATAGROUP_DECODER_data)
 (
-    const DAB_DATAGROUP_DECODER_msc_datagroup_header_t *header,
+    const DAB_DATAGROUP_DECODER_msc_datagroup_header_t* header,
     const unsigned long len,
-    const unsigned char *buf,
-    void *arg
+    const unsigned char* buf,
+    void* arg
 );
 
 
@@ -162,8 +162,8 @@ typedef void(DAB_DATAGROUP_DECODER_data)
  * @return DAB data group decoder instance
  */
 DAB_DATAGROUP_DECODER_t DAB_DATAGROUP_DECODER_createDec(
-    DAB_DATAGROUP_DECODER_data *data,
-    void  *arg
+    DAB_DATAGROUP_DECODER_data* data,
+    void* arg
 );
 
 
@@ -206,7 +206,7 @@ void DAB_DATAGROUP_DECODER_deleteDec(const DAB_DATAGROUP_DECODER_t decoder);
 unsigned long DAB_DATAGROUP_DECODER_putData(
     const DAB_DATAGROUP_DECODER_t  decoder,
     const unsigned long  len,
-    const unsigned char *buf
+    const unsigned char* buf
 );
 
 

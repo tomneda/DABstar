@@ -32,7 +32,7 @@ constexpr f32 cMinProbability = 1e-15f;
 constexpr f32 cMaxTimingRate = 0.001f;
 constexpr f32 cLlrScale = 16.0f;
 
-CoherentDemod::CoherentDemod(const FreqInterleaver & iFreqInterleaver, const TArrayTu & iRefTable)
+CoherentDemod::CoherentDemod(const FreqInterleaver& iFreqInterleaver, const TArrayTu& iRefTable)
 {
   // FFTW_MEASURE overwrites the buffers while planning, so the plans have to be created before the buffers are used
   // (the same plans as in PhaseReference, so they are taken from the FFTW wisdom)
@@ -56,7 +56,7 @@ CoherentDemod::CoherentDemod(const FreqInterleaver & iFreqInterleaver, const TAr
   }
 
   // carrier pairs with a fixed distance (the gap at k = 0 makes the distance of the pairs across it one larger, they are not used)
-  auto make_pairs = [&](const i32 iDistance, std::vector<i16> & oLow, std::vector<i16> & oHigh)
+  auto make_pairs = [&](const i32 iDistance, std::vector<i16>& oLow, std::vector<i16>& oHigh)
   {
     for (i32 c = 0; c + iDistance < cK; ++c)
     {
@@ -86,13 +86,13 @@ void CoherentDemod::_ifft()
   fftwf_execute(mFftPlanBwd);
 
   constexpr f32 cScale = 1.0f / (f32)cTu;
-  for (auto & v : mFftOutBuffer)
+  for (auto& v : mFftOutBuffer)
   {
     v *= cScale;
   }
 }
 
-void CoherentDemod::_phasor(const f32 iPhase, const f32 iSlope, SimdVec<cf32> & oV)
+void CoherentDemod::_phasor(const f32 iPhase, const f32 iSlope, SimdVec<cf32>& oV)
 {
   mPhase.set_multiply_vector_and_scalar_each_element(mCarrier, iSlope);
   mPhase.modify_add_scalar_each_element(iPhase);
@@ -106,7 +106,7 @@ void CoherentDemod::reset()
   mDataNoise = 1.0f;
 }
 
-void CoherentDemod::process_prs(const SimdVec<cf32> & iV)
+void CoherentDemod::process_prs(const SimdVec<cf32>& iV)
 {
   mHRaw.set_multiply_conj_each_element(iV, mPrs);
   mTmp1.set_squared_magnitude_each_element(mHRaw);
@@ -150,7 +150,7 @@ void CoherentDemod::process_prs(const SimdVec<cf32> & iV)
   const f32 beta = std::max(cNoiseAlpha, 1.0f / (f32)mFrames);
   for (i32 i = 0; i < cK; ++i)
   {
-    cf32 & hAvg = mHAvg[i];
+    cf32& hAvg = mHAvg[i];
     hAvg *= commonRotation;
     const f32 e = std::norm(mHRaw[i] - hAvg) * noiseScale;
     if (mFrames == 1)
@@ -220,7 +220,7 @@ f32 CoherentDemod::_timing_rotation()
   }
   _ifft();
 
-  const TArrayTu & time = mFftOutBuffer;
+  const TArrayTu& time = mFftOutBuffer;
   i32 peak = 0;
   for (i32 n = 1; n < cTu; ++n)
   {
@@ -267,7 +267,7 @@ void CoherentDemod::_smooth_channel()
   }
   _ifft();
 
-  const TArrayTu & time = mFftOutBuffer;
+  const TArrayTu& time = mFftOutBuffer;
   for (i32 n = 0; n < cTu; ++n)
   {
     mTapPower[n] = std::norm(time[n]);
@@ -330,7 +330,7 @@ void CoherentDemod::_smooth_channel()
   }
 }
 
-f32 CoherentDemod::_slope(const std::vector<i16> & iLow, const std::vector<i16> & iHigh, const i32 iDistance)
+f32 CoherentDemod::_slope(const std::vector<i16>& iLow, const std::vector<i16>& iHigh, const i32 iDistance)
 {
   // Mean phase difference of the carriers iDistance apart, per carrier. The unused end of mPairLow/mPairHigh stays 0.
   const u32 n = (u32)iLow.size();
@@ -342,7 +342,7 @@ f32 CoherentDemod::_slope(const std::vector<i16> & iLow, const std::vector<i16> 
   return std::arg(mPairHigh.get_conj_dot_product(mPairLow, n)) / (f32)iDistance;
 }
 
-void CoherentDemod::demodulate(const SimdVec<cf32> & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum, const bool iCalcConstellation)
+void CoherentDemod::demodulate(const SimdVec<cf32>& iV, const i32 iCurOfdmSymbIdx, const cf32& iGuardCorrSum, const bool iCalcConstellation)
 {
   if (!is_ready())
   {
@@ -424,7 +424,7 @@ void CoherentDemod::demodulate(const SimdVec<cf32> & iV, const i32 iCurOfdmSymbI
   mTmp1.set_add_each_element(mTmp1, mP[2]);
   mTmp1.set_add_each_element(mTmp1, mP[3]);
   mTmp2.set_reciprocal_each_element(mTmp1);
-  for (auto & p : mP)
+  for (auto& p : mP)
   {
     p.modify_multiply_each_element(mTmp2);
     p.modify_clamp_each_element(cMinProbability, 1.0f);

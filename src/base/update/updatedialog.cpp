@@ -45,7 +45,7 @@ namespace
   // the remainder as plain text. Explicit "[url](url)" links are parsed correctly, so rewrite the
   // bare URLs before importing. URLs that already are part of a link ("](url)", "<url>",
   // "[url](...)" or a "[ref]: url" definition) are left alone.
-  QString wrap_bare_urls_in_markdown_links(const QString & iMarkdown)
+  QString wrap_bare_urls_in_markdown_links(const QString& iMarkdown)
   {
     static const QRegularExpression sReBareUrl(QSL(R"((?<![(<\[])(?<!\]: )\bhttps?://[^\s<>()\[\]]+)"));
     static const QString sTrailingPunctuation = QSL(".,;:!?");
@@ -87,7 +87,7 @@ namespace
 }
 
 
-UpdateDialog::UpdateDialog(const QString & version, const QString & releaseNotes, Qt::WindowFlags f, int32_t updateIntervalDays, QWidget * parent)
+UpdateDialog::UpdateDialog(const QString& version, const QString& releaseNotes, Qt::WindowFlags f, int32_t updateIntervalDays, QWidget* parent)
   : QDialog(parent, f)
   , ui(new Ui::UpdateDialog)
 {

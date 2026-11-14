@@ -50,10 +50,10 @@ static clock_t time1 = 0;
 //
 //  This is the user-side call back function
 //  ctx is the calling task
-static void RTLSDRCallBack(u8 * buf, u32 len, void * ctx)
+static void RTLSDRCallBack(u8* buf, u32 len, void* ctx)
 {
   clock_t time2;
-  RtlSdrHandler * theStick = (RtlSdrHandler *)ctx;
+  RtlSdrHandler* theStick = (RtlSdrHandler*)ctx;
 
   if ((theStick == nullptr) || (len != READLEN_DEFAULT))
   {
@@ -65,7 +65,7 @@ static void RTLSDRCallBack(u8 * buf, u32 len, void * ctx)
   {
     if (theStick->_I_Buffer.get_ring_buffer_write_available() < (signed)len / 2)
       fprintf(stderr, "xx? ");
-    (void)theStick->_I_Buffer.put_data_into_ring_buffer((cu8 *)buf, len / 2);
+    (void)theStick->_I_Buffer.put_data_into_ring_buffer((cu8*)buf, len / 2);
     //fprintf(stderr, "put_data=%d\n", len/2);
 
     time2 = clock();
@@ -85,10 +85,10 @@ static void RTLSDRCallBack(u8 * buf, u32 len, void * ctx)
 class dll_driver : public QThread
 {
 private:
-  RtlSdrHandler * theStick;
+  RtlSdrHandler* theStick;
 
 public:
-  dll_driver(RtlSdrHandler * d)
+  dll_driver(RtlSdrHandler* d)
   {
     theStick = d;
     start();
@@ -101,7 +101,7 @@ private:
   {
     (theStick->rtlsdr_read_async)(theStick->theDevice,
                                   (rtlsdr_read_async_cb_t)&RTLSDRCallBack,
-                                  (void *)theStick,
+                                  (void*)theStick,
                                   0,
                                   READLEN_DEFAULT);
   }
@@ -109,8 +109,8 @@ private:
 
 //
 //  Our wrapper is a simple classs
-RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
-                             const QString & recorderVersion)
+RtlSdrHandler::RtlSdrHandler(QSettings* ipSettings,
+                             const QString& recorderVersion)
   : _I_Buffer(8 * 1024 * 1024)
   , myFrame(nullptr)
   , theFilter(5, 1560000 / 2, INPUT_RATE)
@@ -146,7 +146,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   inputRate = INPUT_RATE;
   workerHandle = nullptr;
   isActive.store(false);
-  const char * libraryString = "librtlsdr";
+  const char* libraryString = "librtlsdr";
   phandle = new QLibrary(libraryString);
   phandle->load();
 
@@ -242,7 +242,7 @@ RtlSdrHandler::RtlSdrHandler(QSettings * ipSettings,
   gainsCount = rtlsdr_get_tuner_gains(theDevice, nullptr);
   fprintf(stdout, "Supported gain values (%d): ", gainsCount);
   {
-    i32 *gains = make_vla(i32, gainsCount);
+    i32* gains = make_vla(i32, gainsCount);
     gainsCount = rtlsdr_get_tuner_gains(theDevice, gains);
     for (i = gainsCount; i > 0; i--)
     {
@@ -408,13 +408,13 @@ void RtlSdrHandler::set_bandwidth(i32 bandwidth)
   //fprintf(stderr, "Bandwidth = %d\n", bandwidth*1000);
 }
 
-void RtlSdrHandler::set_deviceName(const QString & name)
+void RtlSdrHandler::set_deviceName(const QString& name)
 {
   deviceModel = name;
   deviceNameLabel->setText(name);
 }
 
-void RtlSdrHandler::set_apiVersion(const QString & versionStr)
+void RtlSdrHandler::set_apiVersion(const QString& versionStr)
 {
   deviceVersion->setText(versionStr);
 }
@@ -451,9 +451,9 @@ void RtlSdrHandler::set_ppmCorrection(f64 ppm)
     this->rtlsdr_set_freq_correction(theDevice, (i32)std::round(ppm));
 }
 
-i32 RtlSdrHandler::getSamples(const std::span<cf32> & oV)
+i32 RtlSdrHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   const auto temp = make_vla_span(cu8, size);
   i32 amount;
@@ -490,7 +490,7 @@ i32 RtlSdrHandler::Samples()
   return _I_Buffer.get_ring_buffer_read_available();
 }
 
-bool RtlSdrHandler::load_rtlFunctions(bool & oHasNewInterface)
+bool RtlSdrHandler::load_rtlFunctions(bool& oHasNewInterface)
 {
   oHasNewInterface = true; // is it a old-dab-style interface?
 
@@ -750,7 +750,7 @@ void RtlSdrHandler::enable_gainControl(i32 agc)
   dbLabel->setEnabled(agc == 1);
 }
 
-bool RtlSdrHandler::detect_overload(const std::span<const u8> & iBuf) const
+bool RtlSdrHandler::detect_overload(const std::span<const u8>& iBuf) const
 {
   i32 overload_count = 0;
   for (const u8 b : iBuf)

@@ -1,7 +1,7 @@
 #include "Rsp2_handler.h"
 #include "sdrplay_handler.h"
 
-Rsp2_handler::Rsp2_handler(SdrPlayHandler *mpParent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
+Rsp2_handler::Rsp2_handler(SdrPlayHandler* mpParent, sdrplay_api_DeviceT* chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(mpParent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
   i32 mLna_upperBound = lnaStates(freq) - 1;
@@ -61,7 +61,7 @@ bool Rsp2_handler::set_lna(i32 lnaState)
 
 bool Rsp2_handler::set_antenna(i32 antenna)
 {
-  sdrplay_api_Rsp2TunerParamsT * rsp2TunerParams;
+  sdrplay_api_Rsp2TunerParamsT* rsp2TunerParams;
   sdrplay_api_ErrT err;
 
   rsp2TunerParams = &(mpChParams->rsp2TunerParams);
@@ -82,7 +82,7 @@ bool Rsp2_handler::set_antenna(i32 antenna)
 
 bool Rsp2_handler::set_biasT(bool biasT_value)
 {
-  sdrplay_api_Rsp2TunerParamsT * rsp2TunerParams;
+  sdrplay_api_Rsp2TunerParamsT* rsp2TunerParams;
   sdrplay_api_ErrT err;
 
   rsp2TunerParams = &(mpChParams->rsp2TunerParams);
@@ -101,7 +101,7 @@ bool Rsp2_handler::set_biasT(bool biasT_value)
 
 bool Rsp2_handler::set_notch(bool on)
 {
-  sdrplay_api_Rsp2TunerParamsT * rsp2TunerParams;
+  sdrplay_api_Rsp2TunerParamsT* rsp2TunerParams;
   sdrplay_api_ErrT err;
 
   rsp2TunerParams = &(mpChParams->rsp2TunerParams);

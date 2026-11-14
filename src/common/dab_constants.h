@@ -41,7 +41,7 @@
   #include	"windows.h"
 #else
   #include "dlfcn.h"
-  using HINSTANCE = void *;
+  using HINSTANCE = void*;
 #endif
 
 #ifndef  M_PI

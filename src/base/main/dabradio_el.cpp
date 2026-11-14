@@ -15,7 +15,7 @@ void DabRadio::_initialize_ensemble_list()
 {
   connect(mpEnsembleList.get(), &EnsembleList::signal_file_or_channel_to_play, this, &DabRadio::_slot_file_or_channel_to_play);
   connect(mpEnsembleList.get(), &EnsembleList::signal_start_stop_scan, this, &DabRadio::_slot_start_stop_scan);
-  connect(mpEnsembleList.get(), &EnsembleList::signal_delete_unused_fid_or_ch, this, [this](const QStringList & iUsedChOrFIdList) {mpServiceListHandler->delete_not_existing_channel(iUsedChOrFIdList); });
+  connect(mpEnsembleList.get(), &EnsembleList::signal_delete_unused_fid_or_ch, this, [this](const QStringList& iUsedChOrFIdList) {mpServiceListHandler->delete_not_existing_channel(iUsedChOrFIdList); });
   connect(mpEnsembleList.get(), &EnsembleList::signal_show_current_fid_or_ch_only, this, &DabRadio::_slot_show_current_fid_or_ch_only);
   connect(this, &DabRadio::signal_fib_data_status, mpEnsembleList.get(), &EnsembleList::slot_decoded_data_status);
   connect(this, &DabRadio::signal_fid_or_ch_selected, mpEnsembleList.get(), &EnsembleList::slot_select_fid_or_ch);
@@ -25,7 +25,7 @@ void DabRadio::_initialize_ensemble_list()
 }
 
 // This is called by the EnsembleList
-void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo)
+void DabRadio::_slot_file_or_channel_to_play(const SIdentInfoEL& iIdentInfo)
 {
   qDebug() << "Playing channel/FId" << iIdentInfo.fIdOrCh << "with SId" << QSL("%1").arg(iIdentInfo.sIdToPlay, 4, 16, QChar('0')) << "file path" << iIdentInfo.absPath;
 
@@ -115,10 +115,10 @@ void DabRadio::_slot_ensemble_list_retrigger_timeout()
   }
 }
 
-void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescriptor & iChannelDesc) const
+void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescriptor& iChannelDesc) const
 {
-  const auto * const fibDec = mpDabProcessor->get_fib_decoder();
-  const auto & idi = iChannelDesc.get_ident_info();
+  const auto* const fibDec = mpDabProcessor->get_fib_decoder();
+  const auto& idi = iChannelDesc.get_ident_info();
   assert(fibDec != nullptr);
   assert(idi.nrPackets > 0);
   assert(idi.curPacketIdx < idi.nrPackets);
@@ -135,7 +135,7 @@ void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescrip
   {
     qWarning() << "FIB service list is not empty but no primary audio service is set";
     // search for first audio SId in serviceList
-    for (const auto & sl : serviceList)
+    for (const auto& sl : serviceList)
     {
       if (sl.isAudioChannel)
       {
@@ -161,7 +161,7 @@ void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescrip
   std::set<i16> dataRateSet; // std::set is sorted instead of QSet
   std::set<u32> dscTyAppTySet; // store DSCTy and AppTY in one set for common sorting
 
-  for (const auto & sl : serviceList)
+  for (const auto& sl : serviceList)
   {
     if (sl.isAudioChannel)
     {
@@ -182,7 +182,7 @@ void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescrip
       std::vector<SPacketData> pdVec;
       fibDec->get_data_for_packet_service(sl.SId, pdVec);
 
-      for (const auto & pd : pdVec)
+      for (const auto& pd : pdVec)
       {
         protLevSet.insert(getProtectionLevel(pd.shortForm, pd.protLevel));
         dscTyAppTySet.insert((pd.DSCTy << 16) | pd.appTypeVec.front()); // only us first AppType element (is usually only one)
@@ -195,11 +195,11 @@ void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescrip
   sr.S1Fib.errorProtection = protLevList.join("|");
 
   QStringList dataRateList;
-  for (const auto & rate : dataRateSet) dataRateList.append(QString::number(rate));
+  for (const auto& rate : dataRateSet) dataRateList.append(QString::number(rate));
   sr.S1Fib.audioDataRates = dataRateList.join("|");
 
   QStringList dscTyAppTyList;
-  for (const auto & dscTyAppTy : dscTyAppTySet) dscTyAppTyList.append(QSL("%1[%2]").arg(dscTyAppTy >> 16).arg(dscTyAppTy & 0xFFFF));
+  for (const auto& dscTyAppTy : dscTyAppTySet) dscTyAppTyList.append(QSL("%1[%2]").arg(dscTyAppTy >> 16).arg(dscTyAppTy & 0xFFFF));
   sr.S1Fib.dscTyAppTy = dscTyAppTyList.join("|");
   if (sr.S1Fib.dscTyAppTy.isEmpty()) sr.S1Fib.dscTyAppTy = "-";
 
@@ -208,7 +208,7 @@ void DabRadio::_collect_fib_data_and_emit_to_ensemble_list(const SChannelDescrip
   emit signal_fib_data_status(sr); // this fills up the EnsembleList database
 }
 
-bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDescriptor & iChannelDesc, const bool iForceSend) const
+bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDescriptor& iChannelDesc, const bool iForceSend) const
 {
   if (!iChannelDesc.deferredData.countryName.has_value() ||
       !iChannelDesc.deferredData.snr.has_value() ||
@@ -220,7 +220,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
     if (!iForceSend) return false;
   }
 
-  const auto * const fibDec = mpDabProcessor->get_fib_decoder();
+  const auto* const fibDec = mpDabProcessor->get_fib_decoder();
   assert(fibDec != nullptr);
 
   const u32 EId = fibDec->get_EId();
@@ -240,7 +240,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
     if (!iForceSend) return false;
   }
 
-  const auto & idi = iChannelDesc.get_ident_info();
+  const auto& idi = iChannelDesc.get_ident_info();
   assert(idi.nrPackets > 0);
   assert(idi.curPacketIdx < idi.nrPackets);
 
@@ -281,7 +281,7 @@ bool DabRadio::_collect_deferred_data_and_emit_to_ensemble_list(const SChannelDe
 }
 
 // This is called if there was a failure while scanning
-void DabRadio::_inform_ensemble_list(const SIdentInfoEL & iIdentInfoEL, const EInfoReason iInfoReason)
+void DabRadio::_inform_ensemble_list(const SIdentInfoEL& iIdentInfoEL, const EInfoReason iInfoReason)
 {
   assert(!mIsScanning || iIdentInfoEL.nrPackets > 0);
   assert(!mIsScanning || iIdentInfoEL.curPacketIdx < iIdentInfoEL.nrPackets);

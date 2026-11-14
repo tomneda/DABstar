@@ -35,30 +35,30 @@ public:
 
   using TMapData = QMap<i32, STableElement>;
 
-  explicit JournalineViewer(TMapData & ioTableVec);
+  explicit JournalineViewer(TMapData& ioTableVec);
   ~JournalineViewer() override;
 
-  [[nodiscard]] QWidget * get_widget() { return &mFrame; }
+  [[nodiscard]] QWidget* get_widget() { return &mFrame; }
 
 private:
-  TMapData & mDataMap;
+  TMapData& mDataMap;
   STableElement mCurrTableElement;
-  QTimer * mpTimerRecMarker;
-  QTimer * mpTimerHtmlRebuild;
+  QTimer* mpTimerRecMarker;
+  QTimer* mpTimerHtmlRebuild;
 
   static constexpr bool cSubMenusClosedAfterMenuOpen = true; // true: submenus always closed if a menu is opened
 
   // UI elements
   QFrame mFrame;
-  QLabel * mpLblTitle;
-  QLabel * mpLblHtml;
-  QLabel * mpLblCopyRight;
-  QLabel * mpLblLegends;
-  QLabel * mpLblDataReceiving;
-  QScrollArea * mpScrollArea;
+  QLabel* mpLblTitle;
+  QLabel* mpLblHtml;
+  QLabel* mpLblCopyRight;
+  QLabel* mpLblLegends;
+  QLabel* mpLblDataReceiving;
+  QScrollArea* mpScrollArea;
 
   QString _get_journaline_as_HTML() const;
-  void _build_html_tree_recursive(const TMapData::iterator & iItElem, QString & ioHtml, i32 iLevel, bool iSuppressTitle) const;
+  void _build_html_tree_recursive(const TMapData::iterator& iItElem, QString& ioHtml, i32 iLevel, bool iSuppressTitle) const;
 
   enum class EMarkerState { Idle, NewData, UpdatedData };
   void _set_receiver_marker_color(EMarkerState iMarkerState) const;
@@ -69,5 +69,5 @@ public slots:
 private slots:
   void _slot_colorize_receive_marker_timeout() const;
   void _slot_html_rebuild_timeout() const;
-  void _slot_html_link_activated(const QString & iLink);
+  void _slot_html_link_activated(const QString& iLink);
 };

@@ -102,7 +102,7 @@ bool TiiHandler::_load_library()
   return false;
 }
 
-void TiiHandler::loadTable(const QString & iTiiFileName)
+void TiiHandler::loadTable(const QString& iTiiFileName)
 {
   if (!is_valid())
   {
@@ -115,7 +115,7 @@ void TiiHandler::loadTable(const QString & iTiiFileName)
   }
 }
 
-bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
+bool TiiHandler::fill_cache_from_tii_file(const QString& iTiiFileName)
 {
   bool dataLoaded = false;
 
@@ -140,7 +140,7 @@ bool TiiHandler::fill_cache_from_tii_file(const QString & iTiiFileName)
   return dataLoaded;
 }
 
-const STiiDataEntry * TiiHandler::get_transmitter_data(const QString & iChannel, const u16 iEid, const u8 iMainId, const u8 iSubId)
+const STiiDataEntry* TiiHandler::get_transmitter_data(const QString& iChannel, const u16 iEid, const u8 iMainId, const u8 iSubId)
 {
   const u32 key = STiiDataEntry::make_key_base(iEid, iMainId, iSubId);
   const auto [itFirst, itEnd] = mContentCacheMap.equal_range(key);
@@ -167,7 +167,7 @@ const STiiDataEntry * TiiHandler::get_transmitter_data(const QString & iChannel,
   // No entry for this channel, so fall back to the first entry with matching EId/TII. This is typically still the
   // correct transmitter (e.g. as the database is not up-to-date after a channel change of a multiplex), only the
   // channel differs. Report this once per key/channel combination to avoid flooding the log.
-  const STiiDataEntry & ce = itFirst->second;
+  const STiiDataEntry& ce = itFirst->second;
 
   if (channelIsKnown && mReportedChannelMismatches.insert({ key, iChannel }).second /*returns "inserted"*/ )
   {
@@ -255,7 +255,7 @@ f32 TiiHandler::corner(f32 latitude1, f32 longitude1, f32 latitude2, f32 longitu
   return ((3 * F_M_PI_2 + azimuth) / F_M_PI * 180);
 }
 
-f32 TiiHandler::_get_flt(const QString & s) const
+f32 TiiHandler::_get_flt(const QString& s) const
 {
   bool flag;
   f32 v = s.trimmed().toFloat(&flag);
@@ -266,7 +266,7 @@ f32 TiiHandler::_get_flt(const QString & s) const
   return v;
 }
 
-i32 TiiHandler::_get_int(const QString & s) const
+i32 TiiHandler::_get_int(const QString& s) const
 {
   bool flag;
   i32 v = s.trimmed().toInt(&flag);
@@ -277,7 +277,7 @@ i32 TiiHandler::_get_int(const QString & s) const
   return v;
 }
 
-u16 TiiHandler::_get_E_id(const QString & s) const
+u16 TiiHandler::_get_E_id(const QString& s) const
 {
   bool flag;
   u16 res = s.trimmed().toInt(&flag, 16);
@@ -288,7 +288,7 @@ u16 TiiHandler::_get_E_id(const QString & s) const
   return res;
 }
 
-u8 TiiHandler::_get_main_id(const QString & s) const
+u8 TiiHandler::_get_main_id(const QString& s) const
 {
   bool flag;
   u16 res = s.trimmed().toInt(&flag);
@@ -299,7 +299,7 @@ u8 TiiHandler::_get_main_id(const QString & s) const
   return res / 100;
 }
 
-u8 TiiHandler::_get_sub_id(const QString & s) const
+u8 TiiHandler::_get_sub_id(const QString& s) const
 {
   bool flag;
   u16 res = s.trimmed().toInt(&flag);
@@ -310,7 +310,7 @@ u8 TiiHandler::_get_sub_id(const QString & s) const
   return res % 100;
 }
 
-void TiiHandler::_read_file(QFile & fp)
+void TiiHandler::_read_file(QFile& fp)
 {
   u32 count = 0;
   u32 countTunnels = 0;
@@ -318,7 +318,7 @@ void TiiHandler::_read_file(QFile & fp)
   std::array<char, 1024> buffer;
   std::vector<QString> columnVector;
 
-  fp.read(reinterpret_cast<char *>(&mShift), 1);
+  fp.read(reinterpret_cast<char*>(&mShift), 1);
 
   while (_eread(buffer, fp) != nullptr)
   {
@@ -382,7 +382,7 @@ void TiiHandler::_read_file(QFile & fp)
   qInfo() << "Read" << mContentCacheMap.size() << "entries from" << count << "entries from database with" << countDuplicates << "duplicates," << countTunnels << "tunnels ignored";
 }
 
-bool TiiHandler::_is_already_cached(const u32 iKey, const QString & iChannel) const
+bool TiiHandler::_is_already_cached(const u32 iKey, const QString& iChannel) const
 {
   const auto [itFirst, itEnd] = mContentCacheMap.equal_range(iKey);
 
@@ -397,7 +397,7 @@ bool TiiHandler::_is_already_cached(const u32 iKey, const QString & iChannel) co
   return false;
 }
 
-i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) const
+i32 TiiHandler::_read_columns(std::vector<QString>& oV, const char* b, i32 N) const
 {
   i32 charp = 0;
   std::array<char, 256> tb;
@@ -426,10 +426,10 @@ i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) 
   return elementCount;
 }
 
-char * TiiHandler::_eread(const std::span<char> & oBuffer, QFile & fp) const
+char* TiiHandler::_eread(const std::span<char>& oBuffer, QFile& fp) const
 {
-  char * const buffer = oBuffer.data();
-  char * bufferP;
+  char* const buffer = oBuffer.data();
+  char* bufferP;
   if (fp.readLine(buffer, (qint64)oBuffer.size()) < 0)
   {
     return nullptr;

@@ -39,7 +39,7 @@
 #include "crc.h"
 
 // The main function of this class is to assemble the MSCdatagroups and dispatch to the appropriate handler
-DataProcessor::DataProcessor(DabRadio * ipDR, const SPacketData * const ipPD, RingBuffer<u8> * const ipDataBuffer)
+DataProcessor::DataProcessor(DabRadio* ipDR, const SPacketData* const ipPD, RingBuffer<u8>* const ipDataBuffer)
   : mpDabRadio(ipDR)
   , mBitRate(ipPD->bitRate)
   , mDSCTy(ipPD->DSCTy)
@@ -102,7 +102,7 @@ DataProcessor::DataProcessor(DabRadio * ipDR, const SPacketData * const ipPD, Ri
   mPacketState = 0;
 }
 
-void DataProcessor::add_to_frame(const std::vector<u8> & outV)
+void DataProcessor::add_to_frame(const std::vector<u8>& outV)
 {
   //	There is - obviously - some exception, that is
   //	when the DG flag is on and there are no datagroups for DSCTy5
@@ -119,7 +119,7 @@ void DataProcessor::add_to_frame(const std::vector<u8> & outV)
 
 // While for a full mix data and audio there will be a single packet in a
 // data compartment, for an empty mix, there may be many more
-void DataProcessor::_handle_packets(const std::span<const u8> & iBits)
+void DataProcessor::_handle_packets(const std::span<const u8>& iBits)
 {
   std::span<const u8> bits = iBits;
 
@@ -152,9 +152,9 @@ void DataProcessor::_handle_packets(const std::span<const u8> & iBits)
 // Handle a single DAB packet:
 // Note, although not yet encountered, the standard says that there may be multiple streams, to be identified by the address.
 // For the time being we only handle a single stream!!!!
-void DataProcessor::_handle_packet(const std::span<const u8> & iPacketBits)
+void DataProcessor::_handle_packet(const std::span<const u8>& iPacketBits)
 {
-  const u8 * const data = iPacketBits.data();
+  const u8* const data = iPacketBits.data();
   // see TS 300 401 5.3.2.0
   const i16 continuityIndex = getBits_2(data, 2);
   const i16 firstLast = getBits_2(data, 4);
@@ -254,9 +254,9 @@ void DataProcessor::_handle_packet(const std::span<const u8> & iPacketBits)
 }
 
 //	Really no idea what to do here
-void DataProcessor::_handle_TDC_async_stream(const std::span<const u8> & iBits)
+void DataProcessor::_handle_TDC_async_stream(const std::span<const u8>& iBits)
 {
-  const u8 * const data = iBits.data();
+  const u8* const data = iBits.data();
   i16 packetLength = (getBits_2(data, 0) + 1) * 24;
   i16 continuityIndex = getBits_2(data, 2);
   i16 firstLast = getBits_2(data, 4);

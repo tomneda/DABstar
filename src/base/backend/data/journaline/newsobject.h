@@ -70,8 +70,8 @@
 class NewsObject
 {
 public:
-    NewsObject(unsigned long len, const unsigned char *buf,
-               struct timeval *creation_time);
+    NewsObject(unsigned long len, const unsigned char* buf,
+               struct timeval* creation_time);
     ~NewsObject();
 
     typedef enum
@@ -85,14 +85,14 @@ public:
     unsigned long getObjectId();
     struct timeval getReceptionTime();
     struct timeval getCreationTime();
-    void setReceptionTime(struct timeval *time);
+    void setReceptionTime(struct timeval* time);
     bool isStatic();
     bool isCompressed();
     void setUpdateFlag();
     bool isUpdated();
     unsigned char getRevisionIndex();
     object_type_id_t getObjectType();
-    void copyNml(unsigned long *len, unsigned char *nml);
+    void copyNml(unsigned long* len, unsigned char* nml);
 
 private:
     enum { MAX_NML_BYTES=4092 };

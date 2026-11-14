@@ -33,7 +33,7 @@ static constexpr i32 cCheckStateAndPrintFigs_ms = 10000;  // check last state sa
   return std::make_unique<FibDecoder>(radio);
 }
 
-FibDecoder::FibDecoder(DabRadio * mr)
+FibDecoder::FibDecoder(DabRadio* mr)
   : mpRadioInterface(mr)
   , mpFibConfigFig1(std::make_unique<FibConfigFig1>())
   , mpFibConfigFig0Curr (std::make_unique<FibConfigFig0>())
@@ -57,7 +57,7 @@ FibDecoder::FibDecoder(DabRadio * mr)
   connect(mpTimerCheckStateAndPrintFigs, &QTimer::timeout, this, &FibDecoder::_slot_timer_check_state_and_print_FIGs);
 }
 
-void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibBits, u16 const /*iFicNo*/)
+void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut>& iFibBits, u16 const /*iFicNo*/)
 {
   QMutexLocker lock(&mMutex); // TODO: maybe shift to emplace_back() place?
 
@@ -74,7 +74,7 @@ void FibDecoder::process_FIB(const std::array<std::byte, cFibSizeVitOut> & iFibB
 
   while (processedBytes < 30)
   {
-    const u8 * const d = reinterpret_cast<const u8 *>(iFibBits.data()) + processedBytes * 8;
+    const u8* const d = reinterpret_cast<const u8*>(iFibBits.data()) + processedBytes * 8;
 
     const u8 figType = getBits_3(d, 0);
     const u8 figLength = getBits_5(d, 3);
@@ -131,7 +131,7 @@ void FibDecoder::_reset()
 // Some collected FIG content turned out to be physically impossible, so at least one FIB was decoded wrongly
 // (this typically happens with stale sample data at channel start). As it cannot be told which of the collected
 // data sets is the faulty one, everything is thrown away and the collection starts from scratch.
-void FibDecoder::_restart_fib_decoding(const QString & iReason)
+void FibDecoder::_restart_fib_decoding(const QString& iReason)
 {
   qWarning().noquote() << "Restart FIB decoding:" << iReason;
 
@@ -174,7 +174,7 @@ void FibDecoder::set_SId_for_fast_audio_selection(const u32 iSId)
   }
 }
 
-void FibDecoder::get_data_for_audio_service(const u32 iSId, SAudioData & oAD) const
+void FibDecoder::get_data_for_audio_service(const u32 iSId, SAudioData& oAD) const
 {
   // only FIG 0/1 and FIG 0/2 must be used here (other data could still not be available)
   QMutexLocker lock(&mMutex);
@@ -187,7 +187,7 @@ void FibDecoder::get_data_for_audio_service(const u32 iSId, SAudioData & oAD) co
     return;
   }
 
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
+  const auto* const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
@@ -201,11 +201,11 @@ void FibDecoder::get_data_for_audio_service(const u32 iSId, SAudioData & oAD) co
   }
 }
 
-void FibDecoder::get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const
+void FibDecoder::get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns& oADAO) const
 {
   QMutexLocker lock(&mMutex);
 
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
+  const auto* const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
@@ -219,7 +219,7 @@ void FibDecoder::get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & o
   }
 }
 
-bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioData * opAD) const
+bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2, SAudioData* opAD) const
 {
   if (opAD != nullptr) opAD->isDefined = false;
 
@@ -234,14 +234,14 @@ bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicS
   const u16 SId = iFig0s2.get_SId();
   if ((SId & 0xFFFF0000) != 0) qWarning() << "Unexpected primary service SId" << SId;
 
-  const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(SubChId);
+  const auto* const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(SubChId);
 
   if (pFig0s1 == nullptr)
   {
     return false;
   }
 
-  const auto * const pFig1s1 = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(SId);
+  const auto* const pFig1s1 = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(SId);
 
   if (pFig1s1 == nullptr && opAD == nullptr)
   {
@@ -270,7 +270,7 @@ bool FibDecoder::_get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicS
   return true;
 }
 
-bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, SAudioDataAddOns * opADAO) const
+bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2, SAudioDataAddOns* opADAO) const
 {
   if (iFig0s2.ServiceComp_C.PS_Flag != 1) qWarning() << "This should be only a primary service";
   if (iFig0s2.PD_Flag != 0)
@@ -283,8 +283,8 @@ bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_
   const u32 SId = iFig0s2.get_SId();
   if ((SId & 0xFFFF0000) != 0) qWarning() << "Unexpected big ";
 
-  const auto * const pFig0s5  = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SubChId(SubChId);
-  const auto * const pFig0s17 = mpFibConfigFig0Curr->get_Fig0s17_ProgrammeType_of_SId(SId);
+  const auto* const pFig0s5  = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SubChId(SubChId);
+  const auto* const pFig0s17 = mpFibConfigFig0Curr->get_Fig0s17_ProgrammeType_of_SId(SId);
 
   if (pFig0s5 != nullptr)  opADAO->language    = pFig0s5->Language; else opADAO->language    = std::nullopt;
   if (pFig0s17 != nullptr) opADAO->programType = pFig0s17->IntCode; else opADAO->programType = std::nullopt;
@@ -299,7 +299,7 @@ std::vector<SXPadUserApp> FibDecoder::get_xpad_user_apps_of_audio_service(const 
 
   std::vector<SXPadUserApp> xpadUserAppVec;
 
-  const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
+  const auto* const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(iSId, ETMId::StreamModeAudio);
 
   if (pFig0s2 == nullptr)
   {
@@ -308,14 +308,14 @@ std::vector<SXPadUserApp> FibDecoder::get_xpad_user_apps_of_audio_service(const 
 
   // The primary service component shall use SCIdS 0, but use FIG 0/8 if it is given for the audio sub-channel
   i32 SCIdS = 0;
-  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SubChId(iSId);
+  const auto* const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SubChId(iSId);
 
   if (pFig0s8 != nullptr && pFig0s8->SubChId == pFig0s2->ServiceComp_C.TMId00.SubChId)
   {
     SCIdS = pFig0s8->SCIdS;
   }
 
-  const auto * const pFig0s13 = mpFibConfigFig0Curr->get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(iSId, SCIdS);
+  const auto* const pFig0s13 = mpFibConfigFig0Curr->get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(iSId, SCIdS);
 
   if (pFig0s13 == nullptr)
   {
@@ -324,7 +324,7 @@ std::vector<SXPadUserApp> FibDecoder::get_xpad_user_apps_of_audio_service(const 
 
   for (i16 i = 0; i < std::min(pFig0s13->NumUserApps, (i16)pFig0s13->UserAppVec.size()); ++i)
   {
-    const auto & userApp = pFig0s13->UserAppVec[i];
+    const auto& userApp = pFig0s13->UserAppVec[i];
 
     if (!userApp.XPadData.has_value())
     {
@@ -342,7 +342,7 @@ std::vector<SXPadUserApp> FibDecoder::get_xpad_user_apps_of_audio_service(const 
   return xpadUserAppVec;
 }
 
-void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacketData> & oPDVec) const
+void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacketData>& oPDVec) const
 {
   QMutexLocker lock(&mMutex);
 
@@ -361,7 +361,7 @@ void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacket
       break;  // quit for loop
     }
 
-    const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(iSId, compIdx);
+    const auto* const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_ScIdx(iSId, compIdx);
 
     if (pFig0s2 == nullptr || pFig0s2->ServiceComp_C.TMId != ETMId::PacketModeData)
     {
@@ -400,7 +400,7 @@ void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacket
   // }
 }
 
-bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2, const i16 iCompIdx, SPacketData * opPD) const
+bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2, const i16 iCompIdx, SPacketData* opPD) const
 {
   if (opPD != nullptr) opPD->isDefined = false;
 
@@ -411,7 +411,7 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
 
   assert(iFig0s2.ServiceComp_C.TMId == ETMId::PacketModeData);
 
-  const auto * const pFig0s3 = mpFibConfigFig0Curr->get_Fig0s3_ServiceComponentPacketMode_of_SCId(iFig0s2.ServiceComp_C.TMId11.SCId);
+  const auto* const pFig0s3 = mpFibConfigFig0Curr->get_Fig0s3_ServiceComponentPacketMode_of_SCId(iFig0s2.ServiceComp_C.TMId11.SCId);
 
   if (pFig0s3 == nullptr)
   {
@@ -419,7 +419,7 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
     return false;
   }
 
-  const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s3->SubChId);
+  const auto* const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s3->SubChId);
 
   if (pFig0s1 == nullptr)
   {
@@ -428,7 +428,7 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
   }
 
   const u32 SId = iFig0s2.get_SId();
-  const auto * const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SCId(SId); // TODO: only for long form valid (with SCId)?
+  const auto* const pFig0s8 = mpFibConfigFig0Curr->get_Fig0s8_ServiceCompGlobalDef_of_SId_with_SCId(SId); // TODO: only for long form valid (with SCId)?
 
   if (pFig0s8 == nullptr)
   {
@@ -444,8 +444,8 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
     return false;
   }
 
-  const auto * const pFig0s14 = mpFibConfigFig0Curr->get_Fig0s14_SubChannelOrganization_of_SubChId(pFig0s3->SubChId);
-  const auto * const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SCId(iFig0s2.ServiceComp_C.TMId11.SCId);
+  const auto* const pFig0s14 = mpFibConfigFig0Curr->get_Fig0s14_SubChannelOrganization_of_SubChId(pFig0s3->SubChId);
+  const auto* const pFig0s5 = mpFibConfigFig0Curr->get_Fig0s5_ServiceComponentLanguage_of_SCId(iFig0s2.ServiceComp_C.TMId11.SCId);
 
   if (opPD != nullptr)
   {
@@ -475,7 +475,7 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
   // get service labels
   if (iFig0s2.ServiceComp_C.PS_Flag == 0) // is secondary
   {
-    const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(SId, pFig0s8->SCIdS);
+    const auto* const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(SId, pFig0s8->SCIdS);
 
     if (pFig1s4 != nullptr)
     {
@@ -492,7 +492,7 @@ bool FibDecoder::_get_data_for_packet_service(const FibConfigFig0::SFig0s2_Basic
   }
   else // is primary (PS_Flag == 1)
   {
-    const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(SId);
+    const auto* const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(SId);
 
     if (pFig1s5 != nullptr)
     {
@@ -519,11 +519,11 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
   // if (_are_fib_data_loaded())
   // {
     services.reserve(mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.size());
-    for (const auto & [serviceLabel, SId_SCIdS] : mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map)
+    for (const auto& [serviceLabel, SId_SCIdS] : mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map)
     {
       if (SId_SCIdS.SCIdS <= 0) // avoid using listing secondary subservices (negative SCIdS means "not specified")
       {
-        const auto * pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(SId_SCIdS.SId, ETMId::StreamModeAudio);
+        const auto* pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(SId_SCIdS.SId, ETMId::StreamModeAudio);
         SServiceId ed;
         ed.isAudioChannel = pFig0s2 != nullptr; // else is a primary data service
         ed.hasSpiEpgData = false; // TODO: fill out
@@ -541,12 +541,12 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
   return services;
 }
 
-const QString & FibDecoder::get_service_label_from_SId_SCIdS(const u32 iSId, const i32 iSCIdS) const
+const QString& FibDecoder::get_service_label_from_SId_SCIdS(const u32 iSId, const i32 iSCIdS) const
 {
   QMutexLocker lock(&mMutex);
   static const QString emptyString;
 
-  const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(iSId, iSCIdS);
+  const auto* const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(iSId, iSCIdS);
 
   if (pFig1s4 == nullptr)
   {
@@ -557,10 +557,10 @@ const QString & FibDecoder::get_service_label_from_SId_SCIdS(const u32 iSId, con
   return pFig1s4->Name;
 }
 
-void FibDecoder::get_SId_SCIdS_from_service_label(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const
+void FibDecoder::get_SId_SCIdS_from_service_label(const QString& iServiceLabel, u32& oSId, i32& oSCIdS) const
 {
   QMutexLocker lock(&mMutex);
-  const FibConfigFig1::SSId_SCIdS * pSId_SCIdS = mpFibConfigFig1->get_SId_SCIdS_from_service_label(iServiceLabel);
+  const FibConfigFig1::SSId_SCIdS* pSId_SCIdS = mpFibConfigFig1->get_SId_SCIdS_from_service_label(iServiceLabel);
 
   if (pSId_SCIdS == nullptr || pSId_SCIdS->SId == 0)
   {
@@ -614,7 +614,7 @@ i32 FibDecoder::get_cif_count() const
   return mCifCount;
 }
 
-void FibDecoder::get_cif_count(i16 * h, i16 * l) const
+void FibDecoder::get_cif_count(i16* h, i16* l) const
 {
   QMutexLocker lock(&mMutex);
   *h = mCifCount_hi;
@@ -624,7 +624,7 @@ void FibDecoder::get_cif_count(i16 * h, i16 * l) const
 u8 FibDecoder::get_ecc() const
 {
   QMutexLocker lock(&mMutex);
-  if (const auto * const pFig0s9 = mpFibConfigFig0Curr->get_Fig0s9_CountryLtoInterTab();
+  if (const auto* const pFig0s9 = mpFibConfigFig0Curr->get_Fig0s9_CountryLtoInterTab();
       pFig0s9 != nullptr)
   {
     return pFig0s9->Ensemble_ECC;
@@ -722,17 +722,17 @@ u32 FibDecoder::get_mod_julian_date() const
   return mModJulianDate;
 }
 
-void FibDecoder::get_sub_channel_info(SChannelData * d, const i32 iSubChId) const
+void FibDecoder::get_sub_channel_info(SChannelData* d, const i32 iSubChId) const
 {
   QMutexLocker lock(&mMutex);
 
   static constexpr FibConfigFig0::SFig0s1_BasicSubChannelOrganization emptySubChannel{};
 
-  const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(iSubChId);
+  const auto* const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(iSubChId);
 
   d->in_use = pFig0s1 != nullptr;
 
-  const auto & scd = d->in_use ? *pFig0s1 : emptySubChannel;
+  const auto& scd = d->in_use ? *pFig0s1 : emptySubChannel;
 
   d->id = scd.SubChId;
   d->start_cu = scd.StartAddr;
@@ -742,14 +742,14 @@ void FibDecoder::get_sub_channel_info(SChannelData * d, const i32 iSubChId) cons
   d->uepFlag = scd.ShortForm;
 }
 
-void FibDecoder::_set_cluster(FibConfigFig0 * localBase, i32 clusterId, u32 iSId, u16 asuFlags)
+void FibDecoder::_set_cluster(FibConfigFig0* localBase, i32 clusterId, u32 iSId, u16 asuFlags)
 {
   if (mFibLoadingState < EFibLoadingState::S4_FullyPacketDataLoaded)
   {
     return;
   }
 
-  Cluster * myCluster = _get_cluster(localBase, clusterId);
+  Cluster* myCluster = _get_cluster(localBase, clusterId);
 
   if (myCluster == nullptr)
   {
@@ -771,7 +771,7 @@ void FibDecoder::_set_cluster(FibConfigFig0 * localBase, i32 clusterId, u32 iSId
   myCluster->servicesSIDs.push_back(iSId);
 }
 
-Cluster * FibDecoder::_get_cluster(FibConfigFig0 * localBase, i16 clusterId) const
+Cluster* FibDecoder::_get_cluster(FibConfigFig0* localBase, i16 clusterId) const
 {
   for (i32 i = 0; i < 64; i++)
   {
@@ -793,7 +793,7 @@ Cluster * FibDecoder::_get_cluster(FibConfigFig0 * localBase, i16 clusterId) con
   return &(localBase->mClusterTable[0]);  // cannot happen
 }
 
-bool FibDecoder::_extract_character_set_label(FibConfigFig1::SFig1_DataField & oFig1DF, const u8 * const d, const i16 iLabelOffs) const
+bool FibDecoder::_extract_character_set_label(FibConfigFig1::SFig1_DataField& oFig1DF, const u8* const d, const i16 iLabelOffs) const
 {
   oFig1DF.Charset = getBits_4(d, 8);
 
@@ -829,7 +829,7 @@ bool FibDecoder::_extract_character_set_label(FibConfigFig1::SFig1_DataField & o
   return true;
 }
 
-void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerName)
+void FibDecoder::_retrigger_timer_data_loaded_fast(const char* const iCallerName)
 {
   // evaluate maximum time difference between calls to check whether the empiric time cMaxFibLoadingTimeFast_ms is high enough
   const std::chrono::time_point currTimePoint = std::chrono::system_clock::now(); // see issue https://github.com/tomneda/DABstar/issues/99
@@ -852,7 +852,7 @@ void FibDecoder::_retrigger_timer_data_loaded_fast(const char * const iCallerNam
   QMetaObject::invokeMethod(mpTimerCheckStateAndPrintFigs, qOverload<>(&QTimer::start), Qt::QueuedConnection); // retrigger also slow timer as it must always come at last
 }
 
-void FibDecoder::_retrigger_timer_data_loaded_slow(const char * const iCallerName)
+void FibDecoder::_retrigger_timer_data_loaded_slow(const char* const iCallerName)
 {
   _retrigger_timer_data_loaded_fast(iCallerName);
 }
@@ -860,10 +860,10 @@ void FibDecoder::_retrigger_timer_data_loaded_slow(const char * const iCallerNam
 void FibDecoder::_process_fast_audio_selection()
 {
   assert(mSIdForFastAudioSelection > 0);
-  if (const auto * const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(mSIdForFastAudioSelection, ETMId::StreamModeAudio);
+  if (const auto* const pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(mSIdForFastAudioSelection, ETMId::StreamModeAudio);
       pFig0s2 != nullptr)
   {
-    if (const auto * const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s2->ServiceComp_C.TMId00.SubChId);
+    if (const auto* const pFig0s1 = mpFibConfigFig0Curr->get_Fig0s1_BasicSubChannelOrganization_of_SubChId(pFig0s2->ServiceComp_C.TMId00.SubChId);
         pFig0s1 != nullptr)
     {
       qDebug() << "Fast audio selection for SId" << hex_str(mSIdForFastAudioSelection) << "successful";
@@ -892,7 +892,7 @@ bool FibDecoder::_check_audio_data_completeness() const
 
   // In the case, not all FIG0/2 where loaded a wrong decision could be made here.
   // The information form FIG 0/7 would help here but they are seldom transferred.
-  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto& fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio) // maybe flag also already made positive checks
     {
@@ -927,7 +927,7 @@ bool FibDecoder::_check_packet_data_completeness() const
 
   // In the case, not all FIG0/2 where loaded a wrong decision could be made here.
   // The information form FIG 0/7 would help here but they are seldom transferred.
-  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto& fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData) // maybe flag also already made positive checks
     {
@@ -988,7 +988,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
   {
     constexpr bool cCollectStatisticsOnly = !cShowFigDataOverview;
 
-    const FibHelper::TTP & ctp = mFirstFigTimePoint;
+    const FibHelper::TTP& ctp = mFirstFigTimePoint;
     const FibHelper::TTP ctpNow = TCT::now();
     SStatistic statFig0s1(ctp);
     SStatistic statFig0s2(ctp);
@@ -1046,12 +1046,12 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
     }
 
     // show not handled FIGs
-    for (const auto & extension: mUnhandledFig0Set)
+    for (const auto& extension: mUnhandledFig0Set)
     {
       qDebug().noquote() << QSL("FIG 0/%1 not handled").arg(extension);
     }
 
-    for (const auto & extension: mUnhandledFig1Set)
+    for (const auto& extension: mUnhandledFig1Set)
     {
       qDebug().noquote() << QSL("FIG 1/%1 not handled").arg(extension);
     }
@@ -1072,7 +1072,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
   }
 }
 
-FibDecoder::SFigHeader FibDecoder::_get_fig_header(const u8 * const d) const
+FibDecoder::SFigHeader FibDecoder::_get_fig_header(const u8* const d) const
 {
   SFigHeader header;
   header.Length  = getBits_5(d,  3); // FIG header length in bytes, the flags below are already included in the header length

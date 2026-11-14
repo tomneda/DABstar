@@ -73,33 +73,33 @@ class DabProcessor : public QThread
 {
 Q_OBJECT
 public:
-  DabProcessor(DabRadio * mr, IDeviceHandler * inputDevice, ProcessParams * p);
+  DabProcessor(DabRadio* mr, IDeviceHandler* inputDevice, ProcessParams* p);
   ~DabProcessor() override;
 
-  inline IFibDecoder * get_fib_decoder() const { return mpFibDecoder; };
+  inline IFibDecoder* get_fib_decoder() const { return mpFibDecoder; };
 
   void start();
   void stop();
-  void start_dumping(SNDFILE *);
+  void start_dumping(SNDFILE*);
   void stop_dumping();
-  bool start_eti_generator(const QString &);
+  bool start_eti_generator(const QString&);
   void stop_eti_generator();
   void reset_eti_generator();
   void set_scan_mode(bool);
   void add_bb_freq(i32 iFreqOffHz);
   void activate_cir_viewer(bool iActivate);
 
-  void start_fic_dump(FILE *);
+  void start_fic_dump(FILE*);
   void stop_fic_dump();
 
   // for the MscHandler
-  bool is_service_running(const SDescriptorType & iDT, EProcessFlag iProcessFlag) const;
+  bool is_service_running(const SDescriptorType& iDT, EProcessFlag iProcessFlag) const;
   bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
   bool is_sample_reader_running() const { return mSampleReader.is_running(); }
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
   void stop_all_services();
-  bool set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * ipoAudioBuffer, EProcessFlag iProcessFlag);
-  bool set_data_channel(const SPacketData & iPD, RingBuffer<u8> *, EProcessFlag iProcessFlag);
+  bool set_audio_channel(const SAudioData& iAD, RingBuffer<i16>* ipoAudioBuffer, EProcessFlag iProcessFlag);
+  bool set_data_channel(const SPacketData& iPD, RingBuffer<u8>*, EProcessFlag iProcessFlag);
 
   void set_sync_on_strongest_peak(bool);
   void set_dc_avoidance_algorithm(bool iUseDcAvoidanceAlgorithm);
@@ -110,11 +110,11 @@ public:
   void set_tii_collisions(bool);
 
 private:
-  DabRadio * const mpRadioInterface;
-  IEtiSource * const mpEtiSource; // != nullptr if the input device delivers ETI frames instead of samples
+  DabRadio* const mpRadioInterface;
+  IEtiSource* const mpEtiSource; // != nullptr if the input device delivers ETI frames instead of samples
   SampleReader mSampleReader;
   FicDecoder mFicHandler;
-  IFibDecoder * const mpFibDecoder;
+  IFibDecoder* const mpFibDecoder;
   MscHandler mMscHandler;
   PhaseReference mPhaseReference;
   TiiDetector mTiiDetector{};
@@ -140,7 +140,7 @@ private:
   f32 mClockErrHz = 0.0f;
   TimeSyncer::EState mTimeSyncerStateLast = TimeSyncer::EState::IDLE;
 
-  RingBuffer<cf32> * mpCirBuffer = nullptr;
+  RingBuffer<cf32>* mpCirBuffer = nullptr;
 
   alignas(64) TArrayTn mOfdmBuffer;
   alignas(64) TArrayTu mFftInBuffer;
@@ -154,13 +154,13 @@ private:
 
   void run() override; // the new QThread
   void _run_eti();
-  bool _process_eti_frame(const TEtiFrame & iFrame, std::vector<SEtiSubChannel> & oSubChannels);
+  bool _process_eti_frame(const TEtiFrame& iFrame, std::vector<SEtiSubChannel>& oSubChannels);
 
   bool _state_wait_for_time_sync_marker();
-  bool _state_eval_sync_symbol(i32 & oSampleCount, f32 iThreshold);
-  void _state_process_rest_of_frame(i32 & ioSampleCount);
-  f32 _process_ofdm_symbols_1_to_L(i32 & ioSampleCount);
-  void _process_null_symbol(i32 & ioSampleCount);
+  bool _state_eval_sync_symbol(i32& oSampleCount, f32 iThreshold);
+  void _state_process_rest_of_frame(i32& ioSampleCount);
+  f32 _process_ofdm_symbols_1_to_L(i32& ioSampleCount);
+  void _process_null_symbol(i32& ioSampleCount);
   void _set_rf_freq_offs_Hz(f32 iFreqHz);
   void _set_bb_freq_offs_Hz(f32 iFreqHz);
 
@@ -172,7 +172,7 @@ public slots:
 signals:
   void signal_no_dip_sync_found();
   void signal_dip_sync_found();
-  void signal_show_tii(const std::vector<STiiResult> & iTr);
+  void signal_show_tii(const std::vector<STiiResult>& iTr);
   void signal_show_spectrum(i32);
   void signal_show_clock_err(f32);
   void signal_set_and_show_freq_corr_rf_Hz(i32);

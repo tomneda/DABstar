@@ -46,10 +46,10 @@ class WavFileHandler final : public IDeviceNotifier, public IDeviceHandler, publ
 {
 Q_OBJECT
 public:
-  explicit WavFileHandler(const QString & iFilename);
+  explicit WavFileHandler(const QString& iFilename);
   ~WavFileHandler() override;
 
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   bool restartReader(i32) override;
   void stopReader() override;
@@ -58,7 +58,7 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &mFrame; }
+  QWidget* get_widget() override { return &mFrame; }
   bool isFileInput() override;
   void resetBuffer() override;
   QString deviceName() override;
@@ -71,7 +71,7 @@ private:
   RingBuffer<cf32> mRingBuffer;
   i32 mBufferSize = 0;
   i32 mSampleRate = 0;
-  SNDFILE * mpFile = nullptr;
+  SNDFILE* mpFile = nullptr;
   std::unique_ptr<WavReader> mpWavReader;
   std::atomic<bool> mIsRunning = false;
   f32 mFileDuration_s = 0.0f;

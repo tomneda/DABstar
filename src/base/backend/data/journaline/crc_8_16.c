@@ -261,7 +261,7 @@ void CRC_Init_8(unsigned char ucCRC_Table[])
  * @return
  *   CRC-16 value
  */
-unsigned short CRC_Build_16(const unsigned char *cDataPointer, 
+unsigned short CRC_Build_16(const unsigned char* cDataPointer,
                             const unsigned long iLength)
 {
   /* declare and initialize necessary variables: */
@@ -308,7 +308,7 @@ unsigned short CRC_Build_16(const unsigned char *cDataPointer,
  *   size of the data in bytes
  * @return unsigned char with the CRC-8 value
  */
-unsigned char CRC_Build_8(const unsigned char *cDataPointer, 
+unsigned char CRC_Build_8(const unsigned char* cDataPointer,
                           const unsigned long iLength)
 {
   /* declare and initialize necessary variables: */
@@ -354,7 +354,7 @@ unsigned char CRC_Build_8(const unsigned char *cDataPointer,
  * @retval 0  The received CRC-16 is different to the CRC-16
  *            calculated in the receiver.
  */
-char CRC_Check_16(const unsigned char *cDataPointer, 
+char CRC_Check_16(const unsigned char* cDataPointer,
                   const unsigned long iLength, 
                   const unsigned short iCRC_16)
 {
@@ -388,7 +388,7 @@ char CRC_Check_16(const unsigned char *cDataPointer,
  * @retval 0  The received CRC-8 is different to the CRC-8
  *            calculated in the receiver.
  */
-char CRC_Check_8(const unsigned char *cDataPointer, 
+char CRC_Check_8(const unsigned char* cDataPointer,
                  const unsigned long iLength, 
                  const unsigned char iCRC_8)
 {

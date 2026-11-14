@@ -34,16 +34,16 @@ class TimeTableHandler : public QListView
 {
 Q_OBJECT
 public:
-  TimeTableHandler(DabRadio * radio);
+  TimeTableHandler(DabRadio* radio);
   ~TimeTableHandler();
 
-  void addElement(i32, i32, const QString &, const QString &);
+  void addElement(i32, i32, const QString&, const QString&);
   void clear();
 
 private:
   QStringList timeTableList;
   QStringListModel displayList;
-  DabRadio * radio;
+  DabRadio* radio;
 };
 
 

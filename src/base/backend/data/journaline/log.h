@@ -65,12 +65,12 @@ extern "C" {
 #define LOG_INFO_DUMP 4, __FILE__, __LINE__, 0, 1, 0
 
 void logit(unsigned long level,
-           const char *file,
+           const char* file,
            const int line,
            int api_err,
            int dumpBuffer,
            int nots,
-           const char *format,
+           const char* format,
            ...);
 
 #ifdef __cplusplus

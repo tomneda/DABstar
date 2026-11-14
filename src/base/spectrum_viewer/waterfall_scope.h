@@ -26,18 +26,18 @@ class WaterfallScope : public QWidget
 {
 Q_OBJECT
 public:
-  explicit WaterfallScope(QWidget * parent = nullptr);
+  explicit WaterfallScope(QWidget* parent = nullptr);
   ~WaterfallScope() override = default;
 
   void init(i32 iDisplaySize, i32 iRasterSize);
-  void show_waterfall(const f32 * ipY1_value, const SpecViewLimits<f32> & iSpecViewLimits);
+  void show_waterfall(const f32* ipY1_value, const SpecViewLimits<f32>& iSpecViewLimits);
 
 public slots:
   void slot_scaling_changed(i32 iScale);
   void slot_set_horizontal_margins(int iLeft, int iRight);
 
 protected:
-  void paintEvent(QPaintEvent * ipEvent) override;
+  void paintEvent(QPaintEvent* ipEvent) override;
 
 private:
   i32 mDisplaySize  = 0;

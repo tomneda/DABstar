@@ -18,7 +18,7 @@ QString DabRadio::_seconds_to_timestring(const u32 iTimer) const
   return QString::asprintf("%dh%02d", iTimer / 3600, (iTimer / 60) % 60);
 }
 
-void DabRadio::_set_dump_button_emphasized(IndicatorButton * const ipButton, const bool iEmphasized, const u32 iBaseColor) const
+void DabRadio::_set_dump_button_emphasized(IndicatorButton* const ipButton, const bool iEmphasized, const u32 iBaseColor) const
 {
   ipButton->setStyleSheet(iEmphasized ? get_active_dump_style_sheet() : get_bg_style_sheet(iBaseColor));
   ipButton->setFixedSize(QSize(32, 32));
@@ -63,7 +63,7 @@ void DabRadio::_slot_update_time_display()
   mpAudioManager->update_dump_timers();
 }
 
-void DabRadio::_start_source_dumping(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus)
+void DabRadio::_start_source_dumping(const SChannelDescriptor& iChannelDesc, SDumpStatus& ioDumpStatus)
 {
   if (mIsScanning)
   {
@@ -93,7 +93,7 @@ void DabRadio::_start_source_dumping(const SChannelDescriptor & iChannelDesc, SD
   _set_dump_button_emphasized(ui->btnDumpRaw, true, cRawDumpColor);
 }
 
-void DabRadio::_stop_source_dumping(SDumpStatus & ioDumpStatus) const
+void DabRadio::_stop_source_dumping(SDumpStatus& ioDumpStatus) const
 {
   if (!ioDumpStatus.rawDumpActive)
   {
@@ -150,7 +150,7 @@ void DabRadio::_slot_handle_eti_button()
   }
 }
 
-void DabRadio::_start_eti_handler(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus)
+void DabRadio::_start_eti_handler(const SChannelDescriptor& iChannelDesc, SDumpStatus& ioDumpStatus)
 {
   if (ioDumpStatus.etiDumpActive)
   {
@@ -173,7 +173,7 @@ void DabRadio::_start_eti_handler(const SChannelDescriptor & iChannelDesc, SDump
   }
 }
 
-void DabRadio::_stop_eti_handler(SDumpStatus & ioDumpStatus) const
+void DabRadio::_stop_eti_handler(SDumpStatus& ioDumpStatus) const
 {
   if (!ioDumpStatus.etiDumpActive)
   {

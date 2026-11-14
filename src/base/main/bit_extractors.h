@@ -16,12 +16,12 @@
 
 #pragma once
 
-static inline u8 getBits_1(const u8 * d, i32 offset)
+static inline u8 getBits_1(const u8* d, i32 offset)
 {
   return (d[offset]);
 }
 
-static inline u8 getBits_2(const u8 * d, i32 offset)
+static inline u8 getBits_2(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -29,7 +29,7 @@ static inline u8 getBits_2(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u8 getBits_3(const u8 * d, i32 offset)
+static inline u8 getBits_3(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -39,7 +39,7 @@ static inline u8 getBits_3(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u8 getBits_4(const u8 * d, i32 offset)
+static inline u8 getBits_4(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -51,7 +51,7 @@ static inline u8 getBits_4(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u8 getBits_5(const u8 * d, i32 offset)
+static inline u8 getBits_5(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -65,7 +65,7 @@ static inline u8 getBits_5(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u8 getBits_6(const u8 * d, i32 offset)
+static inline u8 getBits_6(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -81,7 +81,7 @@ static inline u8 getBits_6(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u8 getBits_7(const u8 * d, i32 offset)
+static inline u8 getBits_7(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -99,7 +99,7 @@ static inline u8 getBits_7(const u8 * d, i32 offset)
   return res;
 }
 
-static inline u8 getBits_8(const u8 * d, i32 offset)
+static inline u8 getBits_8(const u8* d, i32 offset)
 {
   u8 res = d[offset];
   res <<= 1;
@@ -120,7 +120,7 @@ static inline u8 getBits_8(const u8 * d, i32 offset)
 }
 
 // generic, up to 16 bits
-static inline u16 getBits(const u8 * d, i32 offset, i16 size)
+static inline u16 getBits(const u8* d, i32 offset, i16 size)
 {
   assert(size <= 16);
   u16 res = 0;
@@ -134,7 +134,7 @@ static inline u16 getBits(const u8 * d, i32 offset, i16 size)
 }
 
 // generic, up to 32 bits
-static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
+static inline u32 getLBits(const u8* d, i32 offset, i16 amount)
 {
   assert(amount <= 32);
   u32 res = 0;
@@ -148,7 +148,7 @@ static inline u32 getLBits(const u8 * d, i32 offset, i16 amount)
 }
 
 template<typename T>
-static inline bool check_get_bits(T & ioNewExpected, const u8 * const ipData, const i32 iOffset, const i16 iNumBits) // returns true if data changed
+static inline bool check_get_bits(T& ioNewExpected, const u8* const ipData, const i32 iOffset, const i16 iNumBits) // returns true if data changed
 {
   const u32 actual = getLBits(ipData, iOffset, iNumBits);
   if (actual != ioNewExpected)
@@ -168,7 +168,7 @@ static inline bool check_get_bits(T & ioNewExpected, const u8 * const ipData, co
 // Extracts iNumBits bits from a big-endian byte stream ipData.
 // iBitOffset: 0-based bit offset counting from the MSB of ipData[0].
 // Returns the extracted value (1..32 bits).
-static inline u32 extract_bits_from_byte_stream(const u8 * const ipData, const i32 iBitOffset, const i32 iNumBits)
+static inline u32 extract_bits_from_byte_stream(const u8* const ipData, const i32 iBitOffset, const i32 iNumBits)
 {
   assert(ipData != nullptr);
   assert(iBitOffset >= 0);

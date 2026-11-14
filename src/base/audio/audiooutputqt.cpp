@@ -63,7 +63,7 @@ AudioOutputQt::~AudioOutputQt()
   }
 }
 
-void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
+void AudioOutputQt::slot_start(SAudioFifo* const iBuffer)
 {
   mAudioFormat.setSampleRate((i32)iBuffer->sampleRate);
   mAudioFormat.setSampleFormat(QAudioFormat::Int16);
@@ -92,7 +92,7 @@ void AudioOutputQt::slot_start(SAudioFifo * const iBuffer)
   mpAudioSink->start(mpIoDevice.get());
 }
 
-void AudioOutputQt::_print_audio_device_formats(const QAudioDevice & ad) const
+void AudioOutputQt::_print_audio_device_formats(const QAudioDevice& ad) const
 {
   qCInfo(sLogAudioOutput) << "Supported audio format:";
   qCInfo(sLogAudioOutput) << "  Sample formats:" << ad.supportedSampleFormats();
@@ -101,7 +101,7 @@ void AudioOutputQt::_print_audio_device_formats(const QAudioDevice & ad) const
   qCInfo(sLogAudioOutput) << "  Channel configuration:" << ad.channelConfiguration();
 }
 
-void AudioOutputQt::slot_restart(SAudioFifo * iBuffer)
+void AudioOutputQt::slot_restart(SAudioFifo* iBuffer)
 {
   if (mpAudioSink != nullptr)
   {
@@ -143,7 +143,7 @@ void AudioOutputQt::slot_set_volume(const i32 iLogVolVal)
   }
 }
 
-void AudioOutputQt::slot_set_audio_device(const QByteArray & iDeviceId)
+void AudioOutputQt::slot_set_audio_device(const QByteArray& iDeviceId)
 {
   if (!iDeviceId.isEmpty())
   {
@@ -154,7 +154,7 @@ void AudioOutputQt::slot_set_audio_device(const QByteArray & iDeviceId)
 
     const QList<QAudioDevice> list = get_audio_device_list();
 
-    for (const auto & dev : list)
+    for (const auto& dev : list)
     {
       if (dev.id() == iDeviceId)
       {
@@ -196,7 +196,7 @@ void AudioOutputQt::_do_stop() const
   mpIoDevice->close();
 }
 
-void AudioOutputQt::_do_restart(SAudioFifo * buffer)
+void AudioOutputQt::_do_restart(SAudioFifo* buffer)
 {
   mpRestartFifo = nullptr;
 
@@ -288,10 +288,10 @@ void AudioOutputQt::_slot_state_changed(const QAudio::State iNewState)
 QList<QAudioDevice> AudioOutputQt::get_audio_device_list() const
 {
   QList<QAudioDevice> list;
-  const QAudioDevice & defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
+  const QAudioDevice& defaultDeviceInfo = QMediaDevices::defaultAudioOutput();
   list.append(defaultDeviceInfo);
 
-  for (auto & deviceInfo : QMediaDevices::audioOutputs())
+  for (auto& deviceInfo : QMediaDevices::audioOutputs())
   {
     if (deviceInfo != defaultDeviceInfo)
     {
@@ -308,7 +308,7 @@ void AudioOutputQt::_slot_update_audio_devices()
   emit signal_audio_devices_list(list);
 
   bool currentDeviceFound = false;
-  for (auto & dev : list)
+  for (auto& dev : list)
   {
     if (dev.id() == mCurrentAudioDevice.id())
     {

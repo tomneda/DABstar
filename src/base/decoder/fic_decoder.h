@@ -44,20 +44,20 @@ class FicDecoder : public QObject
 {
   Q_OBJECT
 public:
-  explicit FicDecoder(DabRadio * iMr);
+  explicit FicDecoder(DabRadio* iMr);
   ~FicDecoder() override = default;
 
-  void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx);
-  void process_eti_fic(const std::span<const u8> & iFibBytes); // already decoded FIBs from an ETI frame (32 bytes each)
+  void process_block(const std::vector<i16>& iOfdmSoftBits, const i32 iOfdmSymbIdx);
+  void process_eti_fic(const std::span<const u8>& iFibBytes); // already decoded FIBs from an ETI frame (32 bytes each)
   void stop();
   void restart();
-  void get_fib_bits(u8 *, bool *);
+  void get_fib_bits(u8*, bool*);
   i32  get_fic_decode_ratio_percent() const;
   void reset_fic_decode_success_ratio() { mFicDecodeSuccessRatio = 0; };
-  void start_fic_dump(FILE *);
+  void start_fic_dump(FILE*);
   void stop_fic_dump();
 
-  IFibDecoder * get_fib_decoder() { return mpFibDecoder.get(); };
+  IFibDecoder* get_fib_decoder() { return mpFibDecoder.get(); };
 
 private:
   std::unique_ptr<IFibDecoder> mpFibDecoder;
@@ -67,7 +67,7 @@ private:
   std::array<std::byte, cFicSizeVitOut> mPRBS;
   std::array<i16, cFicSizeVitIn> mFicViterbiSoftInput;
   std::array<u8, cViterbiBlockSize> mPunctureTable{false}; // TODO: mViterbiBlockAddresses would be a substitute for this but still needed for BER measurement
-  std::vector<i16 *> mViterbiBlockAddresses; // this holds the addresses of mViterbiBlock where non-punctured data is stored
+  std::vector<i16*> mViterbiBlockAddresses; // this holds the addresses of mViterbiBlock where non-punctured data is stored
   std::array<i16, cViterbiBlockSize> mViterbiBlock{0}; // Viterbi input buffer with punctuation
   std::array<bool, 4> mFicValid{false};
   i16 mIndex = 0;
@@ -77,11 +77,11 @@ private:
   i32 mFicBits = 0;
   i32 mFicDecodeSuccessRatio = 0;   // Saturating up/down-counter in range [0, 10] corresponding to the number of FICs with correct CRC
   std::atomic<bool> mIsRunning{false};
-  std::atomic<FILE *> mpFicDump{nullptr};
+  std::atomic<FILE*> mpFicDump{nullptr};
 
-  void _process_fic_input(i16 iFicIdx, bool & oFicValid);
-  void _dump_fib_to_file(const std::byte * ipOneFibBits) const;
-  void _process_one_fib(const std::array<std::byte, cFibSizeVitOut> & iOneFib, i16 iFicIdx, bool & ioFicValid);
+  void _process_fic_input(i16 iFicIdx, bool& oFicValid);
+  void _dump_fib_to_file(const std::byte* ipOneFibBits) const;
+  void _process_one_fib(const std::array<std::byte, cFibSizeVitOut>& iOneFib, i16 iFicIdx, bool& ioFicValid);
 
 signals:
   void signal_fic_status(i32, f32);

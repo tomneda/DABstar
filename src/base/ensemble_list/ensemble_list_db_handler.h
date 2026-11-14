@@ -31,12 +31,12 @@ class CustomItemDelegate2 final: public QStyledItemDelegate
   Q_OBJECT
 
 public:
-  void set_current_fid_or_ch(const QString & iFIdOrCh, const i32 iFIdOrChColIdx) { mCurFIdOrCh = iFIdOrCh; mCurFIdOrChColIdx = iFIdOrChColIdx; }
+  void set_current_fid_or_ch(const QString& iFIdOrCh, const i32 iFIdOrChColIdx) { mCurFIdOrCh = iFIdOrCh; mCurFIdOrChColIdx = iFIdOrChColIdx; }
   void set_current_scan_level(const i32 iScanLevelIdx) { mCurScanLevelIdx = iScanLevelIdx; }
 
 protected:
-  void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
-  QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
   bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
@@ -45,14 +45,14 @@ private:
   i32 mCurScanLevelIdx = 0;
 
 signals:
-  void signal_selection_changed(const QString & oFIdOrCh);
+  void signal_selection_changed(const QString& oFIdOrCh);
 };
 
 class EnsembleListDbHandler : public QObject
 {
   Q_OBJECT
 public:
-  EnsembleListDbHandler(const QString & iDbFileName, QTableView * const ipSL);
+  EnsembleListDbHandler(const QString& iDbFileName, QTableView* const ipSL);
   ~EnsembleListDbHandler() override = default;
 
   using EDataMode = EnsembleListDB::EDataMode;
@@ -62,20 +62,20 @@ public:
   void delete_table();
   void create_new_table();
   [[nodiscard]] bool is_table_existing(EDataMode iDataMode) const;
-  void insert_or_update_entry(const EnsembleListDB::SDbEntryData & iEntryData, EnsembleListDB::EDbDataType iDataType);
-  bool delete_entry(const QString & iFIdOrCh);
+  void insert_or_update_entry(const EnsembleListDB::SDbEntryData& iEntryData, EnsembleListDB::EDbDataType iDataType);
+  bool delete_entry(const QString& iFIdOrCh);
   bool delete_invalid_entries();
-  [[nodiscard]] EnsembleListDB::SDbEntryData get_entry(const QString & iFIdOrCh) const;
+  [[nodiscard]] EnsembleListDB::SDbEntryData get_entry(const QString& iFIdOrCh) const;
   [[nodiscard]] i32 get_nr_unscanned_entries() const; // get number of entries with EId not given yet
-  [[nodiscard]] bool is_entry_existing(const QString & iFIdOrCh) const;
-  i32 set_selector(const QString & iFId);
-  [[nodiscard]] QString get_full_path(const QString & iFId) const;
+  [[nodiscard]] bool is_entry_existing(const QString& iFIdOrCh) const;
+  i32 set_selector(const QString& iFId);
+  [[nodiscard]] QString get_full_path(const QString& iFId) const;
   void jump_entries(i32 iSteps); // typ -1/+1, with wrap around
-  void set_data_filter(const EnsembleListDB::SDataFilter & iDataFilter);
+  void set_data_filter(const EnsembleListDB::SDataFilter& iDataFilter);
   void set_sorting_to_FId_or_Ch(bool iRestoreSorting);
 
 private:
-  QTableView * const mpTableView;
+  QTableView* const mpTableView;
   QSortFilterProxyModel mProxyModel;
   EnsembleListDB mEnsembleListDb;
   CustomItemDelegate2 mCustomItemDelegate;
@@ -91,9 +91,9 @@ private:
   void _hide_columns() const;
 
 private slots:
-  void _slot_selection_changed(const QString & iFIdOrCh);
+  void _slot_selection_changed(const QString& iFIdOrCh);
   void _slot_header_clicked(i32 iIndex);
 
 signals:
-  void signal_selection_changed(const QString & oFId);
+  void signal_selection_changed(const QString& oFId);
 };

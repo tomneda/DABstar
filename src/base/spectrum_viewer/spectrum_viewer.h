@@ -63,11 +63,11 @@ class SpectrumViewer : public QObject, private Ui_scopeWidget
 {
 Q_OBJECT
 public:
-  SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cf32> * ipSpecBuffer, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer, RingBuffer<f32> * ipCorrBuffer);
+  SpectrumViewer(DabRadio* ipRI, QSettings* ipDabSettings, RingBuffer<cf32>* ipSpecBuffer, RingBuffer<cf32>* ipIqBuffer, RingBuffer<f32>* ipCarrBuffer, RingBuffer<f32>* ipCorrBuffer);
   ~SpectrumViewer() override;
 
   void show_spectrum(i32);
-  void show_correlation(f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const;
+  void show_correlation(f32 threshold, const QVector<i32>& v, const std::vector<STiiResult>& iTr) const;
   void show_nominal_frequency_MHz(f32) const;
   void show_freq_corr_rf_Hz(i32 iFreqCorrRF) const;
   void show_freq_corr_bb_Hz(i32 iFreqCorrBB) const;
@@ -79,7 +79,7 @@ public:
   void hide();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool is_hidden() const;
-  [[nodiscard]] QWidget * get_widget() { return &myFrame; }
+  [[nodiscard]] QWidget* get_widget() { return &myFrame; }
   void show_digital_peak_and_rms_level(f32 iDigLevelPeak, f32 iDigLevelRms) const;
 
   enum class EAvrRate { SLOW, MEDIUM, FAST, DEFAULT = MEDIUM };
@@ -87,12 +87,12 @@ public:
 
 private:
   QFrame myFrame{ nullptr };
-  DabRadio * const mpRadioInterface;
-  QSettings * const mpDabSettings;
-  RingBuffer<cf32> * const mpSpectrumBuffer;
-  RingBuffer<cf32> * const mpIqBuffer;
-  RingBuffer<f32> * const mpCarrBuffer;
-  RingBuffer<f32> * const mpCorrelationBuffer;
+  DabRadio* const mpRadioInterface;
+  QSettings* const mpDabSettings;
+  RingBuffer<cf32>* const mpSpectrumBuffer;
+  RingBuffer<cf32>* const mpIqBuffer;
+  RingBuffer<f32>* const mpCarrBuffer;
+  RingBuffer<f32>* const mpCorrelationBuffer;
   std::vector<cf32> mIqValuesVec;
   std::vector<f32> mCarrValuesVec;
   mutable bool mThermoModQualConfigured = false;
@@ -110,13 +110,13 @@ private:
 
   i32 mLastVcoFreq = -1; // do not use 0 as input files can have 0Hz center frequencies and this cache would be "valid"
 
-  CarrierDisp * mpCarrierDisp = nullptr;
-  IQDisplay * mpIQDisplay = nullptr;
-  SpectrumScope * mpSpectrumScope = nullptr;
-  WaterfallScope * mpWaterfallScope = nullptr;
-  CorrelationViewer * mpCorrelationViewer = nullptr;
+  CarrierDisp* mpCarrierDisp = nullptr;
+  IQDisplay* mpIQDisplay = nullptr;
+  SpectrumScope* mpSpectrumScope = nullptr;
+  WaterfallScope* mpWaterfallScope = nullptr;
+  CorrelationViewer* mpCorrelationViewer = nullptr;
 
-  bool _calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin & ioMaxMin) const;
+  bool _calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin& ioMaxMin) const;
 
 public slots:
   void slot_update_settings();

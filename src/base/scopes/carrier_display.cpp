@@ -20,7 +20,7 @@
 #include <QChart>
 #include <cmath>
 
-CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
+CarrierDisp::CarrierDisp(PlotWidget* ipPlot)
   : mpPlot(ipPlot)
 {
   // Line series for LINES and STICKS styles
@@ -92,7 +92,7 @@ CarrierDisp::CarrierDisp(PlotWidget * ipPlot)
   select_plot_type(ECarrierPlotType::DEFAULT);
 }
 
-void CarrierDisp::display_carrier_plot(const std::vector<f32> & iYValVec)
+void CarrierDisp::display_carrier_plot(const std::vector<f32>& iYValVec)
 {
   if (mPlotTypeChanged) // we customize the plot here to avoid flickering while plot change
   {
@@ -221,7 +221,7 @@ void CarrierDisp::_update_y_markers(const f64 yMin, const f64 yMax)
   mpMarkerSeries->replace(markerPts);
 }
 
-void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
+void CarrierDisp::_customize_plot(const SCustPlot& iCustPlot)
 {
   mpPlot->setToolTip(iCustPlot.ToolTip);
   mCurrentStyle = iCustPlot.Style;
@@ -266,7 +266,7 @@ void CarrierDisp::_customize_plot(const SCustPlot & iCustPlot)
     for (i32 i = 0; i < (i32)xPoints.size(); ++i)
     {
       const bool isBlue = ((i - 15) % 8 == 0);
-      auto & pts = isBlue ? bluePts : redPts;
+      auto& pts = isBlue ? bluePts : redPts;
       pts.append(QPointF(xPoints[i], yLineMin));
       pts.append(QPointF(xPoints[i], yLineMax));
       pts.append(QPointF(qQNaN(), qQNaN()));

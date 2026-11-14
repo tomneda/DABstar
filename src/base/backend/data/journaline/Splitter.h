@@ -86,7 +86,7 @@
 class StringSplitter
 {
 public:
-  virtual bool Split(std::vector<std::string> & dest, const std::string & src) const = 0;
+  virtual bool Split(std::vector<std::string>& dest, const std::string& src) const = 0;
   virtual ~StringSplitter() = default;
 };
 
@@ -99,7 +99,7 @@ public:
   ~Splitter() override = default;
 
   virtual bool SetLineBreakCharacter(char lbc);
-  bool Split(std::vector<std::string> & dest, const std::string & src) const override;
+  bool Split(std::vector<std::string>& dest, const std::string& src) const override;
 
 private:
   char _LineBreak;

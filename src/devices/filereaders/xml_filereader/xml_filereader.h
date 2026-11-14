@@ -46,10 +46,10 @@ class XmlFileReader final : public IDeviceNotifier, public IDeviceHandler, publi
 {
 Q_OBJECT
 public:
-  explicit XmlFileReader(const QString &);
+  explicit XmlFileReader(const QString&);
   ~XmlFileReader() override;
 
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   bool restartReader(i32) override;
   void stopReader() override;
@@ -58,7 +58,7 @@ public:
   void hide() override;
   void show() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &myFrame; }
+  QWidget* get_widget() override { return &myFrame; }
   bool isFileInput() override;
   void resetBuffer() override;
   QString deviceName() override;
@@ -72,11 +72,11 @@ private:
   QFrame myFrame;
   std::atomic<bool> running = false;
   RingBuffer<cf32> _I_Buffer;
-  FILE * theFile = nullptr;
-  XmlDescriptor * theDescriptor = nullptr;
-  XmlReader * theReader = nullptr;
+  FILE* theFile = nullptr;
+  XmlDescriptor* theDescriptor = nullptr;
+  XmlReader* theReader = nullptr;
   bool mPaused = false;
-  i64 compute_nrSamples(XmlDescriptor *f, i32 blockNumber);
+  i64 compute_nrSamples(XmlDescriptor* f, i32 blockNumber);
   i32 startPoint;
 
 public slots:

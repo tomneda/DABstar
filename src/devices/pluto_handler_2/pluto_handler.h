@@ -50,66 +50,66 @@ class   XmlFileWriter;
 enum iodev { RX, TX };
 
 //  Dll and ".so" function prototypes
-typedef struct iio_channel * (*pfn_iio_device_find_channel)(
-                              const struct iio_device *dev,
-                              const char *name, bool output);
-typedef struct iio_context * (*pfn_iio_create_default_context)(void);
-typedef struct iio_context * (*pfn_iio_create_local_context) (void);
-typedef struct iio_context * (*pfn_iio_create_network_context)(const char *host);
-typedef const char * (*pfn_iio_context_get_name)(const struct iio_context *ctx);
+typedef struct iio_channel* (*pfn_iio_device_find_channel)(
+                              const struct iio_device* dev,
+                              const char* name, bool output);
+typedef struct iio_context* (*pfn_iio_create_default_context)(void);
+typedef struct iio_context* (*pfn_iio_create_local_context) (void);
+typedef struct iio_context* (*pfn_iio_create_network_context)(const char* host);
+typedef const char* (*pfn_iio_context_get_name)(const struct iio_context* ctx);
 typedef u32 (*pfn_iio_context_get_devices_count)(
-                      const struct iio_context *ctx);
-typedef struct iio_device * (*pfn_iio_context_find_device)(
-                             const struct iio_context *ctx,
-                             const char *name);
-typedef void (*pfn_iio_channel_enable)(struct iio_channel *chn);
+                      const struct iio_context* ctx);
+typedef struct iio_device* (*pfn_iio_context_find_device)(
+                             const struct iio_context* ctx,
+                             const char* name);
+typedef void (*pfn_iio_channel_enable)(struct iio_channel* chn);
 
-typedef i32 (*pfn_iio_device_attr_write_bool)(const struct iio_device *dev,
-                                     const char *attr, bool val);
-typedef i32 (*pfn_iio_device_attr_read_bool)(const struct iio_device *dev,
-                                     const char *attr, bool *val);
+typedef i32 (*pfn_iio_device_attr_write_bool)(const struct iio_device* dev,
+                                     const char* attr, bool val);
+typedef i32 (*pfn_iio_device_attr_read_bool)(const struct iio_device* dev,
+                                     const char* attr, bool* val);
 
 typedef i32 (*pfn_iio_channel_attr_read_bool)(
-                                     const struct iio_channel *chn,
-                                     const char *attr, bool *val);
+                                     const struct iio_channel* chn,
+                                     const char* attr, bool* val);
 typedef i32 (*pfn_iio_channel_attr_write_bool)(
-                                     const struct iio_channel *chn,
-                                     const char *attr, bool val);
+                                     const struct iio_channel* chn,
+                                     const char* attr, bool val);
 typedef ssize_t (*pfn_iio_channel_attr_write)(
-                                     const struct iio_channel *chn,
-                                     const char *attr,
-                                     const char *src);
+                                     const struct iio_channel* chn,
+                                     const char* attr,
+                                     const char* src);
 typedef i32 (*pfn_iio_channel_attr_write_longlong)(
-                                     const struct iio_channel *chn,
-                                     const char *attr,
+                                     const struct iio_channel* chn,
+                                     const char* attr,
                                      i64 val);
 typedef i32 (*pfn_iio_device_attr_write_longlong)(
-                                     const struct iio_device *dev,
-                                     const char *attr,
+                                     const struct iio_device* dev,
+                                     const char* attr,
                                      i64 val);
 typedef ssize_t (*pfn_iio_device_attr_write_raw)(
-                                     const struct iio_device *dev,
-                                     const char *attr,
-                                     const void *src, size_t len);
+                                     const struct iio_device* dev,
+                                     const char* attr,
+                                     const void* src, size_t len);
 
-typedef struct iio_buffer * (*pfn_iio_device_create_buffer)(const struct iio_device *dev,
+typedef struct iio_buffer* (*pfn_iio_device_create_buffer)(const struct iio_device* dev,
                               size_t samples_count, bool cyclic);
-typedef i32  (*pfn_iio_buffer_set_blocking_mode)(struct iio_buffer *buf,
+typedef i32  (*pfn_iio_buffer_set_blocking_mode)(struct iio_buffer* buf,
                                bool blocking);
-typedef void (*pfn_iio_buffer_destroy) (struct iio_buffer *buf);
-typedef void (*pfn_iio_context_destroy) (struct iio_context *ctx);
-typedef ssize_t (*pfn_iio_buffer_refill) (struct iio_buffer *buf);
-typedef ptrdiff_t (*pfn_iio_buffer_start) (const struct iio_buffer *buf);
-typedef ptrdiff_t (*pfn_iio_buffer_step) (const struct iio_buffer *buf);
-typedef void * (*pfn_iio_buffer_end)(const struct iio_buffer *buf);
-typedef void * (*pfn_iio_buffer_first)(const struct iio_buffer *buf,
-                                   const struct iio_channel *chn);
+typedef void (*pfn_iio_buffer_destroy) (struct iio_buffer* buf);
+typedef void (*pfn_iio_context_destroy) (struct iio_context* ctx);
+typedef ssize_t (*pfn_iio_buffer_refill) (struct iio_buffer* buf);
+typedef ptrdiff_t (*pfn_iio_buffer_start) (const struct iio_buffer* buf);
+typedef ptrdiff_t (*pfn_iio_buffer_step) (const struct iio_buffer* buf);
+typedef void* (*pfn_iio_buffer_end)(const struct iio_buffer* buf);
+typedef void* (*pfn_iio_buffer_first)(const struct iio_buffer* buf,
+                                   const struct iio_channel* chn);
 
 struct stream_cfg {
         i64 bw_hz;
         i64 fs_hz;
         i64 lo_hz;
-        const char *rfport;
+        const char* rfport;
 };
 
 class PlutoHandler final : public QThread, public IDeviceHandler,
@@ -117,19 +117,19 @@ class PlutoHandler final : public QThread, public IDeviceHandler,
 {
 Q_OBJECT
 public:
-    PlutoHandler        (QSettings *, const QString &);
+    PlutoHandler        (QSettings*, const QString&);
     ~PlutoHandler       () override;
     void    setVFOFrequency (i32)  override;
     i32     getVFOFrequency ()  override;
     bool    restartReader   (i32)  override;
     void    stopReader      ()  override;
-    i32     getSamples(const std::span<cf32> & oV)  override;
+    i32     getSamples(const std::span<cf32>& oV)  override;
     i32     Samples         ()  override;
     void    resetBuffer     ()  override;
     void    show            ()  override;
     void    hide            ()  override;
     bool    isHidden        ()  override;
-    QWidget * get_widget    ()  override { return &myFrame; }
+    QWidget* get_widget    ()  override { return &myFrame; }
     QString deviceName      ()  override;
     bool hasDump() override;
     bool startDumping() override;
@@ -137,13 +137,13 @@ public:
 
 private:
     bool            loadFunctions   ();
-    QLibrary        *pHandle;
+    QLibrary* pHandle;
     QFrame          myFrame;
     RingBuffer<cf32>    _I_Buffer;
-    QSettings       *plutoSettings;
+    QSettings* plutoSettings;
     QString         recorderVersion;
-    FILE            *xmlDumper;
-    XmlFileWriter   *xmlWriter;
+    FILE* xmlDumper;
+    XmlFileWriter* xmlWriter;
     bool            setup_xmlDump   ();
     std::atomic<bool>   dumping;
     bool            filterOn;
@@ -154,11 +154,11 @@ private:
     bool            debugFlag;
 
     //      configuration items
-    struct  iio_device  *rx;
-    struct  iio_context *ctx;
-    struct  iio_channel *rx0_i;
-    struct  iio_channel *rx0_q;
-    struct  iio_buffer  *rxbuf;
+    struct  iio_device* rx;
+    struct  iio_context* ctx;
+    struct  iio_channel* rx0_i;
+    struct  iio_channel* rx0_q;
+    struct  iio_buffer* rxbuf;
     struct  stream_cfg  rx_cfg;
     bool    connected;
     cf32    convBuffer  [CONV_SIZE + 1];
@@ -170,26 +170,26 @@ private:
     void    update_gainSettings (i32);
     bool    save_gainSettings;
 //
-    i32     ad9361_set_trx_fir_enable (struct iio_device *dev,i32 enable);
-    i32     ad9361_get_trx_fir_enable (struct iio_device *dev, i32 *enable);
-    struct iio_device*  get_ad9361_phy (struct iio_context *ctx);
-    bool    get_ad9361_stream_dev (struct iio_context *ctx,
+    i32     ad9361_set_trx_fir_enable (struct iio_device* dev,i32 enable);
+    i32     ad9361_get_trx_fir_enable (struct iio_device* dev, i32* enable);
+    struct iio_device*  get_ad9361_phy (struct iio_context* ctx);
+    bool    get_ad9361_stream_dev (struct iio_context* ctx,
                                    enum iodev d,
-                                   struct iio_device **dev);
-    bool    get_ad9361_stream_ch (__notused struct iio_context *ctx,
+                                   struct iio_device** dev);
+    bool    get_ad9361_stream_ch (__notused struct iio_context* ctx,
                                   enum iodev d,
-                                  struct iio_device *dev,
+                                  struct iio_device* dev,
                                   i32 chid,
-                                  struct iio_channel **chn);
-    bool    get_phy_chan (struct iio_context *ctx,
+                                  struct iio_channel** chn);
+    bool    get_phy_chan (struct iio_context* ctx,
                           enum iodev d,
                           i32 chid,
-                          struct iio_channel **chn);
-    bool    get_lo_chan (struct iio_context *ctx,
+                          struct iio_channel** chn);
+    bool    get_lo_chan (struct iio_context* ctx,
                          enum iodev d,
-                         struct iio_channel **chn);
-    bool    cfg_ad9361_streaming_ch (struct iio_context *ctx,
-                                     struct stream_cfg *cfg,
+                         struct iio_channel** chn);
+    bool    cfg_ad9361_streaming_ch (struct iio_context* ctx,
+                                     struct stream_cfg* cfg,
                                      enum iodev type, i32 chid);
 
     pfn_iio_device_find_channel         iio_device_find_channel;

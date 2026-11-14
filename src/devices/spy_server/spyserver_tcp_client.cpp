@@ -54,8 +54,8 @@
   #endif
 #endif
 
-SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
-                           RingBuffer<u8> * inBuffer)
+SpyServerTcpClient::SpyServerTcpClient(const QString& addr, i32 port,
+                           RingBuffer<u8>* inBuffer)
   : outBuffer(32768)
 {
   i32 RetCode;
@@ -80,14 +80,14 @@ SpyServerTcpClient::SpyServerTcpClient(const QString & addr, i32 port,
 #endif
   i32 bufSize = 8 * 32768;
   setsockopt(SendingSocket, SOL_SOCKET, SO_RCVBUF,
-             (char *)&bufSize, sizeof(bufSize));
+             (char*)&bufSize, sizeof(bufSize));
   ServerAddr.sin_family = AF_INET;
   ServerAddr.sin_port = htons(this->tcpPort);
   ServerAddr.sin_addr.s_addr =
     inet_addr(tcpAddress.toLatin1().data());
 
   RetCode = ::connect(SendingSocket,
-                      (struct sockaddr *)&ServerAddr, sizeof(ServerAddr));
+                      (struct sockaddr*)&ServerAddr, sizeof(ServerAddr));
   if (RetCode != 0)
   {
 #ifdef  _WIN32
@@ -135,7 +135,7 @@ void SpyServerTcpClient::close_conn()
   }
 }
 
-void SpyServerTcpClient::send_data(const std::span<const u8> & iData)
+void SpyServerTcpClient::send_data(const std::span<const u8>& iData)
 {
   outBuffer.put_data_into_ring_buffer(iData.data(), (i32)iData.size());
 }
@@ -168,7 +168,7 @@ void SpyServerTcpClient::run()
       if (amount > 0)
       {
         (void)outBuffer.get_data_from_ring_buffer(tempBuffer_8, amount);
-        send(SendingSocket, (char *)tempBuffer_8, amount, MSG_NOSIGNAL);
+        send(SendingSocket, (char*)tempBuffer_8, amount, MSG_NOSIGNAL);
       }
     }
     else
@@ -182,7 +182,7 @@ void SpyServerTcpClient::run()
       unsigned long bytesAvailable = 0;
       i32 ret = ioctlsocket(SendingSocket, FIONREAD, &bytesAvailable);
       (void)ret;
-      received = recvfrom(SendingSocket, (char *)tempBuffer_8,
+      received = recvfrom(SendingSocket, (char*)tempBuffer_8,
                           bytesAvailable, 0, &t, &tt);
       inBuffer->put_data_into_ring_buffer(tempBuffer_8, received);
     }

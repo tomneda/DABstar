@@ -23,9 +23,9 @@
 // Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtWarningMsg)
 
-void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
+void CustomItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  const QAbstractItemModel * pModel = index.model();
+  const QAbstractItemModel* pModel = index.model();
   const QModelIndex modIdxChannel = pModel->index(index.row(), ServiceDB::CI_Channel);
   const QModelIndex modIdxServiceId = pModel->index(index.row(), ServiceDB::CI_SId);
   const bool isLiveChannel = (pModel->data(modIdxChannel).toString() == mCurChannel);
@@ -59,7 +59,7 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
 
   if (index.column() == ServiceDB::CI_Fav)
   {
-    const QPixmap & curPM = (index.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
+    const QPixmap& curPM = (index.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
 
     // Calculate the position to center the pixmap within the item rectangle
     const i32 x = option.rect.x() + (option.rect.width()  - 16) / 2; // 16 = width of icon
@@ -78,7 +78,7 @@ void CustomItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & 
   QStyledItemDelegate::paint(painter, opt, index);
 }
 
-QSize CustomItemDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+QSize CustomItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   // Any row can become the currently-played (bold) row, and bold text is always at
   // least as wide as the regular text. So measure every cell with the bold font and
@@ -90,7 +90,7 @@ QSize CustomItemDelegate::sizeHint(const QStyleOptionViewItem & option, const QM
   return QStyledItemDelegate::sizeHint(opt, index);
 }
 
-bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+bool CustomItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
   if (event->type() == QEvent::MouseButtonPress)
   {
@@ -110,7 +110,7 @@ bool CustomItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model,
 }
 
 
-ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView * const ipSL) :
+ServiceListHandler::ServiceListHandler(const QString& iDbFileName, QTableView* const ipSL) :
   mpTableView(ipSL),
   mServiceDB(iDbFileName)
 {
@@ -146,7 +146,7 @@ ServiceListHandler::ServiceListHandler(const QString & iDbFileName, QTableView *
   connect(&mCustomItemDelegate, &CustomItemDelegate::signal_selection_changed_with_fav, this, &ServiceListHandler::_slot_selection_changed_with_fav);
 }
 
-void ServiceListHandler::add_entry(const QString & iChannel, const QString & iServiceLabel, const u32 iSId)
+void ServiceListHandler::add_entry(const QString& iChannel, const QString& iServiceLabel, const u32 iSId)
 {
   if (mServiceDB.add_entry(iChannel, iServiceLabel, iSId)) // true if new entry was added
   {
@@ -156,17 +156,17 @@ void ServiceListHandler::add_entry(const QString & iChannel, const QString & iSe
   }
 }
 
-void ServiceListHandler::delete_not_existing_SId_at_channel(const QString & iChannel, const TSIdList & iSIdList)
+void ServiceListHandler::delete_not_existing_SId_at_channel(const QString& iChannel, const TSIdList& iSIdList)
 {
   bool contentChanged = false;
 
   // delete entries from database which are not more in iServiceList
   const TSIdList curSIdList = get_list_of_SId_in_channel(iChannel);
 
-  for (const auto & curSId : curSIdList)
+  for (const auto& curSId : curSIdList)
   {
     bool found = false;
-    for (const auto & newSId : iSIdList)
+    for (const auto& newSId : iSIdList)
     {
       if (curSId == newSId)
       {
@@ -192,17 +192,17 @@ void ServiceListHandler::delete_not_existing_SId_at_channel(const QString & iCha
   }
 }
 
-void ServiceListHandler::delete_not_existing_channel(const TChannelList & iChList)
+void ServiceListHandler::delete_not_existing_channel(const TChannelList& iChList)
 {
   bool contentChanged = false;
 
   // Get list of all unique channels currently in the database
   const TChannelList curChList = mServiceDB.get_list_of_channels();
 
-  for (const auto & curCh : curChList)
+  for (const auto& curCh : curChList)
   {
     bool found = false;
-    for (const auto & newCh : iChList)
+    for (const auto& newCh : iChList)
     {
       if (curCh == newCh)
       {
@@ -228,7 +228,7 @@ void ServiceListHandler::delete_not_existing_channel(const TChannelList & iChLis
   }
 }
 
-void ServiceListHandler::delete_channel(const QString & iChannel)
+void ServiceListHandler::delete_channel(const QString& iChannel)
 {
   if (mServiceDB.delete_channel(iChannel)) // true if channel entries were deleted
   {
@@ -257,7 +257,7 @@ void ServiceListHandler::create_new_table()
   _fill_table_view_from_db();
 }
 
-void ServiceListHandler::set_selector(const QString & iChannel, const u32 iSId)
+void ServiceListHandler::set_selector(const QString& iChannel, const u32 iSId)
 {
   if (iChannel.isEmpty()/* || iSId == 0*/)
   {
@@ -279,7 +279,7 @@ void ServiceListHandler::set_selector(const QString & iChannel, const u32 iSId)
 }
 
 // this allows selecting the whole channel group when the channel selector was used
-void ServiceListHandler::set_selector_channel_only(const QString & iChannel)
+void ServiceListHandler::set_selector_channel_only(const QString& iChannel)
 {
   set_selector(iChannel, 0);
   mpTableView->update();
@@ -301,7 +301,7 @@ void ServiceListHandler::restore_favorites()
 
 void ServiceListHandler::_fill_table_view_from_db()
 {
-  QAbstractItemModel * const oldModel = mpTableView->model();
+  QAbstractItemModel* const oldModel = mpTableView->model();
 
   mpTableView->setModel(mServiceDB.create_model((mShowOnlyCurrentFIdOrCh ? mChannelLast : QString())));
 
@@ -315,7 +315,7 @@ void ServiceListHandler::_fill_table_view_from_db()
     mpTableView->hideColumn(ServiceDB::CI_SId);
   }
 
-  QHeaderView * const header = mpTableView->horizontalHeader();
+  QHeaderView* const header = mpTableView->horizontalHeader();
   header->setSectionResizeMode(QHeaderView::ResizeToContents);
   // Do not use setStretchLastSection(): Qt never shrinks the stretched last section below the size it had when it became
   // the last one (here the default section size of "Ch", after hiding "SId"). Stretch the service column instead.
@@ -327,7 +327,7 @@ void ServiceListHandler::jump_entries(i32 iSteps)
   _jump_to_list_entry_and_emit_fav_status(iSteps, true);
 }
 
-ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(const QString & iChannel) const
+ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(const QString& iChannel) const
 {
   TSIdList sl;
 
@@ -336,7 +336,7 @@ ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(cons
     return sl;
   }
 
-  const QAbstractItemModel * const pModel = mpTableView->model();
+  const QAbstractItemModel* const pModel = mpTableView->model();
   assert(pModel != nullptr);
 
   for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
@@ -360,7 +360,7 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
     return;
   }
 
-  const QAbstractItemModel * const pModel = mpTableView->model();
+  const QAbstractItemModel* const pModel = mpTableView->model();
   assert(pModel != nullptr);
 
   i32 rowIdxFound = -1;
@@ -426,7 +426,7 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
   }
 }
 
-void ServiceListHandler::_slot_selection_changed_with_fav(const QString & iChannel, const QString & iServiceLabel, const u32 iSId, const bool iIsFav)
+void ServiceListHandler::_slot_selection_changed_with_fav(const QString& iChannel, const QString& iServiceLabel, const u32 iSId, const bool iIsFav)
 {
   mChannelLast = iChannel;
   mServiceIdLast = iSId;

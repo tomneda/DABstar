@@ -30,14 +30,14 @@
 #endif
 
 template <typename T>
-QString hyperlink(const T & iUrl, const bool iIsMail = false)
+QString hyperlink(const T& iUrl, const bool iIsMail = false)
 {
   if (iIsMail) return QSL("<a href=\"mailto:%1\">%1</a>").arg(iUrl);
   else         return QSL("<a href=\"%1\">%1</a>").arg(iUrl);
 }
 
 // Create a link to iUrl but show iText (e.g. the library name and version) as the clickable label.
-QString hyperlink_text(const QString & iUrl, const QString & iText)
+QString hyperlink_text(const QString& iUrl, const QString& iText)
 {
   return QSL("<a href=\"%1\">%2</a>").arg(iUrl, iText);
 }
@@ -67,8 +67,8 @@ QString get_copyright_text()
   QString faadVers;
 #else
   QString usedDecoder = QSL(", libfaad");
-  char * faadIdString = nullptr;
-  char * faadCopyrightString = nullptr;
+  char* faadIdString = nullptr;
+  char* faadCopyrightString = nullptr;
   NeAACDecGetVersion(&faadIdString, &faadCopyrightString);
   QString faadVers = hyperlink_text(QSL("https://github.com/knik0/faad2"), (faadIdString != nullptr ? QSL("Faad ") + QString::fromUtf8(faadIdString) : QSL("Faad unknown"))) +
                      // "  (" + (faadCopyrightString != nullptr ? QString(faadCopyrightString) : QString("")) + ")"

@@ -24,7 +24,7 @@
 
 namespace {
 
-void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, const QColor & iBgBaseColor, const f32 iRefLuminance)
+void _calc_adjusted_bg_colors(QColor& oBgBaseColor1, QColor& oBgBaseColor2, const QColor& iBgBaseColor, const f32 iRefLuminance)
 {
   constexpr f32 cGradientFactor = 0.69f;
 
@@ -67,7 +67,7 @@ void _calc_adjusted_bg_colors(QColor & oBgBaseColor1, QColor & oBgBaseColor2, co
   oBgBaseColor2 = QColor(r2, g2, b2);
 }
 
-void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, const QColor & iBgBaseColor1, const QColor & iBgBaseColor2)
+void _calc_blended_bg_colors(QColor& oBgDisabled1, QColor& oBgDisabled2, const QColor& iBgBaseColor1, const QColor& iBgBaseColor2)
 {
   // Disabled: blend the button color 35% toward a dark neutral so the
   // hue identity is still faintly visible but the button clearly looks inactive.
@@ -91,7 +91,7 @@ void _calc_blended_bg_colors(QColor & oBgDisabled1, QColor & oBgDisabled2, const
 }
 }
 
-QString get_bg_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor /*= "black"*/, const f32 iRefLuminance /*= 0.60f*/)
+QString get_bg_style_sheet(const QColor& iBgBaseColor, const QColor& iFgBaseColor /*= "black"*/, const f32 iRefLuminance /*= 0.60f*/)
 {
   QColor bgBaseColor1, bgBaseColor2, bgDisabled1, bgDisabled2;
 
@@ -116,7 +116,7 @@ QString get_active_dump_style_sheet()
   return get_bg_style_sheet(0xFF3C3C);
 }
 
-QString get_combo_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBaseColor /*= Qt::white*/, f32 iRefLuminance /*= 0.60f*/)
+QString get_combo_style_sheet(const QColor& iBgBaseColor, const QColor& iFgBaseColor /*= Qt::white*/, f32 iRefLuminance /*= 0.60f*/)
 {
   QColor bgBaseColor1, bgBaseColor2, bgDisabled1, bgDisabled2;
 
@@ -146,7 +146,7 @@ QString get_combo_style_sheet(const QColor & iBgBaseColor, const QColor & iFgBas
   return { ts.str().c_str() };
 }
 
-void open_folder_and_select_file(const QString & iFilePath, const QString & iFallbackDir)
+void open_folder_and_select_file(const QString& iFilePath, const QString& iFallbackDir)
 {
   const QFileInfo fileInfo(iFilePath);
   const QString targetDir = fileInfo.exists() ? fileInfo.absolutePath() : iFallbackDir;

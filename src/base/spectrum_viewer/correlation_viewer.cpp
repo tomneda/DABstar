@@ -37,7 +37,7 @@
 #include "glob_defs.h"
 #include "dab_constants.h"
 
-CorrelationViewer::CorrelationViewer(PlotWidget * pPlot, QLabel * pLabel, QSettings * s, RingBuffer<f32> * b)
+CorrelationViewer::CorrelationViewer(PlotWidget* pPlot, QLabel* pLabel, QSettings* s, RingBuffer<f32>* b)
   : mpSettings(s)
   , mpResponseBuffer(b)
   , mpPlot(pPlot)
@@ -71,10 +71,10 @@ CorrelationViewer::CorrelationViewer(PlotWidget * pPlot, QLabel * pLabel, QSetti
   connect(mpPlot, &PlotWidget::signal_plot_area_changed,   this, [this](int, int)  { _update_tii_label_positions(); });
 }
 
-void CorrelationViewer::show_correlation(const f32 iThreshold, const QVector<i32> & iV, const std::vector<STiiResult> & iTiiResultList)
+void CorrelationViewer::show_correlation(const f32 iThreshold, const QVector<i32>& iV, const std::vector<STiiResult>& iTiiResultList)
 {
   constexpr i32 cPlotLength = 2048;
-  auto * const data = make_vla(f32, cPlotLength);
+  auto* const data = make_vla(f32, cPlotLength);
   const f32 threshold_dB = 20 * std::log10(iThreshold);
   constexpr f32 cScalerFltAlpha1 = (f32)0.1;
   constexpr f32 cScalerFltAlpha2 = cScalerFltAlpha1 / (f32)cPlotLength;
@@ -123,7 +123,7 @@ void CorrelationViewer::show_correlation(const f32 iThreshold, const QVector<i32
   mpIndexDisplay->setText(_get_best_match_text(iV));
 
   // Remove old TII markers (line + label)
-  for (const auto & marker : mTiiMarkerVec)
+  for (const auto& marker : mTiiMarkerVec)
   {
     mpPlot->chart()->removeSeries(marker.pLine);
     delete marker.pLine;
@@ -132,7 +132,7 @@ void CorrelationViewer::show_correlation(const f32 iThreshold, const QVector<i32
   mTiiMarkerVec.clear();
 
   // Add vertical line + text label for each TII result
-  for (const auto & tiiResult : iTiiResultList)
+  for (const auto& tiiResult : iTiiResultList)
   {
     STiiMarker marker;
 
@@ -169,7 +169,7 @@ void CorrelationViewer::show_correlation(const f32 iThreshold, const QVector<i32
 void CorrelationViewer::_update_tii_label_positions() const
 {
   const f64 yTop = mpPlot->get_y_axis()->max();
-  for (const auto & marker : mTiiMarkerVec)
+  for (const auto& marker : mTiiMarkerVec)
   {
     if (!marker.pText) continue;
     // Map data position (xPos, yTop) to chart widget coordinates
@@ -181,7 +181,7 @@ void CorrelationViewer::_update_tii_label_positions() const
   }
 }
 
-QString CorrelationViewer::_get_best_match_text(const QVector<i32> & v)
+QString CorrelationViewer::_get_best_match_text(const QVector<i32>& v)
 {
   QString txt;
 

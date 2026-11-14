@@ -59,14 +59,14 @@ class FdkAAC : public QObject
 {
   Q_OBJECT
 public:
-  FdkAAC(const DabRadio * ipDR, RingBuffer<i16> * ipBuffer);
+  FdkAAC(const DabRadio* ipDR, RingBuffer<i16>* ipBuffer);
   ~FdkAAC() override;
 
-  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const std::span<const u8> & iPacket);
+  i16 convert_mp4_to_pcm(const SStreamParms* iSP, const std::span<const u8>& iPacket);
   void conceal_lost_frame(i32 iNumSamples);
 
 private:
-  RingBuffer<i16> * const mpAudioBuffer;
+  RingBuffer<i16>* const mpAudioBuffer;
   bool mIsWorking = false;
   HANDLE_AACDECODER mAacHandle;
   i32 mLastAudioBufferFillSize = 0;

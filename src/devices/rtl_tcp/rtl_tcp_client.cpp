@@ -59,7 +59,7 @@ struct SDongleInfo
   u32 tuner_gain_count;
 };
 
-RtlTcpClient::RtlTcpClient(QSettings * s, const QString & iRecorderVersion)
+RtlTcpClient::RtlTcpClient(QSettings* s, const QString& iRecorderVersion)
   : mFrame(nullptr)
   , mpSettings(s)
   , mRecorderVersion(iRecorderVersion)
@@ -231,7 +231,7 @@ void RtlTcpClient::_show_connection_state(const bool iIsConnected)
   editIpAddress->setEnabled(!iIsConnected);
 }
 
-void RtlTcpClient::_show_error_state(const QString & iText)
+void RtlTcpClient::_show_error_state(const QString& iText)
 {
   lblState->setStyleSheet("color: #FF8888;");
   lblState->setText(iText);
@@ -277,9 +277,9 @@ void RtlTcpClient::stopReader()
   resetBuffer();
 }
 
-i32 RtlTcpClient::getSamples(const std::span<cf32> & oV)
+i32 RtlTcpClient::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   return mpBuffer->get_data_from_ring_buffer(V, size);
 }
@@ -375,7 +375,7 @@ void RtlTcpClient::_slot_read_data()
 
       if (mIsXmlDumping.load())
       {
-        mpXmlWriter->add(std::span((const cu8 *)byteBuffer.data(), sampleCnt));
+        mpXmlWriter->add(std::span((const cu8*)byteBuffer.data(), sampleCnt));
       }
     }
   }

@@ -30,7 +30,7 @@ dongleSelect::dongleSelect()
   toptext = new QLabel(this);
   toptext->setText("Select a device");
   selectorDisplay = new QListView (this);
-  QVBoxLayout *layOut = new QVBoxLayout;
+  QVBoxLayout* layOut = new QVBoxLayout;
   layOut->addWidget(selectorDisplay);
   layOut->addWidget(toptext);
   setWindowTitle("Device select");
@@ -46,7 +46,7 @@ dongleSelect::dongleSelect()
 
 dongleSelect::~dongleSelect() {}
 
-void dongleSelect::addtoDongleList(const QString &s)
+void dongleSelect::addtoDongleList(const QString& s)
 {
   Dongles << s;
   dongleList.setStringList(Dongles);

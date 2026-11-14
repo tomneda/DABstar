@@ -67,7 +67,7 @@ std::string errorMessage(i32 errorCode)
   return "";
 }
 
-SdrPlayHandler::SdrPlayHandler(QSettings *s, const QString & recorderVersion)
+SdrPlayHandler::SdrPlayHandler(QSettings* s, const QString& recorderVersion)
   : p_I_Buffer(sRingBufferFactoryCmplx16.get_ringbuffer(RingBufferFactory<ci16>::EId::DeviceSampleBuffer).get())
   , myFrame(nullptr)
 {
@@ -194,9 +194,9 @@ void SdrPlayHandler::stopReader()
   resetBuffer();
 }
 
-i32 SdrPlayHandler::getSamples(const std::span<cf32> & oV)
+i32 SdrPlayHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   static constexpr f32 denominator = (f32)(1 << (nrBits-1));
 
@@ -244,13 +244,13 @@ void SdrPlayHandler::set_lnabounds(i32 low, i32 high)
   lnaGainSetting->setRange(low, high);
 }
 
-void SdrPlayHandler::set_deviceName(const QString & s)
+void SdrPlayHandler::set_deviceName(const QString& s)
 {
   deviceModel = s;
   deviceLabel->setText(s);
 }
 
-void SdrPlayHandler::set_serial(const QString & s)
+void SdrPlayHandler::set_serial(const QString& s)
 {
   serialNumber->setText(s);
 }
@@ -325,7 +325,7 @@ void SdrPlayHandler::set_notch(i32 v)
   messageHandler(&r);
 }
 
-void SdrPlayHandler::set_selectAntenna(const QString & s)
+void SdrPlayHandler::set_selectAntenna(const QString& s)
 {
   messageHandler(new antennaRequest(s == "Antenna A" ? 'A' : s == "Antenna B" ? 'B' : 'C'));
 }
@@ -365,7 +365,7 @@ bool SdrPlayHandler::startDumping()
 
 bool SdrPlayHandler::setup_xmlDump()
 {
-  QSettings * const sdrplaySettings = &Settings::Storage::instance();
+  QSettings* const sdrplaySettings = &Settings::Storage::instance();
   OpenFileDialog filenameFinder(sdrplaySettings);
   xmlDumper = filenameFinder.open_raw_dump_xmlfile_ptr();
   if (xmlDumper == nullptr)
@@ -395,7 +395,7 @@ void SdrPlayHandler::stopDumping()
 //  the real controller starts here
 ///////////////////////////////////////////////////////////////////////
 
-bool SdrPlayHandler::messageHandler(generalCommand * r)
+bool SdrPlayHandler::messageHandler(generalCommand* r)
 {
   server_queue.push(r);
   serverjobs.release(1);
@@ -409,9 +409,9 @@ bool SdrPlayHandler::messageHandler(generalCommand * r)
   return true;
 }
 
-static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, u32 numSamples, u32 reset, void * cbContext)
+static void StreamACallback(short* xi, short* xq, sdrplay_api_StreamCbParamsT* params, u32 numSamples, u32 reset, void* cbContext)
 {
-  const SdrPlayHandler * const p = static_cast<SdrPlayHandler *>(cbContext);
+  const SdrPlayHandler* const p = static_cast<SdrPlayHandler*>(cbContext);
 
   (void)params;
   if (reset)
@@ -423,8 +423,8 @@ static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
     return;
   }
 
-  auto * const localBuf = make_vla(ci16, numSamples);
-  ci16 * localBuf2 = localBuf;
+  auto* const localBuf = make_vla(ci16, numSamples);
+  ci16* localBuf2 = localBuf;
 
   for (i32 i = 0; i < (i32)numSamples; ++i, ++localBuf2, ++xi, ++xq)
   {
@@ -435,7 +435,7 @@ static void StreamACallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
   p->p_I_Buffer->put_data_into_ring_buffer(localBuf, (i32)numSamples);
 }
 
-static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT * params, u32 numSamples, u32 reset, void * cbContext)
+static void StreamBCallback(short* xi, short* xq, sdrplay_api_StreamCbParamsT* params, u32 numSamples, u32 reset, void* cbContext)
 {
   (void)xi;
   (void)xq;
@@ -447,9 +447,9 @@ static void StreamBCallback(short * xi, short * xq, sdrplay_api_StreamCbParamsT 
   }
 }
 
-static void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT tuner, sdrplay_api_EventParamsT * params, void * cbContext)
+static void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT tuner, sdrplay_api_EventParamsT* params, void* cbContext)
 {
-  SdrPlayHandler * p = static_cast<SdrPlayHandler *> (cbContext);
+  SdrPlayHandler* p = static_cast<SdrPlayHandler*> (cbContext);
   (void)tuner;
   switch (eventId)
   {
@@ -464,7 +464,7 @@ static void EventCallback(sdrplay_api_EventT eventId, sdrplay_api_TunerSelectT t
   }
 }
 
-void SdrPlayHandler::update_PowerOverload(sdrplay_api_EventParamsT * params)
+void SdrPlayHandler::update_PowerOverload(sdrplay_api_EventParamsT* params)
 {
   sdrplay_api_Update(chosenDevice->dev, chosenDevice->tuner, sdrplay_api_Update_Ctrl_OverloadMsgAck, sdrplay_api_Update_Ext1_None);
   emit signal_overload_detected(params->powerOverloadParams.powerOverloadChangeType == sdrplay_api_Overload_Detected);
@@ -485,7 +485,7 @@ void SdrPlayHandler::run()
   connect(this, &SdrPlayHandler::signal_overload_detected, this, &SdrPlayHandler::slot_overload_detected);
   connect(this, &SdrPlayHandler::signal_tuner_gain, this, &SdrPlayHandler::slot_tuner_gain);
 
-  const char *libraryString = "sdrplay_api";
+  const char* libraryString = "sdrplay_api";
   phandle = new QLibrary(libraryString);
   phandle->load();
 
@@ -659,7 +659,7 @@ void SdrPlayHandler::run()
     {
     case RESTART_REQUEST:
     {
-      restartRequest * p = (restartRequest *)(server_queue.front());
+      restartRequest* p = (restartRequest*)(server_queue.front());
       server_queue.pop();
       // fprintf(stderr, "restart request\n");
       p->result = theRsp->restart(p->freq);
@@ -670,7 +670,7 @@ void SdrPlayHandler::run()
 
     case STOP_REQUEST:
     {
-      stopRequest * p = (stopRequest *)(server_queue.front());
+      stopRequest* p = (stopRequest*)(server_queue.front());
       server_queue.pop();
       receiverRuns.store(false);
       p->waiter.release(1);
@@ -679,7 +679,7 @@ void SdrPlayHandler::run()
 
     case AGC_REQUEST:
     {
-      agcRequest * p = (agcRequest *)(server_queue.front());
+      agcRequest* p = (agcRequest*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_agc(p->setPoint, p->agcMode);
       p->waiter.release(1);
@@ -688,7 +688,7 @@ void SdrPlayHandler::run()
 
     case GRDB_REQUEST:
     {
-      GRdBRequest * p = (GRdBRequest *)(server_queue.front());
+      GRdBRequest* p = (GRdBRequest*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_GRdB(p->GRdBValue);
       p->waiter.release(1);
@@ -697,7 +697,7 @@ void SdrPlayHandler::run()
 
     case PPM_REQUEST:
     {
-      ppmRequest * p = (ppmRequest *)(server_queue.front());
+      ppmRequest* p = (ppmRequest*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_ppm(p->ppmValue);
       p->waiter.release(1);
@@ -706,7 +706,7 @@ void SdrPlayHandler::run()
 
     case LNA_REQUEST:
     {
-      lnaRequest * p = (lnaRequest *)(server_queue.front());
+      lnaRequest* p = (lnaRequest*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_lna(p->lnaState);
       p->waiter.release(1);
@@ -715,7 +715,7 @@ void SdrPlayHandler::run()
 
     case ANTENNASELECT_REQUEST:
     {
-      antennaRequest * p = (antennaRequest *)(server_queue.front());
+      antennaRequest* p = (antennaRequest*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_antenna(p->antenna);
       p->waiter.release(1);
@@ -724,7 +724,7 @@ void SdrPlayHandler::run()
 
     case BIAS_T_REQUEST:
     {
-      biasT_Request * p = (biasT_Request *)(server_queue.front());
+      biasT_Request* p = (biasT_Request*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_biasT(p->checked);
       p->waiter.release(1);
@@ -733,7 +733,7 @@ void SdrPlayHandler::run()
 
     case NOTCH_REQUEST:
     {
-      notch_Request * p = (notch_Request *)(server_queue.front());
+      notch_Request* p = (notch_Request*)(server_queue.front());
       server_queue.pop();
       p->result = theRsp->set_notch(p->checked);
       p->waiter.release(1);
@@ -787,7 +787,7 @@ closeAPI:
 bool SdrPlayHandler::loadFunctions()
 {
   sdrplay_api_Open = (sdrplay_api_Open_t)phandle->resolve("sdrplay_api_Open");
-  if ((void *)sdrplay_api_Open == nullptr)
+  if ((void*)sdrplay_api_Open == nullptr)
   {
     fprintf(stderr, "Could not find sdrplay_api_Open\n");
     return false;

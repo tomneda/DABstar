@@ -42,7 +42,7 @@ class RawReader : public QThread
 Q_OBJECT
 
 public:
-  RawReader(RawFileHandler *, FILE *, RingBuffer<cf32> *);
+  RawReader(RawFileHandler*, FILE*, RingBuffer<cf32>*);
   ~RawReader();
 
   void start_reader();
@@ -55,9 +55,9 @@ private:
 
   virtual void run();
 
-  FILE * const mpFile;
-  RingBuffer<cf32> * const mpRingBuffer;
-  RawFileHandler * const mParent;
+  FILE* const mpFile;
+  RingBuffer<cf32>* const mpRingBuffer;
+  RawFileHandler* const mParent;
   std::atomic<bool> mRunning = false;
   std::atomic<i64> mSetNewFilePos = -1;
   std::atomic<bool> mPaused = false;

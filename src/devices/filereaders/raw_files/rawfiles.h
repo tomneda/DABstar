@@ -47,17 +47,17 @@ class RawFileHandler final : public IDeviceNotifier, public IDeviceHandler, publ
 Q_OBJECT
 public:
 
-  explicit RawFileHandler(const QString & iFilename);
+  explicit RawFileHandler(const QString& iFilename);
   ~RawFileHandler() override;
 
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   bool restartReader(i32) override;
   void stopReader() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &mFrame; }
+  QWidget* get_widget() override { return &mFrame; }
   bool isFileInput() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
@@ -70,7 +70,7 @@ public:
 private:
   QFrame mFrame;
   RingBuffer<cf32> mRingBuffer;
-  FILE * mpFile = nullptr;
+  FILE* mpFile = nullptr;
   std::unique_ptr<RawReader> mpRawReader;
   std::atomic<bool> mIsRunning = false;
   f32 mFileDuration_s = 0.0f;

@@ -39,7 +39,7 @@
 #include "setting_helper.h"
 #include "qt_compat.h"
 
-TechData::TechData(DabRadio * mr, RingBuffer<i16> * ipAudioBuffer)
+TechData::TechData(DabRadio* mr, RingBuffer<i16>* ipAudioBuffer)
   : Ui_technical_data(),
     mpRadioInterface(mr)
   , mFrame()
@@ -98,7 +98,7 @@ void TechData::cleanUp()
   lblAudioRate->setText("0");
 }
 
-void TechData::show_service_data(const SAudioData * ad) const
+void TechData::show_service_data(const SAudioData* ad) const
 {
   _show_service_label(ad->serviceLabel);
   _show_SId(ad->SId);
@@ -111,7 +111,7 @@ void TechData::show_service_data(const SAudioData * ad) const
   _show_coderate(ad->shortForm, ad->protLevel);
 }
 
-void TechData::show_service_data_addon(const SAudioDataAddOns * adon) const
+void TechData::show_service_data_addon(const SAudioDataAddOns* adon) const
 {
   slot_show_language(adon->language.value_or(0));
   slot_show_fm(-1);  // TODO: switched off
@@ -136,7 +136,7 @@ bool TechData::isHidden() const
 void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
 {
   // highlight non-zero values with amber color
-  auto set_val_with_col = [](QLabel * ipLbl, i32 iVal)
+  auto set_val_with_col = [](QLabel* ipLbl, i32 iVal)
   {
     ipLbl->setStyleSheet(iVal > 0 ? "font-weight: bold; color: #D4A030;" : "font-weight: bold;");
     ipLbl->setText(QString::number(iVal));
@@ -146,7 +146,7 @@ void TechData::slot_show_rs_corrections(i32 c, i32 ec) const
   set_val_with_col(lblEcCorrections, ec);
 }
 
-void TechData::_show_service_label(const QString & s) const
+void TechData::_show_service_label(const QString& s) const
 {
   lblProgramName->setText(s);
 }

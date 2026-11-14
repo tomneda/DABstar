@@ -53,16 +53,16 @@ public:
   void open_db();
   void create_table();
   void delete_table(const bool iDeleteFavorites);
-  bool add_entry(const QString & iChannel, const QString & iServiceLabel, u32 iSId);
-  bool delete_entry(const QString & iChannel, u32 iSId);
-  bool delete_channel(const QString & iChannel);
+  bool add_entry(const QString& iChannel, const QString& iServiceLabel, u32 iSId);
+  bool delete_entry(const QString& iChannel, u32 iSId);
+  bool delete_channel(const QString& iChannel);
   void sort_column(EColIdx iColIdx, ESortDir iSortDir);
 
-  void set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite) const;
+  void set_favorite(const QString& iChannel, u32 iSId, bool iIsFavorite) const;
   void retrieve_favorites_from_backup_table();
   [[nodiscard]] QList<QString> get_list_of_channels() const;
   [[nodiscard]] bool is_sort_desc() const;
-  QAbstractItemModel * create_model(const QString & iFilterToFIdOrCh);
+  QAbstractItemModel* create_model(const QString& iFilterToFIdOrCh);
 
 private:
   QSqlDatabase mDB;
@@ -74,7 +74,7 @@ private:
   [[nodiscard]] QString _error_str() const;
   void _delete_db_file();
   bool _open_db();
-  void _exec_simple_query(const QString & iQuery);
-  void _set_favorite(const QString & iChannel, u32 iSId, bool iIsFavorite, bool iStoreInFavTable) const;
-  [[nodiscard]] const QString & _cur_tab_name() const;
+  void _exec_simple_query(const QString& iQuery);
+  void _set_favorite(const QString& iChannel, u32 iSId, bool iIsFavorite, bool iStoreInFavTable) const;
+  [[nodiscard]] const QString& _cur_tab_name() const;
 };

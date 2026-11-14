@@ -27,10 +27,10 @@ void TestTone::activate(const bool iActive)
   mEnabled = iActive;
 }
 
-void TestTone::process(const std::span<i16> & ioData)
+void TestTone::process(const std::span<i16>& ioData)
 {
   const i32 iNumSamples = (i32)ioData.size();
-  i16 * const iopData = ioData.data();
+  i16* const iopData = ioData.data();
   if (!mEnabled)
   {
     return;
@@ -38,8 +38,8 @@ void TestTone::process(const std::span<i16> & ioData)
 
   for (i32 idx = 0; idx < iNumSamples; idx += 2)
   {
-    i16 & left  = iopData[idx + 0];
-    i16 & right = iopData[idx + 1];
+    i16& left  = iopData[idx + 0];
+    i16& right = iopData[idx + 1];
     left  *= (1.0f - cLevel);
     right *= (1.0f - cLevel);
 

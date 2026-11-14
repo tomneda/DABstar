@@ -46,7 +46,7 @@ public:
   virtual void stopReader() = 0;
   virtual void setVFOFrequency(i32) = 0;
   virtual i32 getVFOFrequency() = 0;
-  virtual i32 getSamples(const std::span<cf32> & oV) = 0;
+  virtual i32 getSamples(const std::span<cf32>& oV) = 0;
   virtual i32 Samples() = 0;
   virtual void resetBuffer() = 0;
   virtual void hide() = 0;
@@ -55,7 +55,7 @@ public:
   virtual QString deviceName() = 0;
 
   virtual void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
-  virtual QWidget * get_widget() { return nullptr; }
+  virtual QWidget* get_widget() { return nullptr; }
   virtual bool isFileInput() {return false;};
   virtual bool should_be_visible() const { return false; } // should the device be visible at startup?
   virtual bool hasDump() {return false;};
@@ -68,5 +68,5 @@ public:
   virtual void set_file_paused(bool /*iPaused*/) {}
 
   // only used by devices which deliver ETI frames instead of IQ samples
-  virtual IEtiSource * get_eti_source() { return nullptr; }
+  virtual IEtiSource* get_eti_source() { return nullptr; }
 };

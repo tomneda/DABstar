@@ -21,14 +21,14 @@ class MotSlideProgress : public QObject
 {
   Q_OBJECT
 public:
-  explicit MotSlideProgress(GapProgressBar * const pGapProgBarMot);
+  explicit MotSlideProgress(GapProgressBar* const pGapProgBarMot);
   ~MotSlideProgress() override = default;
 
   void do_progress(const i32 iPercent);
   void reset();
 
 private:
-  GapProgressBar * const mpGapProgBarMot;
+  GapProgressBar* const mpGapProgBarMot;
   QTimer mTimerHide;
 
 private slots:

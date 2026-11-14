@@ -58,13 +58,13 @@ public:
     bool skip;
   };
 
-  BandHandler(const QString &, QSettings *);
+  BandHandler(const QString&, QSettings*);
   ~BandHandler() override;
 
   void saveSettings();
-  void setupChannels(QComboBox * s, EBand iBand);
-  void setup_skipList(const QString &);
-  i32 get_frequency_Hz(const QString & Channel) const;
+  void setupChannels(QComboBox* s, EBand iBand);
+  void setup_skipList(const QString&);
+  i32 get_frequency_Hz(const QString& Channel) const;
   i32 firstChannel() const;
   i32 nextChannel(i32) const;
   // i32 prevChannel(i32);
@@ -77,13 +77,13 @@ public slots:
   void slot_cell_selected(i32, i32) const;
 
 private:
-  QSettings * dabSettings;
+  QSettings* dabSettings;
   QString fileName;
-  SDabFrequencies * selectedBand;
+  SDabFrequencies* selectedBand;
   QTableWidget theTable;
 
   // i32 lastOf(SDabFrequencies *) const;
   void default_skipList() const;
-  void file_skipList(const QString &) const;
-  void updateEntry(const QString &) const;
+  void file_skipList(const QString&) const;
+  void updateEntry(const QString&) const;
 };

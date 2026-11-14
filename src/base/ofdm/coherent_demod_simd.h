@@ -30,14 +30,14 @@
 class CoherentDemod
 {
 public:
-  CoherentDemod(const FreqInterleaver & iFreqInterleaver, const TArrayTu & iRefTable);
+  CoherentDemod(const FreqInterleaver& iFreqInterleaver, const TArrayTu& iRefTable);
   ~CoherentDemod();
 
   // Forget the channel estimate (new channel, sync lost, mode switched)
   void reset();
 
   // iV: the PRS carriers in nominal carrier order. Updates the channel estimate for the following data symbols of this frame.
-  void process_prs(const SimdVec<cf32> & iV);
+  void process_prs(const SimdVec<cf32>& iV);
 
   // True once the channel estimate is usable for the soft bits of the data symbols of this frame
   [[nodiscard]] bool is_ready() const { return mFrames >= 2; } // the channel estimate and the noise are known
@@ -49,10 +49,10 @@ public:
   // Has to be called for every data symbol of the frame (also if is_ready() is false, so that the channel can be tracked).
   // Afterwards (if is_ready()) get_soft_bits_real() and get_soft_bits_imag() are the soft bits of the two bits of each
   // carrier in nominal carrier order, scaled to the soft bit range but not limited (> 0: bit 1).
-  void demodulate(const SimdVec<cf32> & iV, i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum, bool iCalcConstellation);
+  void demodulate(const SimdVec<cf32>& iV, i32 iCurOfdmSymbIdx, const cf32& iGuardCorrSum, bool iCalcConstellation);
 
-  [[nodiscard]] const SimdVec<f32> & get_soft_bits_real() const { return mSoftBitRe; }
-  [[nodiscard]] const SimdVec<f32> & get_soft_bits_imag() const { return mSoftBitIm; }
+  [[nodiscard]] const SimdVec<f32>& get_soft_bits_real() const { return mSoftBitRe; }
+  [[nodiscard]] const SimdVec<f32>& get_soft_bits_imag() const { return mSoftBitIm; }
 
   // Constellation point of the carrier with nominal index iNomCarrIdx (only valid after demodulate() with
   // iCalcConstellation and if is_ready()), see coherent_demod.h
@@ -137,8 +137,8 @@ private:
   void _smooth_channel();
   void _update_weights();
   [[nodiscard]] f32 _timing_rotation(); // Phase per carrier between the new and the averaged estimate
-  void _phasor(f32 iPhase, f32 iSlope, SimdVec<cf32> & oV); // exp(j (iPhase + iSlope k)) for every carrier number k
-  [[nodiscard]] f32 _slope(const std::vector<i16> & iLow, const std::vector<i16> & iHigh, i32 iDistance); // timing from mResidual
+  void _phasor(f32 iPhase, f32 iSlope, SimdVec<cf32>& oV); // exp(j (iPhase + iSlope k)) for every carrier number k
+  [[nodiscard]] f32 _slope(const std::vector<i16>& iLow, const std::vector<i16>& iHigh, i32 iDistance); // timing from mResidual
   void _calc_constellation();
   void _ifft(); // normalized backward FFT from mFftInBuffer to mFftOutBuffer
 };

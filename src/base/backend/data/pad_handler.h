@@ -51,28 +51,28 @@ class PadHandler : public QObject
   Q_OBJECT
 
 public:
-  explicit PadHandler(DabRadio *);
+  explicit PadHandler(DabRadio*);
   ~PadHandler() override;
 
-  void process_PAD(const u8 * iBuffer, i16 iLast, u8 iL1, u8 iL0);
+  void process_PAD(const u8* iBuffer, i16 iLast, u8 iL1, u8 iL0);
 
 public slots:
   void slot_set_xpad_journaline_app_type(i16 iXPadAppTy); // -1 disables Journaline in X-PAD
 
 private:
-  DabRadio * const mpRadioInterface;
-  void _handle_variable_PAD(const u8 * iBuffer, i16 iLast, bool iCiFlag);
-  void _handle_short_PAD(const u8 * iBuffer, i16 iLast, bool iCIFlag);
-  void _dynamic_label(const std::vector<u8> &, u8 iApplType);
-  void _new_MSC_element(const std::vector<u8> &);
-  void _add_MSC_element(const std::vector<u8> &);
-  void _build_MSC_segment(const std::span<const u8> & iData);
-  void _handle_xpad_journaline(u8 iAppType, const std::vector<u8> &);
-  void _new_journaline_element(const std::vector<u8> &);
-  void _add_journaline_element(const std::vector<u8> &);
+  DabRadio* const mpRadioInterface;
+  void _handle_variable_PAD(const u8* iBuffer, i16 iLast, bool iCiFlag);
+  void _handle_short_PAD(const u8* iBuffer, i16 iLast, bool iCIFlag);
+  void _dynamic_label(const std::vector<u8>&, u8 iApplType);
+  void _new_MSC_element(const std::vector<u8>&);
+  void _add_MSC_element(const std::vector<u8>&);
+  void _build_MSC_segment(const std::span<const u8>& iData);
+  void _handle_xpad_journaline(u8 iAppType, const std::vector<u8>&);
+  void _new_journaline_element(const std::vector<u8>&);
+  void _add_journaline_element(const std::vector<u8>&);
   void _emit_journaline_data_group_if_complete();
-  void _slot_handle_journaline_data_group(const QByteArray & iDataGroup) const;
-  bool _pad_crc(const u8 *, i16);
+  void _slot_handle_journaline_data_group(const QByteArray& iDataGroup) const;
+  bool _pad_crc(const u8*, i16);
   void _reset_charset_change();
   void _check_charset_change();
 
@@ -104,8 +104,8 @@ private:
   std::unique_ptr<JournalineDataHandler> mpJournalineDataHandler; // only accessed in the GUI thread
 
 signals:
-  void signal_show_label(const QString &);
+  void signal_show_label(const QString&);
   void signal_show_mot_handling();  // triggers MOT indicator to "green" for a while
-  void signal_journaline_data_group(const QByteArray &);
+  void signal_journaline_data_group(const QByteArray&);
 };
 

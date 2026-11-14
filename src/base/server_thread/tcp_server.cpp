@@ -48,7 +48,7 @@
 	delete buffer;
 }
 
-void	tcpServer::sendData (const std::span<const u8> & iData) {
+void	tcpServer::sendData (const std::span<const u8>& iData) {
 	if (connected)
 	   buffer -> put_data_into_ring_buffer (iData.data(), (i32)iData.size());
 }
@@ -83,7 +83,7 @@ void	tcpServer::run (i32 port) {
 	
 //	Bind
 	if (bind (socketDesc,
-	          (struct sockaddr *)&server , sizeof(server)) < 0) {
+	          (struct sockaddr*)&server , sizeof(server)) < 0) {
 //	print the error message
 	   perror ("bind failed. Error");
 	   return;
@@ -98,7 +98,7 @@ void	tcpServer::run (i32 port) {
      
 //	accept connection from an incoming client
 	   client_sock = accept (socketDesc, 
-	                         (struct sockaddr *)&client,
+	                         (struct sockaddr*)&client,
 	                         (socklen_t*)&c);
 	   if (client_sock < 0) {
 	      perror("accept failed");

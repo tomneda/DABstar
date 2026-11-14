@@ -24,7 +24,7 @@
 soapyWorker::soapyWorker    (void) {}
 soapyWorker::~soapyWorker   (void) {}
 i32 soapyWorker::Samples    (void) {return 0;}
-i32 soapyWorker::getSamples(const std::span<cf32> & /*oV*/)
+i32 soapyWorker::getSamples(const std::span<cf32>& /*oV*/)
 {
   return 0;
 }

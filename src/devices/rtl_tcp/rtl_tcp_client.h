@@ -46,18 +46,18 @@ class RtlTcpClient final : public IDeviceNotifier, public IDeviceHandler, privat
 {
   Q_OBJECT
 public:
-  explicit RtlTcpClient(QSettings *, const QString & iRecorderVersion);
+  explicit RtlTcpClient(QSettings*, const QString& iRecorderVersion);
   ~RtlTcpClient() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &mFrame; }
+  QWidget* get_widget() override { return &mFrame; }
   QString deviceName() override;
   bool should_be_visible() const override { return true; }
   void resetBuffer() override;
@@ -69,7 +69,7 @@ private:
   enum class EAgcMode { HW = 0, OFF = 1, SW = 2 };
 
   QFrame mFrame;
-  QSettings * const mpSettings;
+  QSettings* const mpSettings;
   std::array<f32, 256> mMapTable;
   std::unique_ptr<RingBuffer<cf32>> mpBuffer;
   i32 mBitRate;
@@ -86,7 +86,7 @@ private:
   bool mDongleInfoReceived = false;
   const QString mRecorderVersion;
   QString mTunerText;
-  FILE * mpXmlDumper = nullptr;
+  FILE* mpXmlDumper = nullptr;
   std::unique_ptr<XmlFileWriter> mpXmlWriter;
   std::atomic<bool> mIsXmlDumping;
 
@@ -106,7 +106,7 @@ private:
   bool _check_and_cleanup_ip_address();
   void _set_agc_mode(EAgcMode iAgcMode);
   void _show_connection_state(bool iIsConnected);
-  void _show_error_state(const QString & iText);
+  void _show_error_state(const QString& iText);
 
 private slots:
   void _slot_socket_error(QAbstractSocket::SocketError iSocketError);

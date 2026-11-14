@@ -173,8 +173,8 @@ enum InstructionTest {
 class SSE2NEONTest
 {
 public:
-    static SSE2NEONTest *create(void);  // create the test.
-    static const char *getInstructionTestString(InstructionTest test);
+    static SSE2NEONTest* create(void);  // create the test.
+    static const char* getInstructionTestString(InstructionTest test);
 
     // Run test of this instruction; return true if it passed, false if it
     // failed

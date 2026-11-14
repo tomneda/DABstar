@@ -49,7 +49,7 @@ FreqInterleaver::FreqInterleaver()
 
 void FreqInterleaver::createMapper(const i16 iV1, const i16 iLwb, const i16 iUpb)
 {
-  auto * const tmp = make_vla(i16, cTu);
+  auto* const tmp = make_vla(i16, cTu);
   i16 index = 0;
   i16 i;
 

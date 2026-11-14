@@ -54,7 +54,7 @@
   *	the class proper processes input and extracts the aac frames
   *	that are processed by the "faadDecoder" class
   */
-Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> * const iopAudioBuffer, RingBuffer<u8> * const iopFrameBuffer)
+Mp4Processor::Mp4Processor(DabRadio* iRI, const i16 iBitRate, RingBuffer<i16>* const iopAudioBuffer, RingBuffer<u8>* const iopFrameBuffer)
   : mpRadioInterface(iRI)
   , mPadhandler(iRI)
   , mBitRate(iBitRate)
@@ -92,7 +92,7 @@ Mp4Processor::Mp4Processor(DabRadio * iRI, const i16 iBitRate, RingBuffer<i16> *
   *	per Byte, nbits is the number of Bits (i.e. containing bytes)
   *	the function adds nbits bits, packed in bytes, to the frame.
   */
-void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
+void Mp4Processor::add_to_frame(const std::vector<u8>& iV)
 {
   const i16 numBits = 24 * mBitRate;
   const i16 numBytes = numBits / 8;
@@ -180,7 +180,7 @@ void Mp4Processor::add_to_frame(const std::vector<u8> & iV)
   }
 }
 
-bool Mp4Processor::_process_reed_solomon_frame(const u8 * const ipFrameBytes, const i16 iBase)
+bool Mp4Processor::_process_reed_solomon_frame(const u8* const ipFrameBytes, const i16 iBase)
 {
   /**
     *	apply reed-solomon error repair
@@ -345,7 +345,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
       if (((mOutVec[mAuStartArr[auIdx + 0]] >> 5) & 07) == 4)
       {
         const i16 count = mOutVec[mAuStartArr[auIdx] + 1];
-        auto * const buffer = make_vla(u8, count);
+        auto* const buffer = make_vla(u8, count);
         memcpy(buffer, &mOutVec[mAuStartArr[auIdx] + 2], count);
         const u8 L0 = buffer[count - 1];
         const u8 L1 = buffer[count - 2];
@@ -392,7 +392,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
   return true;
 }
 
-i32 Mp4Processor::_build_aac_stream(const SStreamParms * const iSp, const std::span<const u8> & iAacFrame, std::vector<u8> & oFileBuffer) const
+i32 Mp4Processor::_build_aac_stream(const SStreamParms* const iSp, const std::span<const u8>& iAacFrame, std::vector<u8>& oFileBuffer) const
 {
   const i16 iAacFrameLen = (i16)iAacFrame.size();
   BitWriter au_bw(oFileBuffer); // fileBuffer will filled up in BitWriter

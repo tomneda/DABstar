@@ -67,25 +67,25 @@ typedef struct
   bool uepFlag;
   i32 bitRate;
   i32 protLevel;
-  u8 * dispersionVector;
-  Protection * theDeconvolver;
+  u8* dispersionVector;
+  Protection* theDeconvolver;
 } protDesc;
 
 class EtiGenerator
 {
 public:
-  EtiGenerator(FicDecoder * my_ficHandler);
+  EtiGenerator(FicDecoder* my_ficHandler);
   ~EtiGenerator();
 
-  void process_block(const std::vector<i16> & fbits, i32 iOfdmSymbIdx);
+  void process_block(const std::vector<i16>& fbits, i32 iOfdmSymbIdx);
   void reset();
-  bool start_eti_generator(const QString &);
+  bool start_eti_generator(const QString&);
   void stop_eti_generator();
 
 private:
-  FicDecoder * const my_ficHandler;
-  IFibDecoder * const mpFibDecoder;
-  FILE * etiFile;
+  FicDecoder* const my_ficHandler;
+  IFibDecoder* const mpFibDecoder;
+  FILE* etiFile;
   bool running;
   i16 index_Out;
   i32 Minor;
@@ -98,9 +98,9 @@ private:
   std::mutex mMutex;
   std::vector<i8> mSubChIdList;
 
-  i32 _init_eti(const std::span<u8> & oEti, i16, i16, i16);
-  i32 _process_cif(const i16 *, u8 *, i32);
-  void _process_sub_channel(i32, parameter *, Protection * prot, u8 *);
+  i32 _init_eti(const std::span<u8>& oEti, i16, i16, i16);
+  i32 _process_cif(const i16*, u8*, i32);
+  void _process_sub_channel(i32, parameter*, Protection* prot, u8*);
 };
 
 

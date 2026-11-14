@@ -58,7 +58,7 @@ public:
   i32 nrBlocks;
   std::vector<Blocks> blockList;
 
-  XmlDescriptor(FILE *, bool *);
+  XmlDescriptor(FILE*, bool*);
   ~XmlDescriptor() = default;
 
   void printDescriptor();

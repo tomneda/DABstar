@@ -49,7 +49,7 @@ private:
   static constexpr std::array<i16, 8> cLengthTable = { 4, 6, 8, 12, 16, 24, 32, 48 };
 };
 
-PadHandler::PadHandler(DabRadio * mr)
+PadHandler::PadHandler(DabRadio* mr)
   : mpRadioInterface(mr)
 {
   mpMotObject.reset(new MotObject(mr, false, true));
@@ -85,7 +85,7 @@ void PadHandler::slot_set_xpad_journaline_app_type(const i16 iXPadAppTy)
 //	Data is stored reverse, we pass the vector and the index of the
 //	last element of the XPad data.
 //	 L0 is the "top" byte of the L field, L1 the next to top one.
-void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8 iL1, const u8 iL0)
+void PadHandler::process_PAD(const u8* const iBuffer, const i16 iLast, const u8 iL1, const u8 iL0)
 {
   const u8 fpadType = (iL1 >> 6) & 0x3;
 
@@ -129,7 +129,7 @@ void PadHandler::process_PAD(const u8 * const iBuffer, const i16 iLast, const u8
 //	of these 2 values, but it is not clear to me how.
 //	For me, the end of a segment is when we collected the amount
 //	of values specified for the segment.
-void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, const bool iCIFlag)
+void PadHandler::_handle_short_PAD(const u8* const iBuffer, const i16 iLast, const bool iCIFlag)
 {
   i16 i;
 
@@ -181,7 +181,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
 
       if ((mStillToGo <= 0) && (mShortPadData.size() > 1))
       {
-        mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (qsizetype)mShortPadData.size());
+        mDynamicLabelTextUnConverted.append((const char*)mShortPadData.data(), (qsizetype)mShortPadData.size());
         _check_charset_change();
         mShortPadData.clear();
       }
@@ -201,7 +201,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
     if ((mStillToGo <= 0) && (mShortPadData.size() > 0))
     {
       //	just to avoid doubling by unsollicited shortpads
-      mDynamicLabelTextUnConverted.append((const char *)mShortPadData.data(), (qsizetype)mShortPadData.size());
+      mDynamicLabelTextUnConverted.append((const char*)mShortPadData.data(), (qsizetype)mShortPadData.size());
       _check_charset_change();
       mShortPadData.clear();
       //	if we are at the end of the last segment (and the text is not empty)
@@ -226,7 +226,7 @@ void PadHandler::_handle_short_PAD(const u8 * const iBuffer, const i16 iLast, co
 //	Since the data is reversed, we pass on the vector address
 //	and the offset of the last element in the vector,
 //	i.e. we start (downwards)  beginning at b [last];
-void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast, const bool iCiFlag)
+void PadHandler::_handle_variable_PAD(const u8* const iBuffer, const i16 iLast, const bool iCiFlag)
 {
   i16 base = iLast;
 
@@ -360,7 +360,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
 //
 //	A dynamic label is created from a sequence of (dynamic) xpad
 //	fields, starting with CI = 2, continuing with CI = 3
-void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
+void PadHandler::_dynamic_label(const std::vector<u8>& data, u8 iApplType)
 {
   i16 dataLength = 0;
 
@@ -432,7 +432,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
         mMoreXPad = false;
       }
 
-      mDynamicLabelTextUnConverted.append((const char *)&data[2], dataLength);
+      mDynamicLabelTextUnConverted.append((const char*)&data[2], dataLength);
       _check_charset_change();
 
       //	if at the end, show the label
@@ -471,7 +471,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
       mMoreXPad = false;
     }
 
-    mDynamicLabelTextUnConverted.append((const char *)data.data(), dataLength);
+    mDynamicLabelTextUnConverted.append((const char*)data.data(), dataLength);
     _check_charset_change();
 
     if (!mMoreXPad && mIsLastSegment)
@@ -485,7 +485,7 @@ void PadHandler::_dynamic_label(const std::vector<u8> & data, u8 iApplType)
 //
 //	Called at the start of the msc datagroupfield,
 //	the msc_length was given by the preceding appType "1"
-void PadHandler::_new_MSC_element(const std::vector<u8> & data)
+void PadHandler::_new_MSC_element(const std::vector<u8>& data)
 {
   //	if (mscGroupElement) {
   ////	   if (msc_dataGroupBuffer. size() < dataGroupLength)
@@ -515,7 +515,7 @@ void PadHandler::_new_MSC_element(const std::vector<u8> & data)
 }
 
 //
-void PadHandler::_add_MSC_element(const std::vector<u8> & data)
+void PadHandler::_add_MSC_element(const std::vector<u8>& data)
 {
   //	just to ensure that, when a "12" appType is missing, the
   //	data of "13" appType elements is not endlessly collected.
@@ -546,7 +546,7 @@ void PadHandler::_add_MSC_element(const std::vector<u8> & data)
   }
 }
 
-void PadHandler::_handle_xpad_journaline(const u8 iAppType, const std::vector<u8> & iData)
+void PadHandler::_handle_xpad_journaline(const u8 iAppType, const std::vector<u8>& iData)
 {
   const i16 jAppTy = mJournalineXPadAppTy;
 
@@ -566,7 +566,7 @@ void PadHandler::_handle_xpad_journaline(const u8 iAppType, const std::vector<u8
 }
 
 // Start of a Journaline X-PAD data group, the length was given by the preceding appType "1"
-void PadHandler::_new_journaline_element(const std::vector<u8> & iData)
+void PadHandler::_new_journaline_element(const std::vector<u8>& iData)
 {
   mJournalineDataGroupBuffer.clear();
   mJournalineDataGroupLength = mDataGroupLength;
@@ -581,7 +581,7 @@ void PadHandler::_new_journaline_element(const std::vector<u8> & iData)
   _emit_journaline_data_group_if_complete();
 }
 
-void PadHandler::_add_journaline_element(const std::vector<u8> & iData)
+void PadHandler::_add_journaline_element(const std::vector<u8>& iData)
 {
   if (mJournalineDataGroupBuffer.empty())
   {
@@ -605,12 +605,12 @@ void PadHandler::_emit_journaline_data_group_if_complete()
   if ((i32)mJournalineDataGroupBuffer.size() >= mJournalineDataGroupLength)
   {
     // the data group CRC is checked by the Journaline data group decoder
-    emit signal_journaline_data_group(QByteArray((const char *)mJournalineDataGroupBuffer.data(), mJournalineDataGroupLength));
+    emit signal_journaline_data_group(QByteArray((const char*)mJournalineDataGroupBuffer.data(), mJournalineDataGroupLength));
     mJournalineDataGroupBuffer.clear();
   }
 }
 
-void PadHandler::_slot_handle_journaline_data_group(const QByteArray & iDataGroup) const
+void PadHandler::_slot_handle_journaline_data_group(const QByteArray& iDataGroup) const
 {
   if (mpJournalineDataHandler == nullptr)
   {
@@ -634,7 +634,7 @@ void PadHandler::_slot_handle_journaline_data_group(const QByteArray & iDataGrou
 }
 
 // see chapter 5.3.3 in ETSI EN 300 401
-void PadHandler::_build_MSC_segment(const std::span<const u8> & iData)
+void PadHandler::_build_MSC_segment(const std::span<const u8>& iData)
 {
   struct SDataGrpHeader0 { u8 DataGroupType : 4; u8 UserAccessFlag : 1; u8 SegmentFlag : 1;  u8 CrcFlag : 1; u8 ExtensionFlag : 1; };
   struct SDataGrpHeader1 { u8 RepetitionIdx : 4; u8 ContinuityIdx : 4; };
@@ -648,7 +648,7 @@ void PadHandler::_build_MSC_segment(const std::span<const u8> & iData)
     return;
   }
 
-  const SDataGrpHeader0 & dataGrpHeader0 = reinterpret_cast<const SDataGrpHeader0 &>(iData[0]);
+  const SDataGrpHeader0& dataGrpHeader0 = reinterpret_cast<const SDataGrpHeader0&>(iData[0]);
   // SDataGrpHeader1 dataGrpHeader1 = reinterpret_cast<const SDataGrpHeader1 &>(iData[1]);
 
   if (dataGrpHeader0.CrcFlag != 0)

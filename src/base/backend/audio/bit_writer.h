@@ -27,7 +27,7 @@
 class BitWriter
 {
 public:
-  explicit BitWriter(std::vector<u8> & oData)
+  explicit BitWriter(std::vector<u8>& oData)
     : data(oData)
   {
     Reset();
@@ -35,11 +35,11 @@ public:
 
   void Reset();
   void AddBits(i32 data_new, size_t count);
-  void AddBytes(const std::span<const u8> & iData);
+  void AddBytes(const std::span<const u8>& iData);
 
   void WriteAudioMuxLengthBytes();        // needed for LATM
 
 private:
-  std::vector<u8> & data; // use a reference to avoid copying outside of this class
+  std::vector<u8>& data; // use a reference to avoid copying outside of this class
   size_t byte_bits;
 };

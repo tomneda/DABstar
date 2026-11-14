@@ -32,18 +32,18 @@ class EtiFileHandler final : public IDeviceNotifier, public IDeviceHandler, publ
 {
 Q_OBJECT
 public:
-  explicit EtiFileHandler(const QString & iFilename);
+  explicit EtiFileHandler(const QString& iFilename);
   ~EtiFileHandler() override;
 
   // IDeviceHandler
-  i32 getSamples(const std::span<cf32> & /*oV*/) override { return 0; } // no samples available
+  i32 getSamples(const std::span<cf32>& /*oV*/) override { return 0; } // no samples available
   i32 Samples() override { return 0; }
   bool restartReader(i32) override;
   void stopReader() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &mFrame; }
+  QWidget* get_widget() override { return &mFrame; }
   bool isFileInput() override { return true; }
   void setVFOFrequency(i32) override {}
   i32 getVFOFrequency() override { return 0; }
@@ -52,15 +52,15 @@ public:
   f32 get_file_duration_s() const override { return mFileDuration_s; }
   void jump_to_file_pos_per_mill(i32 iPerMill) override;
   void set_file_paused(bool iPaused) override;
-  IEtiSource * get_eti_source() override { return this; }
+  IEtiSource* get_eti_source() override { return this; }
 
   // IEtiSource
-  bool get_eti_frame(TEtiFrame & oFrame, i32 iTimeout_ms) override;
+  bool get_eti_frame(TEtiFrame& oFrame, i32 iTimeout_ms) override;
 
 private:
   QFrame mFrame;
   RingBuffer<u8> mRingBuffer;
-  FILE * mpFile = nullptr;
+  FILE* mpFile = nullptr;
   std::unique_ptr<EtiReader> mpEtiReader;
   std::atomic<bool> mIsRunning = false;
   f32 mFileDuration_s = 0.0f;

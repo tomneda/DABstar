@@ -152,11 +152,11 @@ void TiiDetector::set_subid_for_collision_search(const u8 iSubId)
 void TiiDetector::reset()
 {
   _reset_null_symbol_buffer();
-  for (auto & i : mDecodedBufferArr) i = cf32(0, 0);
+  for (auto& i : mDecodedBufferArr) i = cf32(0, 0);
 }
 
 // To reduce noise in the input signal, we might add a few spectra before computing (up to the user)
-void TiiDetector::add_to_tii_buffer(const TArrayTu & iV)
+void TiiDetector::add_to_tii_buffer(const TArrayTu& iV)
 {
   for (i32 i = 0; i < cTu; i++)
   {
@@ -198,8 +198,8 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
                                etsiFloatTable, nonEtsiFloatTable, etsiCmplxTable, nonEtsiCmplxTable);
 
     // now we had decided which tables we use further (etsi conform on non-etsi conform)
-    const TCmplxTable192 & cmplxTable = (isNonEtsiPhase ? nonEtsiCmplxTable : etsiCmplxTable);
-    const TFloatTable192 & floatTable = (isNonEtsiPhase ? nonEtsiFloatTable : etsiFloatTable);
+    const TCmplxTable192& cmplxTable = (isNonEtsiPhase ? nonEtsiCmplxTable : etsiCmplxTable);
+    const TFloatTable192& floatTable = (isNonEtsiPhase ? nonEtsiFloatTable : etsiFloatTable);
 
     // Find the MainId that matches the pattern
     i32 mainId = 0;
@@ -235,17 +235,17 @@ std::vector<STiiResult> TiiDetector::process_tii_data(const i16 iThreshold_db)
   _reset_null_symbol_buffer();
 
   // Sort the elements according to their strength
-  std::sort(mTiiResults.begin(), mTiiResults.end(), [](const STiiResult & a, const STiiResult & b) { return a.strength > b.strength; });
+  std::sort(mTiiResults.begin(), mTiiResults.end(), [](const STiiResult& a, const STiiResult& b) { return a.strength > b.strength; });
 
   return mTiiResults;
 }
 
 void TiiDetector::_reset_null_symbol_buffer()
 {
-  for (auto & i : mNullSymbolBufferVec) i = cf32(0, 0);
+  for (auto& i : mNullSymbolBufferVec) i = cf32(0, 0);
 }
 
-void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, const TArrayTu & iVec) const
+void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768& ioVec, const TArrayTu& iVec) const
 {
   for (i32 k = -cK / 2, i = 0; k < cK / 2; k += 2, ++i)
   {
@@ -266,7 +266,7 @@ void TiiDetector::_decode_and_accumulate_carrier_pairs(TBufferArr768 & ioVec, co
   }
 }
 
-void TiiDetector::_remove_single_carrier_values(TBufferArr768 & ioBuffer) const
+void TiiDetector::_remove_single_carrier_values(TBufferArr768& ioBuffer) const
 {
   for (i32 i = 0; i < cBlockSize192; i++)
   {
@@ -320,7 +320,7 @@ cf32 TiiDetector::_turn_phase(cf32 value, u8 phase) const
 // considered to consist of 8 segments of 24 values
 // Each "value" is the sum of 4 pairs of subsequent carriers,
 // taken from the 4 quadrants -768 .. 385, 384 .. -1, 1 .. 384, 385 .. 768
-void TiiDetector::_collapse_tii_groups(TCmplxTable192 & ioEtsiVec, TCmplxTable192 & ioNonEtsiVec, const TBufferArr768 & iVec) const
+void TiiDetector::_collapse_tii_groups(TCmplxTable192& ioEtsiVec, TCmplxTable192& ioNonEtsiVec, const TBufferArr768& iVec) const
 {
   assert(cK / 2 == (i32)iVec.size());
   TBufferArr768 buffer = iVec;
@@ -359,7 +359,7 @@ i32 TiiDetector::_find_exact_main_id_match(const std::byte iPattern) const
   return -1; // should never happen
 }
 
-i32 TiiDetector::_find_best_main_id_match(cf32 & oSum, const i32 iSubId, const TCmplxTable192 & ipCmplxTable) const
+i32 TiiDetector::_find_best_main_id_match(cf32& oSum, const i32 iSubId, const TCmplxTable192& ipCmplxTable) const
 {
   i32 oMainId = -1;
   f32 maxLevel = 0;
@@ -388,10 +388,10 @@ i32 TiiDetector::_find_best_main_id_match(cf32 & oSum, const i32 iSubId, const T
   return oMainId;
 }
 
-void TiiDetector::_compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, i32 & oCount, cf32 & oSum, std::byte & oPattern,
+void TiiDetector::_compare_etsi_and_non_etsi(bool& oIsNonEtsiPhase, i32& oCount, cf32& oSum, std::byte& oPattern,
                                              const i32 iSubId, const f32 iThresholdLevel,
-                                             const TFloatTable192 & iEtsiFloatTable, const TFloatTable192 & iNonEtsiFloatTable,
-                                             const TCmplxTable192 & iEtsiCmplxTable, const TCmplxTable192 & iNonEtsiCmplxTable) const
+                                             const TFloatTable192& iEtsiFloatTable, const TFloatTable192& iNonEtsiFloatTable,
+                                             const TCmplxTable192& iEtsiCmplxTable, const TCmplxTable192& iNonEtsiCmplxTable) const
 {
   cf32 etsi_sum = cf32(0, 0);
   cf32 nonEtsi_sum = cf32(0, 0);
@@ -445,9 +445,9 @@ void TiiDetector::_compare_etsi_and_non_etsi(bool & oIsNonEtsiPhase, i32 & oCoun
   }
 }
 
-void TiiDetector::_find_collisions(std::vector<STiiResult> & ioResultVec, i32 iMainId, i32 iSubId,
+void TiiDetector::_find_collisions(std::vector<STiiResult>& ioResultVec, i32 iMainId, i32 iSubId,
                                    const std::byte iPattern, const f32 iMax, const f32 iThresholdLevel, const i32 iCount, const bool iIsNonEtsi,
-                                   const TCmplxTable192 & iCmplxTable, const TFloatTable192 & iFloatTable) const
+                                   const TCmplxTable192& iCmplxTable, const TFloatTable192& iFloatTable) const
 {
   assert(iCount > 4);
   cf32 sum = cf32(0, 0);
@@ -501,7 +501,7 @@ void TiiDetector::_find_collisions(std::vector<STiiResult> & ioResultVec, i32 iM
   }
 }
 
-void TiiDetector::_get_float_table_and_max_abs_value(TFloatTable192 & oFloatTable, f32 & ioMax, const TCmplxTable192 & iCmplxTable) const
+void TiiDetector::_get_float_table_and_max_abs_value(TFloatTable192& oFloatTable, f32& ioMax, const TCmplxTable192& iCmplxTable) const
 {
   for (i32 i = 0; i < cBlockSize192; i++)
   {
@@ -511,7 +511,7 @@ void TiiDetector::_get_float_table_and_max_abs_value(TFloatTable192 & oFloatTabl
   }
 }
 
-f32 TiiDetector::_calculate_average_noise(const TFloatTable192 & iFloatTable) const
+f32 TiiDetector::_calculate_average_noise(const TFloatTable192& iFloatTable) const
 {
   f32 noise = 1e9;
 

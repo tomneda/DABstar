@@ -70,14 +70,14 @@ TiiListDisplay::TiiListDisplay()
   mpBtnOpenFolder->setStyleSheet(get_bg_style_sheet(0xDCB42D, Qt::white, cRefLuminance));
   mpBtnOpenFolder->setToolTip("Open storage folder in file manager and select the last saved file");
 
-  auto * pBottomLayout = new QHBoxLayout();
+  auto* pBottomLayout = new QHBoxLayout();
   pBottomLayout->addWidget(mpCbKeepPersistent);
   pBottomLayout->addWidget(mpCbIgnoreNoDb);
   pBottomLayout->addStretch();
   pBottomLayout->addWidget(mpBtnSaveList);
   pBottomLayout->addWidget(mpBtnOpenFolder);
 
-  auto * pMainLayout = new QVBoxLayout(mpWidget.get());
+  auto* pMainLayout = new QVBoxLayout(mpWidget.get());
   pMainLayout->addWidget(mpTableWidget);
   pMainLayout->addLayout(pBottomLayout);
 
@@ -101,7 +101,7 @@ TiiListDisplay::~TiiListDisplay()
   }
 }
 
-void TiiListDisplay::set_window_title(const QString & channel)
+void TiiListDisplay::set_window_title(const QString& channel)
 {
   if (mpWidget != nullptr)
   {
@@ -118,7 +118,7 @@ void TiiListDisplay::start_adding()
   }
 }
 
-void TiiListDisplay::add_row(const STiiDataEntry & iTr, const SDerivedData & iDD, bool iHasDbEntry)
+void TiiListDisplay::add_row(const STiiDataEntry& iTr, const SDerivedData& iDD, bool iHasDbEntry)
 {
   const QString theTime = (Settings::Config::cbUseUtcTime.read().toBool()
                              ? QDateTime::currentDateTimeUtc().toString(Qt::ISODate)
@@ -138,9 +138,9 @@ void TiiListDisplay::finish_adding()
   if (mpCbKeepPersistent != nullptr && mpCbKeepPersistent->isChecked())
   {
     std::vector<STableRowEntry> inactiveEntries;
-    for (auto & prev : mEntries)
+    for (auto& prev : mEntries)
     {
-      const bool foundInCurrent = std::any_of(mCurrentScanEntries.begin(), mCurrentScanEntries.end(), [&](const STableRowEntry & cur)
+      const bool foundInCurrent = std::any_of(mCurrentScanEntries.begin(), mCurrentScanEntries.end(), [&](const STableRowEntry& cur)
       {
         return cur.tr.mainId == prev.tr.mainId && cur.tr.subId == prev.tr.subId;
       });
@@ -174,15 +174,15 @@ void TiiListDisplay::_update_table()
 
   mpTableWidget->setRowCount(0);
   i32 row = 0;
-  for (const auto & e : mEntries)
+  for (const auto& e : mEntries)
   {
     if (ignoreNoDb && !e.hasDbEntry)
     {
       continue;
     }
 
-    const auto & iTr = e.tr;
-    const auto & iDD = e.dd;
+    const auto& iTr = e.tr;
+    const auto& iDD = e.dd;
 
     mpTableWidget->insertRow(row);
     mpTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(iTr.mainId)));
@@ -200,7 +200,7 @@ void TiiListDisplay::_update_table()
 
     for (i32 colIdx = 0; colIdx < cColNr; colIdx++)
     {
-      auto * item = mpTableWidget->item(row, colIdx);
+      auto* item = mpTableWidget->item(row, colIdx);
       if (item != nullptr)
       {
         if (colIdx == 4) // transmitter name is left aligned
@@ -267,7 +267,7 @@ void TiiListDisplay::_slot_keep_persistent_changed(i32 /*iState*/)
   if (mpCbKeepPersistent != nullptr && !mpCbKeepPersistent->isChecked())
   {
     mEntries.erase(
-      std::remove_if(mEntries.begin(), mEntries.end(), [](const STableRowEntry & e) { return !e.isCurrent; }),
+      std::remove_if(mEntries.begin(), mEntries.end(), [](const STableRowEntry& e) { return !e.isCurrent; }),
       mEntries.end()
     );
     _update_table();
@@ -284,7 +284,7 @@ void TiiListDisplay::_slot_save_list()
   const bool ignoreNoDb = (mpCbIgnoreNoDb != nullptr && mpCbIgnoreNoDb->isChecked());
 
   std::vector<STableRowEntry> exportEntries;
-  for (const auto & e : mEntries)
+  for (const auto& e : mEntries)
   {
     if (ignoreNoDb && !e.hasDbEntry)
     {
@@ -346,7 +346,7 @@ void TiiListDisplay::_slot_save_list()
 
   finalFileName = QDir::toNativeSeparators(finalFileName);
 
-  FILE * fp = OpenFileDialog::open_file(finalFileName, "w");
+  FILE* fp = OpenFileDialog::open_file(finalFileName, "w");
   if (fp == nullptr)
   {
     QMessageBox::critical(mpWidget.get(), "Error", "Could not open file for writing:\n" + finalFileName);
@@ -368,7 +368,7 @@ void TiiListDisplay::_slot_save_list()
     fprintf(fp, "    </IconStyle>\n");
     fprintf(fp, "  </Style>\n");
 
-    for (const auto & e : exportEntries)
+    for (const auto& e : exportEntries)
     {
       if (!e.hasDbEntry)
       {
@@ -406,7 +406,7 @@ void TiiListDisplay::_slot_save_list()
   else
   {
     fprintf(fp, "Channel; Latitude; Longitude; Transmitter; Altitude; Height; Date and time; MainId; SubId; Strength; Distance; Azimuth; Power\n");
-    for (const auto & e : exportEntries)
+    for (const auto& e : exportEntries)
     {
       const QString channel = e.tr.channel.isEmpty() ? mCurChannel : e.tr.channel;
       fprintf(fp,

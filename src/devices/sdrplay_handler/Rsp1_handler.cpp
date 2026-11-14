@@ -22,7 +22,7 @@
 #include	"Rsp1_handler.h"
 #include	"sdrplay_handler.h"
 
-Rsp1_handler::Rsp1_handler(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice,
+Rsp1_handler::Rsp1_handler(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice,
                            i32 freq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppm)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppm)
 {

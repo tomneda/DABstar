@@ -38,7 +38,7 @@ class LevelMeter : public QWidget
   Q_PROPERTY(f32 minorStep READ get_minor_step WRITE set_minor_step)
 
 public:
-  explicit LevelMeter(QWidget * parent = nullptr);
+  explicit LevelMeter(QWidget* parent = nullptr);
 
   [[nodiscard]] f32 get_value() const { return mValue; }
   [[nodiscard]] Qt::Orientation get_orientation() const { return mOrientation; }
@@ -61,13 +61,13 @@ public:
   void set_minor_step(f32 iV);
 
   // Set a gradient from a list of (relative_position [0..1], color) stops.
-  void set_color_stops(const QVector<QPair<f32, u32>> & iStops);
+  void set_color_stops(const QVector<QPair<f32, u32>>& iStops);
 
   [[nodiscard]] QSize sizeHint() const override;
   [[nodiscard]] QSize minimumSizeHint() const override;
 
 protected:
-  void paintEvent(QPaintEvent * ipEvent) override;
+  void paintEvent(QPaintEvent* ipEvent) override;
 
 private:
   f32 mLower = -22.0f;
@@ -86,5 +86,5 @@ private:
   [[nodiscard]] int _get_edge_margin() const;
   [[nodiscard]] QColor _get_stops_color(f32 iRelPos) const;
   inline QString _get_format_tick(f32 iV) const { return QString::number(static_cast<int>(std::round(iV))); }
-  void _draw_scale(QPainter & ioPainter, const QRect & iScaleRect, int iMargin) const;
+  void _draw_scale(QPainter& ioPainter, const QRect& iScaleRect, int iMargin) const;
 };

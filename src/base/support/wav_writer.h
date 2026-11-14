@@ -43,13 +43,13 @@ public:
   WavWriter() = default;
   ~WavWriter() = default;
 
-  bool init(const QString &, u32 iSampleRate, u16 iNumChannels);
-  void write(const std::span<const i16> & iSamples);
+  bool init(const QString&, u32 iSampleRate, u16 iNumChannels);
+  void write(const std::span<const i16>& iSamples);
   void close();
 
 private:
   std::mutex mMutex;
-  FILE * mFilePointer = nullptr;
+  FILE* mFilePointer = nullptr;
   bool mIsValid = false;
   u16 mNumChannels = 0;
   u32 mNrElements = 0;

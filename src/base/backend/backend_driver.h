@@ -41,10 +41,10 @@ class DabRadio;
 class BackendDriver
 {
 public:
-  BackendDriver(DabRadio * ipDR, const SDescriptorType * ipDT, RingBuffer<i16> * ipAudioBuffer, RingBuffer<u8> * ipDataBuffer, RingBuffer<u8> * ipFrameBuffer);
+  BackendDriver(DabRadio* ipDR, const SDescriptorType* ipDT, RingBuffer<i16>* ipAudioBuffer, RingBuffer<u8>* ipDataBuffer, RingBuffer<u8>* ipFrameBuffer);
   ~BackendDriver() = default;
 
-  void add_to_frame(const std::vector<u8> & outData) const;
+  void add_to_frame(const std::vector<u8>& outData) const;
 
 private:
   std::unique_ptr<FrameProcessor> mpFrameProcessor;

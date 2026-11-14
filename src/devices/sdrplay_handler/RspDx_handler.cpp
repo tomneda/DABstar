@@ -1,7 +1,7 @@
 #include "RspDx_handler.h"
 #include "sdrplay_handler.h"
 
-RspDx_handler::RspDx_handler(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
+RspDx_handler::RspDx_handler(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
   i32 mLna_upperBound = lnaStates(freq) - 1;
@@ -101,8 +101,8 @@ bool RspDx_handler::set_amPort(i32 amPort)
 
 bool RspDx_handler::set_biasT(bool biasT_value)
 {
-  sdrplay_api_DevParamsT * xxx;
-  sdrplay_api_RspDxParamsT * rspDxParams;
+  sdrplay_api_DevParamsT* xxx;
+  sdrplay_api_RspDxParamsT* rspDxParams;
   sdrplay_api_ErrT err;
 
   xxx = mpDeviceParams->devParams;
@@ -121,8 +121,8 @@ bool RspDx_handler::set_biasT(bool biasT_value)
 
 bool RspDx_handler::set_notch(bool on)
 {
-  sdrplay_api_DevParamsT * xxx;
-  sdrplay_api_RspDxParamsT * rspDxParams;
+  sdrplay_api_DevParamsT* xxx;
+  sdrplay_api_RspDxParamsT* rspDxParams;
   sdrplay_api_ErrT err;
 
   xxx = mpDeviceParams->devParams;

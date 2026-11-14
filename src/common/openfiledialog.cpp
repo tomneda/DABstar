@@ -38,27 +38,27 @@
 #include <QDir>
 #include <vector>
 
-OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
+OpenFileDialog::OpenFileDialog(QSettings* ipSetting) :
   mpSettings(ipSetting)
 {
 }
 
-FILE * OpenFileDialog::open_file(const QString & iFileName, const QString & iFileMode)
+FILE* OpenFileDialog::open_file(const QString& iFileName, const QString& iFileMode)
 {
-  FILE * pF = fopen(iFileName.toUtf8().data(), iFileMode.toUtf8().data());
+  FILE* pF = fopen(iFileName.toUtf8().data(), iFileMode.toUtf8().data());
 #ifdef _WIN32
   if (pF == nullptr)
   {
     // "umlauts" in Windows need that
-    pF = _wfopen(reinterpret_cast<const wchar_t *>(iFileName.utf16()), reinterpret_cast<const wchar_t *>(iFileMode.utf16()));
+    pF = _wfopen(reinterpret_cast<const wchar_t*>(iFileName.utf16()), reinterpret_cast<const wchar_t*>(iFileMode.utf16()));
   }
 #endif
   return pF;
 }
 
-SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, i32 iMode, SF_INFO * opSfInfo)
+SNDFILE* OpenFileDialog::open_snd_file(const QString& iFileName, i32 iMode, SF_INFO* opSfInfo)
 {
-  SNDFILE * pSf = sf_open(iFileName.toUtf8().data(), iMode, opSfInfo);
+  SNDFILE* pSf = sf_open(iFileName.toUtf8().data(), iMode, opSfInfo);
   if (pSf == nullptr)
   {
     pSf = sf_open(iFileName.toLatin1().data(), iMode, opSfInfo); // "umlauts" in Windows need that
@@ -66,7 +66,7 @@ SNDFILE * OpenFileDialog::open_snd_file(const QString & iFileName, i32 iMode, SF
   return pSf;
 }
 
-FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
+FILE* OpenFileDialog::open_content_dump_file_ptr(const QString& iChannelName)
 {
   const QString fileName = _open_file_dialog(PRJ_NAME "-" + iChannelName, sSettingContentStorageDir, "CSV", ".csv");
 
@@ -75,7 +75,7 @@ FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
     return nullptr;
   }
 
-  FILE * fileP = open_file(fileName, "w");
+  FILE* fileP = open_file(fileName, "w");
 
   if (fileP == nullptr)
   {
@@ -85,7 +85,7 @@ FILE * OpenFileDialog::open_content_dump_file_ptr(const QString & iChannelName)
   return fileP;
 }
 
-FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName, const bool iIsAAC)
+FILE* OpenFileDialog::open_frame_dump_file_ptr(const QString& iServiceName, const bool iIsAAC)
 {
   const QString fileName = _open_file_dialog(iServiceName, sSettingAudioStorageDir, iIsAAC ? "AAC stream" : "MP2 stream", iIsAAC ? ".aac" : ".mp2");
 
@@ -94,7 +94,7 @@ FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName, co
     return nullptr;
   }
 
-  FILE * theFile = open_file(fileName, "w+b");
+  FILE* theFile = open_file(fileName, "w+b");
 
   if (theFile == nullptr)
   {
@@ -104,7 +104,7 @@ FILE * OpenFileDialog::open_frame_dump_file_ptr(const QString & iServiceName, co
   return theFile;
 }
 
-SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceName)
+SNDFILE* OpenFileDialog::open_audio_dump_sndfile_ptr(const QString& iServiceName)
 {
   const QString fileName = _open_file_dialog(iServiceName, sSettingAudioStorageDir, "PCM-WAV", ".wav");
 
@@ -118,7 +118,7 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
   sf_info.channels = 2;
   sf_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-  SNDFILE * theFile = open_snd_file(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
+  SNDFILE* theFile = open_snd_file(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
 
   if (theFile == nullptr)
   {
@@ -129,7 +129,7 @@ SNDFILE * OpenFileDialog::open_audio_dump_sndfile_ptr(const QString & iServiceNa
 }
 
 
-SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName) const
+SNDFILE* OpenFileDialog::open_raw_dump_sndfile_ptr(const QString& iDeviceName, const QString& iChannelName) const
 {
   const QString fileName = _open_file_dialog(iDeviceName.trimmed() + "-" + iChannelName.trimmed(), sSettingSampleStorageDir, "RAW-WAV", ".sdr");
 
@@ -143,7 +143,7 @@ SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName,
   sf_info.channels = 2;
   sf_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-  SNDFILE * theFile = open_snd_file(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
+  SNDFILE* theFile = open_snd_file(fileName.toUtf8().data(), SFM_WRITE, &sf_info);
 
   if (theFile == nullptr)
   {
@@ -153,12 +153,12 @@ SNDFILE * OpenFileDialog::open_raw_dump_sndfile_ptr(const QString & iDeviceName,
   return theFile;
 }
 
-QString OpenFileDialog::get_audio_dump_file_name(const QString & iServiceName)
+QString OpenFileDialog::get_audio_dump_file_name(const QString& iServiceName)
 {
   return _open_file_dialog(iServiceName, sSettingAudioStorageDir, "PCM-WAV", ".wav");
 }
 
-QString OpenFileDialog::get_frame_dump_file_name(const QString & iServiceName, const bool iIsAAC)
+QString OpenFileDialog::get_frame_dump_file_name(const QString& iServiceName, const bool iIsAAC)
 {
   return _open_file_dialog(iServiceName, sSettingAudioStorageDir, iIsAAC ? "AAC stream" : "MP2 stream", iIsAAC ? ".aac" : ".mp2");
 }
@@ -173,12 +173,12 @@ QString OpenFileDialog::get_dl_text_file_name()
   return _open_file_dialog(PRJ_NAME "-dlText", sSettingContentStorageDir, "Text", ".txt");
 }
 
-QString OpenFileDialog::get_eti_file_name(const QString & iEnsembleName, const QString & iChannelName) const
+QString OpenFileDialog::get_eti_file_name(const QString& iEnsembleName, const QString& iChannelName) const
 {
   return _open_file_dialog(iChannelName.trimmed() + "-" + iEnsembleName.trimmed(), sSettingContentStorageDir, "ETI", ".eti");
 }
 
-QString OpenFileDialog::_open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt) const
+QString OpenFileDialog::_open_file_dialog(const QString& iFileNamePrefix, const QString& iSettingName, const QString& iFileDesc, const QString& iFileExt) const
 {
   const bool useNativeFileDialog = Settings::Config::cbUseNativeFileDialog.read().toBool();
 
@@ -234,7 +234,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading() const
   return fileName;
 }
 
-OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & iFileName) const
+OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString& iFileName) const
 {
   EFileType fileType = EFileType::UNDEF;
 
@@ -248,7 +248,7 @@ OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & iFileNam
 #else
   // Open the selected file and read the first 5 bytes to determine the file type. Then close the file.
   u8 mByteBuffer[5];
-  FILE * pFile = open_file(iFileName, "rb");
+  FILE* pFile = open_file(iFileName, "rb");
 
   if (pFile == nullptr)
   {
@@ -287,7 +287,7 @@ OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & iFileNam
 }
 
 // Looks for two consecutive ETI(NI) frames (ERR byte 0xFF followed by a FSYNC word) starting within the first frame.
-bool OpenFileDialog::_is_eti_ni_file(FILE * const ipFile)
+bool OpenFileDialog::_is_eti_ni_file(FILE* const ipFile)
 {
   constexpr i32 cFrameSize = 6144;
   std::vector<u8> buffer(2 * cFrameSize + 4);
@@ -324,7 +324,7 @@ bool OpenFileDialog::_is_eti_ni_file(FILE * const ipFile)
   return false;
 }
 
-void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
+void OpenFileDialog::_remove_invalid_characters(QString& ioStr) const
 {
   auto isValid = [](QChar c)
   {
@@ -340,7 +340,7 @@ void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const
   }
 }
 
-FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr()
+FILE* OpenFileDialog::open_raw_dump_xmlfile_ptr()
 {
   const QString channel = Settings::Main::varPresetCh.read().toString(); // valid also while file play as this method is only called in device mode
   const QString fileName = _open_file_dialog(channel.trimmed(), sSettingSampleStorageDir, "Xml", ".uff");
@@ -349,7 +349,7 @@ FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr()
     return nullptr;
   }
 
-  FILE * theFile = open_file(fileName, "wb");
+  FILE* theFile = open_file(fileName, "wb");
   if (theFile == nullptr)
   {
     qDebug() << "Cannot open Xml file " << fileName;
@@ -358,7 +358,7 @@ FILE * OpenFileDialog::open_raw_dump_xmlfile_ptr()
   return theFile;
 }
 
-FILE * OpenFileDialog::open_log_file_ptr()
+FILE* OpenFileDialog::open_log_file_ptr()
 {
   return nullptr;
 }

@@ -40,7 +40,7 @@
   * the class proper processes input and extracts the aac frames
   * that are processed by the "faadDecoder" class
   */
-FdkAAC::FdkAAC(const DabRadio * const ipDR, RingBuffer<i16> * const ipBuffer)
+FdkAAC::FdkAAC(const DabRadio* const ipDR, RingBuffer<i16>* const ipBuffer)
   : mpAudioBuffer(ipBuffer)
 {
   mAacHandle = aacDecoder_Open(TT_MP4_LOAS, 1);
@@ -74,12 +74,12 @@ FdkAAC::~FdkAAC()
   }
 }
 
-i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<const u8> & iPacket)
+i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms* const iSP, const std::span<const u8>& iPacket)
 {
-  const u8 * ipBuffer = iPacket.data();
+  const u8* ipBuffer = iPacket.data();
   static_assert(sizeof(i16) == sizeof(INT_PCM));
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
-  INT_PCM * bufp = &decode_buf[0];
+  INT_PCM* bufp = &decode_buf[0];
   constexpr i32 cOutputSize = 8 * 2048;
 
   if (!mIsWorking)
@@ -100,7 +100,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<c
   }
 
   u32 validBytes = packet_size; // to remove const-ness
-  AAC_DECODER_ERROR err = aacDecoder_Fill(mAacHandle, const_cast<u8 **>(&ipBuffer), &packet_size, &validBytes);
+  AAC_DECODER_ERROR err = aacDecoder_Fill(mAacHandle, const_cast<u8**>(&ipBuffer), &packet_size, &validBytes);
 
   if (err != AAC_DEC_OK)
   {
@@ -119,7 +119,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<c
     return -6;
   }
 
-  const CStreamInfo * info = aacDecoder_GetStreamInfo(mAacHandle);
+  const CStreamInfo* info = aacDecoder_GetStreamInfo(mAacHandle);
   if (!info || info->sampleRate <= 0)
   {
     return -7;
@@ -141,7 +141,7 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<c
   }
   else if (info->numChannels == 1)
   {
-    auto * const buffer = make_vla(i16, stereoFrameSize);
+    auto* const buffer = make_vla(i16, stereoFrameSize);
 
     for (i32 i = 0; i < info->frameSize; i++)
     {
@@ -184,7 +184,7 @@ void FdkAAC::conceal_lost_frame(const i32 iNumSamples)
 
     if (err == AAC_DEC_OK)
     {
-      const CStreamInfo * const info = aacDecoder_GetStreamInfo(mAacHandle);
+      const CStreamInfo* const info = aacDecoder_GetStreamInfo(mAacHandle);
 
       if (info != nullptr && info->sampleRate > 0 && info->frameSize > 0)
       {
@@ -196,7 +196,7 @@ void FdkAAC::conceal_lost_frame(const i32 iNumSamples)
         }
         else if (info->numChannels == 1)
         {
-          auto * const buffer = make_vla(i16, stereoFrameSize);
+          auto* const buffer = make_vla(i16, stereoFrameSize);
 
           for (i32 i = 0; i < info->frameSize; ++i)
           {

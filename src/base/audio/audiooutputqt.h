@@ -50,7 +50,7 @@ public:
   explicit AudioOutputQt();
   ~AudioOutputQt() override;
 
-  const AudioIODevice * get_audio_io_device() const  override { return mpIoDevice.get(); }
+  const AudioIODevice* get_audio_io_device() const  override { return mpIoDevice.get(); }
   QList<QAudioDevice> get_audio_device_list() const override;
 
 private:
@@ -60,26 +60,26 @@ private:
   QList<QAudioDevice> mOutputDevices;
   QAudioDevice mCurrentAudioDevice;
 
-  SAudioFifo * mpCurrentFifo = nullptr;
-  SAudioFifo * mpRestartFifo = nullptr;
+  SAudioFifo* mpCurrentFifo = nullptr;
+  SAudioFifo* mpRestartFifo = nullptr;
   f32 mLinearVolume = 1.0f;
   QAudioFormat mAudioFormat;
   bool mRestartPending = false;
   bool mStopPending = false;
 
   void _do_stop() const;
-  void _do_restart(SAudioFifo * buffer);
-  void _print_audio_device_formats(const QAudioDevice & ad) const;
+  void _do_restart(SAudioFifo* buffer);
+  void _print_audio_device_formats(const QAudioDevice& ad) const;
 
 public slots:
-  void slot_start(SAudioFifo * iBuffer) override;
-  void slot_restart(SAudioFifo * iBuffer) override;
+  void slot_start(SAudioFifo* iBuffer) override;
+  void slot_restart(SAudioFifo* iBuffer) override;
   void slot_stop() override;
   void slot_set_mute(bool iMuteActive) override;
   void slot_set_peak_level_delay(i32 iDelaySteps) override;
   void slot_set_test_tone(bool iActive) override;
   void slot_set_volume(i32 iLogVolVal) override;
-  void slot_set_audio_device(const QByteArray & iDeviceId) override;
+  void slot_set_audio_device(const QByteArray& iDeviceId) override;
 
 private slots:
   void _slot_restart_deferred();

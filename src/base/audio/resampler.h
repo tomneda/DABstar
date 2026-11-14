@@ -54,12 +54,12 @@ public:
   // oOut    : caller-allocated output buffer
   //           required capacity: (iIn.size()/2 + 2) * 2  i16 values
   // outCount: set by the method to the number of i16 values written
-  void resample(const std::span<const i16> & iIn, const std::span<i16> & oOut, i32 & outCount)
+  void resample(const std::span<const i16>& iIn, const std::span<i16>& oOut, i32& outCount)
   {
     const i32 inFrames = (i32)iIn.size() / 2;
     assert(oOut.size() >= (iIn.size() / 2 + 2) * 2);
-    const i16 * const pIn = iIn.data();
-    i16 * const pOut = oOut.data();
+    const i16* const pIn = iIn.data();
+    i16* const pOut = oOut.data();
     const f32 step = 1.0f / mRatio; // input advance per output sample
     i32 written = 0;
     i32 inIdx = 0; // index of the "right" boundary frame in pIn

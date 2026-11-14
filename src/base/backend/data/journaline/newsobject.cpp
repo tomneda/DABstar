@@ -62,8 +62,8 @@
 #include "cpplog.h"
 #include <cstring>
 
-NewsObject::NewsObject(unsigned long len, const unsigned char *buf,
-                       struct timeval *creation_time) :
+NewsObject::NewsObject(unsigned long len, const unsigned char* buf,
+                       struct timeval* creation_time) :
     d_creation_time(*creation_time),
     d_reception_time(*creation_time),
     d_obj_updated(false)
@@ -107,7 +107,7 @@ struct timeval NewsObject::getCreationTime()
     return d_creation_time;
 }
 
-void NewsObject::setReceptionTime(struct timeval *time)
+void NewsObject::setReceptionTime(struct timeval* time)
 {
     d_reception_time=*time;
 }
@@ -165,7 +165,7 @@ NewsObject::object_type_id_t NewsObject::convertObjectType(unsigned char in)
     return PLAIN_TEXT;
 }
 
-void NewsObject::copyNml(unsigned long *len, unsigned char *nml)
+void NewsObject::copyNml(unsigned long* len, unsigned char* nml)
 {
     memcpy(nml, d_nml, d_len);
     *len=d_len;

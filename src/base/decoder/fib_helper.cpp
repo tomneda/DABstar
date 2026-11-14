@@ -13,7 +13,7 @@
 
 #include "fib_helper.h"
 
-void FibHelper::get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic, std::chrono::milliseconds * opDuration1 /*= nullptr*/, std::chrono::milliseconds * opDuration2 /*= nullptr*/) const
+void FibHelper::get_statistics(const SFigBase& iFigBase, SStatistic& ioStatistic, std::chrono::milliseconds* opDuration1 /*= nullptr*/, std::chrono::milliseconds* opDuration2 /*= nullptr*/) const
 {
   const auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint - ioStatistic.TimePointRef);
   const auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>(iFigBase.TimePoint2ndCall - iFigBase.TimePoint);
@@ -28,7 +28,7 @@ void FibHelper::get_statistics(const SFigBase & iFigBase, SStatistic & ioStatist
   if (opDuration2) *opDuration2 = duration2;
 }
 
-QString FibHelper::print_duration_and_get_statistics(const SFigBase & iFigBase, SStatistic & ioStatistic) const
+QString FibHelper::print_duration_and_get_statistics(const SFigBase& iFigBase, SStatistic& ioStatistic) const
 {
   std::chrono::milliseconds duration1, duration2;
   get_statistics(iFigBase, ioStatistic, &duration1, &duration2);
@@ -41,7 +41,7 @@ QString FibHelper::print_statistic_header() const
   return QString("Count [Min/Max of time since FIG first stored] = [Diff of left]  [Min/Max of time since same FIG received 2nd time] = [Diff of left]");
 }
 
-QString FibHelper::print_statistic(const SStatistic & iStatistic) const
+QString FibHelper::print_statistic(const SStatistic& iStatistic) const
 {
   // [InbMin][InbMax][InbDiff] [CycMin][CycMax][CycDiff]
   // auto durationTP = iStatistic.TimePointMax - iStatistic.TimePointMin;

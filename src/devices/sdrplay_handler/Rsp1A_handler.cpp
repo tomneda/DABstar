@@ -1,7 +1,7 @@
 #include "Rsp1A_handler.h"
 #include "sdrplay_handler.h"
 
-Rsp1A_handler::Rsp1A_handler(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
+Rsp1A_handler::Rsp1A_handler(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(parent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
   i32 mLna_upperBound = lnaStates(freq) - 1;
@@ -62,7 +62,7 @@ bool Rsp1A_handler::set_lna(i32 lnaState)
 
 bool Rsp1A_handler::set_biasT(bool biasT_value)
 {
-  sdrplay_api_Rsp1aTunerParamsT * rsp1aTunerParams;
+  sdrplay_api_Rsp1aTunerParamsT* rsp1aTunerParams;
   sdrplay_api_ErrT err;
 
   rsp1aTunerParams = &(mpChParams->rsp1aTunerParams);

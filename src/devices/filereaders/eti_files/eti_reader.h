@@ -29,7 +29,7 @@ class EtiReader : public QThread
 Q_OBJECT
 
 public:
-  EtiReader(EtiFileHandler * ipParent, FILE * ipFile, RingBuffer<u8> * ipRingBuffer);
+  EtiReader(EtiFileHandler* ipParent, FILE* ipFile, RingBuffer<u8>* ipRingBuffer);
   ~EtiReader() override;
 
   void start_reader();
@@ -39,11 +39,11 @@ public:
 
 private:
   void run() override;
-  bool _read_next_frame(i64 & oFrameStartPos);
+  bool _read_next_frame(i64& oFrameStartPos);
 
-  FILE * const mpFile;
-  RingBuffer<u8> * const mpRingBuffer;
-  EtiFileHandler * const mpParent;
+  FILE* const mpFile;
+  RingBuffer<u8>* const mpRingBuffer;
+  EtiFileHandler* const mpParent;
   std::atomic<bool> mRunning = false;
   std::atomic<i64> mSetNewFilePos = -1;
   std::atomic<bool> mPaused = false;

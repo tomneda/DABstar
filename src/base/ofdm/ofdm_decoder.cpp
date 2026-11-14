@@ -40,7 +40,7 @@
 constexpr f32 cMinNoiseLevel = 1.0f / 32767.0f; // assuming 16 bit sample
 constexpr f32 cMinNoisePower = cMinNoiseLevel * cMinNoiseLevel;
 
-OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
+OfdmDecoder::OfdmDecoder(DabRadio* ipMr, RingBuffer<cf32>* ipIqBuffer, RingBuffer<f32>* ipCarrBuffer)
   : PhaseTable()
   , mpRadioInterface(ipMr)
   , mpIqBuffer(ipIqBuffer)
@@ -102,7 +102,7 @@ void OfdmDecoder::reset()
   _reset_null_symbol_statistics();
 }
 
-void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu & iV) // with TII information
+void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu& iV) // with TII information
 {
   if (mCarrierPlotType != ECarrierPlotType::NULL_TII_LIN &&
       mCarrierPlotType != ECarrierPlotType::NULL_TII_LOG)
@@ -113,7 +113,7 @@ void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu & iV) // with TII in
   _eval_null_symbol_statistics(iV);
 }
 
-void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII information
+void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu& iV) // with TII information
 {
   if (mCarrierPlotType == ECarrierPlotType::NULL_NO_TII)
   {
@@ -131,7 +131,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iV) // with TII
   }
 }
 
-void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
+void OfdmDecoder::store_reference_symbol_0(const TArrayTu& iBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   memcpy(mPhaseReference.data(), iBuffer.data(), cTu * sizeof(cf32));
@@ -159,7 +159,7 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iBuffer)
   }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu& iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32& iGuardCorrSum, std::vector<i16>& oBits)
 {
   // current runtime on i7-6700K:
   // phase correction via:
@@ -213,7 +213,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     const f32 PhaseReferenceAbs = std::abs(mPhaseReference[fftIdx]);
     const cf32 fftBinRaw = iV[fftIdx] * std::conj(mPhaseReference[fftIdx]) / PhaseReferenceAbs; // DQPSK demodulation
 
-    f32 & integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
+    f32& integAbsPhasePerBinRef = mIntegAbsPhaseVector[nomCarrIdx];
     const f32 phaseErr = iClockErr / 1024.0f * F_M_PI * (cK / 2 - realCarrRelIdx) / (cK / 2) + integAbsPhasePerBinRef;
 
     const cf32 fftBin = fftBinRaw * cmplx_from_phase2(-phaseErr);
@@ -229,12 +229,12 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     // Get standard deviation of absolute phase for each bin. The integrator above assures that F_M_PI_4 is the phase mean value.
     const f32 curStdDevDiff = (fftBinAbsPhase -  F_M_PI_4);
     const f32 curStdDevSq = curStdDevDiff * curStdDevDiff;
-    f32 & stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
+    f32& stdDevSqRef =  mStdDevSqPhaseVector[nomCarrIdx];
     mean_filter(stdDevSqRef, curStdDevSq, ALPHA);
 
     // Calculate the mean of power of each bin to equalize the IQ diagram (simply looks nicer) and use it for SNR calculation.
     const f32 fftBinPower = std::norm(fftBin);
-    f32 & meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
+    f32& meanPowerPerBinRef = mMeanPowerVector[nomCarrIdx];
     mean_filter(meanPowerPerBinRef, fftBinPower, ALPHA);
     mean_filter(mMeanPowerOvrAll, fftBinPower, ALPHA / (f32)cK);
 
@@ -244,7 +244,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, 
     const f32 realLevelDistPerBin = (std::abs(real(fftBin)) - meanLevelAtAxisPerBin); // x-distance to reference point
     const f32 imagLevelDistPerBin = (std::abs(imag(fftBin)) - meanLevelAtAxisPerBin); // y-distance to reference point
     const f32 sigmaSqPerBin = realLevelDistPerBin * realLevelDistPerBin + imagLevelDistPerBin * imagLevelDistPerBin; // squared distance to reference point
-    f32 & meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
+    f32& meanSigmaSqPerBinRef = mMeanSigmaSqVector[nomCarrIdx];
     mean_filter(meanSigmaSqPerBinRef, sigmaSqPerBin, ALPHA);
 
     // The statistics above are always needed (plots, MER, SNR and the fallback from the coherent demodulation)
@@ -415,7 +415,7 @@ f32 OfdmDecoder::_compute_noise_Power() const
   return sumNoise / (f32)cK;
 }
 
-void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
+void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu& iV)
 {
   f32 max = -1e38f;
   f32 min =  1e38f;
@@ -428,7 +428,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
       // Consider FFT shift and skipping DC (0 Hz) bin.
       const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
       const f32 level = log10_times_10(std::norm(iV[fftIdx]) + cMinNoisePower);
-      f32 & meanNullLevelRef = mMeanNullLevel[fftIdx];
+      f32& meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -444,7 +444,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iV)
       // Consider FFT shift and skipping DC (0 Hz) bin.
       const i32 fftIdx = fft_shift_skip_dc<cTu>(idx);
       const f32 level = std::abs(iV[fftIdx]) + cMinNoiseLevel;
-      f32 & meanNullLevelRef = mMeanNullLevel[fftIdx];
+      f32& meanNullLevelRef = mMeanNullLevel[fftIdx];
       mean_filter(meanNullLevelRef, level, ALPHA);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -498,7 +498,7 @@ void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
   mSoftBitType = iSoftBitType;
 }
 
-cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar)
+cf32 OfdmDecoder::_interpolate_2d_plane(const cf32& iStart, const cf32& iEnd, f32 iPar)
 {
   assert(iPar >= 0.0f && iPar <= 1.0f);
   const f32 a_r = real(iStart);

@@ -12,8 +12,8 @@ private:
 public:
   DynLinkCache(i32 size);
 
-  void add(const QString & s);
-  bool is_member(const QString & s);
-  bool add_if_new(const QString & s);
+  void add(const QString& s);
+  bool is_member(const QString& s);
+  bool add_if_new(const QString& s);
 };
 

@@ -68,9 +68,9 @@ struct STiiDataEntry
 };
 
 // DLL and ".so" function prototypes
-using TpFn_init_tii = void * (*)();
-using TpFn_close_tii = void (*)(void *);
-using TpFn_loadTable = void (*)(void *, const std::string &);
+using TpFn_init_tii = void* (*)();
+using TpFn_close_tii = void (*)(void*);
+using TpFn_loadTable = void (*)(void*, const std::string&);
 
 class TiiHandler
 {
@@ -79,14 +79,14 @@ public:
   ~TiiHandler();
 
   // pass this as channel name if the channel is unknown (e.g. while playing a file)
-  static constexpr const char * cChannelAny = "any";
+  static constexpr const char* cChannelAny = "any";
 
-  bool fill_cache_from_tii_file(const QString &);
-  const STiiDataEntry * get_transmitter_data(const QString &iChannel, u16 iEid, u8 iMainId, u8 iSubId);
+  bool fill_cache_from_tii_file(const QString&);
+  const STiiDataEntry* get_transmitter_data(const QString& iChannel, u16 iEid, u8 iMainId, u8 iSubId);
   [[nodiscard]] f32 distance(f32, f32, f32, f32) const;
   f32 corner(f32, f32, f32, f32) const;
   bool is_valid() const;
-  void loadTable(const QString & iTiiFileName);
+  void loadTable(const QString& iTiiFileName);
 
 private:
   // The key does not contain the channel as one and the same ensemble (Eid) can be transmitted on several channels
@@ -95,23 +95,23 @@ private:
   std::set<std::pair<u32, QString>> mReportedChannelMismatches; // to warn only once per key/channel combination
   u8 mShift = 0;
   QString mTiiFileName;
-  void * mpTiiLibHandler = nullptr;
-  QLibrary * mphandle = nullptr;
+  void* mpTiiLibHandler = nullptr;
+  QLibrary* mphandle = nullptr;
   TpFn_init_tii mpFn_init_tii = nullptr;
   TpFn_close_tii mpFn_close_tii = nullptr;
   TpFn_loadTable mpFn_loadTable = nullptr;
 
   bool _load_library();
-  f32 _get_flt(const QString & s) const;
-  i32 _get_int(const QString & s) const;
-  u16 _get_E_id(const QString & s) const;
-  u8 _get_main_id(const QString & s) const;
-  u8 _get_sub_id(const QString & s) const;
+  f32 _get_flt(const QString& s) const;
+  i32 _get_int(const QString& s) const;
+  u16 _get_E_id(const QString& s) const;
+  u8 _get_main_id(const QString& s) const;
+  u8 _get_sub_id(const QString& s) const;
   f64 _distance_2(f32, f32, f32, f32) const;
-  bool _is_already_cached(u32 iKey, const QString & iChannel) const;
-  i32 _read_columns(std::vector<QString> & oV, const char * b, i32 N) const;
-  void _read_file(QFile & fp);
-  char * _eread(const std::span<char> & oBuffer, QFile & fp) const;
+  bool _is_already_cached(u32 iKey, const QString& iChannel) const;
+  i32 _read_columns(std::vector<QString>& oV, const char* b, i32 N) const;
+  void _read_file(QFile& fp);
+  char* _eread(const std::span<char>& oBuffer, QFile& fp) const;
   bool _load_dyn_library_functions();
 };
 

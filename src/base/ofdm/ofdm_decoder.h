@@ -48,7 +48,7 @@ class OfdmDecoder : public QObject, private PhaseTable
 {
 Q_OBJECT
 public:
-  OfdmDecoder(DabRadio *, RingBuffer<cf32> * iqBuffer, RingBuffer<f32> * ipCarrBuffer);
+  OfdmDecoder(DabRadio*, RingBuffer<cf32>* iqBuffer, RingBuffer<f32>* ipCarrBuffer);
   ~OfdmDecoder() override;
 
   struct SLcdData
@@ -63,10 +63,10 @@ public:
   };
 
   void reset();
-  void store_null_symbol_with_tii(const TArrayTu &);
-  void store_null_symbol_without_tii(const TArrayTu &);
-  void store_reference_symbol_0(const TArrayTu &);
-  void decode_symbol(const TArrayTu & iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits);
+  void store_null_symbol_with_tii(const TArrayTu&);
+  void store_null_symbol_without_tii(const TArrayTu&);
+  void store_reference_symbol_0(const TArrayTu&);
+  void decode_symbol(const TArrayTu& iV, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32& iGuardCorrSum, std::vector<i16>& oBits);
 
   void set_select_carrier_plot_type(ECarrierPlotType iPlotType);
   void set_select_iq_plot_type(EIqPlotType iPlotType);
@@ -75,11 +75,11 @@ public:
   inline void set_dc_offset(cf32 iDcOffset) { mDcAdc = iDcOffset; };
 
 private:
-  DabRadio * const mpRadioInterface;
+  DabRadio* const mpRadioInterface;
   FreqInterleaver mFreqInterleaver{};
 
-  RingBuffer<cf32> * const mpIqBuffer;
-  RingBuffer<f32> * const mpCarrBuffer;
+  RingBuffer<cf32>* const mpIqBuffer;
+  RingBuffer<f32>* const mpCarrBuffer;
 
   std::atomic<ECarrierPlotType> mCarrierPlotType{ ECarrierPlotType::DEFAULT };
   std::atomic<EIqPlotType> mIqPlotType{ EIqPlotType::DEFAULT };
@@ -113,15 +113,15 @@ private:
   SLcdData mLcdData{};
 
   [[nodiscard]] f32 _compute_noise_Power() const;
-  void _eval_null_symbol_statistics(const TArrayTu &);
+  void _eval_null_symbol_statistics(const TArrayTu&);
   void _reset_null_symbol_statistics();
   cf32 cmplx_from_phase2(const f32 iPhase) const;
 
-  static cf32 _interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar);
+  static cf32 _interpolate_2d_plane(const cf32& iStart, const cf32& iEnd, f32 iPar);
 
 signals:
   void signal_slot_show_iq(i32, f32);
-  void signal_show_lcd_data(const SLcdData &);
+  void signal_show_lcd_data(const SLcdData&);
 };
 
 Q_DECLARE_METATYPE(OfdmDecoder::SLcdData)

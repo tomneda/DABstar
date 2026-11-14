@@ -42,17 +42,17 @@ class IpDataHandler : public VirtualDataHandler
 {
 Q_OBJECT
 public:
-  IpDataHandler(DabRadio *, RingBuffer<u8> *);
+  IpDataHandler(DabRadio*, RingBuffer<u8>*);
   ~IpDataHandler() override = default;
 
-  void add_MSC_data_group(const std::vector<u8> &) override ;
+  void add_MSC_data_group(const std::vector<u8>&) override ;
 
 private:
-  void process_ipVector(const std::span<const u8> & iIpData);
-  void process_udpVector(const std::span<const u8> & iUdpData);
+  void process_ipVector(const std::span<const u8>& iIpData);
+  void process_udpVector(const std::span<const u8>& iUdpData);
 
   i16 handledPackets;
-  RingBuffer<u8> * dataBuffer;
+  RingBuffer<u8>* dataBuffer;
 
 signals:
   void signal_write_datagramm(int);

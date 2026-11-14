@@ -25,12 +25,12 @@
  */
 #include "mot_dir.h"
 
-MotDirectory::MotDirectory (DabRadio *mr,
+MotDirectory::MotDirectory (DabRadio* mr,
                             u16	transportId,
                             i16	segmentSize,
                             i32	dirSize,
                             i16	objects,
-                            u8	*segment) {
+                            u8* segment) {
 i16	i;
 
 	   this	-> myRadioInterface	= mr;
@@ -65,7 +65,7 @@ int	i;
 	      delete motComponents [i]. motSlide;
 }
 
-MotObject	*MotDirectory::getHandle (u16 transportId) {
+MotObject* MotDirectory::getHandle (u16 transportId) {
 int i;
 	for (i = 0; i < numObjects; i ++)
 	   if ((motComponents [i]. inUse) &&
@@ -75,7 +75,7 @@ int i;
 	return nullptr;
 }
 
-void	MotDirectory::setHandle (MotObject *h, u16 transportId) {
+void	MotDirectory::setHandle (MotObject* h, u16 transportId) {
 int	i;
 
 	for (i = 0; i < numObjects; i ++)
@@ -90,7 +90,7 @@ int	i;
 //	unfortunately, directory segments do not need to come in
 //	in order
 void	MotDirectory::directorySegment (u16 transportId,
-                                      u8	*segment,
+                                      u8* segment,
                                       i16	segmentNumber,
                                       i32	segmentSize,
                                       bool	lastSegment) {
@@ -104,7 +104,7 @@ i16	i;
 	if (lastSegment)
 	   this -> num_dirSegments = segmentNumber + 1;
 	this	-> marked [segmentNumber] = true;
-	u8	*address = &dir_segments [segmentNumber * dir_segmentSize];
+	u8* address = &dir_segments [segmentNumber * dir_segmentSize];
 	memcpy (address, segment, segmentSize);
 //
 //	we are "complete" if we know the number of segments and
@@ -136,8 +136,8 @@ u16 extensionLength	= (dir_segments [currentBase] << 8) |
 	      break;
 
 //	   fprintf (stdout, "motObject with transportId %d and \n", transportId);
-	   u8 *segment	= &dir_segments [currentBase + 2];
-	   MotObject *handle	= new MotObject (myRadioInterface,
+	   u8* segment	= &dir_segments [currentBase + 2];
+	   MotObject* handle	= new MotObject (myRadioInterface,
                                          true,
                                          false,
                                          transportId,

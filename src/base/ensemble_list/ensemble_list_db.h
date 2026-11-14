@@ -55,7 +55,7 @@ public:
     bool showNotScannedEntries = true;
     bool showScannedEntries = true;
     bool showNoSignalEntries = true;
-    bool operator!=(const SDataFilter & data_filter) const
+    bool operator!=(const SDataFilter& data_filter) const
     {
       return showNotScannedEntries != data_filter.showNotScannedEntries ||
              showScannedEntries    != data_filter.showScannedEntries ||
@@ -116,15 +116,15 @@ public:
   void create_table();
   void delete_table();
   [[nodiscard]] bool is_table_existing(EDataMode iDataMode) const;
-  bool insert_or_update_entry(const SDbEntryData & iEntryData, EDbDataType iDataType) const;
-  bool delete_entry(const QString & iFIdOrCh) const;
+  bool insert_or_update_entry(const SDbEntryData& iEntryData, EDbDataType iDataType) const;
+  bool delete_entry(const QString& iFIdOrCh) const;
   bool delete_invalid_entries() const;
   [[nodiscard]] i32 get_nr_unscanned_entries() const; // get number of entries with EId not given yet
-  [[nodiscard]] SDbEntryData get_entry(const QString & iFIdOrCh) const;
-  bool is_entry_existing(const QString & iFIdOrCh) const;
-  void set_data_filter(const SDataFilter & iDataFilter);
-  QAbstractItemModel * create_model();
-  [[nodiscard]] QString get_full_path(const QString & iFId) const;
+  [[nodiscard]] SDbEntryData get_entry(const QString& iFIdOrCh) const;
+  bool is_entry_existing(const QString& iFIdOrCh) const;
+  void set_data_filter(const SDataFilter& iDataFilter);
+  QAbstractItemModel* create_model();
+  [[nodiscard]] QString get_full_path(const QString& iFId) const;
 
 private:
   QSqlDatabase mDB;
@@ -135,6 +135,6 @@ private:
   [[nodiscard]] QString _error_str() const;
   void _delete_db_file();
   bool _open_db();
-  void _exec_simple_query(const QString & iQuery);
-  [[nodiscard]] const QString & _cur_tab_name() const;
+  void _exec_simple_query(const QString& iQuery);
+  [[nodiscard]] const QString& _cur_tab_name() const;
 };

@@ -100,17 +100,17 @@ class DabRadio : public QWidget
 {
 Q_OBJECT
 public:
-  DabRadio(QSettings * ipSettings, const QString & iServiceListDbFileName, const QString & iEnsembleListDbFileName, i32 iDataPort, QWidget * iParent);
+  DabRadio(QSettings* ipSettings, const QString& iServiceListDbFileName, const QString& iEnsembleListDbFileName, i32 iDataPort, QWidget* iParent);
   ~DabRadio() override;
 
   [[nodiscard]] static bool is_terminating() { return sIsTerminating || (qApp != nullptr && qApp->closingDown()); }
 
-  AudioPipeline * get_audio_pipeline() const;
+  AudioPipeline* get_audio_pipeline() const;
 
   // the JOUR button opens the latest registered Journaline viewer
-  void register_journaline_viewer(QWidget * ipViewerWidget);
-  void unregister_journaline_viewer(const QWidget * ipViewerWidget);
-  void set_journaline_data_received(const QWidget * ipViewerWidget) const;
+  void register_journaline_viewer(QWidget* ipViewerWidget);
+  void unregister_journaline_viewer(const QWidget* ipViewerWidget);
+  void set_journaline_data_received(const QWidget* ipViewerWidget) const;
 
   enum EAudioFlags : u32
   {
@@ -135,7 +135,7 @@ private:
     T value{};
     QColor colorOn;
     QColor colorOff;
-    QLabel * pLbl = nullptr;
+    QLabel* pLbl = nullptr;
   };
 
   struct StatusInfo
@@ -149,8 +149,8 @@ private:
     StatusInfoElem<bool> EWS;         // ensemble related, so it is only reset on channel stop
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
-    StatusInfoElem<const char *> ProtLevel;
-    StatusInfoElem<const char *> AudioStandard;
+    StatusInfoElem<const char*> ProtLevel;
+    StatusInfoElem<const char*> AudioStandard;
   };
 
   struct SScanResult
@@ -165,21 +165,21 @@ private:
   {
     bool etiDumpActive = false;
     bool rawDumpActive = false;
-    SNDFILE * pRawDumper = nullptr;
+    SNDFILE* pRawDumper = nullptr;
   };
 
-  Ui_DabRadio * const ui;
+  Ui_DabRadio* const ui;
 
-  RingBuffer<cf32> * const mpSpectrumBuffer;
-  RingBuffer<cf32> * const mpIqBuffer;
-  RingBuffer<f32> * const mpCarrBuffer;
-  RingBuffer<f32> * const mpResponseBuffer;
-  RingBuffer<u8> * const mpFrameBuffer;
-  RingBuffer<u8> * const mpDataBuffer;
-  RingBuffer<i16> * const mpAudioBufferFromDecoder;
-  RingBuffer<i16> * const mpAudioBufferToOutput;
-  RingBuffer<i16> * const mpTechDataBuffer;
-  RingBuffer<cf32> * const mpCirBuffer;
+  RingBuffer<cf32>* const mpSpectrumBuffer;
+  RingBuffer<cf32>* const mpIqBuffer;
+  RingBuffer<f32>* const mpCarrBuffer;
+  RingBuffer<f32>* const mpResponseBuffer;
+  RingBuffer<u8>* const mpFrameBuffer;
+  RingBuffer<u8>* const mpDataBuffer;
+  RingBuffer<i16>* const mpAudioBufferFromDecoder;
+  RingBuffer<i16>* const mpAudioBufferToOutput;
+  RingBuffer<i16>* const mpTechDataBuffer;
+  RingBuffer<cf32>* const mpCirBuffer;
 
   const QString mVersionStr{PRJ_VERS};
 
@@ -199,9 +199,9 @@ private:
   QScopedPointer<TiiManager> mpTiiManager;
   QScopedPointer<MotSlideProgress> mpMotSlideProgress;
   std::unique_ptr<IDeviceHandler> mpInputDevice;
-  WindowVisibilityWatcher * mpDeviceWindowWatcher = nullptr;
-  WindowVisibilityWatcher * mpFibWindowWatcher = nullptr;
-  WindowVisibilityWatcher * mpJournalineWindowWatcher = nullptr;
+  WindowVisibilityWatcher* mpDeviceWindowWatcher = nullptr;
+  WindowVisibilityWatcher* mpFibWindowWatcher = nullptr;
+  WindowVisibilityWatcher* mpJournalineWindowWatcher = nullptr;
 
   // Counters and indices
   i32 mMaxDistance = -1;
@@ -211,7 +211,7 @@ private:
   usize mPreviousTotalTime = 0;
 
   // File handles
-  FILE * mpFicDumpPointer = nullptr;
+  FILE* mpFicDumpPointer = nullptr;
 
   static constexpr u32 cRawDumpColor = 0x4A7898;
   static constexpr u32 cEtiDumpColor = 0x9A6A3A;
@@ -279,7 +279,7 @@ private:
   std::unique_ptr<IDeviceSelector> mpDeviceSelector;
 
 #ifdef DATA_STREAMER
-  tcpServer * dataStreamer = nullptr;
+  tcpServer* dataStreamer = nullptr;
 #endif
 
   // DAB Processor Management
@@ -288,47 +288,47 @@ private:
   void _create_and_init_dab_processor();
   void _delete_dab_processor();
   void _clean_up_dab_processor_and_input_device();
-  void _create_new_input_device_and_dab_processor(const QString & iDeviceNameOrFileName);
+  void _create_new_input_device_and_dab_processor(const QString& iDeviceNameOrFileName);
 
   // Service Management
-  bool _create_primary_backend_audio_service(const SAudioData & iAD);
-  bool _create_primary_backend_packet_service(const SPacketData & iPD) const;
-  bool _create_secondary_backend_packet_service(const SPacketData & iPD) const;
+  bool _create_primary_backend_audio_service(const SAudioData& iAD);
+  bool _create_primary_backend_packet_service(const SPacketData& iPD) const;
+  bool _create_secondary_backend_packet_service(const SPacketData& iPD) const;
   bool _start_primary_and_secondary_service(u32 iSId, bool iStartPrimaryAudioOnly);
   void _stop_services(bool iStopAlsoGlobServices);
 
   // Channel and Playback Control
-  void _start_channel(const QString & iFIdOrCh, u32 iSId);
+  void _start_channel(const QString& iFIdOrCh, u32 iSId);
   void _stop_channel();
-  void _start_playing(const QString & iFIdOrCh, u32 iSId, bool iSameFIdOrCh);
+  void _start_playing(const QString& iFIdOrCh, u32 iSId, bool iSameFIdOrCh);
 
   // Scanning Operations
-  void _start_scanning(SChannelDescriptor & ioChannelDesc);
-  void _stop_scanning(SChannelDescriptor & ioChannelDesc);
-  void _update_scan_statistics(const QString & iFIdOrCh, const SServiceId & sl);
+  void _start_scanning(SChannelDescriptor& ioChannelDesc);
+  void _stop_scanning(SChannelDescriptor& ioChannelDesc);
+  void _update_scan_statistics(const QString& iFIdOrCh, const SServiceId& sl);
   void _check_for_itu_code();
   QString _get_scan_message(bool iEndMsg) const;
 
   // Dumping and Recording
-  void _start_eti_handler(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus);
-  void _stop_eti_handler(SDumpStatus & ioDumpStatus) const;
-  void _start_source_dumping(const SChannelDescriptor & iChannelDesc, SDumpStatus & ioDumpStatus);
-  void _stop_source_dumping(SDumpStatus & ioDumpStatus) const;
-  void _set_dump_button_emphasized(IndicatorButton * ipButton, bool iEmphasized, u32 iBaseColor) const;
+  void _start_eti_handler(const SChannelDescriptor& iChannelDesc, SDumpStatus& ioDumpStatus);
+  void _stop_eti_handler(SDumpStatus& ioDumpStatus) const;
+  void _start_source_dumping(const SChannelDescriptor& iChannelDesc, SDumpStatus& ioDumpStatus);
+  void _stop_source_dumping(SDumpStatus& ioDumpStatus) const;
+  void _set_dump_button_emphasized(IndicatorButton* ipButton, bool iEmphasized, u32 iBaseColor) const;
 
   // Time and Date Handling
-  void _get_ymd_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const;
-  i32 _get_local_time(i32 & oLocalHour, i32 & oLocalMinute, i32 iUtcHour, i32 iUtcMinute, i32 iLtoMinutes) const;
+  void _get_ymd_from_mod_julian_date(i32& oYear, i32& oMonth, i32& oDay, const i32 iMJD) const;
+  i32 _get_local_time(i32& oLocalHour, i32& oLocalMinute, i32 iUtcHour, i32 iUtcMinute, i32 iLtoMinutes) const;
   QString _conv_to_time_str(i32 iYear, i32 iMonth, i32 iDay, i32 iHours, i32 iMinutes, i32 iSeconds = -1) const;
   QString _seconds_to_timestring(u32 iTimer) const;
 
   // UI Display and Status Updates
-  template <typename T> void _add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip);
-  template <typename T> void _set_status_info_status(StatusInfoElem<T> & iElem, const T iValue) const;
-  void _clean_screen(StatusInfo & ioStatusInfo) const;
-  void _reset_status_info(StatusInfo & ioStatusInfo) const;
-  void _display_service_label(const QString & iServiceLabel) const;
-  void _write_warning_message(const QString & iMsg) const;
+  template <typename T> void _add_status_label_elem(StatusInfoElem<T>& ioElem, const u32 iColor, const QString& iName, const QString& iToolTip);
+  template <typename T> void _set_status_info_status(StatusInfoElem<T>& iElem, const T iValue) const;
+  void _clean_screen(StatusInfo& ioStatusInfo) const;
+  void _reset_status_info(StatusInfo& ioStatusInfo) const;
+  void _display_service_label(const QString& iServiceLabel) const;
+  void _write_warning_message(const QString& iMsg) const;
   static TrafficLight::EStage _fic_to_traffic_light_stage(i32 iSuccessPercent);
   static TrafficLight::EStage _rs_crc_to_traffic_light_stage(bool iRsError, bool iCrcError);
   static TrafficLight::EStage _error_to_traffic_light_stage(i32 iErrorCount);
@@ -339,7 +339,7 @@ private:
   void _show_epg_label(const bool iShowLabel);
   enum class EHttpButtonState { Off, On, Waiting };
   void _set_http_server_button(EHttpButtonState iHttpServerState) const;
-  void _set_clock_text(const QString & iText = QString());
+  void _set_clock_text(const QString& iText = QString());
   void _enable_ui_elements_for_safety(bool iEnable) const;
   void _adapt_gui_for_device_or_file_play(bool iPlayingDevice) const;
   void _adapt_gui_for_eti_mode(bool iEtiMode);
@@ -348,20 +348,20 @@ private:
 
   // Settings and Configuration
   void _write_sid_to_settings(u32 iSId) const;
-  void _write_fid_or_Ch_to_settings(const QString & iFIdOrCh) const;
-  void _get_local_position_from_config(cf32 & oLocalPos) const;
+  void _write_fid_or_Ch_to_settings(const QString& iFIdOrCh) const;
+  void _get_local_position_from_config(cf32& oLocalPos) const;
   void _show_or_hide_windows_from_config();
 
   // Ensemble and Service List
-  void _collect_fib_data_and_emit_to_ensemble_list(const SChannelDescriptor & iChannelDesc) const;
-  bool _collect_deferred_data_and_emit_to_ensemble_list(const SChannelDescriptor & iChannelDesc, bool iForceSend) const;
-  void _inform_ensemble_list(const SIdentInfoEL & iIdentInfoEL, EInfoReason iInfoReason);
+  void _collect_fib_data_and_emit_to_ensemble_list(const SChannelDescriptor& iChannelDesc) const;
+  bool _collect_deferred_data_and_emit_to_ensemble_list(const SChannelDescriptor& iChannelDesc, bool iForceSend) const;
+  void _inform_ensemble_list(const SIdentInfoEL& iIdentInfoEL, EInfoReason iInfoReason);
 
   void _update_audio_data_addon(u32 iSId) const;
 
   // Utility Functions
   QStringList _get_soft_bit_gen_names() const;
-  QString _convert_links_to_clickable(const QString & iText) const;
+  QString _convert_links_to_clickable(const QString& iText) const;
   void _check_on_github_for_update(bool iShowStatus);
 
   void _initialize_traffic_lights() const;
@@ -370,7 +370,7 @@ private:
   void _initialize_indicator_buttons();
   void _initialize_ui_elements();
   void _initialize_file_player_bar();
-  void _setup_file_player_bar(const QString & iFileName);
+  void _setup_file_player_bar(const QString& iFileName);
   void _set_file_paused(bool iPaused);
   void _show_file_player_bar(bool iShow);
   void _initialize_status_info();
@@ -382,15 +382,15 @@ private:
   void _initialize_version_and_copyright_info();
   void _show_copyright_window();
   void _initialize_and_start_timers();
-  void _initialize_device_selector(SChannelDescriptor & ioChannelDesc) const;
+  void _initialize_device_selector(SChannelDescriptor& ioChannelDesc) const;
 
 protected:
-  bool eventFilter(QObject * ipObj, QEvent * ipEvent) override;
+  bool eventFilter(QObject* ipObj, QEvent* ipEvent) override;
 
 public slots:
   // Ensemble and Service Information
-  void slot_name_of_ensemble(i32 iEId, const QString & iEnsName, const QString & iEnsNameShort);
-  void slot_show_label(const QString & iLabel);
+  void slot_name_of_ensemble(i32 iEId, const QString& iEnsName, const QString& iEnsNameShort);
+  void slot_show_label(const QString& iLabel);
   void slot_change_in_configuration();
   void slot_handle_fib_content_selector(u32 iSId);
   void slot_load_table();
@@ -403,12 +403,12 @@ public slots:
   void slot_show_audio_buffer_filled_state(i32 iPercent, i32 iQualFillState, i32 iCorrDir) const;
 
   // Signal Quality and Measurements
-  void slot_show_correlation(f32 iThreshold, const QVector<i32> & iV);
+  void slot_show_correlation(f32 iThreshold, const QVector<i32>& iV);
   void slot_show_spectrum(i32 iAmount) const;
   void slot_show_cir() const;
   void slot_show_iq(i32, f32) const;
-  void slot_show_lcd_data(const OfdmDecoder::SLcdData & iQD);
-  void slot_show_tii(const std::vector<STiiResult> & iTr);
+  void slot_show_lcd_data(const OfdmDecoder::SLcdData& iQD);
+  void slot_show_tii(const std::vector<STiiResult>& iTr);
   void slot_show_clock_error(f32 e) const;
   void slot_set_and_show_freq_corr_rf_Hz(i32 iFreqCorrRF);
   void slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB);
@@ -420,7 +420,7 @@ public slots:
 
   // MOT (Multimedia Object Transfer) — thin wrappers delegating to mpEpgMotHandler
   void slot_pad_mot_progress(i32 iPercent) const;
-  void slot_handle_mot_object(const QByteArray & iResult, const QString & iObjectName, i32 iContentType, bool iDirElement) const;
+  void slot_handle_mot_object(const QByteArray& iResult, const QString& iObjectName, i32 iContentType, bool iDirElement) const;
   void slot_trigger_mot_indicator() const;
 
   // Data Services
@@ -428,9 +428,9 @@ public slots:
   void slot_handle_tdc_data(i32 iFrameType, i32 iLength);
 
   // Time and Announcements
-  void slot_fib_time(const IFibDecoder::SUtcTimeSet & fibTimeInfo);
-  void slot_start_announcement(const QString & iName, i32 iSubChId);
-  void slot_stop_announcement(const QString & iName, i32 iSubChId);
+  void slot_fib_time(const IFibDecoder::SUtcTimeSet& fibTimeInfo);
+  void slot_start_announcement(const QString& iName, i32 iSubChId);
+  void slot_stop_announcement(const QString& iName, i32 iSubChId);
   void slot_ews_available();
   void slot_epg_timer_timeout();
 
@@ -443,7 +443,7 @@ public slots:
   void slot_check_for_update();
 
 protected slots:
-  void closeEvent(QCloseEvent * event) override;
+  void closeEvent(QCloseEvent* event) override;
 
 private slots:
   // Button Handlers - UI Navigation
@@ -484,10 +484,10 @@ private slots:
   void _slot_handle_favorite_button(bool iClicked);
 
   // Service and Channel Management
-  void _slot_device_selected(const QString &);
+  void _slot_device_selected(const QString&);
   void _slot_device_connected();
-  void _slot_service_changed(const QString & iFIdOrCh, const QString & iService, u32 iSId);
-  void _slot_file_or_channel_to_play(const SIdentInfoEL & iIdentInfo);
+  void _slot_service_changed(const QString& iFIdOrCh, const QString& iService, u32 iSId);
+  void _slot_file_or_channel_to_play(const SIdentInfoEL& iIdentInfo);
   void _slot_start_stop_scan(bool iIsScanning);
   void _slot_service_list_src_change(int iIdClicked);
   void _slot_show_current_fid_or_ch_only(bool iShowOnlyCurrentFIdOrCh) const;
@@ -513,7 +513,7 @@ private slots:
 
 signals:
   void signal_dab_processor_started();
-  void signal_fib_data_status(const SScanResultEL &) const;
-  void signal_fid_or_ch_selected(const QString & oFIdOrCh, u32 oSId);
+  void signal_fib_data_status(const SScanResultEL&) const;
+  void signal_fid_or_ch_selected(const QString& oFIdOrCh, u32 oSId);
   void signal_xpad_journaline_app_type(i16 iXPadAppTy);
 };

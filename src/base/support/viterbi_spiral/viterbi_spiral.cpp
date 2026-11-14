@@ -68,7 +68,7 @@ ViterbiSpiral::ViterbiSpiral(const i32 iWordlength, const bool iSpiralMode)
 #endif
 
   const i32 nbits = mFrameBits + (K - 1);
-  decisions = (decision_t *)malloc(nbits * sizeof(decision_t));
+  decisions = (decision_t*)malloc(nbits * sizeof(decision_t));
 }
 
 
@@ -92,7 +92,7 @@ v ^= v >> 4;
 v &= 0xf;
 return (0x6996 >> v) & 1;*/
 
-void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
+void ViterbiSpiral::deconvolve(const i16* const input, u8* const output)
 {
   /* Initialize Viterbi decoder for start of new frame */
   for (i32 i = 0; i < NUMSTATES; i++)
@@ -114,7 +114,7 @@ void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
   /* Do Viterbi chainback */
   u32 endstate = 0; /* Terminal encoder state */
   u32 framebits = mFrameBits;
-  decision_t * dec = decisions;
+  decision_t* dec = decisions;
 
   dec += (K - 1); /* Look past tail */
   while (framebits--)
@@ -125,7 +125,7 @@ void ViterbiSpiral::deconvolve(const i16 * const input, u8 * const output)
   }
 }
 
-void ViterbiSpiral::calculate_BER(const i16 * const input, u8 * punctureTable, u8 const * output, i32 & bits, i32 & errors)
+void ViterbiSpiral::calculate_BER(const i16* const input, u8* punctureTable, u8 const* output, i32& bits, i32& errors)
 {
   i32 i;
   i32 sr = 0;

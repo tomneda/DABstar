@@ -51,8 +51,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-void logit(unsigned long level, const char *file, const int line, int api_err,
-           int dumpBuffer, int nots, const char * format, ...)
+void logit(unsigned long level, const char* file, const int line, int api_err,
+           int dumpBuffer, int nots, const char* format, ...)
 {
   va_list va;
   va_start (va, format);

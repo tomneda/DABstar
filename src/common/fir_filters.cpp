@@ -28,7 +28,7 @@
 	LowPassFIR::LowPassFIR (i16 firsize,
 	                        i32 Fc, i32 fs){
 f32	sum	= 0.0;
-auto * const temp = make_vla(f32, firsize);
+auto* const temp = make_vla(f32, firsize);
 
 	this -> frequency	= (f32)Fc / fs;
 	this -> filterSize	= firsize;
@@ -68,7 +68,7 @@ i32	LowPassFIR::theSize	() {
 }
 
 void	LowPassFIR::resize (i32 newSize) {
-auto * const temp = make_vla(f32, newSize);
+auto* const temp = make_vla(f32, newSize);
 f32	sum = 0;
 
 	filterSize	= newSize;

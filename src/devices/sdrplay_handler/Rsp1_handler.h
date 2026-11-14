@@ -25,7 +25,7 @@
 class	Rsp1_handler: public Rsp_device
 {
 public:
-	Rsp1_handler(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice,
+	Rsp1_handler(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice,
 	             i32 freq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppm);
 	~Rsp1_handler() override = default;
 

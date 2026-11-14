@@ -27,13 +27,13 @@
 #include <QProxyStyle>
 
 template<typename T>
-void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iColor, const QString & iName, const QString & iToolTip)
+void DabRadio::_add_status_label_elem(StatusInfoElem<T>& ioElem, const u32 iColor, const QString& iName, const QString& iToolTip)
 {
   ioElem.colorOn = iColor;
   ioElem.colorOff = 0x444444;
 
   // invalidate cache
-  if constexpr (std::is_same_v<T, const char *>)
+  if constexpr (std::is_same_v<T, const char*>)
     ioElem.value = nullptr;
   else
     ioElem.value = !T();
@@ -53,9 +53,9 @@ void DabRadio::_add_status_label_elem(StatusInfoElem<T> & ioElem, const u32 iCol
 }
 
 template<typename T>
-void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue) const
+void DabRadio::_set_status_info_status(StatusInfoElem<T>& iElem, T const iValue) const
 {
-  if constexpr (std::is_same_v<T, const char *>)
+  if constexpr (std::is_same_v<T, const char*>)
   {
     if (iValue == nullptr)
     {
@@ -100,16 +100,16 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T> & iElem, T const iValue
   }
 }
 
-template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool> &, bool) const;
-template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32> &, u32) const;
-template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32> &, i32) const;
-template void DabRadio::_set_status_info_status<const char *>(StatusInfoElem<const char *> &, const char * const) const;
+template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool>&, bool) const;
+template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32>&, u32) const;
+template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32>&, i32) const;
+template void DabRadio::_set_status_info_status<const char*>(StatusInfoElem<const char*>&, const char* const) const;
 
-void DabRadio::_reset_status_info(StatusInfo & ioStatusInfo) const
+void DabRadio::_reset_status_info(StatusInfo& ioStatusInfo) const
 {
   _set_status_info_status(ioStatusInfo.InpBitRate, (i32)0);
-  _set_status_info_status(ioStatusInfo.ProtLevel, (const char *)nullptr);
-  _set_status_info_status(ioStatusInfo.AudioStandard, (const char *)nullptr);
+  _set_status_info_status(ioStatusInfo.ProtLevel, (const char*)nullptr);
+  _set_status_info_status(ioStatusInfo.AudioStandard, (const char*)nullptr);
   _set_status_info_status(ioStatusInfo.OutSampRate, (u32)0);
   _set_status_info_status(ioStatusInfo.Stereo, false);
   _set_status_info_status(ioStatusInfo.MOT, false);
@@ -144,7 +144,7 @@ void DabRadio::_initialize_traffic_lights() const
 void DabRadio::_initialize_ui_elements()
 {
   // handle device/file player radio button
-  QButtonGroup * grpSLS = new QButtonGroup(this);
+  QButtonGroup* grpSLS = new QButtonGroup(this);
   grpSLS->addButton(ui->rbDevicePlayer, (int)EServiceListSrc::DEVICE_PLAYER);
   grpSLS->addButton(ui->rbFilePlayer, (int)EServiceListSrc::FILE_PLAYER);
   grpSLS->setExclusive(true);
@@ -204,7 +204,7 @@ void DabRadio::_initialize_ui_elements()
 
 void DabRadio::_initialize_indicator_buttons()
 {
-  const auto * watcherSpec = WindowVisibilityWatcher::bind(mpSpectrumViewer->get_widget(), ui->btnSpectrumScope);
+  const auto* watcherSpec = WindowVisibilityWatcher::bind(mpSpectrumViewer->get_widget(), ui->btnSpectrumScope);
   connect(watcherSpec, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
     if (!DabRadio::is_terminating() && !mSuppressVisibilityStore)
     {
@@ -212,7 +212,7 @@ void DabRadio::_initialize_indicator_buttons()
     }
   });
 
-  const auto * watcherTech = WindowVisibilityWatcher::bind(mpTechDataWidget->get_widget(), ui->btnTechDetails);
+  const auto* watcherTech = WindowVisibilityWatcher::bind(mpTechDataWidget->get_widget(), ui->btnTechDetails);
   connect(watcherTech, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
     if (!DabRadio::is_terminating())
     {
@@ -220,7 +220,7 @@ void DabRadio::_initialize_indicator_buttons()
     }
   });
 
-  const auto * watcherCir = WindowVisibilityWatcher::bind(mpCirViewer->get_widget(), ui->btnCir);
+  const auto* watcherCir = WindowVisibilityWatcher::bind(mpCirViewer->get_widget(), ui->btnCir);
   connect(watcherCir, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
     if (!DabRadio::is_terminating())
     {
@@ -253,7 +253,7 @@ void DabRadio::_initialize_indicator_buttons()
 
 void DabRadio::_initialize_status_info()
 {
-  const char * const protLevToolTip =
+  const char* const protLevToolTip =
     R"(Protection level<br>)"
     R"(<table>)"
     R"( <thead>)"
@@ -303,7 +303,7 @@ void DabRadio::_initialize_dynamic_label() const
   ui->lblDynLabel->setOpenExternalLinks(true);
 }
 
-void DabRadio::_initialize_device_selector(SChannelDescriptor & ioChannelDesc) const
+void DabRadio::_initialize_device_selector(SChannelDescriptor& ioChannelDesc) const
 {
   ui->cmbDeviceSelect->addItems(mpDeviceSelector->get_device_name_list());
 
@@ -334,27 +334,27 @@ void DabRadio::_initialize_version_and_copyright_info()
 
 void DabRadio::_show_copyright_window()
 {
-  auto * const pDialog = new QDialog(this);
+  auto* const pDialog = new QDialog(this);
   pDialog->setAttribute(Qt::WA_DeleteOnClose);
   pDialog->setWindowTitle(QSL("Version and Copyright Information"));
   pDialog->resize(870, 470);
 
-  auto * const pBrowser = new QTextBrowser(pDialog);
+  auto* const pBrowser = new QTextBrowser(pDialog);
   pBrowser->setOpenExternalLinks(true); // makes the links in the text clickable
   // The link color comes from the application palette which is set up in main().
   pBrowser->setHtml(get_copyright_text());
 
-  auto * const pButtonBox = new QDialogButtonBox(QDialogButtonBox::Close, pDialog);
+  auto* const pButtonBox = new QDialogButtonBox(QDialogButtonBox::Close, pDialog);
   connect(pButtonBox, &QDialogButtonBox::rejected, pDialog, &QDialog::reject);
 
-  auto * const pLayout = new QVBoxLayout(pDialog);
+  auto* const pLayout = new QVBoxLayout(pDialog);
   pLayout->addWidget(pBrowser);
   pLayout->addWidget(pButtonBox);
 
   pDialog->show();
 }
 
-bool DabRadio::eventFilter(QObject * ipObj, QEvent * ipEvent)
+bool DabRadio::eventFilter(QObject* ipObj, QEvent* ipEvent)
 {
   if (ipEvent->type() == QEvent::MouseButtonRelease && (ipObj == ui->lblVersion || ipObj == ui->lblCopyrightIcon))
   {
@@ -417,7 +417,7 @@ void DabRadio::_cleanup_ui() const
   }
 }
 
-void DabRadio::_set_clock_text(const QString & iText /*= QString()*/)
+void DabRadio::_set_clock_text(const QString& iText /*= QString()*/)
 {
   if (!iText.isEmpty())
   {
@@ -512,7 +512,7 @@ void DabRadio::_adapt_gui_for_eti_mode(const bool iEtiMode)
   ui->btnDumpEti->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
 }
 
-void DabRadio::register_journaline_viewer(QWidget * const ipViewerWidget)
+void DabRadio::register_journaline_viewer(QWidget* const ipViewerWidget)
 {
   if (mpJournalineWindowWatcher != nullptr)
   {
@@ -521,7 +521,7 @@ void DabRadio::register_journaline_viewer(QWidget * const ipViewerWidget)
   ui->btnJournaline->setEnabled(false); // enabled with the first received data
 }
 
-void DabRadio::unregister_journaline_viewer(const QWidget * const ipViewerWidget)
+void DabRadio::unregister_journaline_viewer(const QWidget* const ipViewerWidget)
 {
   if (DabRadio::is_terminating() || mpJournalineWindowWatcher == nullptr || mpJournalineWindowWatcher->get_target() != ipViewerWidget)
   {
@@ -533,7 +533,7 @@ void DabRadio::unregister_journaline_viewer(const QWidget * const ipViewerWidget
   ui->btnJournaline->setEnabled(false);
 }
 
-void DabRadio::set_journaline_data_received(const QWidget * const ipViewerWidget) const
+void DabRadio::set_journaline_data_received(const QWidget* const ipViewerWidget) const
 {
   if (mpJournalineWindowWatcher != nullptr && mpJournalineWindowWatcher->get_target() != nullptr && mpJournalineWindowWatcher->get_target() == ipViewerWidget)
   {
@@ -549,7 +549,7 @@ void DabRadio::_slot_handle_journaline_button() const
     return;
   }
 
-  if (QWidget * const pViewerWidget = mpJournalineWindowWatcher->get_target(); pViewerWidget != nullptr)
+  if (QWidget* const pViewerWidget = mpJournalineWindowWatcher->get_target(); pViewerWidget != nullptr)
   {
     pViewerWidget->setVisible(!pViewerWidget->isVisible());
   }
@@ -764,7 +764,7 @@ void DabRadio::slot_show_freq_corr_bb_Hz(i32 iFreqCorrBB)
   mpSpectrumViewer->show_freq_corr_bb_Hz(iFreqCorrBB);
 }
 
-void DabRadio::_get_ymd_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oDay, const i32 iMJD) const
+void DabRadio::_get_ymd_from_mod_julian_date(i32& oYear, i32& oMonth, i32& oDay, const i32 iMJD) const
 {
   // Convert Modified Julian Date (MJD) to Gregorian calendar date (year, month, day)
   // This algorithm follows the method described by Jean Meeus in "Astronomical Algorithms"
@@ -802,7 +802,7 @@ void DabRadio::_get_ymd_from_mod_julian_date(i32 & oYear, i32 & oMonth, i32 & oD
   oDay = d + 1;                       // Final Gregorian day of month (1-based)
 }
 
-i32 DabRadio::_get_local_time(i32 & oLocalHour, i32 & oLocalMinute, const i32 iUtcHour, const i32 iUtcMinute, const i32 iLtoMinutes) const
+i32 DabRadio::_get_local_time(i32& oLocalHour, i32& oLocalMinute, const i32 iUtcHour, const i32 iUtcMinute, const i32 iLtoMinutes) const
 {
   oLocalHour = iUtcHour;
   oLocalMinute = iUtcMinute;
@@ -851,7 +851,7 @@ QString DabRadio::_conv_to_time_str(i32 iYear, i32 iMonth, i32 iDay, i32 iHours,
   return t;
 }
 
-void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet & iFibTimeInfo)
+void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet& iFibTimeInfo)
 {
   // convert to local time and adapt date if needed
   const i32 daysOffs = _get_local_time(mLocalTime.hour, mLocalTime.minute, iFibTimeInfo.Hour, iFibTimeInfo.Minute, iFibTimeInfo.LTO_Minutes);
@@ -883,7 +883,7 @@ void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet & iFibTimeInfo)
   }
 }
 
-void DabRadio::_clean_screen(StatusInfo & ioStatusInfo) const
+void DabRadio::_clean_screen(StatusInfo& ioStatusInfo) const
 {
   if (!mIsScanning) ui->lblDynLabel->setText("");
   ui->lblServiceName->setText("");
@@ -1031,7 +1031,7 @@ void DabRadio::slot_show_audio_buffer_filled_state(i32 iPercent, i32 iQualFillSt
 }
 
 // called from the PAD handler
-void DabRadio::slot_show_label(const QString & iLabel)
+void DabRadio::slot_show_label(const QString& iLabel)
 {
   if (mIsChannelRunning.load())
   {
@@ -1040,7 +1040,7 @@ void DabRadio::slot_show_label(const QString & iLabel)
   }
 
   // if DL text is ON, some work is still to be done
-  FILE * const pDlTextFile = mpEpgMotHandler->get_dl_text_file();
+  FILE* const pDlTextFile = mpEpgMotHandler->get_dl_text_file();
   if ((pDlTextFile == nullptr) || (mDynLabelCache.add_if_new(iLabel)))
   {
     return;
@@ -1065,7 +1065,7 @@ void DabRadio::slot_set_stereo(const bool iStereo)
   _set_status_info_status(mStatusInfo.Stereo, iStereo);
 }
 
-void DabRadio::slot_show_tii(const std::vector<STiiResult> & iTiiList)
+void DabRadio::slot_show_tii(const std::vector<STiiResult>& iTiiList)
 {
   mpTiiManager->show_tii(iTiiList);
 }
@@ -1100,7 +1100,7 @@ void DabRadio::slot_show_iq(i32 iAmount, f32 iAvg) const
   mpSpectrumViewer->show_iq(iAmount, iAvg);
 }
 
-void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData & iQD)
+void DabRadio::slot_show_lcd_data(const OfdmDecoder::SLcdData& iQD)
 {
   if (!mIsChannelRunning.load())
   {
@@ -1180,7 +1180,7 @@ void DabRadio::slot_show_clock_error(const f32 e) const
 }
 
 // called from the phasesynchronizer
-void DabRadio::slot_show_correlation(const f32 iThreshold, const QVector<i32> & iV)
+void DabRadio::slot_show_correlation(const f32 iThreshold, const QVector<i32>& iV)
 {
   if (!mIsChannelRunning.load())
   {
@@ -1205,7 +1205,7 @@ void DabRadio::slot_show_correlation(const f32 iThreshold, const QVector<i32> & 
 }
 
 // a slot, called by the fib processor
-void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString & iEnsName, const QString & iEnsNameShort)
+void DabRadio::slot_name_of_ensemble(const i32 iEId, const QString& iEnsName, const QString& iEnsNameShort)
 {
   // qCDebug(sLogRadioInterface) << Q_FUNC_INFO << iEId << iEnsName << iEnsNameShort;
 
@@ -1258,7 +1258,7 @@ void DabRadio::_slot_handle_content_button()
   mpFibContentTable.reset(new FibContentTable(this, &Settings::Storage::instance(), mChannelDesc.get_fId_or_ch_descr(), numCols));
   connect(mpFibContentTable.get(), &FibContentTable::signal_go_service_id, this, &DabRadio::slot_handle_fib_content_selector);
 
-  for (const auto & sl : s)
+  for (const auto& sl : s)
   {
     mpFibContentTable->add_line(sl);
   }
@@ -1299,7 +1299,7 @@ void DabRadio::_slot_handle_file_looped()
 class FileSliderStyle : public QProxyStyle
 {
 public:
-  i32 styleHint(StyleHint iHint, const QStyleOption * ipOption, const QWidget * ipWidget, QStyleHintReturn * opReturnData) const override
+  i32 styleHint(StyleHint iHint, const QStyleOption* ipOption, const QWidget* ipWidget, QStyleHintReturn* opReturnData) const override
   {
     if (iHint == SH_Slider_AbsoluteSetButtons)
     {
@@ -1323,7 +1323,7 @@ void DabRadio::_initialize_file_player_bar()
 {
   ui->sliderFilePos->setFixedHeight(31);
   ui->sliderFilePos->setStyleSheet("QSlider::handle:horizontal { width:  16px; margin-top: -9px;  margin-bottom: -9px; border-radius: 5px; }");
-  auto * const pSliderStyle = new FileSliderStyle;
+  auto* const pSliderStyle = new FileSliderStyle;
   pSliderStyle->setParent(ui->sliderFilePos); // the widget does not take the ownership of the style
   ui->sliderFilePos->setStyle(pSliderStyle);
 
@@ -1334,7 +1334,7 @@ void DabRadio::_initialize_file_player_bar()
 }
 
 // called after a new file reader was created
-void DabRadio::_setup_file_player_bar(const QString & iFileName)
+void DabRadio::_setup_file_player_bar(const QString& iFileName)
 {
   // the label does not widen the window (size policy "Ignored"), so a long name is clipped and the full path is in the tooltip
   ui->lblFileName->setText(QDir::toNativeSeparators(iFileName));

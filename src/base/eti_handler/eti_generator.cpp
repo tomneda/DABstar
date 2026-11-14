@@ -15,8 +15,8 @@ bool fibValid[16];
 //
 //	For each subchannel we create a
 //	deconvoluter and a descramble table up front
-Protection * protTable[64] = { nullptr };
-u8 * descrambler[64] = { nullptr };
+Protection* protTable[64] = { nullptr };
+u8* descrambler[64] = { nullptr };
 
 i16 temp[55296];
 const i16 interleaveMap[] = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
@@ -34,7 +34,7 @@ u8 theVector[6144];
 //	amount of cycles, the eti-generation is done in a different thread
 //	Note CIF counts from 0 .. 3
 //
-EtiGenerator::EtiGenerator(FicDecoder * my_ficHandler)
+EtiGenerator::EtiGenerator(FicDecoder* my_ficHandler)
   : my_ficHandler(my_ficHandler)
   , mpFibDecoder(my_ficHandler->get_fib_decoder())
 {
@@ -87,7 +87,7 @@ void EtiGenerator::reset()
   running = false;
 }
 
-void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbIdx)
+void EtiGenerator::process_block(const std::vector<i16>& ibits, i32 iOfdmSymbIdx)
 {
   std::lock_guard lock(mMutex);
 
@@ -204,7 +204,7 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
 }
 
 //	Copied  from dabtools:
-i32 EtiGenerator::_init_eti(const std::span<u8> & oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
+i32 EtiGenerator::_init_eti(const std::span<u8>& oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
 {
   i32 fillPointer = 0;
   SChannelData data;
@@ -318,19 +318,19 @@ i32 EtiGenerator::_init_eti(const std::span<u8> & oEti, i16 CIFCount_hi, i16 CIF
 class parameter
 {
 public:
-  const i16 * input;
+  const i16* input;
   bool uepFlag;
   i32 bitRate;
   i32 protLevel;
   i32 start_cu;
   i32 size;
-  u8 * output;
+  u8* output;
 };
 
-i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
+i32 EtiGenerator::_process_cif(const i16* input, u8* output, i32 offset)
 {
   u8 shiftRegister[9];
-  std::vector<parameter *> theParameters;
+  std::vector<parameter*> theParameters;
 
   for (const auto subChId : mSubChIdList)
   {
@@ -339,7 +339,7 @@ i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
     mpFibDecoder->get_sub_channel_info(&data, subChId);
 
     assert(data.in_use);
-    parameter * t = new parameter;
+    parameter* t = new parameter;
     t->input = input;
     t->uepFlag = data.uepFlag;
     t->bitRate = data.bitrate;
@@ -381,7 +381,7 @@ i32 EtiGenerator::_process_cif(const i16 * input, u8 * output, i32 offset)
   return offset;
 }
 
-void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * prot, u8 * desc)
+void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter* p, Protection* prot, u8* desc)
 {
   std::unique_ptr<u8[]> outVector{ new u8[24 * p->bitRate] };
   if (!outVector)
@@ -411,7 +411,7 @@ void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * 
   }
 }
 
-bool EtiGenerator::start_eti_generator(const QString & f)
+bool EtiGenerator::start_eti_generator(const QString& f)
 {
   reset();
   std::lock_guard lock(mMutex);

@@ -27,7 +27,7 @@ public:
   using QLabel::QLabel;
 
 protected:
-  void paintEvent(QPaintEvent * /*event*/) override
+  void paintEvent(QPaintEvent* /*event*/) override
   {
     const QPixmap p = pixmap();
     if (p.isNull())
@@ -48,33 +48,33 @@ protected:
 };
 } // namespace
 
-TrafficLight::TrafficLight(QWidget * const parent)
+TrafficLight::TrafficLight(QWidget* const parent)
   : QWidget(parent)
 {
   _init_ui(QString());
 }
 
-TrafficLight::TrafficLight(const QString & iText, QWidget * const parent)
+TrafficLight::TrafficLight(const QString& iText, QWidget* const parent)
   : QWidget(parent)
 {
   _init_ui(iText);
 }
 
-TrafficLight::TrafficLight(const QString & iText, const EStage iStage, QWidget * const parent)
+TrafficLight::TrafficLight(const QString& iText, const EStage iStage, QWidget* const parent)
   : QWidget(parent)
 {
   _init_ui(iText);
   set_stage(iStage);
 }
 
-TrafficLight::TrafficLight(const EStage iStage, QWidget * const parent)
+TrafficLight::TrafficLight(const EStage iStage, QWidget* const parent)
   : QWidget(parent)
 {
   _init_ui(QString());
   set_stage(iStage);
 }
 
-TrafficLight::TrafficLight(const QString & iText, const EStage iStage, const i32 iTimeoutMs, const EStage iTimeoutStage, QWidget * const parent)
+TrafficLight::TrafficLight(const QString& iText, const EStage iStage, const i32 iTimeoutMs, const EStage iTimeoutStage, QWidget* const parent)
   : QWidget(parent)
 {
   _init_ui(iText);
@@ -82,7 +82,7 @@ TrafficLight::TrafficLight(const QString & iText, const EStage iStage, const i32
   set_timeout(iTimeoutMs, iTimeoutStage);
 }
 
-TrafficLight::TrafficLight(const EStage iStage, const i32 iTimeoutMs, const EStage iTimeoutStage, QWidget * const parent)
+TrafficLight::TrafficLight(const EStage iStage, const i32 iTimeoutMs, const EStage iTimeoutStage, QWidget* const parent)
   : QWidget(parent)
 {
   _init_ui(QString());
@@ -90,7 +90,7 @@ TrafficLight::TrafficLight(const EStage iStage, const i32 iTimeoutMs, const ESta
   set_timeout(iTimeoutMs, iTimeoutStage);
 }
 
-void TrafficLight::_init_ui(const QString & iText)
+void TrafficLight::_init_ui(const QString& iText)
 {
   mText = iText;
 
@@ -116,7 +116,7 @@ void TrafficLight::_init_ui(const QString & iText)
   _update_display();
 }
 
-const QPixmap & TrafficLight::_get_cached_pixmap(const EStage iStage)
+const QPixmap& TrafficLight::_get_cached_pixmap(const EStage iStage)
 {
   static const QPixmap sPixmaps[cStageCount] = {
     QPixmap{":/res/icons/tl_off.svg"},          // 0
@@ -143,7 +143,7 @@ void TrafficLight::_update_display()
   }
 
   const EStage stageToDisplay = isEnabled() ? mStage : EStage::Off;
-  const QPixmap & basePixmap = _get_cached_pixmap(stageToDisplay);
+  const QPixmap& basePixmap = _get_cached_pixmap(stageToDisplay);
 
   if (!basePixmap.isNull())
   {
@@ -231,7 +231,7 @@ void TrafficLight::_restart_timer_if_needed()
   }
 }
 
-QTimer * TrafficLight::_get_or_create_timer()
+QTimer* TrafficLight::_get_or_create_timer()
 {
   if (mpTimer == nullptr)
   {
@@ -251,7 +251,7 @@ void TrafficLight::_slot_timeout()
   }
 }
 
-void TrafficLight::set_text(const QString & iText)
+void TrafficLight::set_text(const QString& iText)
 {
   if (mText != iText)
   {
@@ -299,7 +299,7 @@ Qt::Alignment TrafficLight::get_label_alignment() const
   return Qt::AlignRight | Qt::AlignVCenter;
 }
 
-void TrafficLight::set_icon_size(const QSize & iSize)
+void TrafficLight::set_icon_size(const QSize& iSize)
 {
   if (mIconSize != iSize && !iSize.isEmpty())
   {
@@ -309,7 +309,7 @@ void TrafficLight::set_icon_size(const QSize & iSize)
   }
 }
 
-void TrafficLight::setPixmap(const QPixmap & iPixmap)
+void TrafficLight::setPixmap(const QPixmap& iPixmap)
 {
   if (mpIconLabel != nullptr && !iPixmap.isNull())
   {
@@ -343,7 +343,7 @@ bool TrafficLight::hasScaledContents() const
   return false;
 }
 
-void TrafficLight::changeEvent(QEvent * const event)
+void TrafficLight::changeEvent(QEvent* const event)
 {
   QWidget::changeEvent(event);
   if (event != nullptr && event->type() == QEvent::EnabledChange)
@@ -352,7 +352,7 @@ void TrafficLight::changeEvent(QEvent * const event)
   }
 }
 
-void TrafficLight::enterEvent(QEnterEvent * const event)
+void TrafficLight::enterEvent(QEnterEvent* const event)
 {
   QWidget::enterEvent(event);
   if (!toolTip().isEmpty())

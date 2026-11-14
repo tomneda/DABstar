@@ -31,7 +31,7 @@ static QVector<QPair<f32, u32>> default_stops()
   };
 }
 
-LevelMeter::LevelMeter(QWidget * const parent)
+LevelMeter::LevelMeter(QWidget* const parent)
   : QWidget(parent)
 {
   mStops = default_stops();
@@ -94,7 +94,7 @@ void LevelMeter::set_minor_step(const f32 iV)
   update();
 }
 
-void LevelMeter::set_color_stops(const QVector<QPair<f32, u32>> & iStops)
+void LevelMeter::set_color_stops(const QVector<QPair<f32, u32>>& iStops)
 {
   mStops = iStops;
   update();
@@ -148,7 +148,7 @@ QSize LevelMeter::minimumSizeHint() const
   return sizeHint();
 }
 
-void LevelMeter::_draw_scale(QPainter & ioPainter, const QRect & iScaleRect, const i32 iMargin) const
+void LevelMeter::_draw_scale(QPainter& ioPainter, const QRect& iScaleRect, const i32 iMargin) const
 {
   const f32 range = mUpper - mLower;
   if (range <= 0.0f) return;
@@ -241,7 +241,7 @@ QColor LevelMeter::_get_stops_color(const f32 iRelPos) const
   };
 }
 
-void LevelMeter::paintEvent(QPaintEvent * const /*ipEvent*/)
+void LevelMeter::paintEvent(QPaintEvent* const /*ipEvent*/)
 {
   QPainter painter(this);
   const QRect r = rect();

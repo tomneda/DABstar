@@ -41,26 +41,26 @@ class MotDirectory;
 class MotHandler : public VirtualDataHandler
 {
 public:
-  explicit MotHandler(DabRadio *);
+  explicit MotHandler(DabRadio*);
   ~MotHandler() override;
 
-  void add_MSC_data_group(const std::vector<u8> &);
+  void add_MSC_data_group(const std::vector<u8>&);
 private:
   // we "cache" the most recent single motSlides (not those in a directory)
   struct SMotTable
   {
     u16 transportId;
     i32 orderNumber;
-    MotObject * motSlide;
+    MotObject* motSlide;
   };
 
-  MotDirectory * mpDirectory = nullptr;
-  DabRadio * const mpRadioInterface;
+  MotDirectory* mpDirectory = nullptr;
+  DabRadio* const mpRadioInterface;
   int mOrderNumber = 0;
   std::array<SMotTable, 15> mMotTable; // TODO: are 55 or 15 the better number?
 
-  void setHandle(MotObject *, u16);
-  MotObject * getHandle(u16) const;
+  void setHandle(MotObject*, u16);
+  MotObject* getHandle(u16) const;
 };
 
 

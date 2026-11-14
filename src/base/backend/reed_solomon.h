@@ -25,8 +25,8 @@ public:
   explicit ReedSolomon(u16 symsize = 8, u16 gfpoly = 0435, u16 fcr = 0, u16 prim = 1, u16 nroots = 10);
   ~ReedSolomon() = default;
 
-  i16 dec(const u8 * data_in, u8 * data_out, i16 cutlen);
-  void enc(const u8 * data_in, u8 * data_out, i16 cutlen);
+  i16 dec(const u8* data_in, u8* data_out, i16 cutlen);
+  void enc(const u8* data_in, u8* data_out, i16 cutlen);
 
 private:
   Galois myGalois;
@@ -38,12 +38,12 @@ private:
   u8 prim;    /* Primitive element, index form */
   u8 iprim;    /* prim-th root of 1, index form */
 
-  bool computeSyndromes(u8 *, u8 *);
-  u8 getSyndrome(u8 *, u8);
-  u16 computeLambda(u8 *, u8 *);
-  i16 computeErrors(u8 *, u16, u8 *, u8 *);
-  u16 computeOmega(u8 *, u8 *, u16, u8 *);
-  void encode_rs(const u8 * data_in, u8 * roots);
-  i16 decode_rs(u8 * data);
+  bool computeSyndromes(u8*, u8*);
+  u8 getSyndrome(u8*, u8);
+  u16 computeLambda(u8*, u8*);
+  i16 computeErrors(u8*, u16, u8*, u8*);
+  u16 computeOmega(u8*, u8*, u16, u8*);
+  void encode_rs(const u8* data_in, u8* roots);
+  i16 decode_rs(u8* data);
 };
 

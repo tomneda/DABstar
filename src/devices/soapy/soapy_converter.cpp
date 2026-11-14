@@ -23,7 +23,7 @@
 #include "soapy_converter.h"
 #include "dab_constants.h"
 
-SoapyConverter::SoapyConverter(SoapySDR::Device * device, SoapySDR::Stream *stream, const int sampleRate)
+SoapyConverter::SoapyConverter(SoapySDR::Device* device, SoapySDR::Stream* stream, const int sampleRate)
   : theBuffer(16 * 32768)
 {
   this->theDevice = device;
@@ -83,9 +83,9 @@ i32 SoapyConverter::Samples(void)
   return theBuffer.get_ring_buffer_read_available();
 }
 
-i32 SoapyConverter::getSamples(const std::span<cf32> & oV)
+i32 SoapyConverter::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const v = oV.data();
+  cf32* const v = oV.data();
   const i32 amount = (i32)oV.size();
   i32 realAmount;
   realAmount = theBuffer.get_data_from_ring_buffer(v, amount);
@@ -97,7 +97,7 @@ void SoapyConverter::run(void)
   i32 flag = 0;
   long long timeNS;
   cf32 buffer[4096];
-  void * const buffs[] = {buffer};
+  void* const buffs[] = {buffer};
   running = true;
 
   theDevice->activateStream(stream);

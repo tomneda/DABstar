@@ -45,8 +45,8 @@ EepProtection::EepProtection(const i32 iBitRate, const i32 iProtLevel)
 {
   i32 viterbiCounter = 0;
   i32 L1 = 0, L2 = 0;
-  const i8 * PI1 = nullptr;
-  const i8 * PI2 = nullptr;
+  const i8* PI1 = nullptr;
+  const i8* PI2 = nullptr;
   const i32 protLevel = iProtLevel & 0x3;
   const i32 option = (iProtLevel & (1 << 2)) >> 2;
 
@@ -131,7 +131,7 @@ EepProtection::EepProtection(const i32 iBitRate, const i32 iProtLevel)
   }
   else assert(0);
 
-  const i8 * PI_X = get_PI_codes(8);
+  const i8* PI_X = get_PI_codes(8);
 
   // According to the standard we process the logical frame with a pair of tuples (L1, PI1), (L2, PI2)
   _extract_viterbi_block_addresses(viterbiCounter, L1, PI1);
@@ -150,7 +150,7 @@ EepProtection::EepProtection(const i32 iBitRate, const i32 iProtLevel)
   }
 }
 
-void EepProtection::_extract_viterbi_block_addresses(i32 & ioViterbiCounter, const i32 iLx, const i8 * const ipPIx)
+void EepProtection::_extract_viterbi_block_addresses(i32& ioViterbiCounter, const i32 iLx, const i8* const ipPIx)
 {
   assert(ioViterbiCounter >= 0);
   for (i32 i = 0; i < iLx; i++)

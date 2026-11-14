@@ -30,7 +30,7 @@
 constexpr f32 cRefLuminance = 0.40f;
 
 
-EnsembleList::EnsembleList(const QString & iDbFileName)
+EnsembleList::EnsembleList(const QString& iDbFileName)
   : ui(new Ui_ensembleList)
   , mBandHandler("", &Settings::Storage::instance())
 {
@@ -66,7 +66,7 @@ EnsembleList::EnsembleList(const QString & iDbFileName)
   const QString skipFileName = Settings::Config::varSkipFile.read().toString();
   mBandHandler.setup_skipList(skipFileName);
 
-  auto * watcher = new WindowVisibilityWatcher(&mFrame, this);
+  auto* watcher = new WindowVisibilityWatcher(&mFrame, this);
   connect(watcher, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
     if (!DabRadio::is_terminating())
     {
@@ -116,7 +116,7 @@ void EnsembleList::_add_channel_entries_to_db() const
 {
   const auto channelList = mBandHandler.get_channel_entry_list();
 
-  for (const auto & entry : channelList)
+  for (const auto& entry : channelList)
   {
     if (!entry.skip)
     {
@@ -205,7 +205,7 @@ void EnsembleList::init_after_connect()
   emit signal_show_current_fid_or_ch_only(ui->cbShowSLCurChOnly->isChecked());
 }
 
-void EnsembleList::_log_to_result_display(const ELogType iLogType, const QString & iMessage, const i32 iAddIndent /*= 0*/) const
+void EnsembleList::_log_to_result_display(const ELogType iLogType, const QString& iMessage, const i32 iAddIndent /*= 0*/) const
 {
   QString indentStr;
 
@@ -271,7 +271,7 @@ void EnsembleList::_setup_ui_regarding_scan_mode(bool iScanMode) const
   ui->tblEnsembleList->setEnabled(!iScanMode);
 }
 
-QString EnsembleList::_add_file_to_file_scan_list(const QString & iFileName, const i64 iMinFileSize) const
+QString EnsembleList::_add_file_to_file_scan_list(const QString& iFileName, const i64 iMinFileSize) const
 {
   ui->cbShowELNewEntries->setCheckState(Qt::CheckState::Checked);
 
@@ -320,11 +320,11 @@ QString EnsembleList::_add_file_to_file_scan_list(const QString & iFileName, con
   return {};
 }
 
-void EnsembleList::slot_select_fid_or_ch(const QString & iFIdOrCh, const u32 iSId)
+void EnsembleList::slot_select_fid_or_ch(const QString& iFIdOrCh, const u32 iSId)
 {
   i32 rowIdx = mpDbHandler->set_selector(iFIdOrCh); // mark the current processed line
 
-  auto consider_filter = [&](QCheckBox * const ipCb)
+  auto consider_filter = [&](QCheckBox* const ipCb)
   {
     if (rowIdx < 0 && !ipCb->isChecked())
     {
@@ -349,7 +349,7 @@ void EnsembleList::slot_select_fid_or_ch(const QString & iFIdOrCh, const u32 iSI
   }
 }
 
-void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
+void EnsembleList::slot_decoded_data_status(const SScanResultEL& iResult)
 {
   assert(mListMode != EListMode::Invalid);
 
@@ -360,7 +360,7 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL & iResult)
     ui->progressBar->setValue((iResult.curPacketIdx + 1) * 1000 / iResult.nrPackets);
   }
 
-  const EnsembleListDB::SDbEntryData & ed = static_cast<const EnsembleListDB::SDbEntryData &>(iResult);
+  const EnsembleListDB::SDbEntryData& ed = static_cast<const EnsembleListDB::SDbEntryData&>(iResult);
 
   switch (iResult.infoReason)
   {
@@ -670,7 +670,7 @@ void EnsembleList::_slot_handle_show_current_fid_or_ch_only(const int iState)
   emit signal_show_current_fid_or_ch_only(iState == Qt::CheckState::Checked);
 }
 
-bool EnsembleList::_get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, const i32 iRowIdx)
+bool EnsembleList::_get_ident_info_from_row_idx(SIdentInfoEL& oIdentInfo, const i32 iRowIdx)
 {
   oIdentInfo.curPacketIdx = iRowIdx;
   oIdentInfo.nrPackets = _get_nr_rows_in_table();
@@ -693,7 +693,7 @@ bool EnsembleList::_get_ident_info_from_row_idx(SIdentInfoEL & oIdentInfo, const
   return true;
 }
 
-void EnsembleList::_signal_ident_info(const SIdentInfoEL & iIdentInfo)
+void EnsembleList::_signal_ident_info(const SIdentInfoEL& iIdentInfo)
 {
   const QString entryOfStr = (mIsScanning ? QSL(" (%1 of %2)").arg(iIdentInfo.curPacketIdx+1).arg(iIdentInfo.nrPackets) : QString());
   const QString scanOrPlayStr = QString(mIsScanning ? "Scanning " : "Playing ");
@@ -724,16 +724,16 @@ void EnsembleList::_signal_fid_or_ch_from_table_index(const i32 iRowIdx, const u
 
 QString EnsembleList::_get_fid_or_ch_from_table_index(const i32 iRowIdx) const
 {
-  const QAbstractItemModel * pModel = ui->tblEnsembleList->model();
+  const QAbstractItemModel* pModel = ui->tblEnsembleList->model();
   return pModel->data(pModel->index(iRowIdx, (mListMode == EListMode::PlayFromFiles ? EnsembleListDB::CI_FId : EnsembleListDB::CI_CH))).toString();
 }
 
-const QString & EnsembleList::_list_mode_str(const QString & iTextDeviceMode, const QString & iTextFileMode) const
+const QString& EnsembleList::_list_mode_str(const QString& iTextDeviceMode, const QString& iTextFileMode) const
 {
   return (mListMode == EListMode::PlayFromFiles ? iTextFileMode : iTextDeviceMode);
 }
 
-void EnsembleList::_slot_handle_table_click(const QModelIndex & index)
+void EnsembleList::_slot_handle_table_click(const QModelIndex& index)
 {
   if (!index.isValid())
   {

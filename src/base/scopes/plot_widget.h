@@ -46,10 +46,10 @@ public:
     f64 MaxZoomOutDelta = 0;
   };
 
-  explicit PlotWidget(QWidget * parent = nullptr);
+  explicit PlotWidget(QWidget* parent = nullptr);
 
-  [[nodiscard]] QValueAxis * get_x_axis() const { return mpXAxis; }
-  [[nodiscard]] QValueAxis * get_y_axis() const { return mpYAxis; }
+  [[nodiscard]] QValueAxis* get_x_axis() const { return mpXAxis; }
+  [[nodiscard]] QValueAxis* get_y_axis() const { return mpYAxis; }
 
   void set_x_range(f64 iMin, f64 iMax) const;
   void set_y_range(f64 iMin, f64 iMax) const;
@@ -72,8 +72,8 @@ public:
   // Configure zoom-out limits (call once, then zoom/pan are bounded). Also applies the default
   // range via set_x_range()/set_y_range() unless the axis is currently zoomed -- so there is no
   // need to call those separately with the same numbers.
-  void setup_x_zoom(const SRange & iRange);
-  void setup_y_zoom(const SRange & iRange);
+  void setup_x_zoom(const SRange& iRange);
+  void setup_y_zoom(const SRange& iRange);
   void reset_x_zoom();
   void reset_y_zoom();
 
@@ -82,11 +82,11 @@ signals:
   void signal_y_zoom_reset();
 
 protected:
-  void wheelEvent(QWheelEvent * iopEvent) override;
-  void mousePressEvent(QMouseEvent * iopEvent) override;
-  void mouseReleaseEvent(QMouseEvent * iopEvent) override;
-  void mouseMoveEvent(QMouseEvent * iopEvent) override;
-  void resizeEvent(QResizeEvent * iopEvent) override;
+  void wheelEvent(QWheelEvent* iopEvent) override;
+  void mousePressEvent(QMouseEvent* iopEvent) override;
+  void mouseReleaseEvent(QMouseEvent* iopEvent) override;
+  void mouseMoveEvent(QMouseEvent* iopEvent) override;
+  void resizeEvent(QResizeEvent* iopEvent) override;
 
 private:
   static constexpr f64 cZoomFactor = 0.1;
@@ -96,8 +96,8 @@ private:
   static constexpr f64 cLabelHeightFactor = 1.4;   // min px between major y-axis labels in units of the label text height
   static constexpr f64 cRangeEpsilon = 1e-9;       // range widening (relative) to keep the top grid line inside the plot rect
 
-  QValueAxis * mpXAxis = nullptr;
-  QValueAxis * mpYAxis = nullptr;
+  QValueAxis* mpXAxis = nullptr;
+  QValueAxis* mpYAxis = nullptr;
 
   struct SAxisData
   {
@@ -116,12 +116,12 @@ private:
   bool mPanning = false;
   QPoint mLastPos{};
 
-  void _init_axis_data(SAxisData & oData, const SRange & iRange) const;
+  void _init_axis_data(SAxisData& oData, const SRange& iRange) const;
   void _apply_x_default_range() const;
   void _apply_y_default_range() const;
   void _update_y_label_format() const;
-  void _zoom_axis(QValueAxis * iopAxis, SAxisData & ioData, f64 iPivot, f64 iScale) const;
-  void _pan_axis(QValueAxis * iopAxis, const SAxisData & ioData, f64 iDeltaValue) const;
+  void _zoom_axis(QValueAxis* iopAxis, SAxisData& ioData, f64 iPivot, f64 iScale) const;
+  void _pan_axis(QValueAxis* iopAxis, const SAxisData& ioData, f64 iDeltaValue) const;
   i32 _nice_minor_tick_count(const f64 iMajorInterval, const int iMaxMinorSteps = 5) const;
   f64 _nice_major_interval(f64 iRangeSpan, i32 iTargetIntervals = 5) const;
   f64 _min_pixels_per_y_tick() const;

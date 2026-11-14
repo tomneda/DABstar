@@ -25,7 +25,7 @@
 class TimeMeas
 {
 public:
-  explicit TimeMeas(const std::string & iName, const u64 iPrintCntSteps = 1)
+  explicit TimeMeas(const std::string& iName, const u64 iPrintCntSteps = 1)
     : mPrintCntSteps(iPrintCntSteps)
     , mName(iName)
   {

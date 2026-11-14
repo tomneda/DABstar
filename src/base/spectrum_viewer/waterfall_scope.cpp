@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <cstring>
 
-WaterfallScope::WaterfallScope(QWidget * const parent)
+WaterfallScope::WaterfallScope(QWidget* const parent)
   : QWidget(parent)
 {
   _build_color_lut();
@@ -49,7 +49,7 @@ void WaterfallScope::init(const i32 iDisplaySize, const i32 iRasterSize)
   mImage.fill(Qt::black);
 }
 
-void WaterfallScope::show_waterfall(const f32 * ipY1_value, const SpecViewLimits<f32> & iSpecViewLimits)
+void WaterfallScope::show_waterfall(const f32* ipY1_value, const SpecViewLimits<f32>& iSpecViewLimits)
 {
   if (mDisplaySize == 0 || mRasterSize == 0) return;
 
@@ -67,7 +67,7 @@ void WaterfallScope::show_waterfall(const f32 * ipY1_value, const SpecViewLimits
   }
 
   // Map new data row to colours at row 0
-  QRgb * const topRow = reinterpret_cast<QRgb *>(mImage.scanLine(0));
+  QRgb* const topRow = reinterpret_cast<QRgb*>(mImage.scanLine(0));
   for (i32 x = 0; x < mDisplaySize; ++x)
   {
     const f32 t = std::clamp((ipY1_value[x] - yMin) / yRange, 0.0f, 1.0f);
@@ -90,7 +90,7 @@ void WaterfallScope::slot_set_horizontal_margins(const int iLeft, const int iRig
   update();
 }
 
-void WaterfallScope::paintEvent(QPaintEvent * const /*ipEvent*/)
+void WaterfallScope::paintEvent(QPaintEvent* const /*ipEvent*/)
 {
   QPainter painter(this);
   painter.fillRect(rect(), Qt::black);

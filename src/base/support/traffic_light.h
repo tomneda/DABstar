@@ -71,12 +71,12 @@ public:
   static constexpr i32 cDefaultIconWidth = 18;
   static constexpr i32 cDefaultIconHeight = 18;
 
-  explicit TrafficLight(QWidget * parent = nullptr);
-  explicit TrafficLight(const QString & iText, QWidget * parent = nullptr);
-  TrafficLight(const QString & iText, EStage iStage, QWidget * parent = nullptr);
-  explicit TrafficLight(EStage iStage, QWidget * parent = nullptr);
-  TrafficLight(const QString & iText, EStage iStage, i32 iTimeoutMs, EStage iTimeoutStage, QWidget * parent = nullptr);
-  TrafficLight(EStage iStage, i32 iTimeoutMs, EStage iTimeoutStage, QWidget * parent = nullptr);
+  explicit TrafficLight(QWidget* parent = nullptr);
+  explicit TrafficLight(const QString& iText, QWidget* parent = nullptr);
+  TrafficLight(const QString& iText, EStage iStage, QWidget* parent = nullptr);
+  explicit TrafficLight(EStage iStage, QWidget* parent = nullptr);
+  TrafficLight(const QString& iText, EStage iStage, i32 iTimeoutMs, EStage iTimeoutStage, QWidget* parent = nullptr);
+  TrafficLight(EStage iStage, i32 iTimeoutMs, EStage iTimeoutStage, QWidget* parent = nullptr);
   ~TrafficLight() override = default;
 
   // Stage / state control (0..5)
@@ -102,9 +102,9 @@ public:
   void disable_timeout() { set_timeout(0, mTimeoutStage); }
 
   // Label text on the left (works seamlessly with or without label)
-  void set_text(const QString & iText);
-  void setText(const QString & iText) { set_text(iText); }
-  void set_label_text(const QString & iText) { set_text(iText); }
+  void set_text(const QString& iText);
+  void setText(const QString& iText) { set_text(iText); }
+  void set_label_text(const QString& iText) { set_text(iText); }
   [[nodiscard]] QString get_text() const { return mText; }
   [[nodiscard]] QString text() const { return mText; }
   [[nodiscard]] bool has_label() const { return !mText.isEmpty(); }
@@ -117,13 +117,13 @@ public:
   [[nodiscard]] Qt::Alignment get_label_alignment() const;
 
   // Icon sizing
-  void set_icon_size(const QSize & iSize);
+  void set_icon_size(const QSize& iSize);
   void set_icon_size(i32 iWidth, i32 iHeight) { set_icon_size(QSize(iWidth, iHeight)); }
   [[nodiscard]] QSize get_icon_size() const { return mIconSize; }
 
   // Pixmap support (e.g. for Qt Designer preview)
-  void setPixmap(const QPixmap & iPixmap);
-  void set_pixmap(const QPixmap & iPixmap) { setPixmap(iPixmap); }
+  void setPixmap(const QPixmap& iPixmap);
+  void set_pixmap(const QPixmap& iPixmap) { setPixmap(iPixmap); }
   [[nodiscard]] QPixmap pixmap() const;
 
   // Scaled contents support (e.g. for Qt Designer preview)
@@ -133,9 +133,9 @@ public:
   [[nodiscard]] bool has_scaled_contents() const { return hasScaledContents(); }
 
   // Direct access to internal child widgets
-  [[nodiscard]] QLabel * get_label() const { return mpLabel; }
-  [[nodiscard]] QLabel * get_icon_label() const { return mpIconLabel; }
-  [[nodiscard]] QHBoxLayout * get_layout() const { return mpLayout; }
+  [[nodiscard]] QLabel* get_label() const { return mpLabel; }
+  [[nodiscard]] QLabel* get_icon_label() const { return mpIconLabel; }
+  [[nodiscard]] QHBoxLayout* get_layout() const { return mpLayout; }
 
   // Qt Widget overrides
   [[nodiscard]] QSize sizeHint() const override;
@@ -144,7 +144,7 @@ public:
 public slots:
   void slot_set_stage(EStage iStage) { set_stage(iStage); }
   void slot_set_state(EStage iStage) { set_stage(iStage); }
-  void slot_set_text(const QString & iText) { set_text(iText); }
+  void slot_set_text(const QString& iText) { set_text(iText); }
   void slot_set_alignment(Qt::Alignment iAlignment) { set_alignment(iAlignment); }
   void slot_set_timeout(i32 iTimeoutMs) { set_timeout_ms(iTimeoutMs); }
   void slot_restart_timeout_timer() { restart_timeout_timer(); }
@@ -156,8 +156,8 @@ signals:
   void signal_timeout();
 
 protected:
-  void changeEvent(QEvent * event) override;
-  void enterEvent(QEnterEvent * event) override;
+  void changeEvent(QEvent* event) override;
+  void enterEvent(QEnterEvent* event) override;
 
 private slots:
   void _slot_timeout();
@@ -169,17 +169,17 @@ private:
   i32 mTimeoutMs = 0;
   EStage mTimeoutStage = EStage::Off;
 
-  QHBoxLayout * mpLayout = nullptr;
-  QLabel * mpLabel = nullptr;
-  QLabel * mpIconLabel = nullptr;
-  QTimer * mpTimer = nullptr;
+  QHBoxLayout* mpLayout = nullptr;
+  QLabel* mpLabel = nullptr;
+  QLabel* mpIconLabel = nullptr;
+  QTimer* mpTimer = nullptr;
 
-  void _init_ui(const QString & iText);
+  void _init_ui(const QString& iText);
   void _update_display();
   void _restart_timer_if_needed();
-  QTimer * _get_or_create_timer();
+  QTimer* _get_or_create_timer();
 
-  static const QPixmap & _get_cached_pixmap(EStage iStage);
+  static const QPixmap& _get_cached_pixmap(EStage iStage);
 };
 
 using TrafficLightWidget = TrafficLight;

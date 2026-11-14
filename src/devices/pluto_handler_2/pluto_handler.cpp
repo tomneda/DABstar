@@ -34,14 +34,14 @@
 static char tmpstr[64];
 
 /* helper function generating channel names */
-static char * get_ch_name (const char* type, i32 id)
+static char* get_ch_name (const char* type, i32 id)
 {
     snprintf (tmpstr, sizeof(tmpstr), "%s%d", type, id);
     return tmpstr;
 }
 
-PlutoHandler::PlutoHandler(QSettings *s,
-                           const QString &recorderVersion):
+PlutoHandler::PlutoHandler(QSettings* s,
+                           const QString& recorderVersion):
                            myFrame (nullptr),
                            _I_Buffer (4 * 1024 * 1024)
 {
@@ -49,7 +49,7 @@ PlutoHandler::PlutoHandler(QSettings *s,
     this->recorderVersion = recorderVersion;
     setupUi(&myFrame);
 
-    const char * libName= "libiio";
+    const char* libName= "libiio";
 
     pHandle = new QLibrary(libName);
     if (pHandle == nullptr)
@@ -138,7 +138,7 @@ PlutoHandler::PlutoHandler(QSettings *s,
        throw (std_exception_string ("No RX device found"));
     }
 
-    struct iio_channel *chn;
+    struct iio_channel* chn;
     fprintf (stderr, "switching off TX\n");
     if (get_phy_chan (ctx, TX, 0, &chn))
        iio_channel_attr_write_longlong (chn, "powerdown", 1);
@@ -251,7 +251,7 @@ PlutoHandler::~PlutoHandler()
 }
 //
 
-i32 PlutoHandler::ad9361_set_trx_fir_enable(struct iio_device *dev, i32 enable)
+i32 PlutoHandler::ad9361_set_trx_fir_enable(struct iio_device* dev, i32 enable)
 {
     i32 ret = iio_device_attr_write_bool (dev,
                                   "in_out_voltage_filter_fir_en",
@@ -263,7 +263,7 @@ i32 PlutoHandler::ad9361_set_trx_fir_enable(struct iio_device *dev, i32 enable)
     return ret;
 }
 
-i32 PlutoHandler::ad9361_get_trx_fir_enable(struct iio_device *dev, i32 *enable)
+i32 PlutoHandler::ad9361_get_trx_fir_enable(struct iio_device* dev, i32* enable)
 {
     bool value;
 
@@ -282,15 +282,15 @@ i32 PlutoHandler::ad9361_get_trx_fir_enable(struct iio_device *dev, i32 *enable)
 }
 
 /* returns ad9361 phy device */
-struct iio_device* PlutoHandler::get_ad9361_phy (struct iio_context *ctx)
+struct iio_device* PlutoHandler::get_ad9361_phy (struct iio_context* ctx)
 {
-    struct iio_device *dev = iio_context_find_device (ctx, "ad9361-phy");
+    struct iio_device* dev = iio_context_find_device (ctx, "ad9361-phy");
     return dev;
 }
 
 /* finds AD9361 streaming IIO devices */
-bool PlutoHandler::get_ad9361_stream_dev(struct iio_context *ctx,
-                                         enum iodev d, struct iio_device **dev)
+bool PlutoHandler::get_ad9361_stream_dev(struct iio_context* ctx,
+                                         enum iodev d, struct iio_device** dev)
 {
     switch (d)
     {
@@ -308,11 +308,11 @@ bool PlutoHandler::get_ad9361_stream_dev(struct iio_context *ctx,
 }
 
 /* finds AD9361 streaming IIO channels */
-bool PlutoHandler::get_ad9361_stream_ch(__notused struct iio_context *ctx,
+bool PlutoHandler::get_ad9361_stream_ch(__notused struct iio_context* ctx,
                                         enum iodev d,
-                                        struct iio_device *dev,
+                                        struct iio_device* dev,
                                         i32 chid,
-                                        struct iio_channel **chn)
+                                        struct iio_channel** chn)
 {
     *chn = iio_device_find_channel (dev,
                                     get_ch_name ("voltage", chid),
@@ -325,8 +325,8 @@ bool PlutoHandler::get_ad9361_stream_ch(__notused struct iio_context *ctx,
 }
 
 /* finds AD9361 phy IIO configuration channel with id chid */
-bool PlutoHandler::get_phy_chan(struct iio_context *ctx,
-                                enum iodev d, i32 chid, struct iio_channel **chn)
+bool PlutoHandler::get_phy_chan(struct iio_context* ctx,
+                                enum iodev d, i32 chid, struct iio_channel** chn)
 {
     switch (d)
     {
@@ -348,8 +348,8 @@ bool PlutoHandler::get_phy_chan(struct iio_context *ctx,
 }
 
 /* finds AD9361 local oscillator IIO configuration channels */
-bool PlutoHandler::get_lo_chan(struct iio_context *ctx,
-                               enum iodev d, struct iio_channel **chn)
+bool PlutoHandler::get_lo_chan(struct iio_context* ctx,
+                               enum iodev d, struct iio_channel** chn)
 {
 // LO chan is always output, i.e. true
     switch (d)
@@ -372,11 +372,11 @@ bool PlutoHandler::get_lo_chan(struct iio_context *ctx,
 }
 
 /* applies streaming configuration through IIO */
-bool PlutoHandler::cfg_ad9361_streaming_ch(struct iio_context *ctx,
-                                           struct stream_cfg *cfg,
+bool PlutoHandler::cfg_ad9361_streaming_ch(struct iio_context* ctx,
+                                           struct stream_cfg* cfg,
                                            enum iodev type, i32 chid)
 {
-    struct iio_channel *chn = NULL;
+    struct iio_channel* chn = NULL;
     i32 ret;
 
     // Configure phy and lo channels
@@ -409,7 +409,7 @@ bool PlutoHandler::cfg_ad9361_streaming_ch(struct iio_context *ctx,
 void    PlutoHandler::setVFOFrequency(i32 newFrequency)
 {
     i32 ret;
-    struct iio_channel *lo_channel;
+    struct iio_channel* lo_channel;
 
     rx_cfg. lo_hz = newFrequency;
     ret = get_lo_chan (ctx, RX, &lo_channel);
@@ -437,7 +437,7 @@ i32 PlutoHandler::getVFOFrequency ()
 void    PlutoHandler::set_gainControl   (i32 newGain)
 {
     i32 ret;
-    struct iio_channel *chn;
+    struct iio_channel* chn;
     ret = get_phy_chan (ctx, RX, 0, &chn);
     if (ret < 0)
        return;
@@ -469,7 +469,7 @@ void    PlutoHandler::set_gainControl   (i32 newGain)
 void    PlutoHandler::set_agcControl(i32 dummy)
 {
     i32 ret;
-    struct iio_channel *gain_channel;
+    struct iio_channel* gain_channel;
 
     get_phy_chan (ctx, RX, 0, &gain_channel);
     (void)dummy;
@@ -517,8 +517,8 @@ void    PlutoHandler::set_agcControl(i32 dummy)
 bool    PlutoHandler::restartReader (i32 freq)
 {
     i32 ret;
-    iio_channel *lo_channel;
-    iio_channel *gain_channel;
+    iio_channel* lo_channel;
+    iio_channel* gain_channel;
     if (debugFlag)
        fprintf (stderr, "restart called with %d\n", freq);
     if (!connected)     // should not happen
@@ -602,13 +602,13 @@ void    PlutoHandler::run()
     {
        /*nbytes_rx  =*/ iio_buffer_refill   (rxbuf);
        p_inc    = iio_buffer_step   (rxbuf);
-       p_end    = (char *) iio_buffer_end  (rxbuf);
+       p_end    = (char*) iio_buffer_end  (rxbuf);
 
-       for (p_dat = (char *)iio_buffer_first (rxbuf, rx0_i);
+       for (p_dat = (char*)iio_buffer_first (rxbuf, rx0_i);
             p_dat < p_end; p_dat += p_inc)
        {
-          const i16 i_p = ((i16 *)p_dat) [0];
-          const i16 q_p = ((i16 *)p_dat) [1];
+          const i16 i_p = ((i16*)p_dat) [0];
+          const i16 q_p = ((i16*)p_dat) [1];
           ci16 dumpS = ci16(i_p, q_p);
           dumpBuf [convIndex] = dumpS;
           cf32 sample = cf32 (i_p / 2048.0, q_p / 2048.0);
@@ -633,9 +633,9 @@ void    PlutoHandler::run()
     }
 }
 
-i32 PlutoHandler::getSamples(const std::span<cf32> & oV)
+i32 PlutoHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
     if (!isRunning ())
        return 0;

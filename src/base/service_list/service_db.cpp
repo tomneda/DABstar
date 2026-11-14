@@ -119,7 +119,7 @@ void ServiceDB::delete_table(const bool iDeleteFavorites)
 
 
 
-bool ServiceDB::add_entry(const QString & iChannel, const QString & iServiceLabel, const u32 iSId)
+bool ServiceDB::add_entry(const QString& iChannel, const QString& iServiceLabel, const u32 iSId)
 {
   // add new entry or update service label on conflict
   QSqlQuery queryAdd(mDB);
@@ -142,7 +142,7 @@ bool ServiceDB::add_entry(const QString & iChannel, const QString & iServiceLabe
   return true;
 }
 
-bool ServiceDB::delete_entry(const QString & iChannel, const u32 iSId)
+bool ServiceDB::delete_entry(const QString& iChannel, const u32 iSId)
 {
   QSqlQuery queryDel(mDB);
   queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
@@ -160,7 +160,7 @@ bool ServiceDB::delete_entry(const QString & iChannel, const u32 iSId)
   return (queryDel.numRowsAffected() > 0);
 }
 
-bool ServiceDB::delete_channel(const QString & iChannel)
+bool ServiceDB::delete_channel(const QString& iChannel)
 {
   QSqlQuery queryDel(mDB);
   queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel");
@@ -199,10 +199,10 @@ QList<QString> ServiceDB::get_list_of_channels() const
   return channelList;
 }
 
-QAbstractItemModel * ServiceDB::create_model(const QString & iFilterToFIdOrCh)
+QAbstractItemModel* ServiceDB::create_model(const QString& iFilterToFIdOrCh)
 {
   // CustomSqlQueryModel * model = new CustomSqlQueryModel(this);
-  auto * const model = new QSqlQueryModel(this);
+  auto* const model = new QSqlQueryModel(this);
 
   const QString sortDir = (mSortDesc ? " DESC" : " ASC");
   const QString sortSym = (mSortDesc ? "↑" : "↓");
@@ -290,7 +290,7 @@ bool ServiceDB::is_sort_desc() const
   return mSortDesc;
 }
 
-void ServiceDB::set_favorite(const QString & iChannel, const u32 iSId, const bool iIsFavorite) const
+void ServiceDB::set_favorite(const QString& iChannel, const u32 iSId, const bool iIsFavorite) const
 {
   // if (mDataMode == EDataMode::Temporary)
   // {
@@ -328,7 +328,7 @@ void ServiceDB::retrieve_favorites_from_backup_table()
   }
 }
 
-void ServiceDB::_set_favorite(const QString & iChannel, const u32 iSId, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/) const
+void ServiceDB::_set_favorite(const QString& iChannel, const u32 iSId, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/) const
 {
   QSqlQuery updateQuery(mDB);
   updateQuery.prepare("UPDATE " + _cur_tab_name() + " SET " + sTeIsFav + " = :isFav WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
@@ -390,7 +390,7 @@ QString ServiceDB::_error_str() const
   return mDB.lastError().text(); // make a copy of the string as the DB object could be invalid when using it
 }
 
-void ServiceDB::_exec_simple_query(const QString & iQuery)
+void ServiceDB::_exec_simple_query(const QString& iQuery)
 {
   QSqlQuery query(mDB);
 
@@ -403,7 +403,7 @@ void ServiceDB::_exec_simple_query(const QString & iQuery)
   }
 }
 
-const QString & ServiceDB::_cur_tab_name() const
+const QString& ServiceDB::_cur_tab_name() const
 {
   return (mDataMode == EDataMode::DevicePlayer ? sTabDeviceList : sTabFilesList);
 }

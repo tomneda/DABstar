@@ -24,12 +24,12 @@
 #include <cstdio>
 #include <time.h>
 
-struct kort_woord {
+struct SShortWord {
   u8 byte_1;
   u8 byte_2;
 };
 
-XmlFileWriter::XmlFileWriter(FILE *f,
+XmlFileWriter::XmlFileWriter(FILE* f,
                              i32 nrBits,
                              QString container,
                              i32 sampleRate,
@@ -52,7 +52,7 @@ XmlFileWriter::XmlFileWriter(FILE *f,
     fwrite(&t, 1, 1, f);
   i16 testWord = 0xFF;
 
-  struct kort_woord *p = (struct kort_woord *)(&testWord);
+  struct SShortWord* p = (struct SShortWord*)(&testWord);
   if (p->byte_1 == 0xFF)
     byteOrder = "LSB";
   else
@@ -74,7 +74,7 @@ void XmlFileWriter::computeHeader()
   s = create_xmltree();
   fseek(xmlFile, 0, SEEK_SET);
   fprintf(xmlFile, "%s", topLine.toLatin1().data());
-  char * cs = s.toLatin1().data();
+  char* cs = s.toLatin1().data();
   i32 len = strlen (cs);
   fwrite (cs, 1, len, xmlFile);
 }
@@ -82,9 +82,9 @@ void XmlFileWriter::computeHeader()
 #define BLOCK_SIZE 8192
 static i16 buffer_int16[BLOCK_SIZE];
 static i32 bufferP_int16 = 0;
-void XmlFileWriter::add(const std::span<const ci16> & iData)
+void XmlFileWriter::add(const std::span<const ci16>& iData)
 {
-  for (const ci16 & v : iData)
+  for (const ci16& v : iData)
   {
     buffer_int16[bufferP_int16++] = real(v);
     buffer_int16[bufferP_int16++] = imag(v);
@@ -99,9 +99,9 @@ void XmlFileWriter::add(const std::span<const ci16> & iData)
 
 static u8 buffer_uint8[BLOCK_SIZE];
 static i32 bufferP_uint8 = 0;
-void XmlFileWriter::add(const std::span<const cu8> & iData)
+void XmlFileWriter::add(const std::span<const cu8>& iData)
 {
-  for (const cu8 & v : iData)
+  for (const cu8& v : iData)
   {
     buffer_uint8[bufferP_uint8++] = real(v);
     buffer_uint8[bufferP_uint8++] = imag(v);
@@ -116,9 +116,9 @@ void XmlFileWriter::add(const std::span<const cu8> & iData)
 
 static i8 buffer_int8[BLOCK_SIZE];
 static i32 bufferP_int8 = 0;
-void XmlFileWriter::add(const std::span<const ci8> & iData)
+void XmlFileWriter::add(const std::span<const ci8>& iData)
 {
-  for (const ci8 & v : iData)
+  for (const ci8& v : iData)
   {
     buffer_int8[bufferP_int8++] = real(v);
     buffer_int8[bufferP_int8++] = imag(v);

@@ -165,14 +165,14 @@ UepProtection::UepProtection(const i32 bitRate, const i32 protLevel)
     index = 1;
   }
 
-  const SProtectionProfile & pp = cProfileTable[index];
+  const SProtectionProfile& pp = cProfileTable[index];
 
-  const i8 * const PI1 = get_PI_codes(pp.PI1);
-  const i8 * const PI2 = get_PI_codes(pp.PI2);
-  const i8 * const PI3 = get_PI_codes(pp.PI3);
-  const i8 * const PI4 = (pp.PI4 != -1 ? get_PI_codes(pp.PI4) : nullptr);
+  const i8* const PI1 = get_PI_codes(pp.PI1);
+  const i8* const PI2 = get_PI_codes(pp.PI2);
+  const i8* const PI3 = get_PI_codes(pp.PI3);
+  const i8* const PI4 = (pp.PI4 != -1 ? get_PI_codes(pp.PI4) : nullptr);
 
-  const i8 * const PI_X = get_PI_codes(8);
+  const i8* const PI_X = get_PI_codes(8);
 
   // We prepare a mapping table with the given punctures
   _extract_viterbi_block_addresses(viterbiCounter, pp.L1, PI1);
@@ -195,7 +195,7 @@ UepProtection::UepProtection(const i32 bitRate, const i32 protLevel)
   }
 }
 
-void UepProtection::_extract_viterbi_block_addresses(i32 & ioViterbiCounter, const i32 iLx, const i8 * const ipPIx)
+void UepProtection::_extract_viterbi_block_addresses(i32& ioViterbiCounter, const i32 iLx, const i8* const ipPIx)
 {
   assert(ioViterbiCounter >= 0);
   for (i32 i = 0; i < iLx; i++)

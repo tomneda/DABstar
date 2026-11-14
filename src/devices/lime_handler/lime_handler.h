@@ -47,51 +47,51 @@
 class XmlFileWriter;
 
 //  DLL and ".so" function prototypes
-typedef i32  (* pfn_LMS_GetDeviceList)(lms_info_str_t * dev_list);
-typedef i32  (* pfn_LMS_Open)(lms_device_t ** device, const lms_info_str_t info, void * args);
-typedef i32  (* pfn_LMS_Close)(lms_device_t *);
-typedef i32  (* pfn_LMS_Init)(lms_device_t *);
-typedef i32  (* pfn_LMS_GetNumChannels)(lms_device_t * device, bool dir_tx);
-typedef i32  (* pfn_LMS_EnableChannel)(lms_device_t * device, bool dir_tx, size_t chan, bool enabled);
-typedef i32  (* pfn_LMS_SetSampleRate)(lms_device_t * device, float_type rate, size_t oversample);
-typedef i32  (* pfn_LMS_GetSampleRate)(lms_device_t * device, bool dir_tx, size_t chan, float_type * host_Hz, float_type * rf_Hz);
-typedef i32  (* pfn_LMS_SetLOFrequency)(lms_device_t * device, bool dir_tx, size_t chan, float_type frequency);
-typedef i32  (* pfn_LMS_GetLOFrequency)(lms_device_t * device, bool dir_tx, size_t chan, float_type * frequency);
-typedef i32  (* pfn_LMS_GetAntennaList)(lms_device_t * device, bool dir_tx, size_t chan, lms_name_t * list);
-typedef i32  (* pfn_LMS_SetAntenna)(lms_device_t * dev, bool dir_tx, size_t chan, size_t index);
-typedef i32  (* pfn_LMS_GetAntenna)(lms_device_t * dev, bool dir_tx, size_t chan);
-typedef i32  (* pfn_LMS_GetAntennaBW)(lms_device_t * dev, bool dir_tx, size_t chan, size_t index, lms_range_t * range);
-typedef i32  (* pfn_LMS_SetNormalizedGain)(lms_device_t * device, bool dir_tx, size_t chan, float_type gain);
-typedef i32  (* pfn_LMS_SetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned gain);
-typedef i32  (* pfn_LMS_GetNormalizedGain)(lms_device_t * device, bool dir_tx, size_t chan, float_type * gain);
-typedef i32  (* pfn_LMS_GetGaindB)(lms_device_t * device, bool dir_tx, size_t chan, unsigned * gain);
-typedef i32  (* pfn_LMS_SetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type bandwidth);
-typedef i32  (* pfn_LMS_GetLPFBW)(lms_device_t * device, bool dir_tx, size_t chan, float_type * bandwidth);
-typedef i32  (* pfn_LMS_Calibrate)(lms_device_t * device, bool dir_tx, size_t chan, f64 bw, unsigned flags);
-typedef i32  (* pfn_LMS_SetupStream)(lms_device_t * device, lms_stream_t * stream);
-typedef i32  (* pfn_LMS_DestroyStream)(lms_device_t * dev, lms_stream_t * stream);
-typedef i32  (* pfn_LMS_StartStream)(lms_stream_t * stream);
-typedef i32  (* pfn_LMS_StopStream)(lms_stream_t * stream);
-typedef i32  (* pfn_LMS_RecvStream)(lms_stream_t * stream, void * samples, size_t sample_count, lms_stream_meta_t * meta, unsigned timeout_ms);
-typedef i32  (* pfn_LMS_GetStreamStatus)(lms_stream_t * stream, lms_stream_status_t * status);
+typedef i32  (* pfn_LMS_GetDeviceList)(lms_info_str_t* dev_list);
+typedef i32  (* pfn_LMS_Open)(lms_device_t** device, const lms_info_str_t info, void* args);
+typedef i32  (* pfn_LMS_Close)(lms_device_t*);
+typedef i32  (* pfn_LMS_Init)(lms_device_t*);
+typedef i32  (* pfn_LMS_GetNumChannels)(lms_device_t* device, bool dir_tx);
+typedef i32  (* pfn_LMS_EnableChannel)(lms_device_t* device, bool dir_tx, size_t chan, bool enabled);
+typedef i32  (* pfn_LMS_SetSampleRate)(lms_device_t* device, float_type rate, size_t oversample);
+typedef i32  (* pfn_LMS_GetSampleRate)(lms_device_t* device, bool dir_tx, size_t chan, float_type* host_Hz, float_type* rf_Hz);
+typedef i32  (* pfn_LMS_SetLOFrequency)(lms_device_t* device, bool dir_tx, size_t chan, float_type frequency);
+typedef i32  (* pfn_LMS_GetLOFrequency)(lms_device_t* device, bool dir_tx, size_t chan, float_type* frequency);
+typedef i32  (* pfn_LMS_GetAntennaList)(lms_device_t* device, bool dir_tx, size_t chan, lms_name_t* list);
+typedef i32  (* pfn_LMS_SetAntenna)(lms_device_t* dev, bool dir_tx, size_t chan, size_t index);
+typedef i32  (* pfn_LMS_GetAntenna)(lms_device_t* dev, bool dir_tx, size_t chan);
+typedef i32  (* pfn_LMS_GetAntennaBW)(lms_device_t* dev, bool dir_tx, size_t chan, size_t index, lms_range_t* range);
+typedef i32  (* pfn_LMS_SetNormalizedGain)(lms_device_t* device, bool dir_tx, size_t chan, float_type gain);
+typedef i32  (* pfn_LMS_SetGaindB)(lms_device_t* device, bool dir_tx, size_t chan, unsigned gain);
+typedef i32  (* pfn_LMS_GetNormalizedGain)(lms_device_t* device, bool dir_tx, size_t chan, float_type* gain);
+typedef i32  (* pfn_LMS_GetGaindB)(lms_device_t* device, bool dir_tx, size_t chan, unsigned* gain);
+typedef i32  (* pfn_LMS_SetLPFBW)(lms_device_t* device, bool dir_tx, size_t chan, float_type bandwidth);
+typedef i32  (* pfn_LMS_GetLPFBW)(lms_device_t* device, bool dir_tx, size_t chan, float_type* bandwidth);
+typedef i32  (* pfn_LMS_Calibrate)(lms_device_t* device, bool dir_tx, size_t chan, f64 bw, unsigned flags);
+typedef i32  (* pfn_LMS_SetupStream)(lms_device_t* device, lms_stream_t* stream);
+typedef i32  (* pfn_LMS_DestroyStream)(lms_device_t* dev, lms_stream_t* stream);
+typedef i32  (* pfn_LMS_StartStream)(lms_stream_t* stream);
+typedef i32  (* pfn_LMS_StopStream)(lms_stream_t* stream);
+typedef i32  (* pfn_LMS_RecvStream)(lms_stream_t* stream, void* samples, size_t sample_count, lms_stream_meta_t* meta, unsigned timeout_ms);
+typedef i32  (* pfn_LMS_GetStreamStatus)(lms_stream_t* stream, lms_stream_status_t* status);
 
 class LimeHandler final : public QThread, public IDeviceHandler, public limeWidget
 {
 Q_OBJECT
 public:
-  LimeHandler(QSettings * s, const QString & recorderVersion);
+  LimeHandler(QSettings* s, const QString& recorderVersion);
   ~LimeHandler() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &myFrame; }
+  QWidget* get_widget() override { return &myFrame; }
   QString deviceName() override;
   bool hasDump() override;
   bool startDumping() override;
@@ -102,20 +102,20 @@ private:
   RingBuffer<ci16> _I_Buffer;
   QString recorderVersion;
   QString deviceModel;
-  QSettings * limeSettings;
+  QSettings* limeSettings;
   i32 vfoFrequency;
   std::atomic<bool> running;
-  lms_device_t * theDevice;
+  lms_device_t* theDevice;
   lms_name_t antennas[10];
   bool load_limeFunctions();
-  QLibrary * phandle;
+  QLibrary* phandle;
   bool libraryLoaded = false;
   lms_stream_meta_t meta;
   lms_stream_t stream;
   void run();
 
-  FILE * xmlDumper;
-  XmlFileWriter * xmlWriter;
+  FILE* xmlDumper;
+  XmlFileWriter* xmlWriter;
   bool setup_xmlDump();
   std::atomic<bool> dumping;
 

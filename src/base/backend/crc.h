@@ -39,8 +39,8 @@
 #include <span>
 //#include <cstdint>
 
-u16 calc_crc(const std::span<const u8> & iData);
-bool check_crc_bytes(const std::span<const u8> & iMsgWithCrc); // the last 2 bytes of iMsgWithCrc contain the CRC
-bool check_CRC_bits(const std::span<const u8> & iBits);
-bool check_CRC_bits(const std::span<const std::byte> & iBits);
+u16 calc_crc(const std::span<const u8>& iData);
+bool check_crc_bytes(const std::span<const u8>& iMsgWithCrc); // the last 2 bytes of iMsgWithCrc contain the CRC
+bool check_CRC_bits(const std::span<const u8>& iBits);
+bool check_CRC_bits(const std::span<const std::byte>& iBits);
 

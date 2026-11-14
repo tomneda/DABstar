@@ -34,7 +34,7 @@ void XmlDescriptor::printDescriptor()
   qDebug() << "iqOrder =" << iqOrder;
   qDebug() << "nrBlocks =" << nrBlocks << "(" << (i32)(blockList.size()) << ")";
 
-  for (auto & i : blockList)
+  for (auto& i : blockList)
   {
     qDebug() << ">>>" << i.blockNumber << i.nrElements << i.typeofUnit << i.frequency << i.modType;
   }
@@ -96,7 +96,7 @@ void XmlDescriptor::add_modtoBlock(i32 blockno, QString modType)
 //	precondition: file exists and is readable.
 //	Note that after the object is filled, the
 //	file pointer points to where the contents starts
-XmlDescriptor::XmlDescriptor(FILE * f, bool * ok)
+XmlDescriptor::XmlDescriptor(FILE* f, bool* ok)
 {
   QDomDocument xmlDoc;
   QByteArray xmlText;

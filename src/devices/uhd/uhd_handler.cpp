@@ -34,7 +34,7 @@
 #include "uhd_handler.h"
 #include "device_exceptions.h"
 
-uhd_streamer::uhd_streamer(UhdHandler * d) :
+uhd_streamer::uhd_streamer(UhdHandler* d) :
   m_theStick(d)
 {
   uhd::stream_args_t stream_args("fc32", "sc16");
@@ -63,7 +63,7 @@ void uhd_streamer::run()
   {
     //  get write position, ignore data2 and size2
     i32 size;
-    void * data;
+    void* data;
     m_theStick->theBuffer->get_writable_ring_buffer_segment(10000, &data, &size);
 
     if (size == 0)
@@ -97,7 +97,7 @@ void uhd_streamer::run()
   }
 }
 
-UhdHandler::UhdHandler(QSettings * s) :
+UhdHandler::UhdHandler(QSettings* s) :
   Ui_uhdWidget(),
   uhdSettings(s)
 {
@@ -123,7 +123,7 @@ UhdHandler::UhdHandler(QSettings * s) :
     {
       antList.emplace_back("(empty)");
     }
-    for (const auto & al : antList)
+    for (const auto& al : antList)
     {
       cmbAnt->addItem(al.c_str());
     }
@@ -218,9 +218,9 @@ void UhdHandler::stopReader()
   m_workerHandle = nullptr;
 }
 
-i32 UhdHandler::getSamples(const std::span<cf32> & oV)
+i32 UhdHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const v = oV.data();
+  cf32* const v = oV.data();
   i32 size = (i32)oV.size();
   size = std::min(size, theBuffer->get_ring_buffer_read_available());
   theBuffer->get_data_from_ring_buffer(v, size);
@@ -281,7 +281,7 @@ void UhdHandler::_slot_set_khz_offset(i32 o)
   vfoOffset = o;
 }
 
-void UhdHandler::_slot_handle_ant_selector(const QString & iAnt)
+void UhdHandler::_slot_handle_ant_selector(const QString& iAnt)
 {
   try
   {
@@ -294,7 +294,7 @@ void UhdHandler::_slot_handle_ant_selector(const QString & iAnt)
   }
 }
 
-void UhdHandler::_load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave)
+void UhdHandler::_load_save_combobox_settings(QComboBox* ipCmb, const QString& iName, bool iSave)
 {
   uhdSettings->beginGroup(SETTING_GROUP_NAME);
   if (iSave)

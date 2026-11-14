@@ -130,8 +130,8 @@ typedef struct
  */
 typedef void(NEWS_SVC_DEC_cb)(
     unsigned long number_of_elements,
-    NEWS_SVC_DEC_obj_availability_t *chg_list,
-    void *arg
+    NEWS_SVC_DEC_obj_availability_t* chg_list,
+    void* arg
 );
 
 
@@ -177,9 +177,9 @@ typedef void(NEWS_SVC_DEC_cb)(
 NEWS_SVC_DEC_decoder_t NEWS_SVC_DEC_createDec(
     NEWS_SVC_DEC_cb update,
     unsigned long max_memory,
-    unsigned long *max_objects,
+    unsigned long* max_objects,
     unsigned long extended_header_len,
-    void  *arg
+    void* arg
 );
 
 /*!
@@ -226,9 +226,9 @@ void NEWS_SVC_DEC_deleteDec(
 int NEWS_SVC_DEC_get_news_object(
     NEWS_SVC_DEC_decoder_t decoder,
     unsigned short object_id,
-    unsigned long *extended_header_len,
-    unsigned long *len,
-    unsigned char *nml
+    unsigned long* extended_header_len,
+    unsigned long* len,
+    unsigned char* nml
 );
 
 
@@ -252,7 +252,7 @@ int NEWS_SVC_DEC_get_news_object(
 int NEWS_SVC_DEC_get_object_availability(
     NEWS_SVC_DEC_decoder_t decoder,
     unsigned long number_of_elements,
-    NEWS_SVC_DEC_obj_availability_t *query_list
+    NEWS_SVC_DEC_obj_availability_t* query_list
 );
 
 
@@ -277,7 +277,7 @@ int NEWS_SVC_DEC_get_object_availability(
 unsigned long NEWS_SVC_DEC_putData(
     NEWS_SVC_DEC_decoder_t  decoder,
     const unsigned long  len,
-    const unsigned char *buf
+    const unsigned char* buf
 );
 
 
@@ -312,7 +312,7 @@ unsigned long NEWS_SVC_DEC_putData(
 int NEWS_SVC_DEC_watch_objects(
     NEWS_SVC_DEC_decoder_t decoder,
     unsigned long number_of_elements,
-    NEWS_SVC_DEC_obj_availability_t *watch_list
+    NEWS_SVC_DEC_obj_availability_t* watch_list
 );
 
 /*!
@@ -341,7 +341,7 @@ int NEWS_SVC_DEC_watch_objects(
 int NEWS_SVC_DEC_keep_in_cache(
     NEWS_SVC_DEC_decoder_t decoder,
     unsigned long number_of_elements,
-    unsigned short *object_ids
+    unsigned short* object_ids
 );
 
 #ifdef __cplusplus

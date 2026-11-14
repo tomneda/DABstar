@@ -39,33 +39,33 @@
 class OpenFileDialog
 {
 public:
-  explicit OpenFileDialog(QSettings *);
+  explicit OpenFileDialog(QSettings*);
   ~OpenFileDialog() = default;
 
-  static FILE * open_file(const QString & iFileName, const QString & iFileMode); // independent from Windows / Linux
-  static SNDFILE * open_snd_file(const QString & iFileName, i32 iMode, SF_INFO * opSfInfo); // independent from Windows / Linux
+  static FILE* open_file(const QString& iFileName, const QString& iFileMode); // independent from Windows / Linux
+  static SNDFILE* open_snd_file(const QString& iFileName, i32 iMode, SF_INFO* opSfInfo); // independent from Windows / Linux
 
-  FILE * open_content_dump_file_ptr(const QString & iChannelName);
-  FILE * open_frame_dump_file_ptr(const QString & iServiceName, bool iIsAAC);
-  FILE * open_log_file_ptr();
-  FILE * open_raw_dump_xmlfile_ptr();
-  SNDFILE * open_audio_dump_sndfile_ptr(const QString & iServiceName);
-  SNDFILE * open_raw_dump_sndfile_ptr(const QString & iDeviceName, const QString & iChannelName) const;
-  QString get_audio_dump_file_name(const QString & iServiceName);
-  QString get_frame_dump_file_name(const QString & iServiceName, bool iIsAAC);
+  FILE* open_content_dump_file_ptr(const QString& iChannelName);
+  FILE* open_frame_dump_file_ptr(const QString& iServiceName, bool iIsAAC);
+  FILE* open_log_file_ptr();
+  FILE* open_raw_dump_xmlfile_ptr();
+  SNDFILE* open_audio_dump_sndfile_ptr(const QString& iServiceName);
+  SNDFILE* open_raw_dump_sndfile_ptr(const QString& iDeviceName, const QString& iChannelName) const;
+  QString get_audio_dump_file_name(const QString& iServiceName);
+  QString get_frame_dump_file_name(const QString& iServiceName, bool iIsAAC);
   QString get_skip_file_file_name();
   QString get_dl_text_file_name();
-  QString get_eti_file_name(const QString &, const QString &) const;
+  QString get_eti_file_name(const QString&, const QString&) const;
 
   enum class EFileType { UNDEF, UFF_XML, SDR_WAV, RAW_IQ, ETI_NI }; // do not use "RAW" as it seems to be used as macro
   QString open_sample_data_file_dialog_for_reading() const;
-  EFileType get_file_type(const QString & iFileName) const;
+  EFileType get_file_type(const QString& iFileName) const;
 
 private:
-  QSettings * const mpSettings;
+  QSettings* const mpSettings;
 
-  QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt) const;
-  void _remove_invalid_characters(QString & ioStr) const;
-  static bool _is_eti_ni_file(FILE * ipFile);
+  QString _open_file_dialog(const QString& iFileNamePrefix, const QString& iSettingName, const QString& iFileDesc, const QString& iFileExt) const;
+  void _remove_invalid_characters(QString& ioStr) const;
+  static bool _is_eti_ni_file(FILE* ipFile);
 };
 

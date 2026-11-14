@@ -19,7 +19,7 @@ template <typename T>
 class DelayLine
 {
 public:
-  explicit DelayLine(const T & iDefault)
+  explicit DelayLine(const T& iDefault)
     : mDefault(iDefault)
   {
     set_delay_steps(0); // reserve memory for at least one sample
@@ -32,7 +32,7 @@ public:
     reset();
   }
 
-  const T & get_set_value(const T & iVal)
+  const T& get_set_value(const T& iVal)
   {
     mDelayBuffer[mDataPtrIdx] = iVal;
     mDataPtrIdx = (mDataPtrIdx + 1) % mDelayBuffer.size();

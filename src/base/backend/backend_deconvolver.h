@@ -38,10 +38,10 @@ class Protection;
 class BackendDeconvolver
 {
 public:
-  explicit BackendDeconvolver(const SDescriptorType * d);
+  explicit BackendDeconvolver(const SDescriptorType* d);
   ~BackendDeconvolver();
 
-  void deconvolve(const std::span<const i16> & iRawBits, u8 * opOutData) const;
+  void deconvolve(const std::span<const i16>& iRawBits, u8* opOutData) const;
   
 private:
   std::unique_ptr<Protection> mpProtectionHandler;

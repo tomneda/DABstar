@@ -36,11 +36,11 @@
 #include <span>
 #include "epgdec.h"
 
-static QDomElement element (QDomDocument &doc, const tag_length_value &tlv);
+static QDomElement element (QDomDocument& doc, const tag_length_value& tlv);
 
 static int cnt	= 0;
 void	CEPGDecoder::decode (const std::vector<_BYTE>& vecData,
-                                             const QString &name) {
+                                             const QString& name) {
 //	clear the doc, allowing re-use 
 	doc. setContent (QString (""));
 	tag_length_value tlv (&vecData [0]);
@@ -48,7 +48,7 @@ void	CEPGDecoder::decode (const std::vector<_BYTE>& vecData,
 	if (tlv. is_epg ()) {
 	   doc. appendChild (element (doc, tlv));
 	   QString test = doc. toString();
-	   FILE *epgFile = fopen (name. toUtf8(). data (), "w");
+	   FILE* epgFile = fopen (name. toUtf8(). data (), "w");
 	   if (epgFile != nullptr) {
 	      fprintf (stderr, "filename = %s\n", name. toUtf8 (). data());
 	      fprintf (epgFile, "%s", test. toLatin1 (). data());
@@ -74,8 +74,8 @@ typedef enum {nu_attr, enum_attr, string_attr,
 	      genre_href_attr, bitrate_attr} enum_attr_t;
 
 typedef struct {
-	const char *name;
-	const char **vals;
+	const char* name;
+	const char** vals;
 	enum_attr_t decode;
 } dectab;
 
@@ -83,8 +83,8 @@ static char token_list[20][255];
 
 static u32 default_content_id;
 
-static const char *enums0 [] = { (char*)2, "DAB", "DRM" };
-static const char *enums1[] = { (char*)9, nullptr, "series",
+static const char* enums0 [] = { (char*)2, "DAB", "DRM" };
+static const char* enums1[] = { (char*)9, nullptr, "series",
 	"show",
 	"programConcept",
 	"magazine",
@@ -94,25 +94,25 @@ static const char *enums1[] = { (char*)9, nullptr, "series",
 	"topic"
 };
 
-static const char *enums2[] = { (char*)3, "URL", "DAB", "DRM" };
-static const char *enums3[] = { (char*)4, "identical", "more", "less", "similar" };
-static const char *enums4[] = { (char*)2, "primary", "alternative" };
-static const char *enums5[] = { (char*)7, "audio", "DLS",
+static const char* enums2[] = { (char*)3, "URL", "DAB", "DRM" };
+static const char* enums3[] = { (char*)4, "identical", "more", "less", "similar" };
+static const char* enums4[] = { (char*)2, "primary", "alternative" };
+static const char* enums5[] = { (char*)7, "audio", "DLS",
 	       "MOTSlideshow", "MOTBWS", "TPEG", "DGPS", "proprietary"
 };
-static const char *enums6[] = { (char*)2, "primary", "secondary" };
-static const char *enums7[] = { (char*)2, "none", "unspecified" };
-static const char *enums8[] = { (char*)2, "on-air", "off-air" };
-static const char *enums9[] = { (char*)2, "no", "yes" };
-static const char *enums10[] = { (char*)4, nullptr, "logo_unrestricted",
+static const char* enums6[] = { (char*)2, "primary", "secondary" };
+static const char* enums7[] = { (char*)2, "none", "unspecified" };
+static const char* enums8[] = { (char*)2, "on-air", "off-air" };
+static const char* enums9[] = { (char*)2, "no", "yes" };
+static const char* enums10[] = { (char*)4, nullptr, "logo_unrestricted",
 	                         "logo_mono_square",
 	                         "logo_colour_square",
 	                         "logo_mono_rectangle"
 };
 
-static const char *enums11 [] = { (char*)3, "main", "secondary", "other"};
+static const char* enums11 [] = { (char*)3, "main", "secondary", "other"};
 
-static const char *classificationScheme [] = {
+static const char* classificationScheme [] = {
     nullptr,
     "IntentionCS",
     "FormatCS",
@@ -245,7 +245,7 @@ static dectab attribute_tags18[] = {
 };
 
 struct eltab_t {
-	const char * element_name;
+	const char* element_name;
 	dectab* tags;
 	size_t size;
 };
@@ -304,16 +304,16 @@ static eltab_t element_tables[] = {
 
 //
 //	forward declarations
-std::string decode_string (const std::span<const _BYTE> & iV);
+std::string decode_string (const std::span<const _BYTE>& iV);
 const std::string element_name (_BYTE tag);
 
 static
-void attribute (std::map<std::string, std::string>  &out, _BYTE element_tag,
-	                                        tag_length_value &tlv);
+void attribute (std::map<std::string, std::string>& out, _BYTE element_tag,
+	                                        tag_length_value& tlv);
 static
-void string_token_table (const tag_length_value &tlv);
+void string_token_table (const tag_length_value& tlv);
 
-u16 get_uint16 (const _BYTE *p) {
+u16 get_uint16 (const _BYTE* p) {
 u16 h = p[0], l = p[1];
 
 	return ((h << 8) | l);
@@ -345,7 +345,7 @@ _BYTE* p = const_cast<_BYTE*> (q);
 
 #define	invalidTag(x) ((x < 0) || (x > 50))
 static
-QDomElement element (QDomDocument &doc, const tag_length_value &tlv) {
+QDomElement element (QDomDocument& doc, const tag_length_value& tlv) {
 	if (invalidTag (tlv. tag)) {
 	   QString name (" ");
 	   QDomElement e = doc. createElement (name);
@@ -355,8 +355,8 @@ QDomElement element (QDomDocument &doc, const tag_length_value &tlv) {
 QString	name (element_tables [tlv. tag]. element_name);
 QDomElement e	= doc. createElement (name);
 std::map<std::string, std::string> attr;
-_BYTE *end	= tlv. value + tlv. length;
-dectab *at	= element_tables [tlv. tag]. tags;
+_BYTE* end	= tlv. value + tlv. length;
+dectab* at	= element_tables [tlv. tag]. tags;
 //	set default attributes 
 	for (size_t k = 0; k < element_tables [tlv.tag]. size; k++) {
 	   if (at [k]. decode == enum_attr)
@@ -408,10 +408,10 @@ dectab *at	= element_tables [tlv. tag]. tags;
 }
 
 static
-std::string decode_genre_href (const std::span<const _BYTE> & iV) {
+std::string decode_genre_href (const std::span<const _BYTE>& iV) {
 	if (iV.empty())
 	   return "";
-const _BYTE * const p = iV.data();
+const _BYTE* const p = iV.data();
 int cs = p[0] & 0xff;
 
 	if(cs < 1 || cs > 8)
@@ -433,7 +433,7 @@ int cs = p[0] & 0xff;
 	return out. str();
 }
 
-std::string	decode_string (const std::span<const _BYTE> & iV) {
+std::string	decode_string (const std::span<const _BYTE>& iV) {
 std::string out;
 
 	for (const _BYTE b : iV) {
@@ -595,8 +595,8 @@ std::string	decode_attribute_name (const dectab& tab) {
 
 static
 std::string	decode_attribute_value (enum_attr_t format,
-	                        const std::span<const _BYTE> & iV) {
-const _BYTE * const p = iV.data();
+	                        const std::span<const _BYTE>& iV) {
+const _BYTE* const p = iV.data();
 	switch (format) {
 	   case nu_attr:
 	      return "undefined";
@@ -634,8 +634,8 @@ const _BYTE * const p = iV.data();
 }
 
 static
-void	attribute (std::map < std::string, std::string> &out,
-	          _BYTE element_tag, tag_length_value &tlv) {
+void	attribute (std::map < std::string, std::string>& out,
+	          _BYTE element_tag, tag_length_value& tlv) {
 size_t el	= size_t (element_tag);
 size_t e	= sizeof (element_tables) / sizeof (eltab_t);
 

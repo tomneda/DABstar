@@ -61,6 +61,6 @@ inline bool is_charset_valid(ECharacterSet iCharset)
  * @param charset   character set used in buffer
  * @return converted QString
  */
-QString to_QString_using_charset(const QByteArray & iByteArray, ECharacterSet iCharset);
-QString to_QString_using_charset(const char * ipBuffer, ECharacterSet iCharset, i32 size = -1);
+QString to_QString_using_charset(const QByteArray& iByteArray, ECharacterSet iCharset);
+QString to_QString_using_charset(const char* ipBuffer, ECharacterSet iCharset, i32 size = -1);
 

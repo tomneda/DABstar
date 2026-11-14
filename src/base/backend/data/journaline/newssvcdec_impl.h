@@ -94,8 +94,8 @@ typedef std::list<unsigned short> NEWS_SVC_DEC_IMPL_keep_in_cache_list_t;
 typedef struct
 {
     unsigned long   d_magicId;
-    NEWS_SVC_DEC_cb *d_update;
-    void            *d_arg;
+    NEWS_SVC_DEC_cb* d_update;
+    void* d_arg;
     unsigned long   d_extended_header_len;
     unsigned long   d_max_memory;
     unsigned long   d_max_objects;
@@ -107,7 +107,7 @@ typedef struct
     NEWS_SVC_DEC_IMPL_keep_in_cache_list_t d_keep_in_cache_list;
 } NEWS_SVC_DEC_IMPL_t;
 
-int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t *dec,
+int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t* dec,
         unsigned long objs_to_free);
 
 #ifdef __cplusplus
@@ -115,21 +115,21 @@ int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t *dec,
 #endif
 
 /* internal functions */
-void NEWS_SVC_DEC_IMPL_printObjList(NEWS_SVC_DEC_IMPL_t *dec);
+void NEWS_SVC_DEC_IMPL_printObjList(NEWS_SVC_DEC_IMPL_t* dec);
 
 class FindMinFunctor
 {
 public:
-    FindMinFunctor(NEWS_SVC_DEC_IMPL_t *dec);
-    FindMinFunctor(const FindMinFunctor &rhs);
+    FindMinFunctor(NEWS_SVC_DEC_IMPL_t* dec);
+    FindMinFunctor(const FindMinFunctor& rhs);
     ~FindMinFunctor();
 
     bool operator()(
-        std::pair<const unsigned long, NewsObject*> &rhs,
-        std::pair<const unsigned long, NewsObject*> &lhs);
+        std::pair<const unsigned long, NewsObject*>& rhs,
+        std::pair<const unsigned long, NewsObject*>& lhs);
 
 private:
-    NEWS_SVC_DEC_IMPL_t *d_dec;
+    NEWS_SVC_DEC_IMPL_t* d_dec;
 };
 
 

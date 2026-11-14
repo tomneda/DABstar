@@ -33,7 +33,7 @@
 #include "openfiledialog.h"
 #include "setting_helper.h"
 
-bool SegmentedTableWidgetItem::operator<(const QTableWidgetItem & iOther) const
+bool SegmentedTableWidgetItem::operator<(const QTableWidgetItem& iOther) const
 {
   // returning true then current and another element are swapped
   const QVariant currData = data(Qt::UserRole);
@@ -73,7 +73,7 @@ bool SegmentedTableWidgetItem::operator<(const QTableWidgetItem & iOther) const
 }
 
 
-FibContentTable::FibContentTable(DabRadio * ipDabRadio, QSettings * /*s*/, const QString & iChannel, i32 iNumCols)
+FibContentTable::FibContentTable(DabRadio* ipDabRadio, QSettings* /*s*/, const QString& iChannel, i32 iNumCols)
   : mChannel(iChannel)
   , mNumColumns(iNumCols)
   , mpDabRadio(ipDabRadio)
@@ -116,7 +116,7 @@ bool FibContentTable::is_visible() const
   return !mpScrollArea->isHidden();
 }
 
-void FibContentTable::add_line(const QString & s)
+void FibContentTable::add_line(const QString& s)
 {
   i32 row = _add_row();
   QStringList h = s.split(";");
@@ -146,7 +146,7 @@ void FibContentTable::add_line(const QString & s)
   {
     if (i <= mNumColumns)
     {
-      auto * item = mpTableWidget->item(row, i - 1);
+      auto* item = mpTableWidget->item(row, i - 1);
 
       QList<QVariant> itemData;
       itemData.append(mSegmentId);
@@ -162,7 +162,7 @@ void FibContentTable::add_line(const QString & s)
   }
 }
 
-void FibContentTable::dump(FILE * dumpFilePointer) const
+void FibContentTable::dump(FILE* dumpFilePointer) const
 {
   if (dumpFilePointer == nullptr)
   {
@@ -186,25 +186,25 @@ i16 FibContentTable::_add_row() const
 
   for (i32 i = 0; i < mNumColumns; i++)
   {
-    QTableWidgetItem * item = new SegmentedTableWidgetItem; // there is no memory leakage here
+    QTableWidgetItem* item = new SegmentedTableWidgetItem; // there is no memory leakage here
     item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     mpTableWidget->setItem(row, i, item);
   }
   return row;
 }
 
-uint32_t FibContentTable::_hex_to_u32(const std::string & iHexString) const
+uint32_t FibContentTable::_hex_to_u32(const std::string& iHexString) const
 {
   try
   {
     return static_cast<uint32_t>(std::stoul(iHexString, nullptr, 16));
   }
-  catch (const std::invalid_argument & e)
+  catch (const std::invalid_argument& e)
   {
     qCritical() << "Invalid argument:" << e.what();
     return 0;
   }
-  catch (const std::out_of_range & e)
+  catch (const std::out_of_range& e)
   {
     qCritical() << "Out of range:" << e.what();
     return 0;
@@ -213,7 +213,7 @@ uint32_t FibContentTable::_hex_to_u32(const std::string & iHexString) const
 
 void FibContentTable::_slot_select_service(const i32 iRowIdx, const i32 /*iColIdx*/)
 {
-  QTableWidgetItem * theItem = mpTableWidget->item(iRowIdx, 2);
+  QTableWidgetItem* theItem = mpTableWidget->item(iRowIdx, 2);
 
   if (iRowIdx < 2) // skip possible misinterpretation of the EId
   {
@@ -229,7 +229,7 @@ void FibContentTable::_slot_select_service(const i32 iRowIdx, const i32 /*iColId
 void FibContentTable::_slot_dump(i32 /*row*/, i32 /*column*/)
 {
   OpenFileDialog filenameFinder(&Settings::Storage::instance());
-  FILE * dumpFile = filenameFinder.open_content_dump_file_ptr(mChannel);
+  FILE* dumpFile = filenameFinder.open_content_dump_file_ptr(mChannel);
 
   if (dumpFile == nullptr)
   {

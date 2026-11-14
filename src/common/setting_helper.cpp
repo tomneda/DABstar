@@ -37,16 +37,16 @@ namespace Settings
 #include "setting_helper.cnf.h"
 #undef FILTER_DEFINITIONS
 
-Variant::Variant(const QString & cat, const QString & key)
+Variant::Variant(const QString& cat, const QString& key)
   : mKey(cat + "/" + key)
 {}
 
-Variant::Variant(const QString & cat, const QString & key, const QVariant & iDefaultValue)
+Variant::Variant(const QString& cat, const QString& key, const QVariant& iDefaultValue)
   : mKey(cat + "/" + key)
   , mDefaultValue(iDefaultValue)
 {}
 
-void Variant::define_default_value(const QVariant & iDefaultValue)
+void Variant::define_default_value(const QVariant& iDefaultValue)
 {
   assert(!mDefaultValue.isValid()); // is it really not initialized yet?
   mDefaultValue = iDefaultValue;
@@ -58,13 +58,13 @@ QVariant Variant::read() const
   return Storage::instance().value(mKey, mDefaultValue);
 }
 
-void Variant::write(const QVariant & iValue) const
+void Variant::write(const QVariant& iValue) const
 {
   return Storage::instance().setValue(mKey, iValue);
 }
 
 
-Widget::Widget(const QString & cat, const QString & key)
+Widget::Widget(const QString& cat, const QString& key)
   : mKey(cat + "/" + key)
 {
 }
@@ -74,45 +74,45 @@ Widget::~Widget()
   delete mpDeferTimer;
 }
 
-void Widget::register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue)
+void Widget::register_widget_and_update_ui_from_setting(QWidget* const ipWidget, const QVariant& iDefaultValue)
 {
   mpWidget = ipWidget;
   mDefaultValue = iDefaultValue;
   _update_ui_state_from_setting();
 
-  if (const auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  if (const auto* const pD = dynamic_cast<QCheckBox*>(mpWidget); pD != nullptr)
   {
     connect(pD, &QCheckBox::stateChangedSubst, [this](i32 /*iState*/){ _update_ui_state_to_setting(); });
     return;
   }
 
-  if (const auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  if (const auto* const pD = dynamic_cast<QComboBox*>(mpWidget); pD != nullptr)
   {
     connect(pD, &QComboBox::currentIndexChanged, [this](i32){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (const auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  if (const auto* const pD = dynamic_cast<QSpinBox*>(mpWidget); pD != nullptr)
   {
     connect(pD, &QSpinBox::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (const auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  if (const auto* const pD = dynamic_cast<QDoubleSpinBox*>(mpWidget); pD != nullptr)
   {
     connect(pD, &QDoubleSpinBox::valueChanged, [this](f64 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (const auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  if (const auto* const pD = dynamic_cast<QSlider*>(mpWidget); pD != nullptr)
   {
     connect(pD, &QSlider::valueChanged, [this](i32 /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
-  if (const auto * const pD = dynamic_cast<QLineEdit *>(mpWidget); pD != nullptr)
+  if (const auto* const pD = dynamic_cast<QLineEdit*>(mpWidget); pD != nullptr)
   {
-    connect(pD, &QLineEdit::textChanged, [this](const QString & /*iValue*/){ _update_ui_state_to_setting_deferred(); });
+    connect(pD, &QLineEdit::textChanged, [this](const QString& /*iValue*/){ _update_ui_state_to_setting_deferred(); });
     return;
   }
 
@@ -126,7 +126,7 @@ QVariant Widget::read() const
 
 i32 Widget::get_combobox_index() const
 {
-  auto * const pD = dynamic_cast<QComboBox *>(mpWidget);
+  auto* const pD = dynamic_cast<QComboBox*>(mpWidget);
   assert(pD != nullptr); // only for comboboxes
   const QString var = read().toString();
   return pD->findText(var);
@@ -136,14 +136,14 @@ void Widget::_update_ui_state_from_setting()
 {
   assert(mpWidget != nullptr); // only one-time registration necessary
 
-  if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QCheckBox*>(mpWidget); pD != nullptr)
   {
     const i32 var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setCheckState(static_cast<Qt::CheckState>(var));
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QComboBox*>(mpWidget); pD != nullptr)
   {
     const QString var = Storage::instance().value(mKey, mDefaultValue).toString();
     const i32 k = pD->findText(var);
@@ -154,28 +154,28 @@ void Widget::_update_ui_state_from_setting()
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QSpinBox*>(mpWidget); pD != nullptr)
   {
     const i32 var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setValue(var);
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QDoubleSpinBox*>(mpWidget); pD != nullptr)
   {
     const f64 var = Storage::instance().value(mKey, mDefaultValue).toDouble();
     pD->setValue(var);
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QSlider*>(mpWidget); pD != nullptr)
   {
     const i32 var = Storage::instance().value(mKey, mDefaultValue).toInt();
     pD->setValue(var);
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QLineEdit *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QLineEdit*>(mpWidget); pD != nullptr)
   {
     const QString var = Storage::instance().value(mKey, mDefaultValue).toString();
     pD->setText(var);
@@ -189,37 +189,37 @@ void Widget::_update_ui_state_to_setting() const
 {
   assert(mpWidget != nullptr); // only one-time registration necessary
 
-  if (auto * const pD = dynamic_cast<QCheckBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QCheckBox*>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->checkState());
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QComboBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QComboBox*>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->currentText());
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSpinBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QSpinBox*>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->value());
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QDoubleSpinBox *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QDoubleSpinBox*>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->value());
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QSlider *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QSlider*>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->value());
     return;
   }
 
-  if (auto * const pD = dynamic_cast<QLineEdit *>(mpWidget); pD != nullptr)
+  if (auto* const pD = dynamic_cast<QLineEdit*>(mpWidget); pD != nullptr)
   {
     Storage::instance().setValue(mKey, pD->text());
     return;
@@ -250,15 +250,15 @@ void Widget::_update_ui_state_to_setting_deferred()
   mpDeferTimer->start();
 }
 
-PosAndSize::PosAndSize(const QString & iCat)
+PosAndSize::PosAndSize(const QString& iCat)
 : mKey(iCat + "/posAndSize")
 {}
 
-PosAndSize::PosAndSize(const QString & iCat, const QString & iName)
+PosAndSize::PosAndSize(const QString& iCat, const QString& iName)
 : mKey(iCat + "/" + iName)
 {}
 
-void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, const i32 iWidthOffs /*= 0*/, const i32 iHeightOffs /*= 0*/) const
+void PosAndSize::read_widget_geometry(QWidget* const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, const i32 iWidthOffs /*= 0*/, const i32 iHeightOffs /*= 0*/) const
 {
   if (iopWidget == nullptr)
   {
@@ -322,7 +322,7 @@ void PosAndSize::read_widget_geometry(QWidget * const iopWidget, const bool iIsF
   }
 }
 
-void PosAndSize::write_widget_geometry(const QWidget * const ipWidget) const
+void PosAndSize::write_widget_geometry(const QWidget* const ipWidget) const
 {
   if (ipWidget == nullptr)
   {

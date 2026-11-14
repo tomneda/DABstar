@@ -24,13 +24,13 @@ class Configuration : public QWidget, public Ui_configWidget
   Q_OBJECT
 
 public:
-  Configuration(DabRadio * ipRI);
+  Configuration(DabRadio* ipRI);
   ~Configuration() override = default;
 
   void save_position_and_config();
 
 private:
-  DabRadio * const mpRadioInterface;
+  DabRadio* const mpRadioInterface;
 
 private slots:
   void _slot_handle_dc_corr(bool iChecked);

@@ -82,7 +82,7 @@ ReedSolomon::ReedSolomon(u16 symsize, u16 gfpoly, u16 fcr, u16 prim, u16 nroots)
 }
 
 //	Basic encoder, returns - in bb - the parity bytes
-void ReedSolomon::encode_rs(const u8 * data, u8 * bb)
+void ReedSolomon::encode_rs(const u8* data, u8* bb)
 {
   i32 i, j;
   u8 feedback;
@@ -112,10 +112,10 @@ void ReedSolomon::encode_rs(const u8 * data, u8 * bb)
   }
 }
 
-void ReedSolomon::enc(const u8 * r, u8 * d, i16 cutlen)
+void ReedSolomon::enc(const u8* r, u8* d, i16 cutlen)
 {
-  auto * const rf = make_vla(u8, codeLength);
-  auto * const bb = make_vla(u8, nroots);
+  auto* const rf = make_vla(u8, codeLength);
+  auto* const bb = make_vla(u8, nroots);
   i16 i;
 
   memset(rf, 0, cutlen * sizeof(rf[0]));
@@ -137,9 +137,9 @@ void ReedSolomon::enc(const u8 * r, u8 * d, i16 cutlen)
 }
 
 
-i16 ReedSolomon::dec(const u8 * r, u8 * d, i16 cutlen)
+i16 ReedSolomon::dec(const u8* r, u8* d, i16 cutlen)
 {
-  auto * const rf = make_vla(u8, codeLength);
+  auto* const rf = make_vla(u8, codeLength);
   i16 i;
   i16 ret;
 
@@ -157,13 +157,13 @@ i16 ReedSolomon::dec(const u8 * r, u8 * d, i16 cutlen)
   return ret;
 }
 
-i16 ReedSolomon::decode_rs(u8 * data)
+i16 ReedSolomon::decode_rs(u8* data)
 {
-  auto * const syndromes = make_vla(u8, nroots);
-  auto * const Lambda = make_vla(u8, nroots + 1);
-  auto * const rootTable = make_vla(u8, nroots);
-  auto * const locTable = make_vla(u8, nroots);
-  auto * const omega = make_vla(u8, nroots + 1);
+  auto* const syndromes = make_vla(u8, nroots);
+  auto* const Lambda = make_vla(u8, nroots + 1);
+  auto* const rootTable = make_vla(u8, nroots);
+  auto* const locTable = make_vla(u8, nroots);
+  auto* const omega = make_vla(u8, nroots + 1);
 
   u16 lambda_degree, omega_degree;
   i16 rootCount;
@@ -248,7 +248,7 @@ i16 ReedSolomon::decode_rs(u8 * data)
 
 //
 //	Apply Horner on the input for root "root"
-u8 ReedSolomon::getSyndrome(u8 * data, u8 root)
+u8 ReedSolomon::getSyndrome(u8* data, u8 root)
 {
   u8 syn = data[0];
   i16 j;
@@ -271,7 +271,7 @@ u8 ReedSolomon::getSyndrome(u8 * data, u8 root)
 
 //
 //	use Horner to compute the syndromes
-bool ReedSolomon::computeSyndromes(u8 * data, u8 * syndromes)
+bool ReedSolomon::computeSyndromes(u8* data, u8* syndromes)
 {
   i16 i;
   u16 syn_error = 0;
@@ -291,10 +291,10 @@ bool ReedSolomon::computeSyndromes(u8 * data, u8 * syndromes)
 //	compute Lambda with Berlekamp-Massey
 //	syndromes in poly-form in, Lambda in power form out
 //	
-u16 ReedSolomon::computeLambda(u8 * syndromes, u8 * Lambda)
+u16 ReedSolomon::computeLambda(u8* syndromes, u8* Lambda)
 {
   u16 K = 1, L = 0;
-  auto * const Corrector = make_vla(u8, nroots);
+  auto* const Corrector = make_vla(u8, nroots);
   i16 i;
   i16 deg_lambda = 0;
 
@@ -311,7 +311,7 @@ u16 ReedSolomon::computeLambda(u8 * syndromes, u8 * Lambda)
   //
   while (K < nroots)
   {
-    auto * const oldLambda = make_vla(u8, nroots);
+    auto* const oldLambda = make_vla(u8, nroots);
     memcpy(oldLambda, Lambda, nroots * sizeof(Lambda[0]));
     //
     //	Compute new lambda
@@ -365,12 +365,12 @@ u16 ReedSolomon::computeLambda(u8 * syndromes, u8 * Lambda)
 //	Compute the roots of lambda by evaluating the
 //	lambda polynome for all (inverted) powers of the symbols
 //	of the data (Chien search)
-i16 ReedSolomon::computeErrors(u8 * Lambda, u16 deg_lambda, u8 * rootTable, u8 * locTable)
+i16 ReedSolomon::computeErrors(u8* Lambda, u16 deg_lambda, u8* rootTable, u8* locTable)
 {
   i16 i, j, k;
   i16 rootCount = 0;
   //
-  auto * const workRegister = make_vla(u8, nroots + 1);
+  auto* const workRegister = make_vla(u8, nroots + 1);
   memcpy(workRegister, Lambda, (nroots + 1) * sizeof(u8));
   //
   //	reg is lambda in power notation
@@ -409,7 +409,7 @@ i16 ReedSolomon::computeErrors(u8 * Lambda, u16 deg_lambda, u8 * rootTable, u8 *
  *
  *	Note that syndromes are in poly form, while lambda in power form
  */
-u16 ReedSolomon::computeOmega(u8 * syndromes, u8 * lambda, u16 deg_lambda, u8 * omega)
+u16 ReedSolomon::computeOmega(u8* syndromes, u8* lambda, u16 deg_lambda, u8* omega)
 {
   i16 i, j;
   i16 deg_omega = 0;

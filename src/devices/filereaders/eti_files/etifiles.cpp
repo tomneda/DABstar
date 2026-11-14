@@ -23,7 +23,7 @@
 
 constexpr u32 cRingBufferSize = 65536; // holds 10 ETI frames
 
-EtiFileHandler::EtiFileHandler(const QString & iFilename)
+EtiFileHandler::EtiFileHandler(const QString& iFilename)
   : mFrame(nullptr)
   , mRingBuffer(cRingBufferSize)
 {
@@ -87,7 +87,7 @@ void EtiFileHandler::stopReader()
   mIsRunning.store(false);
 }
 
-bool EtiFileHandler::get_eti_frame(TEtiFrame & oFrame, const i32 iTimeout_ms)
+bool EtiFileHandler::get_eti_frame(TEtiFrame& oFrame, const i32 iTimeout_ms)
 {
   i32 waited_ms = 0;
 

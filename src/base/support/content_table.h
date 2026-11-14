@@ -44,33 +44,33 @@ class QSettings;
 class SegmentedTableWidgetItem : public QTableWidgetItem
 {
 public:
-  bool operator<(const QTableWidgetItem & iOther) const override;
+  bool operator<(const QTableWidgetItem& iOther) const override;
 };
 
 class FibContentTable : public QObject
 {
 Q_OBJECT
 public:
-  FibContentTable(DabRadio * ipDabRadio, QSettings * s, const QString & iChannel, i32 iNumCols);
+  FibContentTable(DabRadio* ipDabRadio, QSettings* s, const QString& iChannel, i32 iNumCols);
   ~FibContentTable() override;
 
   void show() const;
   void hide() const;
   bool is_visible() const;
-  [[nodiscard]] QWidget * get_widget() const { return mpScrollArea.get(); }
-  void add_line(const QString &);
-  void dump(FILE *) const;
+  [[nodiscard]] QWidget* get_widget() const { return mpScrollArea.get(); }
+  void add_line(const QString&);
+  void dump(FILE*) const;
 
 private:
   const QString mChannel;
   const i32 mNumColumns;
-  DabRadio * const mpDabRadio;
+  DabRadio* const mpDabRadio;
   QScopedPointer<QScrollArea> mpScrollArea;
   QScopedPointer<QTableWidget> mpTableWidget;
   i32 mSegmentId = 0;
 
   i16 _add_row() const;
-  u32 _hex_to_u32(const std::string & iHexString) const;
+  u32 _hex_to_u32(const std::string& iHexString) const;
 
 private slots:
   void _slot_select_service(i32, i32);

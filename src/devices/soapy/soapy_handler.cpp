@@ -26,7 +26,7 @@
 #include "device_exceptions.h"
 #include "qt_compat.h"
 
-SoapyHandler::SoapyHandler(QSettings * soapySettings)
+SoapyHandler::SoapyHandler(QSettings* soapySettings)
   : myFrame(nullptr)
 {
   int deviceIndex = 0;
@@ -52,7 +52,7 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
     QString label;
     bool isAudio = false;
     fprintf(stderr, "Found device #%d:\n", (int)i);
-    for (const auto &it : results[i])
+    for (const auto& it : results[i])
     {
       fprintf(stderr, "  %s = %s\n", it.first.c_str(), it.second.c_str());
       if (it.first == std::string("driver"))
@@ -87,7 +87,7 @@ SoapyHandler::SoapyHandler(QSettings * soapySettings)
   if (labelVector.size() > 1)
   {
     dongleSelect deviceSelector;
-    for (auto &s : labelVector)
+    for (auto& s : labelVector)
       deviceSelector.addtoDongleList(s);
     deviceIndex = deviceSelector.QDialog::exec();
   }
@@ -126,7 +126,7 @@ SoapyHandler::~SoapyHandler(void)
 }
 
 template <typename Type>
-std::string toString(const std::vector<Type> &options)
+std::string toString(const std::vector<Type>& options)
 {
   std::stringstream ss;
   if (options.empty()) return "";
@@ -138,7 +138,7 @@ std::string toString(const std::vector<Type> &options)
   return ss.str();
 }
 
-std::string toString(const SoapySDR::Range &range)
+std::string toString(const SoapySDR::Range& range)
 {
   std::stringstream ss;
   ss << "[" << range.minimum() << ", " << range.maximum();
@@ -147,7 +147,7 @@ std::string toString(const SoapySDR::Range &range)
   return ss.str();
 }
 
-std::string toString(const SoapySDR::RangeList &range, const double scale)
+std::string toString(const SoapySDR::RangeList& range, const double scale)
 {
   const size_t MAXRLEN = 10; //for abbreviating long lists
   std::stringstream ss;
@@ -188,7 +188,7 @@ void SoapyHandler::createDevice(QString driver, QString serial)
   if (info.size() > 0)
   {
     ss << "  Channel Information:" << std::endl;
-    for (const auto &it : info)
+    for (const auto& it : info)
     {
       ss << "    " << it.first << "=" << it.second << std::endl;
     }
@@ -308,7 +308,7 @@ void SoapyHandler::createDevice(QString driver, QString serial)
 
   device->setFrequency(dir, chan, 220000000.0);
   std::vector<size_t> xxx;
-  SoapySDR::Stream *stream = device->setupStream(SOAPY_SDR_RX, "CF32", xxx, SoapySDR::Kwargs());
+  SoapySDR::Stream* stream = device->setupStream(SOAPY_SDR_RX, "CF32", xxx, SoapySDR::Kwargs());
   if (stream == nullptr)
     throw (std_exception_string("cannot open stream"));
   if(selectedWidth > 0)
@@ -341,7 +341,7 @@ bool SoapyHandler::restartReader(i32 freq)
 
 void SoapyHandler::stopReader(void) {}
 
-i32 SoapyHandler::getSamples(const std::span<cf32> & oV)
+i32 SoapyHandler::getSamples(const std::span<cf32>& oV)
 {
   if (worker == nullptr)
     return 0;
@@ -387,7 +387,7 @@ void SoapyHandler::set_agcControl(i32 status)
   device->setGainMode(SOAPY_SDR_RX, 0, b);
 }
 
-void SoapyHandler::handleAntenna(const QString & s)
+void SoapyHandler::handleAntenna(const QString& s)
 {
   if (device == nullptr)
     return;
@@ -409,7 +409,7 @@ bool SoapyHandler::isHidden()
   return myFrame.isHidden();
 }
 
-i32 SoapyHandler::findDesiredSamplerate(const SoapySDR::RangeList &range)
+i32 SoapyHandler::findDesiredSamplerate(const SoapySDR::RangeList& range)
 {
   for (size_t i = 0; i < range.size(); i++)
   {
@@ -427,7 +427,7 @@ i32 SoapyHandler::findDesiredSamplerate(const SoapySDR::RangeList &range)
   return -1;
 }
 
-i32 SoapyHandler::findDesiredBandwidth(const SoapySDR::RangeList &range)
+i32 SoapyHandler::findDesiredBandwidth(const SoapySDR::RangeList& range)
 {
   for (size_t i = 0; i < range.size(); i++)
   {

@@ -37,7 +37,7 @@
 constexpr i32 cCuSizeBits = 64;
 
 //	fragmentsize == Length * CUSize
-Backend::Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag)
+Backend::Backend(DabRadio* ipRI, const SDescriptorType* ipDescType, RingBuffer<i16>* ipoAudiobuffer, RingBuffer<u8>* ipoDatabuffer, RingBuffer<u8>* frameBuffer, EProcessFlag iProcessFlag)
   : deconvolver(ipDescType)
   , outV(ipDescType->bitRate /*kbit/s*/ * 24 /*ms*/)
   , driver(ipRI, ipDescType, ipoAudiobuffer, ipoDatabuffer, frameBuffer)
@@ -107,7 +107,7 @@ Backend::~Backend()
 #endif
 }
 
-i32 Backend::process(const std::span<const i16> & iV)
+i32 Backend::process(const std::span<const i16>& iV)
 {
   assert((i32)iV.size() >= fragmentSize);
 #ifdef  __THREADED_BACKEND__
@@ -129,7 +129,7 @@ i32 Backend::process(const std::span<const i16> & iV)
 
 static constexpr i16 interleaveMap[] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
 
-void Backend::_process_segment(const i16 * iData)
+void Backend::_process_segment(const i16* iData)
 {
   for (i32 i = 0; i < fragmentSize; i++)
   {
@@ -162,7 +162,7 @@ void Backend::_process_segment(const i16 * iData)
 }
 
 // The ETI data is processed synchronously (also with __THREADED_BACKEND__) as the expensive Viterbi decoding is not necessary.
-void Backend::process_eti(const std::span<const u8> & iData)
+void Backend::process_eti(const std::span<const u8>& iData)
 {
   const i32 iSize = (i32)iData.size();
   const i32 numBits = bitRate * 24;

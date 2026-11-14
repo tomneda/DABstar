@@ -32,13 +32,13 @@ static inline i64 get_cur_time_in_us()
   return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
-static inline bool is_fsync(const u8 * const ipData)
+static inline bool is_fsync(const u8* const ipData)
 {
   const u32 fsync = (u32)ipData[0] << 16 | (u32)ipData[1] << 8 | (u32)ipData[2];
   return fsync == 0x073AB6 || fsync == 0xF8C549;
 }
 
-EtiReader::EtiReader(EtiFileHandler * const ipParent, FILE * const ipFile, RingBuffer<u8> * const ipRingBuffer)
+EtiReader::EtiReader(EtiFileHandler* const ipParent, FILE* const ipFile, RingBuffer<u8>* const ipRingBuffer)
   : mpFile(ipFile)
   , mpRingBuffer(ipRingBuffer)
   , mpParent(ipParent)
@@ -84,7 +84,7 @@ void EtiReader::jump_to_relative_position_per_mill(const i32 iPerMill)
 
 // Fills mFrame with a complete frame starting with ERR + FSYNC. The search for FSYNC is done like in dablin.
 // Returns false on end of file.
-bool EtiReader::_read_next_frame(i64 & oFrameStartPos)
+bool EtiReader::_read_next_frame(i64& oFrameStartPos)
 {
   while (mRunning.load())
   {

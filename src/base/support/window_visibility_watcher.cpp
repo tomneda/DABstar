@@ -15,12 +15,12 @@
 #include "indicator_button.h"
 #include <QEvent>
 
-WindowVisibilityWatcher::WindowVisibilityWatcher(QObject * parent)
+WindowVisibilityWatcher::WindowVisibilityWatcher(QObject* parent)
   : QObject(parent)
 {
 }
 
-WindowVisibilityWatcher::WindowVisibilityWatcher(QWidget * ipTarget, QObject * parent)
+WindowVisibilityWatcher::WindowVisibilityWatcher(QWidget* ipTarget, QObject* parent)
   : QObject(parent)
 {
   attach(ipTarget);
@@ -31,7 +31,7 @@ WindowVisibilityWatcher::~WindowVisibilityWatcher()
   detach();
 }
 
-void WindowVisibilityWatcher::attach(QWidget * ipTarget)
+void WindowVisibilityWatcher::attach(QWidget* ipTarget)
 {
   if (mpTarget.data() == ipTarget)
   {
@@ -81,7 +81,7 @@ bool WindowVisibilityWatcher::is_target_visible() const
   return mpTarget != nullptr && mpTarget->isVisible();
 }
 
-bool WindowVisibilityWatcher::eventFilter(QObject * watched, QEvent * event)
+bool WindowVisibilityWatcher::eventFilter(QObject* watched, QEvent* event)
 {
   if (watched == mpTarget.data())
   {
@@ -110,14 +110,14 @@ void WindowVisibilityWatcher::_update_visibility(const bool iVisible)
   }
 }
 
-WindowVisibilityWatcher * WindowVisibilityWatcher::bind(QWidget * ipTarget, IndicatorButton * ipButton)
+WindowVisibilityWatcher* WindowVisibilityWatcher::bind(QWidget* ipTarget, IndicatorButton* ipButton)
 {
   if (ipButton == nullptr)
   {
     return nullptr;
   }
 
-  auto * watcher = new WindowVisibilityWatcher(ipTarget, ipButton);
+  auto* watcher = new WindowVisibilityWatcher(ipTarget, ipButton);
   connect(watcher, &WindowVisibilityWatcher::signal_visibility_changed, ipButton, &IndicatorButton::set_indicator_active);
   if (ipTarget != nullptr)
   {

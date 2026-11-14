@@ -14,13 +14,13 @@ DynLinkCache::DynLinkCache(i32 size)
   p = 0;
 }
 
-void DynLinkCache::add(const QString & s)
+void DynLinkCache::add(const QString& s)
 {
   cache[p] = s;
   p = (p + 1) & cCacheMask;
 }
 
-bool DynLinkCache::is_member(const QString & s)
+bool DynLinkCache::is_member(const QString& s)
 {
   for (u32 i = 0; i < cCacheSize; i++)
   {
@@ -32,7 +32,7 @@ bool DynLinkCache::is_member(const QString & s)
   return false;
 }
 
-bool DynLinkCache::add_if_new(const QString & s)
+bool DynLinkCache::add_if_new(const QString& s)
 {
   for (u16 i = p; i < p + cCacheSize; i++)
   {

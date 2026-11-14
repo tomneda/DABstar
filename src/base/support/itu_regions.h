@@ -21,12 +21,12 @@ class ItuTables
 public:
   struct SItuEntry
   {
-    const char * ITU_Code;
-    const char * Country;
+    const char* ITU_Code;
+    const char* Country;
   };
 
   ItuTables();
-  const SItuEntry & find_ITU_entry(u8 iEcc, u8 iCountryId) const;
+  const SItuEntry& find_ITU_entry(u8 iEcc, u8 iCountryId) const;
 
 private:
   // key: (ecc << 8) | countryId

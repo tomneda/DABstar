@@ -20,7 +20,7 @@ class TestTone
 public:
   void set_sample_rate(u32 iSampleRateKHz);
   void activate(bool iActive);
-  void process(const std::span<i16> & ioData); // interleaved stereo samples
+  void process(const std::span<i16>& ioData); // interleaved stereo samples
 
 private:
   static constexpr f32 cTimePeriod = 2.0f;

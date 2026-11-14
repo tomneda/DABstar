@@ -102,7 +102,7 @@ bool Splitter::SetLineBreakCharacter(char lbc)
 /// @param dest  vector of lines
 /// @param src   source string
 /// @return      always returns true
-bool Splitter::Split(std::vector<std::string> & dest, const std::string & src) const
+bool Splitter::Split(std::vector<std::string>& dest, const std::string& src) const
 {
   std::string::size_type left, right;
   dest.clear();

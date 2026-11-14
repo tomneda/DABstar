@@ -24,7 +24,7 @@
 #include "bit_extractors.h"
 #include "crc.h"
 
-tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer, i16 /*appType*/)
+tdc_dataHandler::tdc_dataHandler(DabRadio* mr, RingBuffer<u8>* dataBuffer, i16 /*appType*/)
 {
   myRadioInterface = mr;
   this->dataBuffer = dataBuffer;
@@ -35,7 +35,7 @@ tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer, i16
 #define  swap(a)  (((a) << 8) | ((a) >> 8))
 
 //---------------------------------------------------------------------------
-static u16 usCalculCRC(const std::span<const u8> & iBuf)
+static u16 usCalculCRC(const std::span<const u8>& iBuf)
 {
   u16 crc = 0xFFFF;
   for (const u8 b : iBuf)
@@ -47,10 +47,10 @@ static u16 usCalculCRC(const std::span<const u8> & iBuf)
   return ((u16)(crc ^ 0xFFFF));
 }
 
-void tdc_dataHandler::add_MSC_data_group(const std::vector<u8> & m)
+void tdc_dataHandler::add_MSC_data_group(const std::vector<u8>& m)
 {
   i32 offset = 0;
-  u8 * data = (u8 *)(m.data());
+  u8* data = (u8*)(m.data());
   i32 size = m.size();
   i16 i;
 
@@ -125,7 +125,7 @@ void tdc_dataHandler::add_MSC_data_group(const std::vector<u8> & m)
   }
 }
 
-i32 tdc_dataHandler::handleFrame_type_0(u8 * data, i32 offset, i32 length)
+i32 tdc_dataHandler::handleFrame_type_0(u8* data, i32 offset, i32 length)
 {
   i16 i;
   //i16 noS	= getBits (data, offset, 8);
@@ -148,10 +148,10 @@ i32 tdc_dataHandler::handleFrame_type_0(u8 * data, i32 offset, i32 length)
   return offset + length * 8;
 }
 
-i32 tdc_dataHandler::handleFrame_type_1(u8 * data, i32 offset, i32 length)
+i32 tdc_dataHandler::handleFrame_type_1(u8* data, i32 offset, i32 length)
 {
   i16 i;
-  auto * const buffer = make_vla(u8, length);
+  auto* const buffer = make_vla(u8, length);
   int lOffset;
   int llengths = length - 4;
 #if 0
@@ -197,7 +197,7 @@ i32 tdc_dataHandler::handleFrame_type_1(u8 * data, i32 offset, i32 length)
 //	component data. In the case of component data shorter
 //	than 13 bytes, the component identifier, the field
 //	length and all component data shall be taken into account.
-bool tdc_dataHandler::serviceComponentFrameheaderCRC(const u8 * data, i16 offset, i16 /*maxL*/)
+bool tdc_dataHandler::serviceComponentFrameheaderCRC(const u8* data, i16 offset, i16 /*maxL*/)
 {
   i16 i;
   i16 length = getBits(data, offset + 8, 16);

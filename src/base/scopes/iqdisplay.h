@@ -27,23 +27,23 @@ class IQDisplay : public QWidget
 {
 Q_OBJECT
 public:
-  explicit IQDisplay(QWidget * parent = nullptr);
+  explicit IQDisplay(QWidget* parent = nullptr);
   ~IQDisplay() override = default;
 
   struct SCustPlot
   {
     EIqPlotType PlotType;
-    const char * Name;
-    const char * ToolTip;
+    const char* Name;
+    const char* ToolTip;
   };
 
-  void display_iq(const std::vector<cf32> & iIQ, f32 iScale);
+  void display_iq(const std::vector<cf32>& iIQ, f32 iScale);
   void select_plot_type(EIqPlotType iPlotType);
   void set_map_1st_quad(bool iMap1stQuad);
   static QStringList get_plot_type_names();
 
 protected:
-  void paintEvent(QPaintEvent * ipEvent) override;
+  void paintEvent(QPaintEvent* ipEvent) override;
 
 private:
   static constexpr i32 cRadius  = 100;

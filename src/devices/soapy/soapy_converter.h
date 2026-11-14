@@ -30,14 +30,14 @@
 class SoapyConverter: public soapyWorker
 {
 public:
-  SoapyConverter (SoapySDR::Device *, SoapySDR::Stream *stream, const int sampleRate);
+  SoapyConverter (SoapySDR::Device*, SoapySDR::Stream* stream, const int sampleRate);
   ~SoapyConverter(void);
   i32 Samples    (void);
-  i32 getSamples(const std::span<cf32> & oV);
+  i32 getSamples(const std::span<cf32>& oV);
   void run       (void);
 private:
-  SoapySDR::Device *theDevice;
-  SoapySDR::Stream *stream;
+  SoapySDR::Device* theDevice;
+  SoapySDR::Stream* stream;
   RingBuffer<cf32> theBuffer;
   bool running;
   int sampleRate;

@@ -38,11 +38,11 @@ class UhdHandler;
 class uhd_streamer : public QThread
 {
 public:
-  explicit uhd_streamer(UhdHandler * d);
+  explicit uhd_streamer(UhdHandler* d);
   void stop();
 
 private:
-  UhdHandler * m_theStick;
+  UhdHandler* m_theStick;
   void run() override;
   std::atomic<bool> m_stop_signal_called = false;
 };
@@ -53,42 +53,42 @@ class UhdHandler final : public QObject, public IDeviceHandler, public Ui_uhdWid
   Q_OBJECT
   friend class uhd_streamer;
 public:
-  explicit UhdHandler(QSettings * dabSettings);
+  explicit UhdHandler(QSettings* dabSettings);
   ~UhdHandler() override;
 
   void setVFOFrequency(i32 freq) override;
   i32 getVFOFrequency() override;
   bool restartReader(i32 freq) override;
   void stopReader() override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &myFrame; }
+  QWidget* get_widget() override { return &myFrame; }
   QString deviceName() override;
 
 private:
   static constexpr char SETTING_GROUP_NAME[] = "uhdSettings";
-  QSettings * uhdSettings;
+  QSettings* uhdSettings;
   QFrame myFrame{nullptr};
   uhd::usrp::multi_usrp::sptr m_usrp;
   uhd::rx_streamer::sptr m_rx_stream;
-  RingBuffer<cf32> * theBuffer = nullptr;
-  uhd_streamer * m_workerHandle = nullptr;
+  RingBuffer<cf32>* theBuffer = nullptr;
+  uhd_streamer* m_workerHandle = nullptr;
   i32 inputRate = 2048000;
   i32 ringbufferSize = 1024;
   i32 vfoOffset = 0;
 
   [[nodiscard]] i16 _maxGain() const;
-  void _load_save_combobox_settings(QComboBox * ipCmb, const QString & iName, bool iSave);
+  void _load_save_combobox_settings(QComboBox* ipCmb, const QString& iName, bool iSave);
 
 private slots:
   void _slot_set_external_gain(i32) const;
   void _slot_set_f_correction(i32) const;
   void _slot_set_khz_offset(i32);
-  void _slot_handle_ant_selector(const QString &);
+  void _slot_handle_ant_selector(const QString&);
 };
 
 

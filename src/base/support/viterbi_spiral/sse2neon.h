@@ -216,15 +216,15 @@ typedef union ALIGN_STRUCT(16) SIMDVec {
 } SIMDVec;
 
 // casting using SIMDVec
-#define vreinterpretq_nth_u64_m128i(x, n) (((SIMDVec *) &x)->m128_u64[n])
-#define vreinterpretq_nth_u32_m128i(x, n) (((SIMDVec *) &x)->m128_u32[n])
+#define vreinterpretq_nth_u64_m128i(x, n) (((SIMDVec*)&x)->m128_u64[n])
+#define vreinterpretq_nth_u32_m128i(x, n) (((SIMDVec*)&x)->m128_u32[n])
 
 /* Backwards compatibility for compilers with lack of specific type support */
 
 // Older gcc does not define vld1q_u8_x4 type
 #if defined(__GNUC__) && !defined(__clang__)
 #if __GNUC__ <= 9
-FORCE_INLINE uint8x16x4_t vld1q_u8_x4(const u8 *p)
+FORCE_INLINE uint8x16x4_t vld1q_u8_x4(const u8* p)
 {
     uint8x16x4_t ret;
     ret.val[0] = vld1q_u8(p + 0);
@@ -329,7 +329,7 @@ enum _mm_hint {
 
 // Loads one cache line of data from address p to a location closer to the
 // processor. https://msdn.microsoft.com/en-us/library/84szxsww(v=vs.100).aspx
-FORCE_INLINE void _mm_prefetch(const void *p, i32 i)
+FORCE_INLINE void _mm_prefetch(const void* p, i32 i)
 {
     (void) i;
     __builtin_prefetch(p);
@@ -416,7 +416,7 @@ FORCE_INLINE __m128i _mm_setr_epi16(short w0,
                                     short w7)
 {
     i16 ALIGN_STRUCT(16) data[8] = {w0, w1, w2, w3, w4, w5, w6, w7};
-    return vreinterpretq_m128i_s16(vld1q_s16((i16 *) data));
+    return vreinterpretq_m128i_s16(vld1q_s16((i16*) data));
 }
 
 // Sets the 4 signed 32-bit integer values in reverse order
@@ -568,42 +568,42 @@ FORCE_INLINE __m128i _mm_set_epi64x(i64 i1, i64 i2)
 
 // Stores four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/vstudio/s3h4ay6y(v=vs.100).aspx
-FORCE_INLINE void _mm_store_ps(f32 *p, __m128 a)
+FORCE_INLINE void _mm_store_ps(f32* p, __m128 a)
 {
     vst1q_f32(p, vreinterpretq_f32_m128(a));
 }
 
 // Stores four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/44e30x22(v=vs.100).aspx
-FORCE_INLINE void _mm_storeu_ps(f32 *p, __m128 a)
+FORCE_INLINE void _mm_storeu_ps(f32* p, __m128 a)
 {
     vst1q_f32(p, vreinterpretq_f32_m128(a));
 }
 
 // Stores four 32-bit integer values as (as a __m128i value) at the address p.
 // https://msdn.microsoft.com/en-us/library/vstudio/edk11s13(v=vs.100).aspx
-FORCE_INLINE void _mm_store_si128(__m128i *p, __m128i a)
+FORCE_INLINE void _mm_store_si128(__m128i* p, __m128i a)
 {
-    vst1q_s32((i32 *) p, vreinterpretq_s32_m128i(a));
+    vst1q_s32((i32*) p, vreinterpretq_s32_m128i(a));
 }
 
 // Stores four 32-bit integer values as (as a __m128i value) at the address p.
 // https://msdn.microsoft.com/en-us/library/vstudio/edk11s13(v=vs.100).aspx
-FORCE_INLINE void _mm_storeu_si128(__m128i *p, __m128i a)
+FORCE_INLINE void _mm_storeu_si128(__m128i* p, __m128i a)
 {
-    vst1q_s32((i32 *) p, vreinterpretq_s32_m128i(a));
+    vst1q_s32((i32*) p, vreinterpretq_s32_m128i(a));
 }
 
 // Stores the lower single - precision, floating - point value.
 // https://msdn.microsoft.com/en-us/library/tzz10fbx(v=vs.100).aspx
-FORCE_INLINE void _mm_store_ss(f32 *p, __m128 a)
+FORCE_INLINE void _mm_store_ss(f32* p, __m128 a)
 {
     vst1q_lane_f32(p, vreinterpretq_f32_m128(a), 0);
 }
 
 // Reads the lower 64 bits of b and stores them into the lower 64 bits of a.
 // https://msdn.microsoft.com/en-us/library/hhwf428f%28v=vs.90%29.aspx
-FORCE_INLINE void _mm_storel_epi64(__m128i *a, __m128i b)
+FORCE_INLINE void _mm_storel_epi64(__m128i* a, __m128i b)
 {
     uint64x1_t hi = vget_high_u64(vreinterpretq_u64_m128i(*a));
     uint64x1_t lo = vget_low_u64(vreinterpretq_u64_m128i(b));
@@ -617,7 +617,7 @@ FORCE_INLINE void _mm_storel_epi64(__m128i *a, __m128i b)
 //   *p1 := a1
 //
 // https://msdn.microsoft.com/en-us/library/h54t98ks(v=vs.90).aspx
-FORCE_INLINE void _mm_storel_pi(__m64 *p, __m128 a)
+FORCE_INLINE void _mm_storel_pi(__m64* p, __m128 a)
 {
     *p = vget_low_f32(a);
 }
@@ -629,7 +629,7 @@ FORCE_INLINE void _mm_storel_pi(__m64 *p, __m128 a)
 //   *p1 := a3
 //
 // https://msdn.microsoft.com/en-us/library/a7525fs8(v%3dvs.90).aspx
-FORCE_INLINE void _mm_storeh_pi(__m64 *p, __m128 a)
+FORCE_INLINE void _mm_storeh_pi(__m64* p, __m128 a)
 {
     *p = vget_high_f32(a);
 }
@@ -637,7 +637,7 @@ FORCE_INLINE void _mm_storeh_pi(__m64 *p, __m128 a)
 // Loads a single single-precision, floating-point value, copying it into all
 // four words
 // https://msdn.microsoft.com/en-us/library/vstudio/5cdkf716(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_load1_ps(const f32 *p)
+FORCE_INLINE __m128 _mm_load1_ps(const f32* p)
 {
     return vreinterpretq_m128_f32(vld1q_dup_f32(p));
 }
@@ -654,10 +654,10 @@ FORCE_INLINE __m128 _mm_load1_ps(const f32 *p)
 //   r3 := a3
 //
 // https://msdn.microsoft.com/en-us/library/s57cyak2(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_loadl_pi(__m128 a, __m64 const *p)
+FORCE_INLINE __m128 _mm_loadl_pi(__m128 a, __m64 const* p)
 {
     return vreinterpretq_m128_f32(
-        vcombine_f32(vld1_f32((const float32_t *) p), vget_high_f32(a)));
+        vcombine_f32(vld1_f32((const float32_t*) p), vget_high_f32(a)));
 }
 
 // Sets the upper two single-precision, floating-point values with 64
@@ -670,22 +670,22 @@ FORCE_INLINE __m128 _mm_loadl_pi(__m128 a, __m64 const *p)
 //   r3 := *p1
 //
 // https://msdn.microsoft.com/en-us/library/w92wta0x(v%3dvs.100).aspx
-FORCE_INLINE __m128 _mm_loadh_pi(__m128 a, __m64 const *p)
+FORCE_INLINE __m128 _mm_loadh_pi(__m128 a, __m64 const* p)
 {
     return vreinterpretq_m128_f32(
-        vcombine_f32(vget_low_f32(a), vld1_f32((const float32_t *) p)));
+        vcombine_f32(vget_low_f32(a), vld1_f32((const float32_t*) p)));
 }
 
 // Loads four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/vstudio/zzd50xxt(v=vs.100).aspx
-FORCE_INLINE __m128 _mm_load_ps(const f32 *p)
+FORCE_INLINE __m128 _mm_load_ps(const f32* p)
 {
     return vreinterpretq_m128_f32(vld1q_f32(p));
 }
 
 // Loads four single-precision, floating-point values.
 // https://msdn.microsoft.com/en-us/library/x1b16s7z%28v=vs.90%29.aspx
-FORCE_INLINE __m128 _mm_loadu_ps(const f32 *p)
+FORCE_INLINE __m128 _mm_loadu_ps(const f32* p)
 {
     // for neon, alignment doesn't matter, so _mm_load_ps and _mm_loadu_ps are
     // equivalent for neon
@@ -696,12 +696,12 @@ FORCE_INLINE __m128 _mm_loadu_ps(const f32 *p)
 // The upper f64-precision, floating-point is set to zero. The address p does
 // not need to be 16-byte aligned.
 // https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/574w9fdd(v%3dvs.100)
-FORCE_INLINE __m128d _mm_load_sd(const f64 *p)
+FORCE_INLINE __m128d _mm_load_sd(const f64* p)
 {
 #if defined(__aarch64__)
     return vsetq_lane_f64(*p, vdupq_n_f64(0), 0);
 #else
-    const f32 *fp = (const f32 *) p;
+    const f32* fp = (const f32*) p;
     f32 ALIGN_STRUCT(16) data[4] = {fp[0], fp[1], 0, 0};
     return vld1q_f32(data);
 #endif
@@ -710,18 +710,18 @@ FORCE_INLINE __m128d _mm_load_sd(const f64 *p)
 // Loads an single - precision, floating - point value into the low word and
 // clears the upper three words.
 // https://msdn.microsoft.com/en-us/library/548bb9h4%28v=vs.90%29.aspx
-FORCE_INLINE __m128 _mm_load_ss(const f32 *p)
+FORCE_INLINE __m128 _mm_load_ss(const f32* p)
 {
     return vreinterpretq_m128_f32(vsetq_lane_f32(*p, vdupq_n_f32(0), 0));
 }
 
-FORCE_INLINE __m128i _mm_loadl_epi64(__m128i const *p)
+FORCE_INLINE __m128i _mm_loadl_epi64(__m128i const* p)
 {
     /* Load the lower 64 bits of the value pointed to by p into the
      * lower 64 bits of the result, zeroing the upper 64 bits of the result.
      */
     return vreinterpretq_m128i_s32(
-        vcombine_s32(vld1_s32((i32 const *) p), vcreate_s32(0)));
+        vcombine_s32(vld1_s32((i32 const*) p), vcreate_s32(0)));
 }
 
 /* Logic/Binary operations */
@@ -3283,16 +3283,16 @@ FORCE_INLINE __m128 _mm_castsi128_ps(__m128i a)
 
 // Loads 128-bit value. :
 // https://msdn.microsoft.com/en-us/library/atzzad1h(v=vs.80).aspx
-FORCE_INLINE __m128i _mm_load_si128(const __m128i *p)
+FORCE_INLINE __m128i _mm_load_si128(const __m128i* p)
 {
-    return vreinterpretq_m128i_s32(vld1q_s32((const i32 *) p));
+    return vreinterpretq_m128i_s32(vld1q_s32((const i32*) p));
 }
 
 // Loads 128-bit value. :
 // https://msdn.microsoft.com/zh-cn/library/f4k12ae8(v=vs.90).aspx
-FORCE_INLINE __m128i _mm_loadu_si128(const __m128i *p)
+FORCE_INLINE __m128i _mm_loadu_si128(const __m128i* p)
 {
-    return vreinterpretq_m128i_s32(vld1q_s32((const i32 *) p));
+    return vreinterpretq_m128i_s32(vld1q_s32((const i32*) p));
 }
 
 // _mm_lddqu_si128 functions the same as _mm_loadu_si128.
@@ -3754,7 +3754,7 @@ FORCE_INLINE i32 _mm_popcnt_u32(u32 a)
     uint16x4_t count16x4_val;
     uint32x2_t count32x2_val;
 
-    input_val = vld1_u8((u8 *) &a);
+    input_val = vld1_u8((u8*)&a);
     count8x8_val = vcnt_u8(input_val);
     count16x4_val = vpaddl_u8(count8x8_val);
     count32x2_val = vpaddl_u16(count16x4_val);
@@ -3782,7 +3782,7 @@ FORCE_INLINE i64 _mm_popcnt_u64(u64 a)
     uint32x2_t count32x2_val;
     uint64x1_t count64x1_val;
 
-    input_val = vld1_u8((u8 *) &a);
+    input_val = vld1_u8((u8*)&a);
     count8x8_val = vcnt_u8(input_val);
     count16x4_val = vpaddl_u8(count8x8_val);
     count32x2_val = vpaddl_u16(count16x4_val);
@@ -4035,19 +4035,19 @@ FORCE_INLINE void _mm_sfence(void)
 // cache line containing address p is already in the cache, the cache will be
 // updated.Address p must be 16 - byte aligned.
 // https://msdn.microsoft.com/en-us/library/ba08y07y%28v=vs.90%29.aspx
-FORCE_INLINE void _mm_stream_si128(__m128i *p, __m128i a)
+FORCE_INLINE void _mm_stream_si128(__m128i* p, __m128i a)
 {
 #if __has_builtin(__builtin_nontemporal_store)
     __builtin_nontemporal_store(a, p);
 #else
-    vst1q_s64((i64 *) p, vreinterpretq_s64_m128i(a));
+    vst1q_s64((i64*) p, vreinterpretq_s64_m128i(a));
 #endif
 }
 
 // Cache line containing p is flushed and invalidated from all caches in the
 // coherency domain. :
 // https://msdn.microsoft.com/en-us/library/ba08y07y(v=vs.100).aspx
-FORCE_INLINE void _mm_clflush(void const *p)
+FORCE_INLINE void _mm_clflush(void const* p)
 {
     (void) p;
     // no corollary for Neon?
@@ -4056,19 +4056,19 @@ FORCE_INLINE void _mm_clflush(void const *p)
 // Allocate aligned blocks of memory.
 // https://software.intel.com/en-us/
 //         cpp-compiler-developer-guide-and-reference-allocating-and-freeing-aligned-memory-blocks
-FORCE_INLINE void *_mm_malloc(size_t size, size_t align)
+FORCE_INLINE void* _mm_malloc(size_t size, size_t align)
 {
-    void *ptr;
+    void* ptr;
     if (align == 1)
         return malloc(size);
-    if (align == 2 || (sizeof(void *) == 8 && align == 4))
-        align = sizeof(void *);
+    if (align == 2 || (sizeof(void*) == 8 && align == 4))
+        align = sizeof(void*);
     if (!posix_memalign(&ptr, align, size))
         return ptr;
     return NULL;
 }
 
-FORCE_INLINE void _mm_free(void *addr)
+FORCE_INLINE void _mm_free(void* addr)
 {
     free(addr);
 }

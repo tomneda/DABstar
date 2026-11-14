@@ -6,7 +6,7 @@
 template<typename T> inline QString hex_str(const T iVal) { return QSL("0x%1").arg(iVal, 0, 16); }
 template<typename T> inline QString dec_hex_str(const T iVal) { return QSL("%1/0x%2").arg(iVal).arg(iVal, 0, 16); }
 
-QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
+QStringList FibDecoder::get_fib_content_str_list(i32& oNumCols) const
 {
   oNumCols = 12; // maximum necessary columns to print following content
   
@@ -21,7 +21,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
   QStringList out;
 
   out << QSL("H;EnsembleLabel;ShortEnsLabel;EId");
-  for (const auto & fig1s0 : mpFibConfigFig1->Fig1s0_EnsembleLabelVec) // should only have one element
+  for (const auto& fig1s0 : mpFibConfigFig1->Fig1s0_EnsembleLabelVec) // should only have one element
   {
     out << QSL("D;") + fig1s0.Name + ";" + fig1s0.NameShort + ";" + hex_str(fig1s0.EId);
   }
@@ -30,7 +30,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
   out << QSL("C;Audio services:");
   out << QSL("H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;BitRate [kbps];DabType;Language;ProgramType");
 
-  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto& fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::StreamModeAudio) // skip non-audio elements
     {
@@ -42,7 +42,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
   out << QSL("C;Primary data services:");
   out << QSL("H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy");
 
-  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto& fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData && fig0s2.PD_Flag == 1) // choose primary packet data elements
     {
@@ -54,7 +54,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
   out << QSL("C;Secondary data services:");
   out << QSL("H;ServiceLabel;ShortServLabel;ServiceId;SubChannel;StartAddr [CU];Length [CU];Protection;CodeRate;FEC_Scheme;AppType;PacketAddr;DSCTy");
 
-  for (const auto & fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  for (const auto& fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
   {
     if (fig0s2.ServiceComp_C.TMId == ETMId::PacketModeData && fig0s2.PD_Flag == 0) // choose secondary packet data elements
     {
@@ -65,7 +65,7 @@ QStringList FibDecoder::get_fib_content_str_list(i32 & oNumCols) const
   return out;
 }
 
-QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2) const
+QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2) const
 {
   SAudioData ad;
   SAudioDataAddOns adao;
@@ -94,7 +94,7 @@ QString FibDecoder::_get_audio_data_str(const FibConfigFig0::SFig0s2_BasicServic
   return str;
 }
 
-QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef & iFig0s2) const
+QString FibDecoder::_get_packet_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2) const
 {
   SPacketData pd;
   if (!_get_data_for_packet_service(iFig0s2, 0, &pd))

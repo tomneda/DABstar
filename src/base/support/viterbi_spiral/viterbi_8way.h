@@ -51,11 +51,11 @@
     *d++ = _mm_movemask_epi8(_mm_unpacklo_epi8(m0, m1));\
 }
 
-    __m128i *old_metrics = (__m128i *)metrics1;
-    __m128i *new_metrics = (__m128i *)metrics2;
-    const __m128i *Branchtab = (__m128i *)Branchtable;
-   	const __m128i *syms = (const __m128i *)input;
-    u16 *d = (u16 *)decisions;
+    __m128i* old_metrics = (__m128i*)metrics1;
+    __m128i* new_metrics = (__m128i*)metrics2;
+    const __m128i* Branchtab = (__m128i*)Branchtable;
+	const __m128i* syms = (const __m128i*)input;
+    u16* d = (u16*)decisions;
     const __m128i m1020 = _mm_set1_epi16(1020);
     const __m128i m127 = _mm_set1_epi16(127);
     const __m128i m255 = _mm_set1_epi16(255);
@@ -65,7 +65,7 @@
     {
 		__m128i m0, m1, m2, m3, m4;
 		__m128i sym0, sym1, sym2, sym3;
-		__m128i *tmp;
+		__m128i* tmp;
 
         m0 = _mm_loadu_si128(syms++);
 

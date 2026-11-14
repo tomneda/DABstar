@@ -39,7 +39,7 @@
 
 Q_LOGGING_CATEGORY(sLogUpdateChecker, "UpdateCheck", QtWarningMsg)
 
-UpdateChecker::UpdateChecker(QObject * parent)
+UpdateChecker::UpdateChecker(QObject* parent)
   : QObject(parent)
 {
 }
@@ -59,9 +59,9 @@ void UpdateChecker::check()
     m_netAccessManager = new QNetworkAccessManager();
 #ifdef QT_DEBUG
     connect(m_netAccessManager, &QNetworkAccessManager::sslErrors, this,
-            [this](QNetworkReply * reply, const QList<QSslError> & errors)
+            [this](QNetworkReply* reply, const QList<QSslError>& errors)
             {
-              for (const auto & e : errors)
+              for (const auto& e : errors)
               {
                 qDebug() << e;
               }
@@ -102,7 +102,7 @@ QString UpdateChecker::releaseNotes() const
   return m_releaseNotes;
 }
 
-void UpdateChecker::onFileDownloaded(QNetworkReply * reply)
+void UpdateChecker::onFileDownloaded(QNetworkReply* reply)
 {
   bool result = false;
   if (reply->error() == QNetworkReply::NoError)
@@ -123,7 +123,7 @@ void UpdateChecker::onFileDownloaded(QNetworkReply * reply)
   emit finished(result);
 }
 
-bool UpdateChecker::parseResponse(const QByteArray & data)
+bool UpdateChecker::parseResponse(const QByteArray& data)
 {
   QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
   if (!jsonDoc.isNull() && jsonDoc.isObject())

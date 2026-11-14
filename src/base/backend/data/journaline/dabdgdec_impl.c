@@ -77,9 +77,9 @@ extern "C"
 int showDdDabDgDecInfo = 0;
 int showDdDabDgDecErr = 1;
 
-DAB_DATAGROUP_DECODER_t DAB_DATAGROUP_DECODER_createDec(DAB_DATAGROUP_DECODER_data * data, void * arg)
+DAB_DATAGROUP_DECODER_t DAB_DATAGROUP_DECODER_createDec(DAB_DATAGROUP_DECODER_data* data, void* arg)
 {
-  DAB_DGDEC_IMPL_t * dec = (DAB_DGDEC_IMPL_t *)malloc(sizeof(DAB_DGDEC_IMPL_t));
+  DAB_DGDEC_IMPL_t* dec = (DAB_DGDEC_IMPL_t*)malloc(sizeof(DAB_DGDEC_IMPL_t));
 
   if (dec == 0)
   {
@@ -102,7 +102,7 @@ extern "C"
 #endif
 void DAB_DATAGROUP_DECODER_deleteDec(const DAB_DATAGROUP_DECODER_t decoder)
 {
-  DAB_DGDEC_IMPL_t * dec = (DAB_DGDEC_IMPL_t *)decoder;
+  DAB_DGDEC_IMPL_t* dec = (DAB_DGDEC_IMPL_t*)decoder;
   if (dec == 0)
   {
     if (showDdDabDgDecErr)
@@ -127,14 +127,14 @@ void DAB_DATAGROUP_DECODER_deleteDec(const DAB_DATAGROUP_DECODER_t decoder)
 #ifdef __cplusplus
 extern "C"
 #endif
-unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decoder, const unsigned long len, const unsigned char * buf)
+unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decoder, const unsigned long len, const unsigned char* buf)
 {
-  DAB_DGDEC_IMPL_t * const dec = (DAB_DGDEC_IMPL_t *)decoder;
+  DAB_DGDEC_IMPL_t* const dec = (DAB_DGDEC_IMPL_t*)decoder;
 
   DAB_DATAGROUP_DECODER_msc_datagroup_header_t header;
   unsigned long session_header_len = 0;	/* we expect segment flag to be 0 */
   unsigned long header_len;
-  const unsigned char * data_field;
+  const unsigned char* data_field;
   unsigned long data_len;
   unsigned short crc_field;
   unsigned char c;
@@ -240,12 +240,12 @@ unsigned long DAB_DATAGROUP_DECODER_putData(const DAB_DATAGROUP_DECODER_t decode
   return 0;
 }
 
-int DAB_DGDEC_IMPL_checkCrc(const unsigned char * buf, unsigned long len, unsigned short crc_field)
+int DAB_DGDEC_IMPL_checkCrc(const unsigned char* buf, unsigned long len, unsigned short crc_field)
 {
   return CRC_Check_16(buf, len, crc_field);
 }
 
-int DAB_DGDEC_IMPL_extractMscDatagroupHeader(const unsigned long len, const unsigned char * const buf, DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header)
+int DAB_DGDEC_IMPL_extractMscDatagroupHeader(const unsigned long len, const unsigned char* const buf, DAB_DATAGROUP_DECODER_msc_datagroup_header_t* header)
 {
   unsigned char c;
   if (len < 2)
@@ -296,7 +296,7 @@ int DAB_DGDEC_IMPL_extractMscDatagroupHeader(const unsigned long len, const unsi
 }
 
 void DAB_DGDEC_IMPL_showMscDatagroupHeader(
-  DAB_DATAGROUP_DECODER_msc_datagroup_header_t * header)
+  DAB_DATAGROUP_DECODER_msc_datagroup_header_t* header)
 {
   logit(LOG_INFO,
         "extension_flag: %d\n"

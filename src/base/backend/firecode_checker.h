@@ -43,12 +43,12 @@ public:
   FirecodeChecker();
   ~FirecodeChecker() = default;
 
-  bool check(const u8 * x); // return true if firecode check is passed
-  bool check_and_correct_6bits(u8 * x); // return true if firecode check is passed
+  bool check(const u8* x); // return true if firecode check is passed
+  bool check_and_correct_6bits(u8* x); // return true if firecode check is passed
 
 private:
   void fill_syndrome_table();
-  u16 crc16(const uint8_t * x); // return syndrome
+  u16 crc16(const uint8_t* x); // return syndrome
 
   // g(x)=(x^11+1)(x^5+x^3+x^2+x+1)=x^16+x^14+x^13+x^12+x^11+x^5+x^3+x^2+x+1
   const u16 polynom = 0x782f;
@@ -69,7 +69,7 @@ private:
     1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
    16, 29, 32, 48, 58, 64, 80, 96,112,116,128,144,160,176,192,
   208,224,232,240,};
-  void fill_crc_table(u16 *crc_table, const u16 poly);
+  void fill_crc_table(u16* crc_table, const u16 poly);
 };
 
 

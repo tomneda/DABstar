@@ -42,7 +42,7 @@
 #include <cmath>
 #include <numeric>
 
-AudioDisplay::AudioDisplay(DabRadio * mr, PlotWidget * pPlot, QSettings * dabSettings)
+AudioDisplay::AudioDisplay(DabRadio* mr, PlotWidget* pPlot, QSettings* dabSettings)
   : mpRadioInterface(mr)
   , mpDabSettings(dabSettings)
   , mpPlot(pPlot)
@@ -235,7 +235,7 @@ void AudioDisplay::_setup_x_axis(const i32 iSampleRate)
 
     if (mpCategoryAxis)
     {
-      for (const QString & label : mpCategoryAxis->categoriesLabels())
+      for (const QString& label : mpCategoryAxis->categoriesLabels())
       {
         mpCategoryAxis->remove(label);
       }
@@ -271,7 +271,7 @@ void AudioDisplay::_setup_x_axis(const i32 iSampleRate)
   }
 }
 
-void AudioDisplay::plot_spectrum(const std::span<const i16> & iSampleData, i32 iSampleRate)
+void AudioDisplay::plot_spectrum(const std::span<const i16>& iSampleData, i32 iSampleRate)
 {
   const i32 iNumSamples = (i32)iSampleData.size();
   if (mPlotMode == EAudioPlotMode::OFF)

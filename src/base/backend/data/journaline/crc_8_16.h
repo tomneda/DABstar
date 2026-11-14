@@ -77,20 +77,20 @@ extern "C"
 #endif /* __cplusplus */
 
 /* calculates the CRC-16 value */
-unsigned short CRC_Build_16(const unsigned char *cDataPointer,
+unsigned short CRC_Build_16(const unsigned char* cDataPointer,
                             const unsigned long iLength);
 
 /* calculates the CRC-8 value */
-unsigned char CRC_Build_8(const unsigned char *cDataPointer,
+unsigned char CRC_Build_8(const unsigned char* cDataPointer,
                           const unsigned long iLength);
 
 /* checks if there are errors in the received data */
-char CRC_Check_16(const unsigned char *cDataPointer,
+char CRC_Check_16(const unsigned char* cDataPointer,
                   const unsigned long iLength,
                   const unsigned short iCRC_16);
 
 /* checks if there are errors in the received data */
-char CRC_Check_8(const unsigned char *cDataPointer,
+char CRC_Check_8(const unsigned char* cDataPointer,
                  const unsigned long iLength,
                  const unsigned char iCRC_8);
 

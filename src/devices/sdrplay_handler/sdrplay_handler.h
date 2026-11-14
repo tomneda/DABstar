@@ -52,26 +52,26 @@ class SdrPlayHandler final : public QThread, public IDeviceHandler, public Ui_sd
 {
 Q_OBJECT
 public:
-  SdrPlayHandler(QSettings *s, const QString &);
+  SdrPlayHandler(QSettings* s, const QString&);
   ~SdrPlayHandler() override;
 
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &myFrame; }
+  QWidget* get_widget() override { return &myFrame; }
   QString deviceName() override;
   bool hasDump() override;
   bool startDumping() override;
   void stopDumping() override;
-  void update_PowerOverload(sdrplay_api_EventParamsT * params);
-  RingBuffer<ci16> * const p_I_Buffer;
+  void update_PowerOverload(sdrplay_api_EventParamsT* params);
+  RingBuffer<ci16>* const p_I_Buffer;
   std::atomic<bool> receiverRuns;
 
   sdrplay_api_CallbackFnsT cbFns;
@@ -91,14 +91,14 @@ public:
   sdrplay_api_Uninit_t sdrplay_api_Uninit;
   sdrplay_api_Update_t sdrplay_api_Update;
   sdrplay_api_SwapRspDuoActiveTuner_t sdrplay_api_SwapRspDuoActiveTuner;
-  sdrplay_api_DeviceT * chosenDevice;
-  Rsp_device * theRsp = nullptr;
+  sdrplay_api_DeviceT* chosenDevice;
+  Rsp_device* theRsp = nullptr;
 
   std::atomic<bool> failFlag;
   std::atomic<bool> successFlag;
   std::atomic<bool> threadRuns;
   void run() override;
-  bool messageHandler(generalCommand *);
+  bool messageHandler(generalCommand*);
   QString recorderVersion;
   i32 vfoFrequency;
   i16 hwVersion;
@@ -112,25 +112,25 @@ public:
   f64 ppmValue;
   bool biasT;
   bool notch;
-  FILE * xmlDumper;
-  XmlFileWriter * xmlWriter;
+  FILE* xmlDumper;
+  XmlFileWriter* xmlWriter;
   i32 startupCnt = 0;
   std::atomic<bool> dumping;
-  std::queue<generalCommand *> server_queue;
+  std::queue<generalCommand*> server_queue;
   QSemaphore serverjobs;
   bool loadFunctions();
   i32 errorCode;
 
 private:
   QFrame myFrame;
-  QLibrary * phandle;
-  QSettings * sdrplaySettings;
+  QLibrary* phandle;
+  QSettings* sdrplaySettings;
 
   // tomneda: was at 14bit but it seems the whole 16bits are used in the callback function (for the RSPdx)
   static constexpr i16 nrBits = 16;
 
-  void set_deviceName(const QString &);
-  void set_serial(const QString &);
+  void set_deviceName(const QString&);
+  void set_serial(const QString&);
   void set_apiVersion(f32);
   bool setup_xmlDump();
   bool save_lnaSettings;
@@ -142,7 +142,7 @@ private slots:
   void set_lnagainReduction(i32);
   void set_agcControl(i32);
   void set_ppmControl(f64);
-  void set_selectAntenna(const QString &);
+  void set_selectAntenna(const QString&);
   void set_biasT(i32);
   void set_notch(i32);
   void slot_overload_detected(bool);

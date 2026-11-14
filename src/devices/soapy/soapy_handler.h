@@ -37,7 +37,7 @@ class SoapyHandler : public QObject, public IDeviceHandler, public Ui_soapyWidge
   Q_OBJECT
 
 public:
-  SoapyHandler(QSettings *);
+  SoapyHandler(QSettings*);
   ~SoapyHandler(void);
 
   bool restartReader(i32) override;
@@ -47,28 +47,28 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &myFrame; }
+  QWidget* get_widget() override { return &myFrame; }
   QString deviceName() override { return "SoapySDR"; };
   void resetBuffer(void) override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
 
 private:
   QFrame myFrame;
-  SoapySDR::Device * device;
-  SoapySDR::Stream * stream;
-  QSettings * soapySettings;
+  SoapySDR::Device* device;
+  SoapySDR::Stream* stream;
+  QSettings* soapySettings;
   std::vector<std::string> gainsList;
-  soapyWorker * worker;
+  soapyWorker* worker;
   void createDevice(const QString d, const QString s);
-  int findDesiredSamplerate(const SoapySDR::RangeList &theRanges);
-  int findDesiredBandwidth(const SoapySDR::RangeList &theRanges);
+  int findDesiredSamplerate(const SoapySDR::RangeList& theRanges);
+  int findDesiredBandwidth(const SoapySDR::RangeList& theRanges);
 
 private slots:
   void handle_spinBox_0(i32);
   void handle_spinBox_1(i32);
   void handle_spinBox_2(i32);
   void set_agcControl(i32);
-  void handleAntenna(const QString &);
+  void handleAntenna(const QString&);
   void set_ppmCorrection(double);
 };

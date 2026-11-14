@@ -35,11 +35,11 @@
 
 // Driver program for the selected backend. Embodying that in a separate class simplifies the "Backend" class.
 
-BackendDriver::BackendDriver(DabRadio * ipDR, const SDescriptorType * ipDT, RingBuffer<i16> * const ipAudioBuffer, RingBuffer<u8> * const ipDataBuffer, RingBuffer<u8> * const ipFrameBuffer)
+BackendDriver::BackendDriver(DabRadio* ipDR, const SDescriptorType* ipDT, RingBuffer<i16>* const ipAudioBuffer, RingBuffer<u8>* const ipDataBuffer, RingBuffer<u8>* const ipFrameBuffer)
 {
   if (ipDT->TMId == ETMId::StreamModeAudio)
   {
-    if (((SAudioData *)ipDT)->ASCTy != 077)
+    if (((SAudioData*)ipDT)->ASCTy != 077)
     {
       mpFrameProcessor = std::make_unique<Mp2Processor>(ipDR, ipDT->bitRate, ipAudioBuffer, ipFrameBuffer);
     }
@@ -50,7 +50,7 @@ BackendDriver::BackendDriver(DabRadio * ipDR, const SDescriptorType * ipDT, Ring
   }
   else if (ipDT->TMId == ETMId::PacketModeData)
   {
-    mpFrameProcessor = std::make_unique<DataProcessor>(ipDR, static_cast<const SPacketData *>(ipDT), ipDataBuffer);
+    mpFrameProcessor = std::make_unique<DataProcessor>(ipDR, static_cast<const SPacketData*>(ipDT), ipDataBuffer);
   }
   else
   {
@@ -58,7 +58,7 @@ BackendDriver::BackendDriver(DabRadio * ipDR, const SDescriptorType * ipDT, Ring
   }
 }
 
-void BackendDriver::add_to_frame(const std::vector<u8> & iData) const
+void BackendDriver::add_to_frame(const std::vector<u8>& iData) const
 {
   mpFrameProcessor->add_to_frame(iData);
 }

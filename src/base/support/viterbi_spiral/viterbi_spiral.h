@@ -17,14 +17,14 @@ public:
   explicit ViterbiSpiral(const i32 iWordlength, const bool iSpiralMode = false);
   virtual ~ViterbiSpiral();
 
-  void deconvolve(const i16 * const input, u8 * const output);
-  void calculate_BER(const i16 * const input, u8 * punctureTable,
-                     u8 const * output, i32 & bits, i32 & errors);
+  void deconvolve(const i16* const input, u8* const output);
+  void calculate_BER(const i16* const input, u8* punctureTable,
+                     u8 const* output, i32& bits, i32& errors);
 
 private:
   i32 parity(i32);
   const i32 mFrameBits;
   const bool mSpiral;
-  decision_t * decisions = nullptr;
+  decision_t* decisions = nullptr;
 };
 

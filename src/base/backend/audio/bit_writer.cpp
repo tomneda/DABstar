@@ -45,7 +45,7 @@ void BitWriter::AddBits(i32 data_new, size_t count)
   }
 }
 
-void BitWriter::AddBytes(const std::span<const u8> & iData)
+void BitWriter::AddBytes(const std::span<const u8>& iData)
 {
   for (const u8 d : iData)
     AddBits(d, 8);

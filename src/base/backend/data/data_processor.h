@@ -45,20 +45,20 @@ class DataProcessor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  DataProcessor(DabRadio * ipDR, const SPacketData * ipPD, RingBuffer<u8> * ipDataBuffer);
+  DataProcessor(DabRadio* ipDR, const SPacketData* ipPD, RingBuffer<u8>* ipDataBuffer);
   ~DataProcessor() override = default;
 
-  void add_to_frame(const std::vector<u8> &) override;
+  void add_to_frame(const std::vector<u8>&) override;
 
 private:
-  DabRadio * const mpDabRadio;
+  DabRadio* const mpDabRadio;
   const i16 mBitRate;
   const u8 mDSCTy;
   const i16 mAppType;
   const i16 mPacketAddress;
   const u8 mDGflag;
   const i16 mFEC_scheme;
-  RingBuffer<u8> * const mpDataBuffer;
+  RingBuffer<u8>* const mpDataBuffer;
   QScopedPointer<VirtualDataHandler> mpDataHandler;
 
   i16 mExpectedIndex = 0;
@@ -68,9 +68,9 @@ private:
   i32 mStreamAddress;    // int since we init with -1
 
   // result handlers
-  void _handle_TDC_async_stream(const std::span<const u8> & iBits);
-  void _handle_packets(const std::span<const u8> & iBits);
-  void _handle_packet(const std::span<const u8> & iPacketBits);
+  void _handle_TDC_async_stream(const std::span<const u8>& iBits);
+  void _handle_packets(const std::span<const u8>& iBits);
+  void _handle_packet(const std::span<const u8>& iPacketBits);
 
 signals:
   void signal_show_MSC_errors(int);

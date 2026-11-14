@@ -52,19 +52,19 @@ class SampleReader : public QObject
 {
 Q_OBJECT
 public:
-  SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer = nullptr);
+  SampleReader(const DabRadio* mr, IDeviceHandler* iTheRig, RingBuffer<cf32>* iSpectrumBuffer = nullptr);
   ~SampleReader() override = default;
 
   void set_running(bool b);
   bool is_running() const { return running.load(); }
   void discard_samples(i32 iSampleCnt);
-  void get_linear_peak_level_and_clear(f32 & oLevelPeak, f32 & oLevelMean);
+  void get_linear_peak_level_and_clear(f32& oLevelPeak, f32& oLevelMean);
   cf32 get_sample(f32);
-  void get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const f32 iFreqOffsetBBHz, bool iShowSpec);
-  void start_dumping(SNDFILE *);
+  void get_samples(TArrayTn& oV, const i32 iStartIdx, i32 iNoSamples, const f32 iFreqOffsetBBHz, bool iShowSpec);
+  void start_dumping(SNDFILE*);
   void stop_dumping();
   void set_dc_and_iq_correction(bool iDoDcCorr, bool iDoIqCorr);
-  void set_cir_buffer(RingBuffer<cf32> * iCirBuffer);
+  void set_cir_buffer(RingBuffer<cf32>* iCirBuffer);
 
   [[nodiscard]] cf32 get_dc_offset() const { return { meanI, meanQ }; }
   [[nodiscard]] f32 get_sLevel() const { return sLevel; }
@@ -74,10 +74,10 @@ private:
   static constexpr i32 SPEC_BUFF_SIZE = 2048;
   static constexpr i32 CIR_BUFF_SIZE = 2048*97;
 
-  const DabRadio * const myRadioInterface;
-  IDeviceHandler * const theRig;
-  RingBuffer<cf32> * const spectrumBuffer;
-  RingBuffer<cf32> * cirBuffer = nullptr;
+  const DabRadio* const myRadioInterface;
+  IDeviceHandler* const theRig;
+  RingBuffer<cf32>* const spectrumBuffer;
+  RingBuffer<cf32>* cirBuffer = nullptr;
   std::array<cf32, SPEC_BUFF_SIZE> specBuff;
   TArrayTn mSampleBuffer;
 #ifdef HAVE_SSE_OR_AVX
@@ -97,7 +97,7 @@ private:
   bool dumping;
   i16 dumpIndex = 0;
   std::array<i16, DUMP_SIZE> dumpBuffer{};
-  std::atomic<SNDFILE *> dumpfilePointer;
+  std::atomic<SNDFILE*> dumpfilePointer;
   f32 peakLevel = -1.0e6;
   f32 meanI = 0.0f;
   f32 meanQ = 0.0f;
@@ -110,7 +110,7 @@ private:
   i32 mWholeFrameCount = 0;
   cf32  mWholeFrameBuff[CIR_BUFF_SIZE];
 
-  void _dump_samples_to_file(const std::span<const cf32> & iV);
+  void _dump_samples_to_file(const std::span<const cf32>& iV);
 
 signals:
   void signal_show_spectrum(i32);

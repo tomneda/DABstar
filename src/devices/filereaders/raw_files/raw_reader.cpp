@@ -49,7 +49,7 @@ static inline i64 get_cur_time_in_us()
   return ((i64)tv.tv_sec * 1000000 + (i64)tv.tv_usec);
 }
 
-RawReader::RawReader(RawFileHandler * ipRFH, FILE * ipFile, RingBuffer<cf32> * ipRingBuffer)
+RawReader::RawReader(RawFileHandler* ipRFH, FILE* ipFile, RingBuffer<cf32>* ipRingBuffer)
   : mpFile(ipFile)
   , mpRingBuffer(ipRingBuffer)
   , mParent(ipRFH)

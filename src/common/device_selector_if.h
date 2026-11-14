@@ -23,9 +23,9 @@ public:
   virtual ~IDeviceSelector() = default;
 
   virtual QStringList get_device_name_list() const = 0;
-  virtual std::unique_ptr<IDeviceHandler> create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) = 0;
-  virtual const QString & get_message() const = 0;
+  virtual std::unique_ptr<IDeviceHandler> create_device(const QString& iDeviceNameOrFileName, bool iIsFileDevice, bool iSuppressWarnings) = 0;
+  virtual const QString& get_message() const = 0;
 };
 
 // Factory function — declared here, defined in the devices library
-std::unique_ptr<IDeviceSelector> create_device_selector(QSettings * ipSettings);
+std::unique_ptr<IDeviceSelector> create_device_selector(QSettings* ipSettings);

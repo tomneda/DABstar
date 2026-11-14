@@ -75,13 +75,13 @@ void CoherentDemod::_ifft()
   fftwf_execute(mFftPlanBwd);
 
   constexpr f32 cScale = 1.0f / (f32)cTu;
-  for (auto & v : mFftOutBuffer)
+  for (auto& v : mFftOutBuffer)
   {
     v *= cScale;
   }
 }
 
-void CoherentDemod::_rotation(const f32 iPhase, const f32 iSlope, TArrayK & oV) const
+void CoherentDemod::_rotation(const f32 iPhase, const f32 iSlope, TArrayK& oV) const
 {
   const cf32 step = cmplx_from_phase(-iSlope);
   cf32 r = cmplx_from_phase(-(iPhase + iSlope * (f32)mCarrier[0]));
@@ -108,7 +108,7 @@ bool CoherentDemod::is_ready() const
   return mFrames >= 2; // the channel estimate and the noise are known
 }
 
-void CoherentDemod::process_prs(const TArrayTu & iV)
+void CoherentDemod::process_prs(const TArrayTu& iV)
 {
   f32 rawPower = 0.0f;
   f32 avgPower = 0.0f;
@@ -216,7 +216,7 @@ f32 CoherentDemod::_timing_rotation()
   }
   _ifft();
 
-  const TArrayTu & time = mFftOutBuffer;
+  const TArrayTu& time = mFftOutBuffer;
   i32 peak = 0;
   for (i32 n = 1; n < cTu; ++n)
   {
@@ -269,7 +269,7 @@ void CoherentDemod::_smooth_channel()
   }
   _ifft();
 
-  const TArrayTu & time = mFftOutBuffer;
+  const TArrayTu& time = mFftOutBuffer;
   for (i32 n = 0; n < cTu; ++n)
   {
     mTapPower[n] = std::norm(time[n]);
@@ -333,7 +333,7 @@ void CoherentDemod::_smooth_channel()
   }
 }
 
-void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum, const bool iCalcConstellation)
+void CoherentDemod::demodulate(const TArrayTu& iV, const i32 iCurOfdmSymbIdx, const cf32& iGuardCorrSum, const bool iCalcConstellation)
 {
   if (!is_ready())
   {
@@ -343,7 +343,7 @@ void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, c
   if (iCurOfdmSymbIdx == 1)
   {
     // The previous symbol is the PRS, it is known
-    for (auto & p : mPrevious)
+    for (auto& p : mPrevious)
     {
       p = { 1.0f, 0.0f, 0.0f, 0.0f };
     }
@@ -467,13 +467,13 @@ void CoherentDemod::demodulate(const TArrayTu & iV, const i32 iCurOfdmSymbIdx, c
     const f32 ey = fast_exp(y);
     std::array<f32, 4> p = { ex, ey, 1.0f / ex, 1.0f / ey };
     const f32 norm = 1.0f / (p[0] + p[1] + p[2] + p[3]);
-    for (auto & pm : p)
+    for (auto& pm : p)
     {
       pm = std::max(pm * norm, cMinProbability);
     }
 
     // Phase difference n * pi/2 + pi/4 to the previous symbol
-    const auto & q = mPrevious[c];
+    const auto& q = mPrevious[c];
     f32 pd[4];
     for (i32 n = 0; n < 4; ++n)
     {

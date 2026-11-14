@@ -40,7 +40,7 @@ public:
   FrameProcessor() = default;
   virtual ~FrameProcessor() = default;
 
-  virtual void add_to_frame(const std::vector<u8> &)
+  virtual void add_to_frame(const std::vector<u8>&)
   {
     fprintf(stderr, "missing overridden method in FrameProcessor\n");
   }

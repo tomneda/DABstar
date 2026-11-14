@@ -21,7 +21,7 @@ HalfBandFilter::HalfBandFilter(u32 iDecimationPow)
 {
   mLevelVec.resize(iDecimationPow);
 
-  for (auto & level : mLevelVec)
+  for (auto& level : mLevelVec)
   {
     level.qResamp2 = resamp2_crcf_create(7, 0.0f, 60.0f);
     //resamp2_crcf_print(level.qResamp2);
@@ -31,16 +31,16 @@ HalfBandFilter::HalfBandFilter(u32 iDecimationPow)
 
 HalfBandFilter::~HalfBandFilter()
 {
-  for (auto & level : mLevelVec)
+  for (auto& level : mLevelVec)
   {
     resamp2_crcf_destroy(level.qResamp2);
   }
 }
 
-bool HalfBandFilter::decimate(const cf32 & iX, cf32 & oY, u32 iLevel)
+bool HalfBandFilter::decimate(const cf32& iX, cf32& oY, u32 iLevel)
 {
   assert(iLevel < mLevelVec.size());
-  SLevel & level = mLevelVec[iLevel];
+  SLevel& level = mLevelVec[iLevel];
   level.InBuffer[level.InBufferIdx] = iX;
   ++level.InBufferIdx;
 

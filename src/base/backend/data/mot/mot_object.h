@@ -47,17 +47,17 @@ class MotObject : public QObject
 {
 Q_OBJECT
 public:
-  MotObject(DabRadio * ipDR, bool iDirElement, bool iPadElement);
-  MotObject(DabRadio * ipDR, bool iDirElement, bool iPadElement, u16 iTransportId, const std::span<const u8> & iSegment, bool iLastFlag);
+  MotObject(DabRadio* ipDR, bool iDirElement, bool iPadElement);
+  MotObject(DabRadio* ipDR, bool iDirElement, bool iPadElement, u16 iTransportId, const std::span<const u8>& iSegment, bool iLastFlag);
   ~MotObject() override = default;
 
-  void set_header(const std::span<const u8> & iSegment, bool iLastFlag, i32 iTransportId);
-  void add_body_segment(const std::span<const u8> & iBodySegment, i16 iSegmentNumber, bool iLastFlag, i32 iTransportId);
+  void set_header(const std::span<const u8>& iSegment, bool iLastFlag, i32 iTransportId);
+  void add_body_segment(const std::span<const u8>& iBodySegment, i16 iSegmentNumber, bool iLastFlag, i32 iTransportId);
   int get_header_size() const;
   void reset();
 
 private:
-  DabRadio * const mpDR;
+  DabRadio* const mpDR;
   const bool mIsDirElement;
   const bool mIsPadElement;
 
@@ -88,10 +88,10 @@ private:
 
   bool _check_if_complete();
   void _handle_complete();
-  void _process_parameter_id(const u8 * ipSegment, i32 & ioPointer, u8 iParamId, u16 iLength);
-  void _process_header_extension(const u8 * iSegment, i32 & ioPointer);
+  void _process_parameter_id(const u8* ipSegment, i32& ioPointer, u8 iParamId, u16 iLength);
+  void _process_header_extension(const u8* iSegment, i32& ioPointer);
 
 signals:
-  void signal_new_mot_object(const QByteArray & oData, const QString & oName, i32 oContentType, bool oDirElement);
+  void signal_new_mot_object(const QByteArray& oData, const QString& oName, i32 oContentType, bool oDirElement);
   void signal_pad_mot_progress(i32 oPercent);
 };

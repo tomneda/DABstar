@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cstring>
 
-IQDisplay::IQDisplay(QWidget * const parent)
+IQDisplay::IQDisplay(QWidget* const parent)
   : QWidget(parent)
 {
   setAttribute(Qt::WA_OpaquePaintEvent);
@@ -86,7 +86,7 @@ inline void IQDisplay::_set_base_point(const i32 iX, const i32 iY)
     bufY = cRadius - 1 - y;
   }
 
-  reinterpret_cast<QRgb *>(mBackgroundImage.scanLine(bufY))[bufX] = mCrossGradient[(size_t)bufY];
+  reinterpret_cast<QRgb*>(mBackgroundImage.scanLine(bufY))[bufX] = mCrossGradient[(size_t)bufY];
 }
 
 void IQDisplay::_render_background(const f32 iScale)
@@ -94,7 +94,7 @@ void IQDisplay::_render_background(const f32 iScale)
   // 1. Fill background gradient
   for (i32 y = 0; y < c2Radius; ++y)
   {
-    QRgb * const line = reinterpret_cast<QRgb *>(mBackgroundImage.scanLine(y));
+    QRgb* const line = reinterpret_cast<QRgb*>(mBackgroundImage.scanLine(y));
     const QRgb bg = mBgGradient[(size_t)y];
     for (i32 x = 0; x < c2Radius; ++x)
     {
@@ -141,7 +141,7 @@ void IQDisplay::_render_background(const f32 iScale)
   }
 }
 
-void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
+void IQDisplay::display_iq(const std::vector<cf32>& iIQ, const f32 iScale)
 {
   const f32 scale = std::pow(10.0f, 2.0f * iScale - 1.0f);
   if (scale != mLastCircleSize)
@@ -158,7 +158,7 @@ void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
   // Render dots directly onto mImage
   if (mMap1stQuad)
   {
-    for (const auto & iq : iIQ)
+    for (const auto& iq : iIQ)
     {
       const auto iX = (i32)(scaleNormed * real(iq));
       const auto iY = (i32)(scaleNormed * imag(iq));
@@ -178,12 +178,12 @@ void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
       limit_symmetrically(x, c2Radius - 1);
       limit_symmetrically(y, c2Radius - 1);
 
-      reinterpret_cast<QRgb *>(mImage.scanLine(c2Radius - 1 - y))[x] = mDotColor;
+      reinterpret_cast<QRgb*>(mImage.scanLine(c2Radius - 1 - y))[x] = mDotColor;
     }
   }
   else
   {
-    for (const auto & iq : iIQ)
+    for (const auto& iq : iIQ)
     {
       auto x = (i32)(scaleNormed * real(iq));
       auto y = (i32)(scaleNormed * imag(iq));
@@ -191,14 +191,14 @@ void IQDisplay::display_iq(const std::vector<cf32> & iIQ, const f32 iScale)
       limit_symmetrically(x, cRadius - 1);
       limit_symmetrically(y, cRadius - 1);
 
-      reinterpret_cast<QRgb *>(mImage.scanLine(cRadius - 1 - y))[x + cRadius - 1] = mDotColor;
+      reinterpret_cast<QRgb*>(mImage.scanLine(cRadius - 1 - y))[x + cRadius - 1] = mDotColor;
     }
   }
 
   update();
 }
 
-void IQDisplay::paintEvent(QPaintEvent * const /*ipEvent*/)
+void IQDisplay::paintEvent(QPaintEvent* const /*ipEvent*/)
 {
   QPainter painter(this);
   // Scale the 200×200 image to fill the widget (keeps square if widget is square)

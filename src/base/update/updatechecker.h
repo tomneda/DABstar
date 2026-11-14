@@ -41,7 +41,7 @@ class UpdateChecker : public QObject
   Q_OBJECT
 
 public:
-  explicit UpdateChecker(QObject * parent = nullptr);
+  explicit UpdateChecker(QObject* parent = nullptr);
   ~UpdateChecker() override;
   void check();
   QString version() const;
@@ -52,12 +52,12 @@ signals:
   void finished(bool result);
 
 private:
-  QNetworkAccessManager * m_netAccessManager = nullptr;
+  QNetworkAccessManager* m_netAccessManager = nullptr;
   QString m_version;
   bool m_isPreRelease = false;
   QString m_releaseNotes;
 
-  void onFileDownloaded(QNetworkReply * reply);
-  bool parseResponse(const QByteArray & data);
+  void onFileDownloaded(QNetworkReply* reply);
+  bool parseResponse(const QByteArray& data);
 };
 

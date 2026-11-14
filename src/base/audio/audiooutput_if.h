@@ -45,20 +45,20 @@ class IAudioOutput : public QObject
 public:
   ~IAudioOutput() override = default;
 
-  virtual const AudioIODevice * get_audio_io_device() const = 0;
+  virtual const AudioIODevice* get_audio_io_device() const = 0;
   virtual QList<QAudioDevice> get_audio_device_list() const = 0;
 
 public slots:
-  virtual void slot_start(SAudioFifo * iBuffer) = 0;
-  virtual void slot_restart(SAudioFifo * iBuffer) = 0;
+  virtual void slot_start(SAudioFifo* iBuffer) = 0;
+  virtual void slot_restart(SAudioFifo* iBuffer) = 0;
   virtual void slot_stop() = 0;
   virtual void slot_set_mute(bool iActive) = 0;
   virtual void slot_set_test_tone(bool iActive) = 0;
   virtual void slot_set_peak_level_delay(i32 iDelaySteps) = 0;
   virtual void slot_set_volume(i32 value) = 0;
-  virtual void slot_set_audio_device(const QByteArray & deviceId) = 0;
+  virtual void slot_set_audio_device(const QByteArray& deviceId) = 0;
 
 signals:
-  void signal_audio_devices_list(const QList<QAudioDevice> & deviceList);
-  void signal_audio_device_changed(const QByteArray & id);
+  void signal_audio_devices_list(const QList<QAudioDevice>& deviceList);
+  void signal_audio_device_changed(const QByteArray& id);
 };

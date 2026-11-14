@@ -51,7 +51,7 @@
 
 constexpr u32 cInputFrameBufferSize = 8 * 32768;
 
-XmlFileReader::XmlFileReader(const QString & iFilename)
+XmlFileReader::XmlFileReader(const QString& iFilename)
   : Ui_xmlfile_widget(), myFrame(nullptr)
   , _I_Buffer(cInputFrameBufferSize)
 {
@@ -170,9 +170,9 @@ void XmlFileReader::stopReader()
 }
 
 //  size is in "samples"
-i32 XmlFileReader::getSamples(const std::span<cf32> & oV)
+i32 XmlFileReader::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
 
   if (theFile == nullptr)
@@ -253,7 +253,7 @@ void XmlFileReader::jump_to_file_pos_per_mill(const i32 iPerMill)
   }
 }
 
-i64 XmlFileReader::compute_nrSamples(XmlDescriptor *fd, i32 blockNumber)
+i64 XmlFileReader::compute_nrSamples(XmlDescriptor* fd, i32 blockNumber)
 {
   i64 nrElements = fd->blockList.at(blockNumber).nrElements;
   i64 samplesToRead = 0;

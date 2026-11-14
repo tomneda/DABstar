@@ -28,7 +28,7 @@ class CoordDoubleValidator : public QDoubleValidator
 {
   using QDoubleValidator::QDoubleValidator;
 
-  QValidator::State validate(QString & input, i32 &) const override
+  QValidator::State validate(QString& input, i32&) const override
   {
     const QRegularExpression regExpAllowed("^-?\\d*(\\.\\d*)?$");
     if (const QRegularExpressionMatch match = regExpAllowed.match(input); !match.hasMatch())
@@ -49,7 +49,7 @@ class CoordDoubleValidator : public QDoubleValidator
 };
 
 
-Configuration::Configuration(DabRadio * ipRI) :
+Configuration::Configuration(DabRadio* ipRI) :
   Ui_configWidget(),
   mpRadioInterface(ipRI)
 {

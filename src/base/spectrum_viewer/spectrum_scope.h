@@ -20,14 +20,14 @@ class SpectrumScope : public QObject
 {
 Q_OBJECT
 public:
-  SpectrumScope(PlotWidget *, i32, QSettings *);
+  SpectrumScope(PlotWidget*, i32, QSettings*);
   ~SpectrumScope() override = default;
 
-  void show_spectrum(const f32 *, const f32 *, const SpecViewLimits<f32> & iSpecViewLimits);
+  void show_spectrum(const f32*, const f32*, const SpecViewLimits<f32>& iSpecViewLimits);
 
 private:
-  PlotWidget * mpPlot = nullptr;
-  QLineSeries * mpCurve = nullptr;
+  PlotWidget* mpPlot = nullptr;
+  QLineSeries* mpCurve = nullptr;
   QList<QPointF> mPoints;
   const i32 mDisplaySize;
   f32 mScale = 0.0f;

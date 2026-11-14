@@ -47,7 +47,7 @@ public:
 
 class XmlFileWriter {
 public:
-  XmlFileWriter(FILE *,
+  XmlFileWriter(FILE*,
                 i32,
                 QString,
                 i32,
@@ -56,9 +56,9 @@ public:
                 QString,
                 QString);
   ~XmlFileWriter();
-  void add(const std::span<const ci16> & iData);
-  void add(const std::span<const cu8> & iData);
-  void add(const std::span<const ci8> & iData);
+  void add(const std::span<const ci16>& iData);
+  void add(const std::span<const cu8>& iData);
+  void add(const std::span<const ci8>& iData);
   void computeHeader();
 private:
   i32 nrBits;
@@ -69,7 +69,7 @@ private:
   QString deviceModel;
   QString recorderVersion;
   QString create_xmltree();
-  FILE *xmlFile;
+  FILE* xmlFile;
   QString byteOrder;
   i64 nrElements;
   QString timeString;

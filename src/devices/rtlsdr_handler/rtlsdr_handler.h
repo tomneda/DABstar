@@ -54,31 +54,31 @@ class XmlFileWriter;
 typedef struct rtlsdr_dev rtlsdr_dev_t;
 
 extern "C" {
-typedef void (* rtlsdr_read_async_cb_t)(u8 * buf, u32 len, void * ctx);
-typedef i32 (* pfnrtlsdr_open )(rtlsdr_dev_t **, u32);
-typedef i32 (* pfnrtlsdr_close)(rtlsdr_dev_t *);
-typedef i32 (* pfnrtlsdr_get_usb_strings)(rtlsdr_dev_t *, char *, char *, char *);
-typedef i32 (* pfnrtlsdr_set_center_freq)(rtlsdr_dev_t *, u32);
-typedef i32 (* pfnrtlsdr_set_tuner_bandwidth)(rtlsdr_dev_t *, u32);
-typedef u32 (* pfnrtlsdr_get_center_freq)(rtlsdr_dev_t *);
-typedef i32 (* pfnrtlsdr_get_tuner_gains)(rtlsdr_dev_t *, i32 *);
-typedef i32 (* pfnrtlsdr_set_tuner_gain_mode)(rtlsdr_dev_t *, i32);
-typedef i32 (* pfnrtlsdr_set_agc_mode)(rtlsdr_dev_t *, i32);
-typedef i32 (* pfnrtlsdr_set_sample_rate)(rtlsdr_dev_t *, u32);
-typedef i32 (* pfnrtlsdr_get_sample_rate)(rtlsdr_dev_t *);
-typedef i32 (* pfnrtlsdr_set_tuner_gain)(rtlsdr_dev_t *, i32);
-typedef i32 (* pfnrtlsdr_get_tuner_gain)(rtlsdr_dev_t *);
-typedef i32 (* pfnrtlsdr_reset_buffer)(rtlsdr_dev_t *);
-typedef i32 (* pfnrtlsdr_read_async)(rtlsdr_dev_t *, rtlsdr_read_async_cb_t, void *, u32, u32);
-typedef i32 (* pfnrtlsdr_set_bias_tee)(rtlsdr_dev_t *, i32);
-typedef i32 (* pfnrtlsdr_cancel_async)(rtlsdr_dev_t *);
-typedef i32 (* pfnrtlsdr_set_direct_sampling)(rtlsdr_dev_t *, i32);
+typedef void (* rtlsdr_read_async_cb_t)(u8* buf, u32 len, void* ctx);
+typedef i32 (* pfnrtlsdr_open )(rtlsdr_dev_t**, u32);
+typedef i32 (* pfnrtlsdr_close)(rtlsdr_dev_t*);
+typedef i32 (* pfnrtlsdr_get_usb_strings)(rtlsdr_dev_t*, char*, char*, char*);
+typedef i32 (* pfnrtlsdr_set_center_freq)(rtlsdr_dev_t*, u32);
+typedef i32 (* pfnrtlsdr_set_tuner_bandwidth)(rtlsdr_dev_t*, u32);
+typedef u32 (* pfnrtlsdr_get_center_freq)(rtlsdr_dev_t*);
+typedef i32 (* pfnrtlsdr_get_tuner_gains)(rtlsdr_dev_t*, i32*);
+typedef i32 (* pfnrtlsdr_set_tuner_gain_mode)(rtlsdr_dev_t*, i32);
+typedef i32 (* pfnrtlsdr_set_agc_mode)(rtlsdr_dev_t*, i32);
+typedef i32 (* pfnrtlsdr_set_sample_rate)(rtlsdr_dev_t*, u32);
+typedef i32 (* pfnrtlsdr_get_sample_rate)(rtlsdr_dev_t*);
+typedef i32 (* pfnrtlsdr_set_tuner_gain)(rtlsdr_dev_t*, i32);
+typedef i32 (* pfnrtlsdr_get_tuner_gain)(rtlsdr_dev_t*);
+typedef i32 (* pfnrtlsdr_reset_buffer)(rtlsdr_dev_t*);
+typedef i32 (* pfnrtlsdr_read_async)(rtlsdr_dev_t*, rtlsdr_read_async_cb_t, void*, u32, u32);
+typedef i32 (* pfnrtlsdr_set_bias_tee)(rtlsdr_dev_t*, i32);
+typedef i32 (* pfnrtlsdr_cancel_async)(rtlsdr_dev_t*);
+typedef i32 (* pfnrtlsdr_set_direct_sampling)(rtlsdr_dev_t*, i32);
 typedef u32 (* pfnrtlsdr_get_device_count)();
-typedef i32 (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t *, i32);
-typedef i32 (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t *, i32);
-typedef char * (* pfnrtlsdr_get_device_name)(i32);
-typedef i32 (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t *dev, u8* data, i32 *len, i32 *strength);
-typedef i32 (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t *dev);
+typedef i32 (* pfnrtlsdr_set_freq_correction)(rtlsdr_dev_t*, i32);
+typedef i32 (* pfnrtlsdr_set_freq_correction_ppb)(rtlsdr_dev_t*, i32);
+typedef char* (* pfnrtlsdr_get_device_name)(i32);
+typedef i32 (* pfnrtlsdr_get_tuner_i2c_register)(rtlsdr_dev_t* dev, u8* data, i32* len, i32* strength);
+typedef i32 (* pfnrtlsdr_get_tuner_type)(rtlsdr_dev_t* dev);
 typedef u32 (* pfnrtlsdr_get_version)();
 }
 
@@ -89,44 +89,44 @@ class RtlSdrHandler final : public QObject, public IDeviceHandler, public Ui_dab
 {
 Q_OBJECT
 public:
-  RtlSdrHandler(QSettings * s, const QString & recorderVersion);
+  RtlSdrHandler(QSettings* s, const QString& recorderVersion);
   ~RtlSdrHandler() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   QString deviceName() override;
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &myFrame; }
+  QWidget* get_widget() override { return &myFrame; }
   bool hasDump() override;
   bool startDumping() override;
   void stopDumping() override;
-  bool detect_overload(const std::span<const u8> & iBuf) const;
+  bool detect_overload(const std::span<const u8>& iBuf) const;
 
   //    These need to be visible for the separate usb handling thread
   RingBuffer<cu8> _I_Buffer;
   pfnrtlsdr_read_async rtlsdr_read_async;
-  struct rtlsdr_dev * theDevice;
+  struct rtlsdr_dev* theDevice;
   std::atomic<bool> isActive;
 
 private:
   QFrame myFrame;
-  QSettings * rtlsdrSettings;
+  QSettings* rtlsdrSettings;
   i32 inputRate;
   i32 deviceCount;
-  QLibrary * phandle;
-  dll_driver * workerHandle;
+  QLibrary* phandle;
+  dll_driver* workerHandle;
   i32 lastFrequency;
   i16 gainsCount;
   QString deviceModel;
   QString recorderVersion;
-  FILE * xmlDumper;
-  XmlFileWriter * xmlWriter;
+  FILE* xmlDumper;
+  XmlFileWriter* xmlWriter;
   bool setup_xmlDump();
   std::atomic<bool> xml_dumping;
   f32 mapTable[256];
@@ -136,15 +136,15 @@ private:
   i32 agcControl;
   void set_autogain(i32);
   void enable_gainControl(i32);
-  void set_deviceName(const QString &);
-  void set_apiVersion(const QString &);
+  void set_deviceName(const QString&);
+  void set_apiVersion(const QString&);
   i16 maxGain();
   i32 old_overload = 2;
   i32 old_gain = 0;
   QString ppmSerial;
 
   //    here we need to load functions from the dll
-  bool load_rtlFunctions(bool & oHasNewInterface);
+  bool load_rtlFunctions(bool& oHasNewInterface);
   pfnrtlsdr_open rtlsdr_open;
   pfnrtlsdr_close rtlsdr_close;
   pfnrtlsdr_get_usb_strings rtlsdr_get_usb_strings;

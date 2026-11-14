@@ -28,5 +28,5 @@ public:
   virtual ~IEtiSource() = default;
 
   // Blocks until a frame is available or iTimeout_ms has elapsed. Returns false on timeout.
-  virtual bool get_eti_frame(TEtiFrame & oFrame, i32 iTimeout_ms) = 0;
+  virtual bool get_eti_frame(TEtiFrame& oFrame, i32 iTimeout_ms) = 0;
 };

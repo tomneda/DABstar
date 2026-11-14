@@ -58,21 +58,21 @@ class Mp2Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp2Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *);
+  Mp2Processor(DabRadio*, i16, RingBuffer<i16>*, RingBuffer<u8>*);
   ~Mp2Processor() override;
-  void add_to_frame(const std::vector<u8> &) override;
+  void add_to_frame(const std::vector<u8>&) override;
 
 private:
-  DabRadio * myRadioInterface;
+  DabRadio* myRadioInterface;
   i16 bitRate;
   PadHandler my_padhandler;
-  RingBuffer<i16> * const audioBuffer;
-  RingBuffer<u8> * const frameBuffer;
+  RingBuffer<i16>* const audioBuffer;
+  RingBuffer<u8>* const frameBuffer;
   i32 sampleRate;
   i16 V[2][1024];
   i16 Voffs;
   i16 N[64][32];
-  SQuantizerSpec * allocation[2][32];
+  SQuantizerSpec* allocation[2][32];
   i32 scfsi[2][32];
   i32 scalefactor[2][32][3];
   i32 sample[2][32][3];
@@ -80,7 +80,7 @@ private:
 
   i32 bit_window;
   i32 bits_in_window;
-  const u8 * frame_pos;
+  const u8* frame_pos;
   std::vector<u8> MP2frame;
   enum class ESyncState { SearchingForSync, GetSampleRate, GetData };
 
@@ -91,14 +91,14 @@ private:
   i16 numberofFrames;
   i16 errorFrames;
 
-  i32 _get_mp2_sample_rate(const std::vector<u8> & iFrame);
-  i32 _mp2_decode_frame(const std::vector<u8> & iFrame, i16 *);
+  i32 _get_mp2_sample_rate(const std::vector<u8>& iFrame);
+  i32 _mp2_decode_frame(const std::vector<u8>& iFrame, i16*);
   void _set_sample_rate(i32);
-  SQuantizerSpec * _read_allocation(i32, i32);
-  void _read_samples(SQuantizerSpec *, i32 iScalefactor, i32 * opSamples);
+  SQuantizerSpec* _read_allocation(i32, i32);
+  void _read_samples(SQuantizerSpec*, i32 iScalefactor, i32* opSamples);
   i32 _get_bits(i32);
-  void _add_bit_to_mp2(std::vector<u8> &, u8, i16);
-  void _process_pad_data(const std::vector<u8> & iBits);
+  void _add_bit_to_mp2(std::vector<u8>&, u8, i16);
+  void _process_pad_data(const std::vector<u8>& iBits);
 
 signals:
   void signal_show_frameErrors(i32);

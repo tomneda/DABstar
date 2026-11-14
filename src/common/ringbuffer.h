@@ -217,19 +217,19 @@ public:
     return readIndex = (readIndex + elementCount) & bigMask;
   }
 
-  i32 put_data_into_ring_buffer(const void * data, i32 elementCount)
+  i32 put_data_into_ring_buffer(const void* data, i32 elementCount)
   {
     i32 size1;
     i32 size2;
-    void * data1;
-    void * data2;
+    void* data1;
+    void* data2;
 
     const i32 numWritten = _get_ring_buffer_write_regions(elementCount, &data1, &size1, &data2, &size2);
 
     if (size2 > 0)
     {
       memcpy(data1, data, size1 * sizeof(TElem));
-      data = (const char *)data + size1 * sizeof(TElem);
+      data = (const char*)data + size1 * sizeof(TElem);
       memcpy(data2, data, size2 * sizeof(TElem));
     }
     else
@@ -241,19 +241,19 @@ public:
     return numWritten;
   }
 
-  i32 get_data_from_ring_buffer(void * data, i32 elementCount)
+  i32 get_data_from_ring_buffer(void* data, i32 elementCount)
   {
     i32 size1;
     i32 size2;
-    void * data1;
-    void * data2;
+    void* data1;
+    void* data2;
 
     const i32 numRead = _get_ring_buffer_read_regions(elementCount, &data1, &size1, &data2, &size2);
 
     if (size2 > 0)
     {
       memcpy(data, data1, size1 * sizeof(TElem));
-      data = ((char *)data) + size1 * sizeof(TElem);
+      data = ((char*)data) + size1 * sizeof(TElem);
       memcpy(data, data2, size2 * sizeof(TElem));
     }
     else
@@ -277,10 +277,10 @@ public:
     return n_values;
   }
 
-  i32 get_writable_ring_buffer_segment(u32 iElemCnt, void ** const opData, i32 * opSize)
+  i32 get_writable_ring_buffer_segment(u32 iElemCnt, void** const opData, i32* opSize)
   {
     i32 dummySize;
-    void * dummyData;
+    void* dummyData;
     return _get_ring_buffer_write_regions(iElemCnt, opData, opSize, &dummyData, &dummySize);
   }
 
@@ -298,7 +298,7 @@ private:
   ** If non-contiguous, size2 will be the size of second region.
   ** Returns room available to be written or elementCount, whichever is smaller.
   */
-  i32 _get_ring_buffer_write_regions(u32 elementCount, void ** const dataPtr1, i32 * sizePtr1, void ** dataPtr2, i32 * sizePtr2)
+  i32 _get_ring_buffer_write_regions(u32 elementCount, void** const dataPtr1, i32* sizePtr1, void** dataPtr2, i32* sizePtr2)
   {
     const u32 available = get_ring_buffer_write_available();
 
@@ -341,7 +341,7 @@ private:
    ** If non-contiguous, size2 will be the size of second region.
    ** Returns room available to be read or elementCount, whichever is smaller.
    */
-  i32 _get_ring_buffer_read_regions(u32 elementCount, void ** dataPtr1, i32 * sizePtr1, void ** dataPtr2, i32 * sizePtr2)
+  i32 _get_ring_buffer_read_regions(u32 elementCount, void** dataPtr1, i32* sizePtr1, void** dataPtr2, i32* sizePtr2)
   {
     const u32 available = get_ring_buffer_read_available(); /* doesn't use memory barrier */
 
@@ -432,9 +432,9 @@ protected:
   static constexpr i32 cBarWidth = 50;
   mutable std::array<char, cBarWidth + 3> mProgressBarBuffer; // + [...] plus zero
 
-  const char * _show_progress_bar(f32 iPercentStop, f32 iPercentStart = -100) const;
+  const char* _show_progress_bar(f32 iPercentStop, f32 iPercentStart = -100) const;
   void _print_line(bool iResetMinMax) const;
-  void _calculate_ring_buffer_statistics(f32 & oMinPrc, f32 & oMaxPrc, f32 & ioGlobMinPrc, f32 & ioGlobMaxPrc, RingBufferFactoryBase::SListPar & ioPar, bool iResetMinMax, const RingbufferBase::SFillState & iFillState) const;
+  void _calculate_ring_buffer_statistics(f32& oMinPrc, f32& oMaxPrc, f32& ioGlobMinPrc, f32& ioGlobMaxPrc, RingBufferFactoryBase::SListPar& ioPar, bool iResetMinMax, const RingbufferBase::SFillState& iFillState) const;
 };
 
 
@@ -448,12 +448,12 @@ public:
   struct SList
   {
     EId Id;
-    const char * pName;
+    const char* pName;
     std::shared_ptr<RingBuffer<T>> pRingBuffer;
     mutable SListPar Par;
   };
 
-  void create_ringbuffer(EId iId, const char * const iName, u32 iElementCount, bool iShowStatistics = false)
+  void create_ringbuffer(EId iId, const char* const iName, u32 iElementCount, bool iShowStatistics = false)
   {
     assert (mMap.count(iId) == 0);
     SList list;

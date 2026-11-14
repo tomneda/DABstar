@@ -84,15 +84,15 @@ public:
 
   template<typename T> inline QString hex_str(const T iVal) { return QSL("0x%1").arg(iVal, 0, 16); }
 
-  const SFig1s1_ProgrammeServiceLabel * get_Fig1s1_ProgrammeServiceLabel_of_SId(u32 SId) const;
-  const SFig1s4_ServiceComponentLabel * get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(u32 SId, i8 SCIdS) const;
-  const SFig1s5_DataServiceLabel      * get_Fig1s5_DataServiceLabel_of_SId(u32 SId) const;
-  const QString                       & get_service_label_of_SId_from_all_Fig1(u32 iSId) const;
-  const SSId_SCIdS                    * get_SId_SCIdS_from_service_label(const QString & s) const;
+  const SFig1s1_ProgrammeServiceLabel* get_Fig1s1_ProgrammeServiceLabel_of_SId(u32 SId) const;
+  const SFig1s4_ServiceComponentLabel* get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(u32 SId, i8 SCIdS) const;
+  const SFig1s5_DataServiceLabel* get_Fig1s5_DataServiceLabel_of_SId(u32 SId) const;
+  const QString& get_service_label_of_SId_from_all_Fig1(u32 iSId) const;
+  const SSId_SCIdS* get_SId_SCIdS_from_service_label(const QString& s) const;
 
-  void print_Fig1s0_EnsembleLabel(SStatistic & ioS, bool iCollectStatisticsOnly);
-  void print_Fig1s1_ProgrammeServiceLabelVec(SStatistic & ioS, bool iCollectStatisticsOnly);
-  void print_Fig1s4_ServiceComponentLabel(SStatistic & ioS, bool iCollectStatisticsOnly);
-  void print_Fig1s5_DataServiceLabel(SStatistic & ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s0_EnsembleLabel(SStatistic& ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s1_ProgrammeServiceLabelVec(SStatistic& ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s4_ServiceComponentLabel(SStatistic& ioS, bool iCollectStatisticsOnly);
+  void print_Fig1s5_DataServiceLabel(SStatistic& ioS, bool iCollectStatisticsOnly);
 };
 

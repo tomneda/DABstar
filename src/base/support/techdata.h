@@ -47,29 +47,29 @@ class TechData : public QObject, public Ui_technical_data
 {
 Q_OBJECT
 public:
-  TechData(DabRadio *, RingBuffer<i16> * ipAudioBuffer);
+  TechData(DabRadio*, RingBuffer<i16>* ipAudioBuffer);
   ~TechData() override;
 
-  void show_service_data(const SAudioData * ad) const;
-  void show_service_data_addon(const SAudioDataAddOns * adon) const;
+  void show_service_data(const SAudioData* ad) const;
+  void show_service_data_addon(const SAudioDataAddOns* adon) const;
   void cleanUp();
   void show();
   void hide();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   bool isHidden() const;
-  [[nodiscard]] QWidget * get_widget() { return &mFrame; }
+  [[nodiscard]] QWidget* get_widget() { return &mFrame; }
 
 private:
   static constexpr i32 cDefaultPlotWindowHeight = 560;
   static constexpr i32 cMinPlotWindowHeight     = 450;
 
-  DabRadio * const mpRadioInterface;
-  RingBuffer<i16> * mpAudioBuffer;
+  DabRadio* const mpRadioInterface;
+  RingBuffer<i16>* mpAudioBuffer;
   QFrame mFrame;
-  AudioDisplay * mpAudioDisplay = nullptr;
+  AudioDisplay* mpAudioDisplay = nullptr;
   i32 mSavedPlotWindowHeight = 0;
 
-  void _show_service_label(const QString &) const;
+  void _show_service_label(const QString&) const;
   void _show_SId(u32) const;
   void _show_bitrate(i32) const;
   void _show_subChId(i32) const;

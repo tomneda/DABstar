@@ -10,7 +10,7 @@
 
 #define renormalize {\
     if (metrics2[0] > RENORMALIZE_THRESHOLD) {\
-        __m128i *mm_metrics  = (__m128i *)new_metrics;\
+        __m128i* mm_metrics  = (__m128i*)new_metrics;\
 	    __m128i m0 = mm_metrics[0];\
 	    for (i32 i = 1; i < 8; i++)\
 	        m0 = _mm_min_epu16(m0, mm_metrics[i]);\
@@ -54,11 +54,11 @@
     *d++ = _mm256_movemask_epi8(_mm256_unpacklo_epi8(m0, m1));\
 }
 
-    __m256i *old_metrics = (__m256i *)metrics1;
-    __m256i *new_metrics = (__m256i *)metrics2;
-    const __m256i *Branchtab = (__m256i *)Branchtable;
-   	const __m128i *syms = (const __m128i *)input;
-    u32 *d = (u32 *)decisions;
+    __m256i* old_metrics = (__m256i*)metrics1;
+    __m256i* new_metrics = (__m256i*)metrics2;
+    const __m256i* Branchtab = (__m256i*)Branchtable;
+	const __m128i* syms = (const __m128i*)input;
+    u32* d = (u32*)decisions;
     const __m256i m1020 = _mm256_set1_epi16(1020);
     const __m128i m127 = _mm_set1_epi16(127);
     const __m128i m255 = _mm_set1_epi16(255);
@@ -67,7 +67,7 @@
 	while(nbits--)
     {
 		__m256i sym0, sym1, sym2, sym3;
-		__m256i *tmp;
+		__m256i* tmp;
         __m128i m0 = _mm_load_si128(syms++);
 
         // add 127 and limit to 0, 255

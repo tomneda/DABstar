@@ -60,7 +60,7 @@
 [[maybe_unused]] static const char DN_SOAPY[]     = "SoapySDR (exp.)";
 [[maybe_unused]] static const char DN_UHD[]       = "UHD/USRP";
 
-DeviceSelector::DeviceSelector(QSettings * ipSettings) :
+DeviceSelector::DeviceSelector(QSettings* ipSettings) :
   mpSettings(ipSettings),
   mOpenFileDialog(ipSettings)
 {
@@ -109,7 +109,7 @@ QStringList DeviceSelector::get_device_name_list() const
   return sl;
 }
 
-std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iDeviceNameOrFileName, const bool iIsFileDevice, const bool iSuppressWarnings)
+std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString& iDeviceNameOrFileName, const bool iIsFileDevice, const bool iSuppressWarnings)
 {
   std::unique_ptr<IDeviceHandler> inputDevice;
   mMessage.clear();
@@ -124,7 +124,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
   {
     inputDevice = _create_device(iDeviceNameOrFileName, iIsFileDevice);
   }
-  catch (const std::exception & e)
+  catch (const std::exception& e)
   {
     if (!iSuppressWarnings)  // e.g., while scanning
     {
@@ -142,7 +142,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::create_device(const QString & iD
   return inputDevice;
 }
 
-std::unique_ptr<IDeviceHandler> DeviceSelector::_open_input_file_device_from_file_type(const QString & iFilepath) const
+std::unique_ptr<IDeviceHandler> DeviceSelector::_open_input_file_device_from_file_type(const QString& iFilepath) const
 {
   const OpenFileDialog::EFileType typeLoc = mOpenFileDialog.get_file_type(iFilepath);
 
@@ -158,7 +158,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_open_input_file_device_from_fil
   return nullptr;
 }
 
-std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & iDeviceNameOrFileName, bool iIsFileDevice) const
+std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString& iDeviceNameOrFileName, bool iIsFileDevice) const
 {
   std::unique_ptr<IDeviceHandler> inputDevice;
 
@@ -272,7 +272,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_create_device(const QString & i
   return inputDevice;
 }
 
-std::unique_ptr<IDeviceSelector> create_device_selector(QSettings * const ipSettings)
+std::unique_ptr<IDeviceSelector> create_device_selector(QSettings* const ipSettings)
 {
   return std::make_unique<DeviceSelector>(ipSettings);
 }

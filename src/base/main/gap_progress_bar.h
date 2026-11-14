@@ -23,7 +23,7 @@ class GapProgressBar : public QProgressBar
   // Q_PROPERTY(int frameWidth READ frameWidth WRITE setFrameWidth)
 
 public:
-  explicit GapProgressBar(QWidget * parent = nullptr)
+  explicit GapProgressBar(QWidget* parent = nullptr)
     : QProgressBar(parent)
   {
     setTextVisible(false);
@@ -38,7 +38,7 @@ public:
 
   int origin() const { return mOrigin; }
 
-  void setFillColor(const QColor & iC)
+  void setFillColor(const QColor& iC)
   {
     mFillBrush = iC;
     update();
@@ -46,7 +46,7 @@ public:
 
   QColor fillColor() const { return mFillBrush.color(); }
 
-  void setFrameColor(const QColor & iC)
+  void setFrameColor(const QColor& iC)
   {
     mFrameColor = iC;
     update();
@@ -63,7 +63,7 @@ public:
   int frameWidth() const { return mFrameWidth; }
 
 protected:
-  void paintEvent(QPaintEvent *) override
+  void paintEvent(QPaintEvent*) override
   {
     QPainter p(this);
 

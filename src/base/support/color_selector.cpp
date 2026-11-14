@@ -36,7 +36,7 @@
 /*static*/ const char ColorSelector::GRIDCOLOR[]  = "Grid Color";
 /*static*/ const char ColorSelector::CURVECOLOR[] = "Curve Color";
 
-/*static*/ bool ColorSelector::show_dialog(QColor & ioColor, const QString & iTopText)
+/*static*/ bool ColorSelector::show_dialog(QColor& ioColor, const QString& iTopText)
 {
   QColor color = QColorDialog::getColor(ioColor, nullptr, iTopText);
   if (color.isValid())

@@ -15,4 +15,5 @@ build*/
 /*.bundle
 /win-cross-build/
 /aqtinstall.log
+/AGENTS.md
 /.junie/

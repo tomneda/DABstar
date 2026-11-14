@@ -14,7 +14,7 @@
 #include <QPen>
 #include <QChart>
 
-SpectrumScope::SpectrumScope(PlotWidget * pPlot, i32 displaySize, QSettings * /*dabSettings*/) :
+SpectrumScope::SpectrumScope(PlotWidget* pPlot, i32 displaySize, QSettings* /*dabSettings*/) :
   mDisplaySize(displaySize)
 {
   mYValVec.resize(mDisplaySize);
@@ -34,7 +34,7 @@ SpectrumScope::SpectrumScope(PlotWidget * pPlot, i32 displaySize, QSettings * /*
   mpPlot->get_y_axis()->setMinorGridLineVisible(false);
 }
 
-void SpectrumScope::show_spectrum(const f32 * X_axis, const f32 * Y_value, const SpecViewLimits<f32> & iSpecViewLimits)
+void SpectrumScope::show_spectrum(const f32* X_axis, const f32* Y_value, const SpecViewLimits<f32>& iSpecViewLimits)
 {
   mpPlot->set_x_range(X_axis[0], X_axis[mDisplaySize - 1]);
   mpPlot->set_x_tick_dynamic(X_axis[mDisplaySize / 2], 512.0); // FFT "DC" frequency point

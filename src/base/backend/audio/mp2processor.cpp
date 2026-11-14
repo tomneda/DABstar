@@ -194,13 +194,13 @@ static struct SQuantizerSpec quantizer_table[17] = {{ 3,     1,  5 },  //  1
 //	(J van Katwijk)
 ////////////////////////////////////////////////////////////////////////////////
 
-Mp2Processor::Mp2Processor(DabRadio * mr, i16 bitRate, RingBuffer<i16> * const iopAudioBuffer, RingBuffer<u8> * const iopFrameBuffer)
+Mp2Processor::Mp2Processor(DabRadio* mr, i16 bitRate, RingBuffer<i16>* const iopAudioBuffer, RingBuffer<u8>* const iopFrameBuffer)
   : my_padhandler(mr)
   , audioBuffer(iopAudioBuffer)
   , frameBuffer(iopFrameBuffer)
 {
   i16 i, j;
-  i16 * nPtr = &N[0][0];
+  i16* nPtr = &N[0][0];
 
   // compute N[i][j]
   for (i = 0; i < 64; i++)
@@ -268,7 +268,7 @@ void Mp2Processor::_set_sample_rate(const i32 iSampleRate)
 // //
 ////////////////////////////////////////////////////////////////////////////////
 
-i32 Mp2Processor::_get_mp2_sample_rate(const std::vector<u8> & iFrame)
+i32 Mp2Processor::_get_mp2_sample_rate(const std::vector<u8>& iFrame)
 {
   if (iFrame.empty())
   {
@@ -289,14 +289,14 @@ i32 Mp2Processor::_get_mp2_sample_rate(const std::vector<u8> & iFrame)
 // DECODE HELPER FUNCTIONS                                                    //
 ////////////////////////////////////////////////////////////////////////////////
 
-SQuantizerSpec * Mp2Processor::_read_allocation(i32 sb, i32 b2_table)
+SQuantizerSpec* Mp2Processor::_read_allocation(i32 sb, i32 b2_table)
 {
   i32 table_idx = quant_lut_step3[b2_table][sb];
   table_idx = quant_lut_step4[table_idx & 15][_get_bits(table_idx >> 4)];
   return table_idx ? (&quantizer_table[table_idx - 1]) : nullptr;
 }
 
-void Mp2Processor::_read_samples(SQuantizerSpec * opQuantSpec, i32 iScalefactor, i32 * const opSamples)
+void Mp2Processor::_read_samples(SQuantizerSpec* opQuantSpec, i32 iScalefactor, i32* const opSamples)
 {
   i32 idx, adj, scale;
 
@@ -374,7 +374,7 @@ i32 Mp2Processor::_get_bits(const i32 iBitCount)
 // FRAME DECODE FUNCTION                                                      //
 ////////////////////////////////////////////////////////////////////////////////
 
-i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8> & iFrame, i16 * opPcm)
+i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8>& iFrame, i16* opPcm)
 {
   u32 bit_rate_index_minus1;
   u32 sampling_frequency;
@@ -608,7 +608,7 @@ i32 Mp2Processor::_mp2_decode_frame(const std::vector<u8> & iFrame, i16 * opPcm)
   return frame_size;
 }
 
-void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
+void Mp2Processor::_process_pad_data(const std::vector<u8>& iBits)
 {
   i16 vLengthBytes = 24 * bitRate / 8;
 
@@ -644,7 +644,7 @@ void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
     return;
   }
 
-  const u8 * pBits;
+  const u8* pBits;
 
   if (xPadInd == 0x1) // short X-PAD
   {
@@ -657,7 +657,7 @@ void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
   }
 
 
-  auto * const pPadData = make_vla(u8, vLengthBytes);
+  auto* const pPadData = make_vla(u8, vLengthBytes);
 
   // convert one-bit-per-byte to a byte value stream
   for (i16 i = 0; i < vLengthBytes; i++)
@@ -675,7 +675,7 @@ void Mp2Processor::_process_pad_data(const std::vector<u8> & iBits)
 
 //
 //	bits to MP2 frames, amount is amount of bits
-void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
+void Mp2Processor::add_to_frame(const std::vector<u8>& iBits)
 {
   i16 lf = sampleRate == 48000 ? MP2framesize : 2 * MP2framesize;
   const i16 amount = MP2framesize;
@@ -746,9 +746,9 @@ void Mp2Processor::add_to_frame(const std::vector<u8> & iBits)
 
 }
 
-void Mp2Processor::_add_bit_to_mp2(std::vector<u8> & ioV, u8 ib, i16 iNm)
+void Mp2Processor::_add_bit_to_mp2(std::vector<u8>& ioV, u8 ib, i16 iNm)
 {
-  u8 & outByteRef = ioV[iNm / 8];
+  u8& outByteRef = ioV[iNm / 8];
   const i16 bitnr = 7 - (iNm & 7);
   const u8 newByte = (1 << bitnr);
 

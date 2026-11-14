@@ -39,12 +39,12 @@
     sym = tmp;\
 }
 
-	u64 *d = (u64 *)decisions;
+	u64* d = (u64*)decisions;
 	memset(d, 0, nbits*sizeof(u64));
-    COMPUTETYPE *old_metrics = metrics1;
-    COMPUTETYPE *new_metrics = metrics2;
-    const COMPUTETYPE *Branchtab = Branchtable;
-    const i16 *syms = input;
+    COMPUTETYPE* old_metrics = metrics1;
+    COMPUTETYPE* new_metrics = metrics2;
+    const COMPUTETYPE* Branchtab = Branchtable;
+    const i16* syms = input;
 
 	while(nbits--)
     {
@@ -88,7 +88,7 @@
         d++;
 
 		// Swap pointers to old and new metrics
-		COMPUTETYPE *temp = new_metrics;
+		COMPUTETYPE* temp = new_metrics;
 		new_metrics = old_metrics;
 		old_metrics = temp;
     }

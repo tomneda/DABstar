@@ -11,24 +11,24 @@
 
 class	limeWidget {
 public:
-	QLabel		*titleLabel;
-	QSpinBox	*gainSelector;
-	QLCDNumber	*actualGain;
-	QLabel		*gainLabel;
-	QComboBox	*antennaList;
-	QLabel		*antennaLabel;
-	QLCDNumber	*underrunDisplay;
-	QLabel		*underrunLabel;
-	QLCDNumber	*overrunDisplay;
-	QLabel		*overrunLabel;
-	QPushButton	*dumpButton;
-	QCheckBox	*filterSelector;
-	QSpinBox	*filterDepth;
+	QLabel* titleLabel;
+	QSpinBox* gainSelector;
+	QLCDNumber* actualGain;
+	QLabel* gainLabel;
+	QComboBox* antennaList;
+	QLabel* antennaLabel;
+	QLCDNumber* underrunDisplay;
+	QLabel* underrunLabel;
+	QLCDNumber* overrunDisplay;
+	QLabel* overrunLabel;
+	QPushButton* dumpButton;
+	QCheckBox* filterSelector;
+	QSpinBox* filterDepth;
 
 	limeWidget	() {}
 	~limeWidget	() {}
 
-void	setupUi		(QWidget *qw) {
+void	setupUi		(QWidget* qw) {
 	titleLabel	= new QLabel	("lime handler");
 	gainSelector	= new QSpinBox	();
 	gainLabel	= new QLabel	("gain");
@@ -51,31 +51,31 @@ void	setupUi		(QWidget *qw) {
 	overrunDisplay	->  setFrameShape (QFrame::NoFrame);
         overrunDisplay	->  setSegmentStyle (QLCDNumber::Flat);
 
-	QHBoxLayout *line2	= new QHBoxLayout ();
+	QHBoxLayout* line2	= new QHBoxLayout ();
 	line2		-> addWidget (gainSelector);
 	line2		-> addWidget (gainLabel);
 	line2		-> addWidget (actualGain);
 
-	QHBoxLayout *line3	= new QHBoxLayout ();
+	QHBoxLayout* line3	= new QHBoxLayout ();
 	line3		-> addWidget (antennaList);
 	line3		-> addSpacing (3);
 	line3		-> addWidget (antennaLabel);
 
-	QHBoxLayout *line4	= new QHBoxLayout ();
+	QHBoxLayout* line4	= new QHBoxLayout ();
 	line4		-> addWidget (underrunDisplay);
 	line4		-> addWidget (underrunLabel);
 	line4		-> addWidget (filterSelector);
 
-	QHBoxLayout *line5	= new QHBoxLayout ();
+	QHBoxLayout* line5	= new QHBoxLayout ();
 	line5		-> addWidget (overrunDisplay);
 	line5		-> addWidget (overrunLabel);
 	line5		-> addWidget (filterDepth);
 
-	QHBoxLayout *line1	= new QHBoxLayout ();
+	QHBoxLayout* line1	= new QHBoxLayout ();
 	line1		-> addWidget (titleLabel);
 	line1		-> addWidget (dumpButton);
 	
-	QVBoxLayout *base	= new QVBoxLayout ();
+	QVBoxLayout* base	= new QVBoxLayout ();
 	base		-> addItem	(line1);
 	base		-> addItem	(line2);
 	base		-> addItem	(line3);

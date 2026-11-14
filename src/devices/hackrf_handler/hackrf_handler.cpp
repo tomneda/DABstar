@@ -52,7 +52,7 @@
 constexpr i32 DEFAULT_LNA_GAIN = 16;
 constexpr i32 DEFAULT_VGA_GAIN = 30;
 
-HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVersion) :
+HackRfHandler::HackRfHandler(QSettings* iSetting, const QString& iRecorderVersion) :
   Ui_hackrfWidget(),
   mpHackrfSettings(iSetting),
   mRecorderVersion(iRecorderVersion)
@@ -66,7 +66,7 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   myFrame.move(QPoint(x, y));
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
-  const char *libraryString = "libhackrf";
+  const char* libraryString = "libhackrf";
   mpHandle = new QLibrary(libraryString);
   mpHandle->load();
 
@@ -108,14 +108,14 @@ HackRfHandler::HackRfHandler(QSettings * iSetting, const QString & iRecorderVers
   slot_enable_bias_t(1); // value is a dummy
   slot_enable_amp(1);    // value is a dummy
 
-  if (hackrf_device_list_t const * deviceList = mHackrf.device_list();
+  if (hackrf_device_list_t const* deviceList = mHackrf.device_list();
       deviceList != nullptr)
   {
     std::stringstream swInfo;
     swInfo << "Ver: " << mHackrf.library_version() << ", " << "Rel: " << mHackrf.library_release();
     lblSwInfo->setText(swInfo.str().c_str());
 
-    char const * pSerial = deviceList->serial_numbers[0]; // pSerial may be NULL!
+    char const* pSerial = deviceList->serial_numbers[0]; // pSerial may be NULL!
 
     if (pSerial != nullptr)
     {
@@ -237,11 +237,11 @@ void HackRfHandler::slot_set_ppm_correction(i32 ppm)
 //  we use a static large buffer, rather than trying to allocate a buffer on the stack
 static std::array<ci8, 32 * 32768> buffer;
 
-static i32 callback(hackrf_transfer * transfer)
+static i32 callback(hackrf_transfer* transfer)
 {
-  auto * ctx = static_cast<HackRfHandler *>(transfer->rx_ctx);
-  const i8 * const p = reinterpret_cast<const i8 *>(transfer->buffer);
-  HackRfHandler::TRingBuffer * q = &(ctx->mRingBuffer);
+  auto* ctx = static_cast<HackRfHandler*>(transfer->rx_ctx);
+  const i8* const p = reinterpret_cast<const i8*>(transfer->buffer);
+  HackRfHandler::TRingBuffer* q = &(ctx->mRingBuffer);
   i32 bufferIndex = 0;
 
   for (i32 i = 0; i < transfer->valid_length / 2; ++i)
@@ -309,9 +309,9 @@ void HackRfHandler::stopReader()
 
 //  The brave old getSamples. For the hackrf, we get
 //  size still in I/Q pairs
-i32 HackRfHandler::getSamples(const std::span<cf32> & oV)
+i32 HackRfHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   const auto temp = make_vla_span(ci8, size);
   i32 amount = mRingBuffer.get_data_from_ring_buffer(temp.data(), size);
@@ -512,7 +512,7 @@ void HackRfHandler::check_err_throw(i32 iResult) const
   }
 }
 
-bool HackRfHandler::check_err(i32 iResult, const char * const iFncName, u32 iLine) const
+bool HackRfHandler::check_err(i32 iResult, const char* const iFncName, u32 iLine) const
 {
   if (iResult != HACKRF_SUCCESS)
   {
@@ -522,7 +522,7 @@ bool HackRfHandler::check_err(i32 iResult, const char * const iFncName, u32 iLin
   return true;
 }
 
-template<typename T> bool HackRfHandler::load_method(T *& oMethodPtr, const char * iName, u32 iLine) const
+template<typename T> bool HackRfHandler::load_method(T*& oMethodPtr, const char* iName, u32 iLine) const
 {
   oMethodPtr = reinterpret_cast<T*>(mpHandle->resolve(iName));
 

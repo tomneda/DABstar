@@ -33,7 +33,7 @@
 #include <algorithm>
 #include <ctime>
 
-SampleReader::SampleReader(const DabRadio * mr, IDeviceHandler * iTheRig, RingBuffer<cf32> * iSpectrumBuffer)
+SampleReader::SampleReader(const DabRadio* mr, IDeviceHandler* iTheRig, RingBuffer<cf32>* iSpectrumBuffer)
   : myRadioInterface(mr)
   , theRig(iTheRig)
   , spectrumBuffer(iSpectrumBuffer)
@@ -99,12 +99,12 @@ cf32 SampleReader::get_sample(const f32 iPhaseOffset)
   return mSampleBuffer[0];
 }
 
-void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSamples, const f32 iFreqOffsetBBHz, const bool iShowSpec)
+void SampleReader::get_samples(TArrayTn& oV, const i32 iStartIdx, i32 iNoSamples, const f32 iFreqOffsetBBHz, const bool iShowSpec)
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
 
   const std::span<cf32> samples = std::span(oV).subspan(iStartIdx, iNoSamples);
-  cf32 * const buffer = samples.data();
+  cf32* const buffer = samples.data();
 
   while (running.load() && theRig->Samples() < iNoSamples)
   {
@@ -297,11 +297,11 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
   }
 }
 
-void SampleReader::_dump_samples_to_file(const std::span<const cf32> & iV)
+void SampleReader::_dump_samples_to_file(const std::span<const cf32>& iV)
 {
   const f32 scaleFactor = (INT16_MAX >> 2) / sLevel; // scale to 14 bit mean dynamic range
 
-  for (const cf32 & v : iV)
+  for (const cf32& v : iV)
   {
     dumpBuffer[2 * dumpIndex + 0] = (i16)(real(v) * scaleFactor);
     dumpBuffer[2 * dumpIndex + 1] = (i16)(imag(v) * scaleFactor);
@@ -314,7 +314,7 @@ void SampleReader::_dump_samples_to_file(const std::span<const cf32> & iV)
   }
 }
 
-void SampleReader::start_dumping(SNDFILE * f)
+void SampleReader::start_dumping(SNDFILE* f)
 {
   dumpIndex = 0;
   dumpfilePointer.store(f);
@@ -325,7 +325,7 @@ void SampleReader::stop_dumping()
   dumpfilePointer.store(nullptr);
 }
 
-void SampleReader::get_linear_peak_level_and_clear(f32 & oLevelPeak, f32 & oLevelMean)
+void SampleReader::get_linear_peak_level_and_clear(f32& oLevelPeak, f32& oLevelMean)
 {
   oLevelMean = sLevel;
   oLevelPeak = peakLevel;
@@ -346,7 +346,7 @@ void SampleReader::set_dc_and_iq_correction(const bool iDoDcCorr, const bool iDo
   mDoIqCorr = iDoIqCorr;
 }
 
-void SampleReader::set_cir_buffer(RingBuffer<cf32> * iCirBuffer)
+void SampleReader::set_cir_buffer(RingBuffer<cf32>* iCirBuffer)
 {
   cirBuffer = iCirBuffer;
 }

@@ -15,7 +15,7 @@
 
 static constexpr i32 cTimehoutHideBar = 5000;
 
-MotSlideProgress::MotSlideProgress(GapProgressBar * const pGapProgBarMot)
+MotSlideProgress::MotSlideProgress(GapProgressBar* const pGapProgBarMot)
   : mpGapProgBarMot(pGapProgBarMot)
 {
   mpGapProgBarMot->setMaximum(100);

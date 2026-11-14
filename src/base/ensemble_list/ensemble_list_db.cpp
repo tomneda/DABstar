@@ -114,11 +114,11 @@ void EnsembleListDB::delete_table()
 bool EnsembleListDB::is_table_existing(const EDataMode iDataMode) const
 {
   assert(iDataMode != EDataMode::Invalid);
-  const QString & tabName = (iDataMode == EDataMode::Device ? sTabDeviceEnsList : sTabFileEnsList);
+  const QString& tabName = (iDataMode == EDataMode::Device ? sTabDeviceEnsList : sTabFileEnsList);
   return mDB.tables().contains(tabName);
 }
 
-bool EnsembleListDB::insert_or_update_entry(const SDbEntryData & iEntryData, const EDbDataType iDataType) const
+bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, const EDbDataType iDataType) const
 {
   // add new entry (UNIQUE constraint on FId will cause REPLACE if it already exists due to CREATE TABLE definition)
   QSqlQuery queryAdd(mDB);
@@ -221,7 +221,7 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData & iEntryData, con
   return true;
 }
 
-EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString & iFIdOrCh) const
+EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString& iFIdOrCh) const
 {
   QSqlQuery query(mDB);
   query.prepare("SELECT " +
@@ -245,7 +245,7 @@ EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString & iFIdOrCh)
   return entryData;
 }
 
-bool EnsembleListDB::is_entry_existing(const QString & iFIdOrCh) const
+bool EnsembleListDB::is_entry_existing(const QString& iFIdOrCh) const
 {
   QSqlQuery query(mDB);
   query.prepare("SELECT " + sTeFIdOrCh + " FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :fidorch");
@@ -254,7 +254,7 @@ bool EnsembleListDB::is_entry_existing(const QString & iFIdOrCh) const
   return query.exec() && query.next();
 }
 
-bool EnsembleListDB::delete_entry(const QString & iFIdOrCh) const
+bool EnsembleListDB::delete_entry(const QString& iFIdOrCh) const
 {
   QSqlQuery queryDel(mDB);
   queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :fidorch");
@@ -292,9 +292,9 @@ i32 EnsembleListDB::get_nr_unscanned_entries() const
   return (query.exec() && query.next() ? query.value(0).toInt() : -1);
 }
 
-QAbstractItemModel * EnsembleListDB::create_model()
+QAbstractItemModel* EnsembleListDB::create_model()
 {
-  auto * const model = new QSqlQueryModel(this);
+  auto* const model = new QSqlQueryModel(this);
 
   QStringList cols;
   if (mDataMode == EDataMode::Files)
@@ -366,7 +366,7 @@ QAbstractItemModel * EnsembleListDB::create_model()
   return model;
 }
 
-QString EnsembleListDB::get_full_path(const QString & iFId) const
+QString EnsembleListDB::get_full_path(const QString& iFId) const
 {
   assert(mDataMode == EDataMode::Files);
   QSqlQuery query(mDB);
@@ -389,7 +389,7 @@ QString EnsembleListDB::get_full_path(const QString & iFId) const
   return {};
 }
 
-void EnsembleListDB::set_data_filter(const SDataFilter & iDataFilter)
+void EnsembleListDB::set_data_filter(const SDataFilter& iDataFilter)
 {
   mDataFilter = iDataFilter;
 }
@@ -420,7 +420,7 @@ QString EnsembleListDB::_error_str() const
   return mDB.lastError().text(); // make a copy of the string as the DB object could be invalid when using it
 }
 
-void EnsembleListDB::_exec_simple_query(const QString & iQuery)
+void EnsembleListDB::_exec_simple_query(const QString& iQuery)
 {
   QSqlQuery query(mDB);
 
@@ -433,7 +433,7 @@ void EnsembleListDB::_exec_simple_query(const QString & iQuery)
   }
 }
 
-const QString & EnsembleListDB::_cur_tab_name() const
+const QString& EnsembleListDB::_cur_tab_name() const
 {
   assert(mDataMode != EDataMode::Invalid);
   return (mDataMode == EDataMode::Device ? sTabDeviceEnsList : sTabFileEnsList);

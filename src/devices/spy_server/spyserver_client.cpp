@@ -53,7 +53,7 @@ Q_LOGGING_CATEGORY(sLogSpyServerClient, "SpyServerClient", QtDebugMsg)
 #define DEFAULT_FREQUENCY   (Khz (227360))
 #define SPY_SERVER_8_SETTINGS   "SPY_SERVER_8_SETTINGS"
 
-SpyServerClient::SpyServerClient(QSettings * /*s*/)
+SpyServerClient::SpyServerClient(QSettings* /*s*/)
 {
   // spyServer_settings = s;
   setupUi(&mFrame);
@@ -426,9 +426,9 @@ void SpyServerClient::stopReader()
 
 //
 //
-i32 SpyServerClient::getSamples(const std::span<cf32> & oV)
+i32 SpyServerClient::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   i32 amount = 0;
   amount = mRingBuffer2.get_data_from_ring_buffer(V, size);

@@ -39,11 +39,11 @@ class	tcpServer {
 public:
 		tcpServer	(i32);
 		~tcpServer	(void);
-	void	sendData	(const std::span<const u8> & iData);
+	void	sendData	(const std::span<const u8>& iData);
 	void	run		(i32 port);
 private:
 	std::thread	threadHandle;
-	RingBuffer<u8> 	*buffer;
+	RingBuffer<u8>* buffer;
 	std::atomic<bool>	running;
 	std::atomic<bool>	connected;
 	i32			socketDesc;

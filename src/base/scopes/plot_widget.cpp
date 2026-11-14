@@ -18,7 +18,7 @@
 #include <QPainter>
 #include <cmath>
 
-PlotWidget::PlotWidget(QWidget * const parent)
+PlotWidget::PlotWidget(QWidget* const parent)
   : QChartView(parent)
 {
   QLinearGradient bgGradient(0, 0, 0, 1);
@@ -26,7 +26,7 @@ PlotWidget::PlotWidget(QWidget * const parent)
   bgGradient.setColorAt(0.0, QColor(50, 55, 67));
   bgGradient.setColorAt(1.0, QColor(15, 17, 21));
 
-  auto * const ch = new QChart();
+  auto* const ch = new QChart();
   ch->setBackgroundBrush(bgGradient);
   ch->legend()->hide();
   ch->setMargins(QMargins(2, 2, 2, 2));
@@ -58,7 +58,7 @@ PlotWidget::PlotWidget(QWidget * const parent)
   setRenderHint(QPainter::Antialiasing, false);
   setMouseTracking(true);
 
-  connect(ch, &QChart::plotAreaChanged, this, [this](const QRectF & iPlotArea)
+  connect(ch, &QChart::plotAreaChanged, this, [this](const QRectF& iPlotArea)
   {
     const i32 left = (i32)std::round(iPlotArea.left());
     const i32 right = (i32)std::round(width() - iPlotArea.right());
@@ -159,7 +159,7 @@ void PlotWidget::set_y_tick_dynamic(const f64 iAnchor, const f64 iInterval) cons
   _update_y_label_format();
 }
 
-void PlotWidget::setup_x_zoom(const SRange & iRange)
+void PlotWidget::setup_x_zoom(const SRange& iRange)
 {
   _init_axis_data(mXData, iRange);
   if (!mXData.isZoomed)
@@ -168,7 +168,7 @@ void PlotWidget::setup_x_zoom(const SRange & iRange)
   }
 }
 
-void PlotWidget::setup_y_zoom(const SRange & iRange)
+void PlotWidget::setup_y_zoom(const SRange& iRange)
 {
   _init_axis_data(mYData, iRange);
   if (!mYData.isZoomed)
@@ -206,7 +206,7 @@ void PlotWidget::reset_y_zoom()
   emit signal_y_zoom_reset();
 }
 
-void PlotWidget::_init_axis_data(SAxisData & oData, const SRange & iRange) const
+void PlotWidget::_init_axis_data(SAxisData& oData, const SRange& iRange) const
 {
   oData.range = iRange;
   const f64 span = iRange.MaxDefault - iRange.MinDefault;
@@ -214,7 +214,7 @@ void PlotWidget::_init_axis_data(SAxisData & oData, const SRange & iRange) const
   oData.allowChange = (span > 0.0);
 }
 
-void PlotWidget::_zoom_axis(QValueAxis * const iopAxis, SAxisData & ioData, const f64 iPivot, const f64 iScale) const
+void PlotWidget::_zoom_axis(QValueAxis* const iopAxis, SAxisData& ioData, const f64 iPivot, const f64 iScale) const
 {
   if (!ioData.allowChange) return;
 
@@ -275,7 +275,7 @@ void PlotWidget::_zoom_axis(QValueAxis * const iopAxis, SAxisData & ioData, cons
   }
 }
 
-void PlotWidget::_pan_axis(QValueAxis * const iopAxis, const SAxisData & ioData, const f64 iDeltaValue) const
+void PlotWidget::_pan_axis(QValueAxis* const iopAxis, const SAxisData& ioData, const f64 iDeltaValue) const
 {
   if (!ioData.allowChange) return;
 
@@ -291,7 +291,7 @@ void PlotWidget::_pan_axis(QValueAxis * const iopAxis, const SAxisData & ioData,
   }
 }
 
-void PlotWidget::wheelEvent(QWheelEvent * const iopEvent)
+void PlotWidget::wheelEvent(QWheelEvent* const iopEvent)
 {
   const QPointF screenPos = iopEvent->position();
   const QPointF chartValue = chart()->mapToValue(screenPos);
@@ -312,7 +312,7 @@ void PlotWidget::wheelEvent(QWheelEvent * const iopEvent)
   iopEvent->accept();
 }
 
-void PlotWidget::mousePressEvent(QMouseEvent * const iopEvent)
+void PlotWidget::mousePressEvent(QMouseEvent* const iopEvent)
 {
   if (iopEvent->button() == Qt::LeftButton)
   {
@@ -334,7 +334,7 @@ void PlotWidget::mousePressEvent(QMouseEvent * const iopEvent)
   QChartView::mousePressEvent(iopEvent);
 }
 
-void PlotWidget::mouseReleaseEvent(QMouseEvent * const iopEvent)
+void PlotWidget::mouseReleaseEvent(QMouseEvent* const iopEvent)
 {
   if (iopEvent->button() == Qt::LeftButton)
   {
@@ -343,7 +343,7 @@ void PlotWidget::mouseReleaseEvent(QMouseEvent * const iopEvent)
   QChartView::mouseReleaseEvent(iopEvent);
 }
 
-void PlotWidget::mouseMoveEvent(QMouseEvent * const iopEvent)
+void PlotWidget::mouseMoveEvent(QMouseEvent* const iopEvent)
 {
   if (mPanning)
   {
@@ -369,7 +369,7 @@ void PlotWidget::mouseMoveEvent(QMouseEvent * const iopEvent)
   QChartView::mouseMoveEvent(iopEvent);
 }
 
-void PlotWidget::resizeEvent(QResizeEvent * const iopEvent)
+void PlotWidget::resizeEvent(QResizeEvent* const iopEvent)
 {
   QChartView::resizeEvent(iopEvent);
   _reapply_auto_ticks();

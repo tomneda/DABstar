@@ -21,8 +21,8 @@ struct SRawEntry
 {
   u8           ecc;
   u8           countryId;
-  const char * ITU_Code;
-  const char * Country;
+  const char* ITU_Code;
+  const char* Country;
 };
 
 // ITU Regions — ETSI TS 101 756 V2.4.1, clause 5.4
@@ -328,7 +328,7 @@ static constexpr std::array cTable3to7 =
 ItuTables::ItuTables()
 {
   qDebug() << "Initializing ITU tables with" << cTable3to7.size() << "entries";
-  for (const auto & te : cTable3to7)
+  for (const auto& te : cTable3to7)
   {
     const u16 key = (static_cast<u16>(te.ecc) << 8) | static_cast<u16>(te.countryId);
     mItuMap.insert({ key, { te.ITU_Code, te.Country } }); // insert keeps first on duplicate key
@@ -336,7 +336,7 @@ ItuTables::ItuTables()
   qDebug() << "ITU tables initialization complete with" << mItuMap.size() << "unique entries";
 }
 
-const ItuTables::SItuEntry & ItuTables::find_ITU_entry(const u8 iEcc, const u8 iCountryId) const
+const ItuTables::SItuEntry& ItuTables::find_ITU_entry(const u8 iEcc, const u8 iCountryId) const
 {
   const auto it = mItuMap.find((static_cast<u16>(iEcc) << 8) | static_cast<u16>(iCountryId));
   if (it != mItuMap.end())

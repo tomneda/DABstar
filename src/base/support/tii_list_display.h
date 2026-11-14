@@ -65,14 +65,14 @@ public:
     bool          hasDbEntry = true;
   };
 
-  void set_window_title(const QString &);
-  void set_channel(const QString & iChannel) { mCurChannel = iChannel; }
-  void add_row(const STiiDataEntry & iTr, const SDerivedData & iDD, bool iHasDbEntry = true);
+  void set_window_title(const QString&);
+  void set_channel(const QString& iChannel) { mCurChannel = iChannel; }
+  void add_row(const STiiDataEntry& iTr, const SDerivedData& iDD, bool iHasDbEntry = true);
   void start_adding();
   void show() const;
   void hide() const;
   void setVisible(bool iVisible) const { if (iVisible) show(); else hide(); }
-  [[nodiscard]] QWidget * get_widget() const { return mpWidget.get(); }
+  [[nodiscard]] QWidget* get_widget() const { return mpWidget.get(); }
   i32 get_nr_rows() const;
   void finish_adding();
   void clear();
@@ -88,11 +88,11 @@ private:
 
   static constexpr i32 cColNr = 10;
   QScopedPointer<QWidget> mpWidget;
-  QTableWidget * mpTableWidget = nullptr;
-  QCheckBox    * mpCbKeepPersistent = nullptr;
-  QCheckBox    * mpCbIgnoreNoDb = nullptr;
-  QPushButton  * mpBtnSaveList = nullptr;
-  QPushButton  * mpBtnOpenFolder = nullptr;
+  QTableWidget* mpTableWidget = nullptr;
+  QCheckBox* mpCbKeepPersistent = nullptr;
+  QCheckBox* mpCbIgnoreNoDb = nullptr;
+  QPushButton* mpBtnSaveList = nullptr;
+  QPushButton* mpBtnOpenFolder = nullptr;
 
   std::vector<STableRowEntry> mEntries;
   std::vector<STableRowEntry> mCurrentScanEntries;

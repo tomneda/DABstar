@@ -25,24 +25,24 @@ class WindowVisibilityWatcher : public QObject
   Q_OBJECT
 
 public:
-  explicit WindowVisibilityWatcher(QObject * parent = nullptr);
-  explicit WindowVisibilityWatcher(QWidget * ipTarget, QObject * parent = nullptr);
+  explicit WindowVisibilityWatcher(QObject* parent = nullptr);
+  explicit WindowVisibilityWatcher(QWidget* ipTarget, QObject* parent = nullptr);
   ~WindowVisibilityWatcher() override;
 
-  void attach(QWidget * ipTarget);
+  void attach(QWidget* ipTarget);
   void detach();
 
   [[nodiscard]] bool is_target_visible() const;
-  [[nodiscard]] QWidget * get_target() const { return mpTarget.data(); }
+  [[nodiscard]] QWidget* get_target() const { return mpTarget.data(); }
 
   // Convenience helper to bind a target window to an IndicatorButton
-  static WindowVisibilityWatcher * bind(QWidget * ipTarget, IndicatorButton * ipButton);
+  static WindowVisibilityWatcher* bind(QWidget* ipTarget, IndicatorButton* ipButton);
 
 signals:
   void signal_visibility_changed(bool iVisible);
 
 protected:
-  bool eventFilter(QObject * watched, QEvent * event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
   QPointer<QWidget> mpTarget;

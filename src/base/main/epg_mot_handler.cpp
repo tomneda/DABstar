@@ -31,7 +31,7 @@
 
 Q_LOGGING_CATEGORY(sLogEpgMot, "EpgMot", QtInfoMsg)
 
-EpgMotHandler::EpgMotHandler(const SResourceConfig & iCfg, QObject * ipParent)
+EpgMotHandler::EpgMotHandler(const SResourceConfig& iCfg, QObject* ipParent)
   : QObject(ipParent)
   , mpConfig(iCfg.pConfig)
   , mpPictureLabel(iCfg.pPictureLabel)
@@ -72,7 +72,7 @@ void EpgMotHandler::slot_init_paths()
   mEpgPath = basePath + "EPG/";
 }
 
-void EpgMotHandler::set_channel_info(const QString & iFIdOrChDescr, const QString & iEnsembleName)
+void EpgMotHandler::set_channel_info(const QString& iFIdOrChDescr, const QString& iEnsembleName)
 {
   mCurFIdOrChDescr = iFIdOrChDescr;
   mCurEnsembleName = iEnsembleName;
@@ -87,7 +87,7 @@ void EpgMotHandler::show_pause_slide() const
 {
   // const bool showSecondSlide = (QDateTime::currentDateTime().time().second() / 10 & 0x1) == 0;
   // const char * const picFile = (showSecondSlide ? ":res/logo/dabinvlogo.png" : ":res/logo/dabstar320x240.png");
-  const char * const picFile = ":res/logo/dabstar320x240.png";
+  const char* const picFile = ":res/logo/dabstar320x240.png";
 
   QPixmap p;
   if (p.load(picFile, "png"))
@@ -117,7 +117,7 @@ QString EpgMotHandler::get_pic_folder() const
   return (mMotPicPathLast.isEmpty() ? mPicPath : QFileInfo(mMotPicPathLast).absolutePath());
 }
 
-void EpgMotHandler::handle_mot_object(const QByteArray & iResult, const QString & iObjectName, const i32 iContentType, bool /*iDirElement*/)
+void EpgMotHandler::handle_mot_object(const QByteArray& iResult, const QString& iObjectName, const i32 iContentType, bool /*iDirElement*/)
 {
   qCDebug(sLogEpgMot) << "ObjectName" << iObjectName << "ContentType" << iContentType;
 
@@ -149,7 +149,7 @@ void EpgMotHandler::trigger_mot_indicator()
   mTimerMotReceived.start();
 }
 
-void EpgMotHandler::slot_set_epg_data(i32 /*iSId*/, i32 /*iTheTime*/, const QString & /*iTheText*/, const QString & /*iTheDescr*/)
+void EpgMotHandler::slot_set_epg_data(i32 /*iSId*/, i32 /*iTheTime*/, const QString& /*iTheText*/, const QString& /*iTheDescr*/)
 {
   // TODO: check EPG
 }
@@ -178,7 +178,7 @@ void EpgMotHandler::_slot_mot_timer_timeout()
   emit signal_mot_indicator(false);
 }
 
-bool EpgMotHandler::_save_mot_epg_data(const QByteArray & iResult, const QString & iObjectName, const i32 iContentType) const
+bool EpgMotHandler::_save_mot_epg_data(const QByteArray& iResult, const QString& iObjectName, const i32 iContentType) const
 {
   if (mEpgPath.isEmpty() || mpDabProcessor == nullptr)
   {
@@ -208,7 +208,7 @@ bool EpgMotHandler::_save_mot_epg_data(const QByteArray & iResult, const QString
   return true;
 }
 
-void EpgMotHandler::_save_mot_text(const QByteArray & iResult, const i32 /*iContentType*/, const QString & /*iName*/) const
+void EpgMotHandler::_save_mot_text(const QByteArray& iResult, const i32 /*iContentType*/, const QString& /*iName*/) const
 {
   if (mMotPath.isEmpty())
   {
@@ -239,7 +239,7 @@ void EpgMotHandler::_save_mot_text(const QByteArray & iResult, const i32 /*iCont
   }
 }
 
-void EpgMotHandler::_save_mot_object(const QByteArray & iResult, const QString & iName)
+void EpgMotHandler::_save_mot_object(const QByteArray& iResult, const QString& iName)
 {
   if (mMotPath.isEmpty())
   {
@@ -251,14 +251,14 @@ void EpgMotHandler::_save_mot_object(const QByteArray & iResult, const QString &
   _save_mot_text(iResult, 5, effectiveName);
 }
 
-void EpgMotHandler::_show_mot_image(const QByteArray & iData, const i32 iContentType, const QString & iPictureName, const i32 iDirs)
+void EpgMotHandler::_show_mot_image(const QByteArray& iData, const i32 iContentType, const QString& iPictureName, const i32 iDirs)
 {
   if (!mIsChannelRunning || iPictureName.isEmpty())
   {
     return;
   }
 
-  const char * type;
+  const char* type;
 
   switch (static_cast<MOTContentType>(iContentType))
   {
@@ -308,7 +308,7 @@ void EpgMotHandler::_show_mot_image(const QByteArray & iData, const i32 iContent
   }
 }
 
-void EpgMotHandler::_write_picture(const QPixmap & iPixMap) const
+void EpgMotHandler::_write_picture(const QPixmap& iPixMap) const
 {
   constexpr i32 w = 320;
   constexpr i32 h = 240;
@@ -327,7 +327,7 @@ void EpgMotHandler::_write_picture(const QPixmap & iPixMap) const
   mpPictureLabel->show();
 }
 
-QString EpgMotHandler::_check_and_create_dir(const QString & iPath) const
+QString EpgMotHandler::_check_and_create_dir(const QString& iPath) const
 {
   if (iPath.isEmpty())
   {
@@ -346,7 +346,7 @@ QString EpgMotHandler::_check_and_create_dir(const QString & iPath) const
   return dir;
 }
 
-void EpgMotHandler::_create_directory(const QString & iDirOrPath, const bool iContainsFileName) const
+void EpgMotHandler::_create_directory(const QString& iDirOrPath, const bool iContainsFileName) const
 {
   const QString temp = iContainsFileName ? iDirOrPath.left(iDirOrPath.lastIndexOf(QChar('/'))) : iDirOrPath;
 
@@ -356,14 +356,14 @@ void EpgMotHandler::_create_directory(const QString & iDirOrPath, const bool iCo
   }
 }
 
-QString EpgMotHandler::_generate_unique_file_path_from_hash(const QString & iBasePath, const QString & iFileExt, const QByteArray & iData, const i32 iDirLevel) const
+QString EpgMotHandler::_generate_unique_file_path_from_hash(const QString& iBasePath, const QString& iFileExt, const QByteArray& iData, const i32 iDirLevel) const
 {
   QString filename = QCryptographicHash::hash(iData, QCryptographicHash::Sha1).toHex().left(8);
   if (!iFileExt.isEmpty()) filename += "." + iFileExt;
   return _generate_file_path(iBasePath, filename, iDirLevel);
 }
 
-QString EpgMotHandler::_generate_file_path(const QString & iBasePath, const QString & iFileName, const i32 iDirLevel) const
+QString EpgMotHandler::_generate_file_path(const QString& iBasePath, const QString& iFileName, const i32 iDirLevel) const
 {
   static const QRegularExpression regex(R"([<>:\"/\\|?*\s])"); // remove invalid file path characters
 
@@ -381,9 +381,9 @@ QString EpgMotHandler::_generate_file_path(const QString & iBasePath, const QStr
   return path;
 }
 
-u32 EpgMotHandler::_extract_epg(const QString & iName, const u32 /*iEnsembleId*/) const
+u32 EpgMotHandler::_extract_epg(const QString& iName, const u32 /*iEnsembleId*/) const
 {
-  for (const auto & serv : *mpServiceList)
+  for (const auto& serv : *mpServiceList)
   {
     if (iName.contains(QString::number(serv.SId, 16), Qt::CaseInsensitive))
     {

@@ -4,7 +4,7 @@
 #include <sdrplay_api.h>
 #include "sdrplay_handler.h"
 
-Rsp_device::Rsp_device(SdrPlayHandler *parent, sdrplay_api_DeviceT *chosenDevice, i32 startFreq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue)
+Rsp_device::Rsp_device(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice, i32 startFreq, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue)
 {
   i32 mGRdB = GRdB;
   sdrplay_api_ErrT err;

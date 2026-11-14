@@ -72,7 +72,7 @@ static u16 const crctab_1021[256] = {
   0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-u16 calc_crc(const std::span<const u8> & iData)
+u16 calc_crc(const std::span<const u8>& iData)
 {
   u16 crc = 0xffff;
 
@@ -86,7 +86,7 @@ u16 calc_crc(const std::span<const u8> & iData)
 }
 
 // the CRC is expected in the last 2 bytes of iMsgWithCrc
-bool check_crc_bytes(const std::span<const u8> & iMsgWithCrc)
+bool check_crc_bytes(const std::span<const u8>& iMsgWithCrc)
 {
   if (iMsgWithCrc.size() < 2)
   {
@@ -101,14 +101,14 @@ bool check_crc_bytes(const std::span<const u8> & iMsgWithCrc)
   return (crc ^ accumulator) == 0;
 }
 
-bool check_CRC_bits(const std::span<const std::byte> & iBits)
+bool check_CRC_bits(const std::span<const std::byte>& iBits)
 {
-  return check_CRC_bits(std::span(reinterpret_cast<const u8 *>(iBits.data()), iBits.size()));
+  return check_CRC_bits(std::span(reinterpret_cast<const u8*>(iBits.data()), iBits.size()));
 }
 
-bool check_CRC_bits(const std::span<const u8> & iBits)
+bool check_CRC_bits(const std::span<const u8>& iBits)
 {
-  const u8 * const iIn = iBits.data();
+  const u8* const iIn = iBits.data();
   const i32 iSize = (i32)iBits.size();
   static const u8 crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
   i32 f;

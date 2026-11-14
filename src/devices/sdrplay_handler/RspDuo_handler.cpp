@@ -1,7 +1,7 @@
 #include "RspDuo_handler.h"
 #include "sdrplay_handler.h"
 
-RspDuo_handler::RspDuo_handler(SdrPlayHandler *mpParent, sdrplay_api_DeviceT *chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
+RspDuo_handler::RspDuo_handler(SdrPlayHandler* mpParent, sdrplay_api_DeviceT* chosenDevice, i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue)
   : Rsp_device(mpParent, chosenDevice, freq, agcMode, lnaState, GRdB, ppmValue)
 {
   i32 mLna_upperBound = lnaStates(freq) - 1;
@@ -63,7 +63,7 @@ bool RspDuo_handler::set_lna(i32 lnaState)
 
 bool RspDuo_handler::set_amPort(i32 amPort)
 {
-  sdrplay_api_RspDuoTunerParamsT * rspDuoTunerParams;
+  sdrplay_api_RspDuoTunerParamsT* rspDuoTunerParams;
   sdrplay_api_ErrT err;
 
   rspDuoTunerParams = &(mpChParams->rspDuoTunerParams);
@@ -100,7 +100,7 @@ bool RspDuo_handler::set_antenna(i32 antenna)
 
 bool RspDuo_handler::set_biasT(bool biasT_value)
 {
-  sdrplay_api_RspDuoTunerParamsT * rspDuoTunerParams;
+  sdrplay_api_RspDuoTunerParamsT* rspDuoTunerParams;
   sdrplay_api_ErrT err;
 
   rspDuoTunerParams = &(mpChParams->rspDuoTunerParams);
@@ -119,7 +119,7 @@ bool RspDuo_handler::set_biasT(bool biasT_value)
 
 bool RspDuo_handler::set_notch(bool on)
 {
-  sdrplay_api_RspDuoTunerParamsT * rspDuoTunerParams;
+  sdrplay_api_RspDuoTunerParamsT* rspDuoTunerParams;
   sdrplay_api_ErrT err;
 
   rspDuoTunerParams = &(mpChParams->rspDuoTunerParams);

@@ -12,24 +12,24 @@
 struct SChannelDescriptor
 {
 public:
-  explicit SChannelDescriptor(const bool & ioIsFileMode)
+  explicit SChannelDescriptor(const bool& ioIsFileMode)
     : usingFile(ioIsFileMode)
   {}
 
 private:
-  const bool & usingFile;
+  const bool& usingFile;
   QString absFilePath; // in case of a played file
   QString deviceName;  // in case of a device
   SIdentInfoEL identInfoEL{};
 
 public:
-  void set_device_name(const QString & iDeviceName) { deviceName = iDeviceName; }
-  bool set_ident_info(const SIdentInfoEL & iIdentInfoEL) { const bool b = (iIdentInfoEL.fIdOrCh != identInfoEL.fIdOrCh); identInfoEL = iIdentInfoEL; return b; }
-  [[nodiscard]] const SIdentInfoEL & get_ident_info() const { return identInfoEL; }
-  [[nodiscard]] const QString & get_fId_or_ch() const { return identInfoEL.fIdOrCh; }
+  void set_device_name(const QString& iDeviceName) { deviceName = iDeviceName; }
+  bool set_ident_info(const SIdentInfoEL& iIdentInfoEL) { const bool b = (iIdentInfoEL.fIdOrCh != identInfoEL.fIdOrCh); identInfoEL = iIdentInfoEL; return b; }
+  [[nodiscard]] const SIdentInfoEL& get_ident_info() const { return identInfoEL; }
+  [[nodiscard]] const QString& get_fId_or_ch() const { return identInfoEL.fIdOrCh; }
   [[nodiscard]] QString get_fId_or_ch_descr() const { return (usingFile ? "FId_" :  "CH_") + identInfoEL.fIdOrCh; } // add description
   [[nodiscard]] u32 get_sId_next() const { return identInfoEL.sIdToPlay; }
-  [[nodiscard]] const QString & get_device_or_file_name() const { return (usingFile ? absFilePath : deviceName); }
+  [[nodiscard]] const QString& get_device_or_file_name() const { return (usingFile ? absFilePath : deviceName); }
   [[nodiscard]] QString get_type_info() const { return (usingFile ? "FId " : "channel ") + identInfoEL.fIdOrCh; }
   [[nodiscard]] bool check_ensemble_list_scan_level_should_be_achieved(const EScanLevel iScanLevelToAchieve) const
   {

@@ -39,7 +39,7 @@
 
 Q_LOGGING_CATEGORY(sLogSpyServerHandler, "SpyServerHandler", QtDebugMsg)
 
-SpyServerHandler::SpyServerHandler(SpyServerClient * parent, const QString & ipAddress, i32 port, RingBuffer<u8> * outB)
+SpyServerHandler::SpyServerHandler(SpyServerClient* parent, const QString& ipAddress, i32 port, RingBuffer<u8>* outB)
   : inBuffer(64 * 32768)
   , tcpHandler(ipAddress, port, &inBuffer)
 {
@@ -120,7 +120,7 @@ void SpyServerHandler::run()
   }
 }
 
-bool SpyServerHandler::readHeader(struct MessageHeader & header)
+bool SpyServerHandler::readHeader(struct MessageHeader& header)
 {
   while (running.load() && (inBuffer.get_ring_buffer_read_available() < (i32)sizeof(struct MessageHeader)))
   {
@@ -132,13 +132,13 @@ bool SpyServerHandler::readHeader(struct MessageHeader & header)
     return false;
   }
 
-  inBuffer.get_data_from_ring_buffer((u8 *)(&header), sizeof(struct MessageHeader));
+  inBuffer.get_data_from_ring_buffer((u8*)(&header), sizeof(struct MessageHeader));
   return true;
 }
 
-bool SpyServerHandler::readBody(const std::span<u8> & oBody)
+bool SpyServerHandler::readBody(const std::span<u8>& oBody)
 {
-  u8 * const buffer = oBody.data();
+  u8* const buffer = oBody.data();
   const i32 size = (i32)oBody.size();
   i32 filler = 0;
   while (running.load())
@@ -167,8 +167,8 @@ bool SpyServerHandler::readBody(const std::span<u8> & oBody)
 
 bool SpyServerHandler::show_attendance()
 {
-  const u8 * protocolVersionBytes = (const u8 *)&ProtocolVersion;
-  const u8 * softwareVersionBytes = (const u8 *)SoftwareID.c_str();
+  const u8* protocolVersionBytes = (const u8*)&ProtocolVersion;
+  const u8* softwareVersionBytes = (const u8*)SoftwareID.c_str();
   std::vector<u8> args = std::vector<u8>(sizeof(ProtocolVersion) + SoftwareID.size());
 
   std::memcpy(&args[0], protocolVersionBytes, sizeof(ProtocolVersion));
@@ -184,7 +184,7 @@ void SpyServerHandler::cleanRecords()
   frameNumber = 0;
 }
 
-bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
+bool SpyServerHandler::send_command(u32 cmd, std::vector<u8>& args)
 {
   bool result;
   u32 headerLen = sizeof(CommandHeader);
@@ -204,7 +204,7 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
 
   for (u32 i = 0; i < sizeof(CommandHeader); i++)
   {
-    buffer[i] = ((u8 *)(&header))[i];
+    buffer[i] = ((u8*)(&header))[i];
   }
 
   if (argLen > 0)
@@ -220,7 +220,7 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
     tcpHandler.send_data(buffer);
     result = true;
   }
-  catch (std::exception & e)
+  catch (std::exception& e)
   {
     std::cerr << "caught exception while sending command.\n";
     result = false;
@@ -229,8 +229,8 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
   return result;
 }
 
-bool SpyServerHandler::process_device_info(u8 * buffer,
-                                       DeviceInfo & deviceInfo)
+bool SpyServerHandler::process_device_info(u8* buffer,
+                                       DeviceInfo& deviceInfo)
 {
   std::memcpy(&deviceInfo, buffer, sizeof(DeviceInfo));
   std::cerr << "\n**********\nDevice Info:"
@@ -250,10 +250,10 @@ bool SpyServerHandler::process_device_info(u8 * buffer,
   return true;
 }
 
-bool SpyServerHandler::process_client_sync(u8 * buffer, ClientSync & client_sync)
+bool SpyServerHandler::process_client_sync(u8* buffer, ClientSync& client_sync)
 {
-  std::memcpy((void *)(&client_sync), buffer, sizeof(ClientSync));
-  std::memcpy((void *)(&m_curr_client_sync), buffer, sizeof(ClientSync));
+  std::memcpy((void*)(&client_sync), buffer, sizeof(ClientSync));
+  std::memcpy((void*)(&m_curr_client_sync), buffer, sizeof(ClientSync));
   _gain = (f64)m_curr_client_sync.Gain;
   _center_freq = (f64)m_curr_client_sync.IQCenterFrequency;
   std::cerr << "\n**********\nClient sync:"
@@ -277,7 +277,7 @@ bool SpyServerHandler::process_client_sync(u8 * buffer, ClientSync & client_sync
   return true;
 }
 
-bool SpyServerHandler::get_deviceInfo(struct DeviceInfo & theDevice)
+bool SpyServerHandler::get_deviceInfo(struct DeviceInfo& theDevice)
 {
   if (!got_device_info)
     return false;
@@ -363,14 +363,14 @@ void SpyServerHandler::stop_running()
   }
 }
 
-bool SpyServerHandler::set_setting(u32 settingType, std::vector<u32> & params)
+bool SpyServerHandler::set_setting(u32 settingType, std::vector<u32>& params)
 {
   std::vector<u8> argBytes;
 
   if (params.size() > 0)
   {
     argBytes = std::vector<u8>(sizeof(SettingType) + params.size() * sizeof(u32));
-    u8 * settingBytes = (u8 *)&settingType;
+    u8* settingBytes = (u8*)&settingType;
 
     for (u32 i = 0; i < sizeof(u32); i++)
     {
@@ -387,7 +387,7 @@ bool SpyServerHandler::set_setting(u32 settingType, std::vector<u32> & params)
   return send_command(CMD_SET_SETTING, argBytes);
 }
 
-void SpyServerHandler::process_data(const std::span<const u8> & iBody)
+void SpyServerHandler::process_data(const std::span<const u8>& iBody)
 {
   outB->put_data_into_ring_buffer(iBody.data(), (i32)iBody.size());
   emit signal_data_ready();

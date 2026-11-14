@@ -98,10 +98,10 @@
 #endif
 
 // utility functions
-std::string HexDump(const unsigned char * p,
+std::string HexDump(const unsigned char* p,
                     unsigned int len,
                     unsigned int bytes_per_line = 16);
-std::string HexDump(const char * p,
+std::string HexDump(const char* p,
                     unsigned int len,
                     unsigned int bytes_per_line = 16);
 
@@ -110,8 +110,8 @@ std::string HexDump(const char * p,
 class NMLEscapeCodeHandler
 {
 public:
-  virtual bool Convert(std::string & dest,
-                       const std::string & src) const = 0;
+  virtual bool Convert(std::string& dest,
+                       const std::string& src) const = 0;
   virtual ~NMLEscapeCodeHandler() {}
 };
 
@@ -123,8 +123,8 @@ public:
   RemoveNMLEscapeSequences();
   virtual ~RemoveNMLEscapeSequences();
 
-  bool Convert(std::string & dest,
-               const std::string & src) const;
+  bool Convert(std::string& dest,
+               const std::string& src) const;
 };
 
 
@@ -135,8 +135,8 @@ public:
   NMLEscapeSequences2HTML();
   virtual ~NMLEscapeSequences2HTML();
 
-  bool Convert(std::string & dest,
-               const std::string & src) const;
+  bool Convert(std::string& dest,
+               const std::string& src) const;
 };
 
 
@@ -154,7 +154,7 @@ public:
   static const unsigned int NML_MIN_NR_OF_ITEM_BYTES;
   static const unsigned int NML_NR_OF_HEADER_BYTES;
   static const unsigned short ROOT_OBJECT_ID;
-  static const char * ObjectTypeString[];
+  static const char* ObjectTypeString[];
 
   //-------------------- types ------------------------
 
@@ -205,8 +205,8 @@ public:
 
   //-------------------- operators --------------------
   // const NML & operator=(const NML & prototype);
-  bool operator==(const NML & prototype) const;
-  std::ostream & operator<<(std::ostream & os) const;
+  bool operator==(const NML& prototype) const;
+  std::ostream& operator<<(std::ostream& os) const;
 
   inline std::shared_ptr<News_t> get_news_ptr() const
   {
@@ -253,7 +253,7 @@ public:
 
   /// NML object type string
   /// @return object type as string
-  inline const char * GetObjectTypeString() const
+  inline const char* GetObjectTypeString() const
   {
     if (_pNews->object_type <= LIST)
     {
@@ -294,7 +294,7 @@ public:
   }
 
   /// interpreted HTML content of NML object
-  inline const std::vector<SLinkData> & GetLinkUrlData() const
+  inline const std::vector<SLinkData>& GetLinkUrlData() const
   {
     return _pNews->linkVec;
   }
@@ -308,7 +308,7 @@ public:
 
   /// vector of items contained in NML object
   /// @return items for lists and menus, empty otherwise
-  inline const std::vector<Item_t> & GetItems() const
+  inline const std::vector<Item_t>& GetItems() const
   {
     return _pNews->item;
   }
@@ -357,37 +357,37 @@ public:
       _pNews->item[i].link_id_available = f;
   }
 
-  void SetError(NewsObjectId_t oid, const char * title);
-  void SetErrorDump(NewsObjectId_t oid, const RawNewsObject_t & rno, const char * error_msg);
+  void SetError(NewsObjectId_t oid, const char* title);
+  void SetErrorDump(NewsObjectId_t oid, const RawNewsObject_t& rno, const char* error_msg);
 
 private:
   bool _valid;
   std::shared_ptr<News_t> _pNews;
-  NMLEscapeCodeHandler * _EscapeCodeHandler;
+  NMLEscapeCodeHandler* _EscapeCodeHandler;
 };
 
-bool operator==(const NML::Item_t &, const NML::Item_t &);
-std::string DumpRaw(const NML::RawNewsObject_t & rno);
+bool operator==(const NML::Item_t&, const NML::Item_t&);
+std::string DumpRaw(const NML::RawNewsObject_t& rno);
 
 
 // factory class for NML objects
 class NMLFactory
 {
 public:
-  std::shared_ptr<NML> CreateNML(const NML::RawNewsObject_t & rno, const NMLEscapeCodeHandler * EscapeCodeHandler);
-  std::shared_ptr<NML> CreateError(NML::NewsObjectId_t oid, const char * title);
-  std::shared_ptr<NML> CreateErrorDump(NML::NewsObjectId_t oid, const NML::RawNewsObject_t & rno, const char * error_msg);
+  std::shared_ptr<NML> CreateNML(const NML::RawNewsObject_t& rno, const NMLEscapeCodeHandler* EscapeCodeHandler);
+  std::shared_ptr<NML> CreateError(NML::NewsObjectId_t oid, const char* title);
+  std::shared_ptr<NML> CreateErrorDump(NML::NewsObjectId_t oid, const NML::RawNewsObject_t& rno, const char* error_msg);
 
   NMLFactory() = default;
   ~NMLFactory() = default;
 
 private:
   // static NMLFactory * _instance;
-  NMLFactory & operator=(const NMLFactory &);
-  NMLFactory(const NMLFactory &);
+  NMLFactory& operator=(const NMLFactory&);
+  NMLFactory(const NMLFactory&);
 
-  unsigned char * getNextSection(std::vector<NML::SLinkData> & oLinkData, const unsigned char *& p, unsigned short & plen, unsigned short & reslen) const;
-  void extract_link_data(std::vector<NML::SLinkData> & oLinkData, const unsigned char * p) const;
+  unsigned char* getNextSection(std::vector<NML::SLinkData>& oLinkData, const unsigned char*& p, unsigned short& plen, unsigned short& reslen) const;
+  void extract_link_data(std::vector<NML::SLinkData>& oLinkData, const unsigned char* p) const;
 };
 
 

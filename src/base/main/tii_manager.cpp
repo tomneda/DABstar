@@ -35,7 +35,7 @@ static QString tiiNumber(const i32 n)
   return n < 10 ? QSL("0%1").arg(n) : QString::number(n);
 }
 
-TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
+TiiManager::TiiManager(const SResourceConfig& cfg, QObject* parent)
   : QObject(parent)
   , mpConfig(cfg.pConfig)
   , mpCmbTiiList(cfg.pCmbTiiList)
@@ -50,7 +50,7 @@ TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
   mTiiIndexCntTimer.setInterval(2000);  // cTiiIndexCntTimeoutMs
   connect(&mTiiIndexCntTimer, &QTimer::timeout, this, &TiiManager::_slot_tii_index_cnt_timeout);
 
-  auto * watcher = new WindowVisibilityWatcher(mTiiListDisplay.get_widget(), this);
+  auto* watcher = new WindowVisibilityWatcher(mTiiListDisplay.get_widget(), this);
   connect(watcher, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
     mShowTiiListWindow = visible;
     if (!DabRadio::is_terminating() && !mSuppressVisibilityStore)
@@ -62,7 +62,7 @@ TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
   mShowTiiListWindow = Settings::TiiViewer::varUiVisible.read().toBool();
 }
 
-void TiiManager::set_channel_info(const QString & fIdOrCh, const u32 eid, const QString & countryName, const QString & typeInfo)
+void TiiManager::set_channel_info(const QString& fIdOrCh, const u32 eid, const QString& countryName, const QString& typeInfo)
 {
   if (mCurFIdOrCh != fIdOrCh)
   {
@@ -99,7 +99,7 @@ bool TiiManager::init_tii_file()
   return ok;
 }
 
-bool TiiManager::fill_tii_cache(const QString & fileName)
+bool TiiManager::fill_tii_cache(const QString& fileName)
 {
   return mTiiHandler.fill_cache_from_tii_file(fileName);
 }
@@ -148,7 +148,7 @@ void TiiManager::load_table()
   }
 }
 
-void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
+void TiiManager::show_tii(const std::vector<STiiResult>& iTiiList)
 {
   if (!mIsChannelRunning)
   {
@@ -181,7 +181,7 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
 
   for (u32 index = 0; index < mTransmitterIds.size(); index++)
   {
-    const STiiResult & tii = mTransmitterIds[index];
+    const STiiResult& tii = mTransmitterIds[index];
 
     if (tii.mainId == 0xFF)
     {
@@ -196,7 +196,7 @@ void TiiManager::show_tii(const std::vector<STiiResult> & iTiiList)
     }
 
     // while playing a file the channel is unknown, so the database lookup has to be done channel independent
-    const STiiDataEntry * pTr = mTiiHandler.get_transmitter_data((mIsFileMode ? TiiHandler::cChannelAny : mCurFIdOrCh), mCurEid, tii.mainId, tii.subId);
+    const STiiDataEntry* pTr = mTiiHandler.get_transmitter_data((mIsFileMode ? TiiHandler::cChannelAny : mCurFIdOrCh), mCurEid, tii.mainId, tii.subId);
     const bool dataValid = (pTr != nullptr);
 
     if (!dataValid)

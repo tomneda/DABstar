@@ -55,11 +55,11 @@ class Backend
 #endif
 
 public:
-  Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag);
+  Backend(DabRadio* ipRI, const SDescriptorType* ipDescType, RingBuffer<i16>* ipoAudiobuffer, RingBuffer<u8>* ipoDatabuffer, RingBuffer<u8>* frameBuffer, EProcessFlag iProcessFlag);
   ~Backend();
 
-  i32 process(const std::span<const i16> & iV);
-  void process_eti(const std::span<const u8> & iData); // already decoded sub-channel data of one CIF from an ETI frame
+  i32 process(const std::span<const i16>& iV);
+  void process_eti(const std::span<const u8>& iData); // already decoded sub-channel data of one CIF from an ETI frame
   void stop_running();
 
   // we need sometimes to access the key parameters for decoding
@@ -86,8 +86,8 @@ private:
   i32 nextIn;
   i32 nextOut;
 #endif
-  void _process_segment(const i16 * iData);
-  DabRadio * radioInterface;
+  void _process_segment(const i16* iData);
+  DabRadio* radioInterface;
   bool etiSizeWarned = false;
 
   i32 fragmentSize;

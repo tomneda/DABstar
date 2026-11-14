@@ -54,10 +54,10 @@ class FaadDecoder : public QObject
 {
 Q_OBJECT
 public:
-  FaadDecoder(const DabRadio * ipDR, RingBuffer<i16> * ipBuffer);
+  FaadDecoder(const DabRadio* ipDR, RingBuffer<i16>* ipBuffer);
   ~FaadDecoder();
 
-  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const std::span<const u8> & iBuffer);
+  i16 convert_mp4_to_pcm(const SStreamParms* iSP, const std::span<const u8>& iBuffer);
   void conceal_lost_frame(i32 iNumSamples);
 
 private:
@@ -66,7 +66,7 @@ private:
   u32 mAacCap;
   NeAACDecHandle mAacHandle;
   NeAACDecConfigurationPtr mAacConf;
-  RingBuffer<i16> * mpAudioBuffer;
+  RingBuffer<i16>* mpAudioBuffer;
   std::vector<i16> mLastGoodFrame; // last good frame, stereo-interleaved; also the concealment history
   f32 mConcealDecay = 1.0f;
   i32 mLastAudioBufferFillSize = 0;
@@ -78,9 +78,9 @@ private:
   i32 mPitchPeriod = 0;        // per-channel pitch period (samples) estimated at loss onset; 0 => unvoiced
   i32 mConcealPhase = 0;       // per-channel samples emitted so far in the current loss run
 
-  bool _initialize(const SStreamParms *);
+  bool _initialize(const SStreamParms*);
   i32 _estimate_pitch_period() const;
-  void _apply_exit_crossfade(const std::span<i16> & ioPcm) const;
+  void _apply_exit_crossfade(const std::span<i16>& ioPcm) const;
 
 signals:
   void signal_new_audio(i32 oNumSamples, u32 oSampleRate, u32 oAudioFlags);

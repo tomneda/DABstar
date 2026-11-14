@@ -35,29 +35,29 @@ public:
 
   struct SResourceConfig
   {
-    RingBuffer<i16> * pAudioBufferFromDecoder;
-    RingBuffer<i16> * pAudioBufferToOutput;
-    RingBuffer<u8> * pFrameBuffer;
-    Configuration * pConfig;
-    TechData * pTechDataWidget;
-    LevelMeter * pLevelMeterLeft;
-    LevelMeter * pLevelMeterRight;
-    QSlider * pSliderVolume;
-    OpenFileDialog * pOpenFileDialog;
-    IndicatorButton * pFrameDumpButton;
-    IndicatorButton * pAudioDumpButton;
+    RingBuffer<i16>* pAudioBufferFromDecoder;
+    RingBuffer<i16>* pAudioBufferToOutput;
+    RingBuffer<u8>* pFrameBuffer;
+    Configuration* pConfig;
+    TechData* pTechDataWidget;
+    LevelMeter* pLevelMeterLeft;
+    LevelMeter* pLevelMeterRight;
+    QSlider* pSliderVolume;
+    OpenFileDialog* pOpenFileDialog;
+    IndicatorButton* pFrameDumpButton;
+    IndicatorButton* pAudioDumpButton;
   };
 
-  explicit AudioManager(const SResourceConfig & cfg, QObject * parent = nullptr);
+  explicit AudioManager(const SResourceConfig& cfg, QObject* parent = nullptr);
   ~AudioManager() override;
 
-  AudioPipeline * get_audio_pipeline() const { return mpAudioPipeline; }
-  RingBuffer<i16> * get_audio_buffer_from_decoder() const { return mpAudioBufferFromDecoder; }
+  AudioPipeline* get_audio_pipeline() const { return mpAudioPipeline; }
+  RingBuffer<i16>* get_audio_buffer_from_decoder() const { return mpAudioBufferFromDecoder; }
 
   // State update methods called by DabRadio
   void set_channel_running(bool isRunning);
   void set_scanning(bool isScanning);
-  void set_service_label(const QString & label);
+  void set_service_label(const QString& label);
   void set_audio_frame_type(EAudioFrameType type);
   void set_level_meters_enabled(bool isEnabled);
   void reset_audio_fifo();
@@ -71,21 +71,21 @@ private:
   static constexpr u32 cAudioDumpColor = 0x408870;
 
   // Non-owned resources (passed in constructor)
-  RingBuffer<i16> * const mpAudioBufferFromDecoder;
-  RingBuffer<i16> * const mpAudioBufferToOutput;
-  RingBuffer<u8> * const mpFrameBuffer;
-  Configuration * const mpConfig;
-  TechData * const mpTechDataWidget;
-  LevelMeter * const mpLevelMeterLeft;
-  LevelMeter * const mpLevelMeterRight;
-  QSlider * const mpSliderVolume;
-  OpenFileDialog * const mpOpenFileDialog;
-  IndicatorButton * const mpFrameDumpButton;
-  IndicatorButton * const mpAudioDumpButton;
+  RingBuffer<i16>* const mpAudioBufferFromDecoder;
+  RingBuffer<i16>* const mpAudioBufferToOutput;
+  RingBuffer<u8>* const mpFrameBuffer;
+  Configuration* const mpConfig;
+  TechData* const mpTechDataWidget;
+  LevelMeter* const mpLevelMeterLeft;
+  LevelMeter* const mpLevelMeterRight;
+  QSlider* const mpSliderVolume;
+  OpenFileDialog* const mpOpenFileDialog;
+  IndicatorButton* const mpFrameDumpButton;
+  IndicatorButton* const mpAudioDumpButton;
 
   // Owned worker and thread
-  AudioPipeline * mpAudioPipeline = nullptr;
-  QThread * mAudioOutputThread = nullptr;
+  AudioPipeline* mpAudioPipeline = nullptr;
+  QThread* mAudioOutputThread = nullptr;
 
   // State
   bool mIsChannelRunning = false;
@@ -100,11 +100,11 @@ private:
   mutable uint32_t mAudioDumpTimer = 0;
   mutable uint32_t mFrameDumpTimer = 0;
 
-  void _update_level_meter(LevelMeter * ipMeter, const f32 iPeak, const f32 iRms) const;
+  void _update_level_meter(LevelMeter* ipMeter, const f32 iPeak, const f32 iRms) const;
   QString _seconds_to_timestring(const u32 iTimer) const;
   void _set_frame_dump_button_idle() const;
   void _set_audio_dump_button_idle() const;
-  void _set_dump_button_emphasized(IndicatorButton * ipButton, bool iEmphasized, u32 iBaseColor) const;
+  void _set_dump_button_emphasized(IndicatorButton* ipButton, bool iEmphasized, u32 iBaseColor) const;
 
 public slots:
   // Connected from AudioPipeline
@@ -112,7 +112,7 @@ public slots:
   void slot_show_sample_rate_and_audio_flags(i32 iSampleRate, bool iSbrUsed, bool iPsUsed);
   void slot_audio_dump_state_changed(bool iIsDumping);
   void slot_frame_dump_state_changed(bool iIsDumping);
-  void slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const;
+  void slot_load_audio_device_list(const QList<QAudioDevice>& iDeviceList) const;
 
   // Connected from main window dump buttons
   void slot_handle_audio_dump_button();
@@ -122,7 +122,7 @@ public slots:
   void slot_handle_volume_slider(i32 iSliderValue);
   void slot_set_mute(bool iMuted);
   void slot_set_test_tone(bool iActive);
-  void slot_set_audio_device(const QByteArray & iDeviceId);
+  void slot_set_audio_device(const QByteArray& iDeviceId);
   void slot_update_peak_level_delay(i32 iDelaySteps = -1);
 
 signals:

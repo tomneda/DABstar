@@ -9,7 +9,7 @@
   #include <volk/volk.h>
 #endif
 
-CirViewer::CirViewer(RingBuffer<cf32> * iCirBuffer)
+CirViewer::CirViewer(RingBuffer<cf32>* iCirBuffer)
   : Ui_cirWidget()
   , PhaseTable()
   , mpCirBuffer(iCirBuffer)

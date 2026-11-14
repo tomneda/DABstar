@@ -56,12 +56,12 @@ class SpyServerClient : public QObject, public IDeviceHandler, private Ui_spySer
   Q_OBJECT
 
 public:
-  SpyServerClient(QSettings *);
+  SpyServerClient(QSettings*);
   ~SpyServerClient() override;
 
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(const std::span<cf32> & oV) override;
+  i32 getSamples(const std::span<cf32>& oV) override;
   i32 Samples() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;
@@ -69,7 +69,7 @@ public:
   void show() override;
   void hide() override;
   bool isHidden() override;
-  QWidget * get_widget() override { return &mFrame; }
+  QWidget* get_widget() override { return &mFrame; }
   QString deviceName() override;
 
   // void connect_on();

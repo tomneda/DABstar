@@ -28,7 +28,7 @@ class CarrierDisp : public QObject
 {
 Q_OBJECT
 public:
-  explicit CarrierDisp(PlotWidget * plot);
+  explicit CarrierDisp(PlotWidget* plot);
   ~CarrierDisp() override = default;
 
   struct SCustPlot
@@ -37,7 +37,7 @@ public:
 
     ECarrierPlotType PlotType;
     EStyle Style;
-    const char * Name;
+    const char* Name;
     QString ToolTip;
 
     f64 YTopValue;
@@ -51,17 +51,17 @@ public:
     bool DrawTiiSegments = false;
   };
 
-  void display_carrier_plot(const std::vector<f32> & iYValVec);
+  void display_carrier_plot(const std::vector<f32>& iYValVec);
   void select_plot_type(const ECarrierPlotType iPlotType);
   static QStringList get_plot_type_names();
 
 private:
-  PlotWidget * const mpPlot = nullptr;
-  QLineSeries * mpLineSeries = nullptr;
-  QScatterSeries * mpDotSeries = nullptr;
-  QLineSeries * mpMarkerSeries = nullptr;     // horizontal Y-value markers
-  QLineSeries * mpTiiBlueSeries = nullptr;    // vertical TII segment boundary lines (major)
-  QLineSeries * mpTiiRedSeries = nullptr;     // vertical TII segment boundary lines (minor)
+  PlotWidget* const mpPlot = nullptr;
+  QLineSeries* mpLineSeries = nullptr;
+  QScatterSeries* mpDotSeries = nullptr;
+  QLineSeries* mpMarkerSeries = nullptr;     // horizontal Y-value markers
+  QLineSeries* mpTiiBlueSeries = nullptr;    // vertical TII segment boundary lines (major)
+  QLineSeries* mpTiiRedSeries = nullptr;     // vertical TII segment boundary lines (minor)
 
   std::vector<f32> mX_axis_vec;
   i32 mDataSize = 0;
@@ -71,7 +71,7 @@ private:
   SCustPlot::EStyle mCurrentStyle = SCustPlot::EStyle::LINES;
   SCustPlot mCurrentCustPlot{};
 
-  void _customize_plot(const SCustPlot & iCustPlot);
+  void _customize_plot(const SCustPlot& iCustPlot);
   static SCustPlot _get_plot_type_data(const ECarrierPlotType iPlotType);
   void _setup_x_axis();
   void _clear_marker_lines();

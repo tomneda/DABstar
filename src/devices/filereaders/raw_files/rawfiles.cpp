@@ -50,7 +50,7 @@
 
 constexpr u32 cInputFrameBufferSize = 8 * 32768;
 
-RawFileHandler::RawFileHandler(const QString & iFilename)
+RawFileHandler::RawFileHandler(const QString& iFilename)
   : mFrame(nullptr)
   , mRingBuffer(cInputFrameBufferSize)
 {
@@ -124,9 +124,9 @@ void RawFileHandler::stopReader()
 }
 
 //  size is in I/Q pairs, file contains 8 bits values
-i32 RawFileHandler::getSamples(const std::span<cf32> & oV)
+i32 RawFileHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   if (mpFile == nullptr)
   {

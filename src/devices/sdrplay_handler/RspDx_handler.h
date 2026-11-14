@@ -7,7 +7,7 @@ class SdrPlayHandler;
 class RspDx_handler : public Rsp_device
 {
 public:
-  RspDx_handler(SdrPlayHandler * parent, sdrplay_api_DeviceT * chosenDevice,
+  RspDx_handler(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice,
                 i32 freq, bool agcMode, i32 lnaState, i32 GRdB, bool biasT, bool notch, f64 ppmValue);
   ~RspDx_handler() override = default;
 

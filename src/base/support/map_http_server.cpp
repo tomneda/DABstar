@@ -24,7 +24,7 @@
 #include <QDataStream>
 #include <QTimer>
 
-MapHttpServer::MapHttpServer(DabRadio * ipDabRadio, const QString & iHttpPort, const QString & iHttpAddress, cf32 iHomeLocation, bool iAutoBrowserOff)
+MapHttpServer::MapHttpServer(DabRadio* ipDabRadio, const QString& iHttpPort, const QString& iHttpAddress, cf32 iHomeLocation, bool iAutoBrowserOff)
   : mpDabRadio(ipDabRadio)
   , mHttpAddress(iHttpAddress + ":" + iHttpPort)
   , mHttpPort(iHttpPort)
@@ -77,7 +77,7 @@ void MapHttpServer::_slot_new_connection()
 {
   while (mTcpServer->hasPendingConnections())
   {
-    const QTcpSocket * socket = mTcpServer->nextPendingConnection();
+    const QTcpSocket* socket = mTcpServer->nextPendingConnection();
     qDebug() << "New connection from" << socket->peerAddress();
     connect(socket, &QTcpSocket::readyRead, this, &MapHttpServer::_slot_ready_read);
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
@@ -86,7 +86,7 @@ void MapHttpServer::_slot_new_connection()
 
 void MapHttpServer::_slot_ready_read()
 {
-  QTcpSocket * const socket = qobject_cast<QTcpSocket*>(sender());
+  QTcpSocket* const socket = qobject_cast<QTcpSocket*>(sender());
   if (socket == nullptr) return;
 
   // Read available data (up to 4096 as in original logic)
@@ -225,7 +225,7 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
 
   QJsonArray jsonArray;
 
-  for (const auto & t : mTransmitters)
+  for (const auto& t : mTransmitters)
   {
     QJsonObject jsonObj;
     jsonObj["type"] = t.type;
@@ -254,7 +254,7 @@ QByteArray MapHttpServer::_move_transmitter_list_to_json()
   return doc.toJson(QJsonDocument::Compact);
 }
 
-void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDataEntry * const ipTiiDataEntry, const QString & iDateTime,
+void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDataEntry* const ipTiiDataEntry, const QString& iDateTime,
                                                    const f32 iStrength, f32 iDistance, f32 iAzimuth, const bool iNonEtsi)
 {
   // we only want to set a MAP_RESET or MAP_CLOSE?
@@ -270,7 +270,7 @@ void MapHttpServer::add_transmitter_location_entry(const u8 iType, const STiiDat
   }
 
   // check if entry was already added to transmitter list
-  for (const auto & t : mTransmitters)
+  for (const auto& t : mTransmitters)
   {
     if (t.latitude  == ipTiiDataEntry->latitude &&
         t.longitude == ipTiiDataEntry->longitude &&

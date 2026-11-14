@@ -20,7 +20,7 @@
 constexpr f32 cMinNoiseLevel = 1.0f / 32767.0f; // assuming 16 bit sample
 constexpr f32 cMinNoisePower = cMinNoiseLevel * cMinNoiseLevel;
 
-OfdmDecoder::OfdmDecoder(DabRadio * ipMr, RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer)
+OfdmDecoder::OfdmDecoder(DabRadio* ipMr, RingBuffer<cf32>* ipIqBuffer, RingBuffer<f32>* ipCarrBuffer)
   : PhaseTable()
   , mpRadioInterface(ipMr)
   , mpIqBuffer(ipIqBuffer)
@@ -80,7 +80,7 @@ void OfdmDecoder::reset()
   _reset_null_symbol_statistics();
 }
 
-void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu & iFftBuffer)
+void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu& iFftBuffer)
 {
   if (mCarrierPlotType != ECarrierPlotType::NULL_TII_LIN &&
       mCarrierPlotType != ECarrierPlotType::NULL_TII_LOG)
@@ -91,7 +91,7 @@ void OfdmDecoder::store_null_symbol_with_tii(const TArrayTu & iFftBuffer)
   _eval_null_symbol_statistics(iFftBuffer);
 }
 
-void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
+void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu& iFftBuffer)
 {
   if (mCarrierPlotType == ECarrierPlotType::NULL_NO_TII)
   {
@@ -108,7 +108,7 @@ void OfdmDecoder::store_null_symbol_without_tii(const TArrayTu & iFftBuffer)
   mSimdVecMeanNullPowerWithoutTII.modify_mean_filter_each_element(mSimdVecTemp1Float, cAlpha);
 }
 
-void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
+void OfdmDecoder::store_reference_symbol_0(const TArrayTu& iFftBuffer)
 {
   // We are now in the frequency domain, and we keep the carriers as coming from the FFT as phase reference.
   mDcFft = iFftBuffer[0];
@@ -137,7 +137,7 @@ void OfdmDecoder::store_reference_symbol_0(const TArrayTu & iFftBuffer)
   }
 }
 
-void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32 & iGuardCorrSum, std::vector<i16> & oBits)
+void OfdmDecoder::decode_symbol(const TArrayTu& iFftBuffer, const u16 iCurOfdmSymbIdx, const f32 iPhaseCorr, const f32 iClockErr, const cf32& iGuardCorrSum, std::vector<i16>& oBits)
 {
   // current runtime on i7-6700K: avr: 57us, min: 19us
   // mTimeMeas.trigger_begin();
@@ -321,7 +321,7 @@ void OfdmDecoder::decode_symbol(const TArrayTu & iFftBuffer, const u16 iCurOfdmS
   memcpy(mSimdVecPhaseReference, mSimdVecNomCarrier, cK * sizeof(cf32));
 }
 
-void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
+void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu& iFftBuffer)
 {
   f32 max = -1e38f;
   f32 min =  1e38f;
@@ -332,7 +332,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
     {
       const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
       const f32 level = log10_times_10(std::norm(iFftBuffer[fftIdx]) + cMinNoisePower);
-      f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
+      f32& meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -347,7 +347,7 @@ void OfdmDecoder::_eval_null_symbol_statistics(const TArrayTu & iFftBuffer)
     {
       const i16 fftIdx = mMapNomToFftIdx[nomCarrIdx];
       const f32 level = std::abs(iFftBuffer[fftIdx]) + cMinNoiseLevel;
-      f32 & meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
+      f32& meanNullLevelRef = mSimdVecMeanNullLevel[nomCarrIdx];
       mean_filter(meanNullLevelRef, level, cAlpha);
 
       if (meanNullLevelRef < min) min = meanNullLevelRef;
@@ -401,7 +401,7 @@ void OfdmDecoder::set_soft_bit_gen_type(ESoftBitType iSoftBitType)
   mSoftBitType = iSoftBitType;
 }
 
-cf32 OfdmDecoder::_interpolate_2d_plane(const cf32 & iStart, const cf32 & iEnd, f32 iPar)
+cf32 OfdmDecoder::_interpolate_2d_plane(const cf32& iStart, const cf32& iEnd, f32 iPar)
 {
   assert(iPar >= 0.0f && iPar <= 1.0f);
   const f32 a_r = real(iStart);

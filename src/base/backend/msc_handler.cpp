@@ -41,7 +41,7 @@ constexpr i32 cCifSizeBits = 55296; // bits for one CIF (== 864 CUs with a 64 bi
 constexpr i32 cNumberOfBlocksPerCif = 18; // 18, 72, 0(?), 36 for DAB-Mode 1..4
 
 // Note: CIF counts from 0 .. 3
-MscHandler::MscHandler(DabRadio * const iRI, RingBuffer<u8> * const ipFrameBuffer)
+MscHandler::MscHandler(DabRadio* const iRI, RingBuffer<u8>* const ipFrameBuffer)
   : mpRadioInterface(iRI)
   , mpFrameBuffer(ipFrameBuffer)
 {
@@ -55,7 +55,7 @@ MscHandler::~MscHandler()
     QMutexLocker lock(&mMutex);
     backendsToStop.swap(mBackendList);
   }
-  for (auto & b: backendsToStop)
+  for (auto& b: backendsToStop)
   {
     b->stop_running();
     b.reset();
@@ -70,7 +70,7 @@ void MscHandler::reset_channel()
     QMutexLocker lock(&mMutex);
     backendsToStop.swap(mBackendList);
   }
-  for (auto & b: backendsToStop)
+  for (auto& b: backendsToStop)
   {
     b->stop_running();
     b.reset();
@@ -84,7 +84,7 @@ void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFla
     QMutexLocker lock(&mMutex);
     for (qsizetype i = 0; i < mBackendList.size(); i++)
     {
-      if (auto & b = mBackendList[i];
+      if (auto& b = mBackendList[i];
           b->subChId == iSubChId && b->processFlag == iProcessFlag)
       {
         qDebug() << "Stopping SubChannel" << iSubChId;
@@ -94,7 +94,7 @@ void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFla
       }
     }
   }
-  for (auto & b: backendsToStop)
+  for (auto& b: backendsToStop)
   {
     b->stop_running();
     b.reset();
@@ -108,7 +108,7 @@ void MscHandler::stop_all_services()
     QMutexLocker lock(&mMutex);
     backendsToStop.swap(mBackendList);
   }
-  for (auto & b: backendsToStop)
+  for (auto& b: backendsToStop)
   {
     qDebug() << "Stopping SId" << Qt::hex << Qt::showbase << b->serviceId << Qt::dec << "SubChannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
     b->stop_running();
@@ -119,7 +119,7 @@ void MscHandler::stop_all_services()
 bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProcessFlag) const
 {
   QMutexLocker lock(&mMutex);
-  for (const auto & b : mBackendList)
+  for (const auto& b : mBackendList)
   {
     if (b->subChId == iSubChId && b->processFlag == iProcessFlag)
     {
@@ -129,7 +129,7 @@ bool MscHandler::is_service_running(const i32 iSubChId, const EProcessFlag iProc
   return false;
 }
 
-bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
+bool MscHandler::set_channel(const SDescriptorType* d, RingBuffer<i16>* ipoAudioBuffer, RingBuffer<u8>* ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
   qInfo() << "Create backend" << mBackendList.size() + 1 << "for SId" <<  Qt::hex << Qt::showbase << d->SId
           << "and ServiceLabel" << (d->serviceLabel.isEmpty() ? "(Unknown yet)" : d->serviceLabel.trimmed())
@@ -145,7 +145,7 @@ bool MscHandler::set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAud
 // Add blocks. First is (should be) block 4, last is (should be) nrBlocks -1.
 // Note that this method is called from within the ofdm-processor thread while the set_xxx methods
 // are called from within the gui thread, so some locking is added.
-void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBlockNr)
+void MscHandler::process_block(const std::vector<i16>& iSoftBits, const i32 iBlockNr)
 {
   assert(iBlockNr >= 4);
   assert(iSoftBits.size() == c2K);
@@ -162,7 +162,7 @@ void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBl
   // We assume that the backend itself does the work in a separate thread.
   QMutexLocker lock(&mMutex);
   const std::span<const i16> cif(mCifVector);
-  for (const auto & b: mBackendList)
+  for (const auto& b: mBackendList)
   {
     b->process(cif.subspan(b->CuStartAddr * cCUSizeBits, b->CuSize * cCUSizeBits));
   }
@@ -170,12 +170,12 @@ void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBl
 
 // Called from within the DabProcessor thread for each ETI frame (one CIF). The sub-channel data in an ETI frame is
 // already time-deinterleaved, Viterbi decoded and the energy dispersal is reverted.
-void MscHandler::process_eti_frame(const std::vector<SEtiSubChannel> & iSubChannels)
+void MscHandler::process_eti_frame(const std::vector<SEtiSubChannel>& iSubChannels)
 {
   QMutexLocker lock(&mMutex);
-  for (const auto & b: mBackendList)
+  for (const auto& b: mBackendList)
   {
-    for (const auto & sc : iSubChannels)
+    for (const auto& sc : iSubChannels)
     {
       if (sc.subChId == b->subChId && sc.startAddr == b->CuStartAddr)
       {

@@ -48,30 +48,30 @@ class CorrelationViewer : public QObject
 {
 Q_OBJECT
 public:
-  CorrelationViewer(PlotWidget *, QLabel *, QSettings *, RingBuffer<f32> *);
+  CorrelationViewer(PlotWidget*, QLabel*, QSettings*, RingBuffer<f32>*);
   ~CorrelationViewer() override = default;
 
-  void show_correlation(f32 iThreshold, const QVector<i32> & iV, const std::vector<STiiResult> & iTiiResultList);
+  void show_correlation(f32 iThreshold, const QVector<i32>& iV, const std::vector<STiiResult>& iTiiResultList);
 
 private:
   struct STiiMarker
   {
-    QLineSeries * pLine = nullptr;
-    QGraphicsSimpleTextItem * pText = nullptr;
+    QLineSeries* pLine = nullptr;
+    QGraphicsSimpleTextItem* pText = nullptr;
     f32 xPos = 0;
   };
 
   static constexpr char SETTING_GROUP_NAME[] = "correlationViewer";
-  static QString _get_best_match_text(const QVector<i32> & v);
+  static QString _get_best_match_text(const QVector<i32>& v);
   void _update_tii_label_positions() const;
 
-  QSettings * const mpSettings = nullptr;
-  RingBuffer<f32> * const mpResponseBuffer;
-  PlotWidget * const mpPlot;
-  QLabel * const mpIndexDisplay;
+  QSettings* const mpSettings = nullptr;
+  RingBuffer<f32>* const mpResponseBuffer;
+  PlotWidget* const mpPlot;
+  QLabel* const mpIndexDisplay;
 
-  QLineSeries * mpCurve = nullptr;
-  QLineSeries * mpThresholdLine = nullptr;         // horizontal threshold line
+  QLineSeries* mpCurve = nullptr;
+  QLineSeries* mpThresholdLine = nullptr;         // horizontal threshold line
   std::vector<STiiMarker> mTiiMarkerVec;           // vertical TII lines + labels
 
   PlotWidget::SRange mXZoomRange{0, 2047};

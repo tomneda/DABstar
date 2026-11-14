@@ -37,7 +37,7 @@ public:
   void reset();
 
   // iV: the PRS in FFT order (carrier k at index k mod cTu). Updates the channel estimate for the following data symbols of this frame.
-  void process_prs(const TArrayTu & iV);
+  void process_prs(const TArrayTu& iV);
 
   // True once the channel estimate is usable for the soft bits of the data symbols of this frame
   [[nodiscard]] bool is_ready() const;
@@ -49,7 +49,7 @@ public:
   // Has to be called for every data symbol of the frame (also if is_ready() is false, so that the channel can be tracked).
   // Afterwards (if is_ready()) get_soft_bit_real(fftIdx) and get_soft_bit_imag(fftIdx) are the soft bits of the two bits
   // of the carrier in FFT bin fftIdx, scaled to the soft bit range but not limited (> 0: bit 1).
-  void demodulate(const TArrayTu & iV, i32 iCurOfdmSymbIdx, const cf32 & iGuardCorrSum, bool iCalcConstellation);
+  void demodulate(const TArrayTu& iV, i32 iCurOfdmSymbIdx, const cf32& iGuardCorrSum, bool iCalcConstellation);
 
   [[nodiscard]] f32 get_soft_bit_real(i32 iFftIdx) const { return mSoftBitRe[iFftIdx]; }
   [[nodiscard]] f32 get_soft_bit_imag(i32 iFftIdx) const { return mSoftBitIm[iFftIdx]; }
@@ -109,7 +109,7 @@ private:
   TArrayK mRotations{};        // see _rotation()
 
   void _smooth_channel();
-  void _rotation(f32 iPhase, f32 iSlope, TArrayK & oV) const;
+  void _rotation(f32 iPhase, f32 iSlope, TArrayK& oV) const;
   [[nodiscard]] f32 _timing_rotation(); // Phase per carrier between the new and the averaged estimate
   void _ifft(); // normalized backward FFT from mFftInBuffer to mFftOutBuffer
 };

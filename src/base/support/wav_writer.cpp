@@ -37,12 +37,12 @@
 //
 #include "wav_writer.h"
 
-bool WavWriter::init(const QString & fileName, const u32 iSampleRate, const u16 iNumChannels)
+bool WavWriter::init(const QString& fileName, const u32 iSampleRate, const u16 iNumChannels)
 {
-  static const char * const cRiffStr = "RIFF";
-  static const char * const cWaveStr = "WAVE";
-  static const char * const cFmtStr  = "fmt ";
-  static const char * const cDataStr = "data";
+  static const char* const cRiffStr = "RIFF";
+  static const char* const cWaveStr = "WAVE";
+  static const char* const cFmtStr  = "fmt ";
+  static const char* const cDataStr = "data";
 
   std::lock_guard lock(mMutex);
   mIsValid = false;
@@ -123,7 +123,7 @@ void WavWriter::close()
   fclose(mFilePointer);
 }
 
-void WavWriter::write(const std::span<const i16> & iSamples)
+void WavWriter::write(const std::span<const i16>& iSamples)
 {
   std::lock_guard lock(mMutex);
 

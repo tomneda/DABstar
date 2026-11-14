@@ -26,29 +26,29 @@ namespace Settings
 class Storage
 {
 public:
-  static QSettings & instance(QSettings * ipSettings = nullptr)
+  static QSettings& instance(QSettings* ipSettings = nullptr)
   {
     static Storage instance(ipSettings);
     return *instance.mpSettings;
   }
 
 private:
-  explicit Storage(QSettings * ipSettings)
+  explicit Storage(QSettings* ipSettings)
   : mpSettings(ipSettings)
   {}
 
-  QSettings * const mpSettings;
+  QSettings* const mpSettings;
 };
 
 
 class Variant
 {
 public:
-  explicit Variant(const QString & cat, const QString & key);
-  explicit Variant(const QString & cat, const QString & key, const QVariant & iDefaultValue);
-  void define_default_value(const QVariant & iDefaultValue);
+  explicit Variant(const QString& cat, const QString& key);
+  explicit Variant(const QString& cat, const QString& key, const QVariant& iDefaultValue);
+  void define_default_value(const QVariant& iDefaultValue);
   [[nodiscard]] QVariant read() const;
-  void write(const QVariant & iValue) const;
+  void write(const QVariant& iValue) const;
 
 private:
   QString mKey;
@@ -60,10 +60,10 @@ class Widget : public QObject
 {
   Q_OBJECT
 public:
-  explicit Widget(const QString & cat, const QString & key);
+  explicit Widget(const QString& cat, const QString& key);
   ~Widget() override;
 
-  void register_widget_and_update_ui_from_setting(QWidget * const ipWidget, const QVariant & iDefaultValue);
+  void register_widget_and_update_ui_from_setting(QWidget* const ipWidget, const QVariant& iDefaultValue);
   [[nodiscard]] QVariant read() const;
   i32 get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
 
@@ -73,18 +73,18 @@ private:
   void _update_ui_state_to_setting_deferred();
 
   QString mKey;
-  QWidget * mpWidget = nullptr;
-  QTimer * mpDeferTimer = nullptr; // we use a simple pointer here as one instance should not take too much memory
+  QWidget* mpWidget = nullptr;
+  QTimer* mpDeferTimer = nullptr; // we use a simple pointer here as one instance should not take too much memory
   QVariant mDefaultValue;
 };
 
 class PosAndSize
 {
 public:
-  explicit PosAndSize(const QString & iCat);
-  PosAndSize(const QString & iCat, const QString & iName);
-  void read_widget_geometry(QWidget * const iopWidget, bool iIsFixedWidth = false, bool iIsFixedHeight = false, i32 iWidthOffs = 0, i32 iHeightOffs = 0) const;
-  void write_widget_geometry(const QWidget * ipWidget) const;
+  explicit PosAndSize(const QString& iCat);
+  PosAndSize(const QString& iCat, const QString& iName);
+  void read_widget_geometry(QWidget* const iopWidget, bool iIsFixedWidth = false, bool iIsFixedHeight = false, i32 iWidthOffs = 0, i32 iHeightOffs = 0) const;
+  void write_widget_geometry(const QWidget* ipWidget) const;
 
 private:
   QString mKey;

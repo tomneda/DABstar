@@ -51,7 +51,7 @@ public:
   alignas(64) TArrayTu mRefTable;
 
 private:
-  const struct SPhaseTableElement * const mpCurrentTable;
+  const struct SPhaseTableElement* const mpCurrentTable;
 
   i32 h_table(i32 i, i32 j) const;
   f32 get_phi(i32 k) const;

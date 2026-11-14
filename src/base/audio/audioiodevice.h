@@ -28,19 +28,19 @@ class AudioIODevice final : public QIODevice
   Q_OBJECT
 
 public:
-  explicit AudioIODevice(QObject * iParent = nullptr);
+  explicit AudioIODevice(QObject* iParent = nullptr);
 
   void start();
   void stop();
-  void set_buffer(SAudioFifo * iBuffer);
+  void set_buffer(SAudioFifo* iBuffer);
   void set_mute_state(bool iMuteActive);
   void set_test_tone(bool iActive);
   void set_peak_level_delay(i32 iDelaySteps);
   bool is_muted() const { return mPlaybackState == EPlaybackState::Muted; }
 
 protected:
-  qint64 readData(char * opData, qint64 maxlen) override;
-  qint64 writeData(const char * data, qint64 len) override;
+  qint64 readData(char* opData, qint64 maxlen) override;
+  qint64 writeData(const char* data, qint64 len) override;
   qint64 bytesAvailable() const override;
   qint64 size() const override;
 
@@ -52,12 +52,12 @@ private:
 
   enum class EPlaybackState { Muted = 0, Playing = 1 };
 
-  SAudioFifo * mpInFifo = nullptr;
+  SAudioFifo* mpInFifo = nullptr;
   EPlaybackState mPlaybackState = EPlaybackState::Muted;
   u32 mSampleRateKHz = 0;
   bool mDoStop = false;
-  RingBuffer<i16> * const mpTechDataBuffer;
-  RingBuffer<f32> * const mpLevelMeterBuffer;
+  RingBuffer<i16>* const mpTechDataBuffer;
+  RingBuffer<f32>* const mpLevelMeterBuffer;
 
   std::atomic<bool> mMuteFlag = false;
   std::atomic<bool> mStopFlag = false;
@@ -84,14 +84,14 @@ private:
   f32 mMeanSqRight = 0;
   f32 mRmsAlpha = 1;
 
-  QTimer * mpTimerPeakLevel = nullptr;
+  QTimer* mpTimerPeakLevel = nullptr;
 
   TestTone mTestTone{};
 
-  void _fade(i32 iNumStereoSamples, f32 coe, f32 gain, i16 * dataPtr) const;
-  void _fade_in_audio_samples(const std::span<i16> & ioData) const; // interleaved stereo samples
-  void _fade_out_audio_samples(const std::span<i16> & ioData) const; // interleaved stereo samples
-  void _eval_peak_audio_level(const std::span<const i16> & iData);
+  void _fade(i32 iNumStereoSamples, f32 coe, f32 gain, i16* dataPtr) const;
+  void _fade_in_audio_samples(const std::span<i16>& ioData) const; // interleaved stereo samples
+  void _fade_out_audio_samples(const std::span<i16>& ioData) const; // interleaved stereo samples
+  void _eval_peak_audio_level(const std::span<const i16>& iData);
 
 private slots:
   void _slot_timer_level_meter();

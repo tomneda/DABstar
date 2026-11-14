@@ -44,8 +44,8 @@
 #include <QColor>
 #include <algorithm>
 
-SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingBuffer<cf32> * ipSpecBuffer,
-                               RingBuffer<cf32> * ipIqBuffer, RingBuffer<f32> * ipCarrBuffer, RingBuffer<f32> * ipCorrBuffer) :
+SpectrumViewer::SpectrumViewer(DabRadio* ipRI, QSettings* ipDabSettings, RingBuffer<cf32>* ipSpecBuffer,
+                               RingBuffer<cf32>* ipIqBuffer, RingBuffer<f32>* ipCarrBuffer, RingBuffer<f32>* ipCorrBuffer) :
   Ui_scopeWidget(),
   mpRadioInterface(ipRI),
   mpDabSettings(ipDabSettings),
@@ -109,7 +109,7 @@ SpectrumViewer::~SpectrumViewer()
   fftwf_destroy_plan(mFftPlan);
 }
 
-bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin & ioMaxMin) const
+bool SpectrumViewer::_calc_spectrum_display_limits(SpecViewLimits<f32>::SMaxMin& ioMaxMin) const
 {
   constexpr f32 cMinShownLevel = -99.0f;
   constexpr f32 cMinLevelRange = 20.0f;
@@ -205,7 +205,7 @@ void SpectrumViewer::show_spectrum(const i32 vfoFrequency)
   for (i32 i = 0; i < SP_DISPLAYSIZE; i++)
   {
     const f32 val = 20.0f * std::log10(mYValVec[i] / (f32)SP_DISPLAYSIZE + 1.0e-6f);
-    f32 & valdBMean = mDisplayBuffer[i];
+    f32& valdBMean = mDisplayBuffer[i];
     mean_filter(valdBMean, val, (f32)1.0f / averageCount);
 
     if (valdBMean > valdBGlobMax) valdBGlobMax = valdBMean;
@@ -324,7 +324,7 @@ void SpectrumViewer::show_clock_error(const f32 iClockErr) const
   lblClockError->setText(QSL("%1").arg(iClockErr, 0, 'f', 2));
 }
 
-void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32> & v, const std::vector<STiiResult> & iTr) const
+void SpectrumViewer::show_correlation(const f32 threshold, const QVector<i32>& v, const std::vector<STiiResult>& iTr) const
 {
   mpCorrelationViewer->show_correlation(threshold, v, iTr);
 }

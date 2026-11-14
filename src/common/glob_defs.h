@@ -65,7 +65,7 @@ using TArrayTu = std::array<cf32, cTu>;
 using TArrayTn = std::array<cf32, cTn>;
 
 // do not make this as a template as it freed the allocated stack buffer at once after call
-#define make_vla(T, iSize) static_cast<T *>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
+#define make_vla(T, iSize) static_cast<T*>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
 #define make_vla_span(T, iSize) std::span<T>(make_vla(T, (iSize)), (iSize)) // same as make_vla() but as std::span (iSize is evaluated twice)
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
@@ -78,7 +78,7 @@ template<typename T> inline T conv_deg_to_rad(T iVal)
   return iVal * (T)(M_PI / 180.0);
 }
 
-template<typename T> inline void limit_min_max(T & ioVal, T iMin, T iMax)
+template<typename T> inline void limit_min_max(T& ioVal, T iMin, T iMax)
 {
   if (ioVal < iMin)
   {
@@ -90,7 +90,7 @@ template<typename T> inline void limit_min_max(T & ioVal, T iMin, T iMax)
   }
 }
 
-template<typename T> inline void limit_symmetrically(T & ioVal, const T iLimit)
+template<typename T> inline void limit_symmetrically(T& ioVal, const T iLimit)
 {
   if (ioVal > iLimit)
   {
@@ -112,7 +112,7 @@ static inline bool is_indeterminate(f32 x)
   return x != x;
 }
 
-static inline f32 fast_abs_with_clip_det(cf32 z, bool & oClipped, f32 iClipLimit)
+static inline f32 fast_abs_with_clip_det(cf32 z, bool& oClipped, f32 iClipLimit)
 {
   // this is the former jan_abs() from Jan van Katwijk, should be faster than std::abs()... but is it really? (depends on the device)
   f32 re = real(z);
@@ -144,7 +144,7 @@ static inline f32 fast_abs_with_clip_det(cf32 z, bool & oClipped, f32 iClipLimit
   }
 }
 
-inline cf32 norm_to_length_one(const cf32 & iVal)
+inline cf32 norm_to_length_one(const cf32& iVal)
 {
   const f32 length = std::abs(iVal);
   return (length == 0.0f ? 0.0f : iVal / length);
@@ -222,7 +222,7 @@ inline f32 log10_times_20(const f32 iVal)
   // return 20.0f * std::log10(iVal + 1.0e-20f);
 }
 
-inline cf32 abs_log10_with_offset_and_phase(const cf32 & iVal)
+inline cf32 abs_log10_with_offset_and_phase(const cf32& iVal)
 {
   return fast_log10(std::abs(iVal) + 1.0f) * std::exp(cf32(0.0f, std::arg(iVal)));
   // return std::log10(std::abs(iVal) + 1.0f) * std::exp(cf32(0.0f, std::arg(iVal)));
@@ -246,7 +246,7 @@ inline f32 turn_phase_to_first_quadrant(f32 iPhase)
 }
 
 // turns the given complex point into first quadrant
-inline cf32 turn_complex_phase_to_first_quadrant(const cf32 & iValue)
+inline cf32 turn_complex_phase_to_first_quadrant(const cf32& iValue)
 {
   if (real(iValue) < 0.0f)
   {
@@ -278,22 +278,22 @@ template<typename T> inline T calc_adaptive_alpha(const T iAlphaBegin, const T i
   return alpha;
 }
 
-template<typename T> inline void mean_filter(T & ioVal, const T iVal, const f32 iAlpha)
+template<typename T> inline void mean_filter(T& ioVal, const T iVal, const f32 iAlpha)
 {
   ioVal += iAlpha * (iVal - ioVal);
 }
 
-template<typename T> inline void mean_filter_adaptive(T & ioVal, const T iVal, const T iValFinal, const T iAlphaBegin, const T iAlphaFinal)
+template<typename T> inline void mean_filter_adaptive(T& ioVal, const T iVal, const T iValFinal, const T iAlphaBegin, const T iAlphaFinal)
 {
   assert(iValFinal != 0);
   const T alpha = calc_adaptive_alpha(iAlphaBegin, iAlphaFinal, ioVal / iValFinal);
   ioVal += alpha * (iVal - ioVal);
 }
 
-inline void create_blackman_window(const std::span<f32> & oVal)
+inline void create_blackman_window(const std::span<f32>& oVal)
 {
   using T = f32;
-  T * const opVal = oVal.data();
+  T* const opVal = oVal.data();
   const i32 iWindowWidth = (i32)oVal.size();
 #if 0 // The exact(er) version place zeros at the 3rd and 4th side-lobes but result in a discontinuity at the edges and a 6 dB/oct fall-off
   constexpr f64 a0 = 7938.0/18608.0; // 0.426590714
@@ -316,10 +316,10 @@ inline void create_blackman_window(const std::span<f32> & oVal)
 #endif
 }
 
-inline void create_flattop_window(const std::span<f32> & oVal)
+inline void create_flattop_window(const std::span<f32>& oVal)
 {
   using T = f32;
-  T * const opVal = oVal.data();
+  T* const opVal = oVal.data();
   const i32 iWindowWidth = (i32)oVal.size();
   //constexpr f64 a[5] = { 1.000, -1.930, 1.290, -0.388, 0.028 }; // max signal DC gain = 1.0 (sum / iWindowsWidth)
   constexpr f64 a[5] = { 0.21557895, -0.41663158, 0.277263158, -0.083578947, 0.006947368 }; // max. pulse gain is 1.0
@@ -356,7 +356,7 @@ template <i32 FftSize, typename T> inline T fft_shift_skip_dc(const T iIdx)
   return (iIdx < 0 ? iIdx + FftSize : iIdx + 1);
 }
 
-inline std::string cmplx_to_polar_str(const cf32 & iVal)
+inline std::string cmplx_to_polar_str(const cf32& iVal)
 {
   std::ostringstream s;
   s << std::fixed << std::setw(7) << std::setprecision(2) << std::abs(iVal) << "/" << std::setw(4) << std::setprecision(0) << conv_rad_to_deg(std::arg(iVal)) << "deg";

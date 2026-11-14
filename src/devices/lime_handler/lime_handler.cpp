@@ -30,8 +30,8 @@
 static i16 localBuffer [4 * FIFO_SIZE];
 lms_info_str_t limedevices [10];
 
-LimeHandler::LimeHandler(QSettings *s,
-                         const QString & recorderVersion):
+LimeHandler::LimeHandler(QSettings* s,
+                         const QString& recorderVersion):
                          myFrame (nullptr),
                          _I_Buffer (4* 1024 * 1024),
                          theFilter (5, 1560000 / 2, 2048000)
@@ -49,11 +49,11 @@ LimeHandler::LimeHandler(QSettings *s,
   filterDepth->setValue(currentDepth);
   theFilter.resize(currentDepth);
 #ifdef  _WIN32
-  const char *libraryString = "LimeSuite.dll";
+  const char* libraryString = "LimeSuite.dll";
 #elif __APPLE__
-  const char *libraryString = "/opt/local/lib/libLimeSuite.dylib";
+  const char* libraryString = "/opt/local/lib/libLimeSuite.dylib";
 #else
-  const char *libraryString = "libLimeSuite.so";
+  const char* libraryString = "libLimeSuite.so";
 #endif
   phandle = new QLibrary(libraryString);
   phandle->load();
@@ -268,9 +268,9 @@ void LimeHandler::stopReader()
   (void)LMS_DestroyStream(theDevice, &stream);
 }
 
-i32 LimeHandler::getSamples(const std::span<cf32> & oV)
+i32 LimeHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   const auto temp = make_vla_span(ci16, size);
 

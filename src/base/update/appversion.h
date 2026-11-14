@@ -42,7 +42,7 @@ class AppVersion
 public:
   AppVersion() {}
 
-  AppVersion(const QString & verString)
+  AppVersion(const QString& verString)
   {
     static const QRegularExpression verRe(QSL("[vV]?(\\d+)\\.(\\d+)\\.(\\d+)(-(\\d+))?"));
     QRegularExpressionMatch verMatch = verRe.match(verString);
@@ -64,12 +64,12 @@ public:
     }
   }
 
-  bool operator==(const AppVersion & other) const { return toUInt64() == other.toUInt64(); }
-  bool operator!=(const AppVersion & other) const { return toUInt64() != other.toUInt64(); }
-  bool operator>(const AppVersion & other) const { return toUInt64() > other.toUInt64(); }
-  bool operator>=(const AppVersion & other) const { return toUInt64() >= other.toUInt64(); }
-  bool operator<(const AppVersion & other) const { return !(*this >= other); }
-  bool operator<=(const AppVersion & other) const { return !(*this > other); }
+  bool operator==(const AppVersion& other) const { return toUInt64() == other.toUInt64(); }
+  bool operator!=(const AppVersion& other) const { return toUInt64() != other.toUInt64(); }
+  bool operator>(const AppVersion& other) const { return toUInt64() > other.toUInt64(); }
+  bool operator>=(const AppVersion& other) const { return toUInt64() >= other.toUInt64(); }
+  bool operator<(const AppVersion& other) const { return !(*this >= other); }
+  bool operator<=(const AppVersion& other) const { return !(*this > other); }
 
   [[nodiscard]] bool isValid() const { return m_major != 0; }
   [[nodiscard]] QString toString() const { return QSL("V%1.%2.%3").arg(m_major).arg(m_minor).arg(m_patch); }

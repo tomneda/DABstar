@@ -78,21 +78,21 @@ public:
 
   ~IFibDecoder() override = default;
 
-  virtual void process_FIB(const std::array<std::byte, cFibSizeVitOut> &, u16) = 0;
+  virtual void process_FIB(const std::array<std::byte, cFibSizeVitOut>&, u16) = 0;
 
   virtual void connect_channel() = 0;
   virtual void disconnect_channel() = 0;
 
   virtual void set_SId_for_fast_audio_selection(u32 iSId) = 0;
 
-  virtual void get_data_for_audio_service(u32 iSId, SAudioData & oAD) const = 0;
-  virtual void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns & oADAO) const = 0;
-  virtual void get_data_for_packet_service(u32 iSId, std::vector<SPacketData> & oPDVec) const = 0;
+  virtual void get_data_for_audio_service(u32 iSId, SAudioData& oAD) const = 0;
+  virtual void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns& oADAO) const = 0;
+  virtual void get_data_for_packet_service(u32 iSId, std::vector<SPacketData>& oPDVec) const = 0;
   virtual std::vector<SXPadUserApp> get_xpad_user_apps_of_audio_service(u32 iSId) const = 0;
   virtual std::vector<SServiceId> get_service_list() const = 0;
 
-  virtual const QString & get_service_label_from_SId_SCIdS(u32 iSId, i32 iSCIdS) const = 0;
-  virtual void get_SId_SCIdS_from_service_label(const QString & iServiceLabel, u32 & oSId, i32 & oSCIdS) const = 0;
+  virtual const QString& get_service_label_from_SId_SCIdS(u32 iSId, i32 iSCIdS) const = 0;
+  virtual void get_SId_SCIdS_from_service_label(const QString& iServiceLabel, u32& oSId, i32& oSCIdS) const = 0;
   virtual u8 get_ecc() const = 0;
   // virtual u16 get_country_name() const = 0;
   // virtual u8 get_countryId() const = 0;
@@ -100,29 +100,29 @@ public:
   virtual QString get_ensemble_name() const = 0;
 
   virtual std::vector<i8> get_sub_channel_id_list() const = 0;
-  virtual void get_sub_channel_info(SChannelData *, i32) const = 0;
+  virtual void get_sub_channel_info(SChannelData*, i32) const = 0;
 
   virtual i32 get_cif_count() const = 0;
-  virtual void get_cif_count(i16 *, i16 *) const = 0;
+  virtual void get_cif_count(i16*, i16*) const = 0;
   virtual u32 get_mod_julian_date() const = 0;
-  virtual QStringList get_fib_content_str_list(i32 & oNumCols) const = 0;
+  virtual QStringList get_fib_content_str_list(i32& oNumCols) const = 0;
 
 protected:
   IFibDecoder() = default;
   
 signals:
-  void signal_name_of_ensemble(i32, const QString &, const QString &);
+  void signal_name_of_ensemble(i32, const QString&, const QString&);
   void signal_change_in_configuration();
-  void signal_start_announcement(const QString &, i32);
-  void signal_stop_announcement(const QString &, i32);
+  void signal_start_announcement(const QString&, i32);
+  void signal_stop_announcement(const QString&, i32);
   void signal_ews_available();
-  void signal_fib_time_info(const SUtcTimeSet & fibTimeInfo);
+  void signal_fib_time_info(const SUtcTimeSet& fibTimeInfo);
   void signal_fib_loaded_state(EFibLoadingState);
 };
 
 class FibDecoderFactory
 {
 public:
-  static std::unique_ptr<IFibDecoder> create(DabRadio * radio);
+  static std::unique_ptr<IFibDecoder> create(DabRadio* radio);
 };
 

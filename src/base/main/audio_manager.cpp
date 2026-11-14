@@ -23,7 +23,7 @@
 #include "gui_helpers.h"
 #include "indicator_button.h"
 
-AudioManager::AudioManager(const SResourceConfig & cfg, QObject * parent)
+AudioManager::AudioManager(const SResourceConfig& cfg, QObject* parent)
   : QObject(parent)
   , mpAudioBufferFromDecoder(cfg.pAudioBufferFromDecoder)
   , mpAudioBufferToOutput(cfg.pAudioBufferToOutput)
@@ -106,7 +106,7 @@ void AudioManager::set_scanning(const bool isScanning)
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_scanning, Qt::QueuedConnection, isScanning);
 }
 
-void AudioManager::set_service_label(const QString & label)
+void AudioManager::set_service_label(const QString& label)
 {
   mServiceLabel = label;
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_service_label, Qt::QueuedConnection, label);
@@ -182,7 +182,7 @@ void AudioManager::_set_audio_dump_button_idle() const
   mpAudioDumpButton->set_sub_text({});
 }
 
-void AudioManager::_set_dump_button_emphasized(IndicatorButton * const ipButton, const bool iEmphasized, const u32 iBaseColor) const
+void AudioManager::_set_dump_button_emphasized(IndicatorButton* const ipButton, const bool iEmphasized, const u32 iBaseColor) const
 {
   ipButton->setStyleSheet(iEmphasized ? get_active_dump_style_sheet() : get_bg_style_sheet(iBaseColor));
   ipButton->setFixedSize(QSize(32, 32));
@@ -200,7 +200,7 @@ void AudioManager::update_dump_timers() const
   }
 }
 
-void AudioManager::_update_level_meter(LevelMeter * const ipMeter, const f32 iPeak, const f32 iRms) const
+void AudioManager::_update_level_meter(LevelMeter* const ipMeter, const f32 iPeak, const f32 iRms) const
 {
   const f32 minValue = ipMeter->get_lower_bound();
   const f32 maxValue = ipMeter->get_upper_bound();
@@ -244,12 +244,12 @@ void AudioManager::slot_show_audio_peak_level(const f32 iPeakLeftDb, const f32 i
   _update_level_meter(mpLevelMeterRight, iPeakRightDb, iRmsRightDb);
 }
 
-void AudioManager::slot_load_audio_device_list(const QList<QAudioDevice> & iDeviceList) const
+void AudioManager::slot_load_audio_device_list(const QList<QAudioDevice>& iDeviceList) const
 {
   const QSignalBlocker blocker(mpConfig->cmbSoundOutput);
   mpConfig->cmbSoundOutput->clear();
 
-  for (const QAudioDevice & device : iDeviceList)
+  for (const QAudioDevice& device : iDeviceList)
   {
     mpConfig->cmbSoundOutput->addItem(device.description(), QVariant::fromValue(device.id()));
   }
@@ -276,7 +276,7 @@ void AudioManager::slot_set_test_tone(const bool iActive)
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_test_tone, Qt::QueuedConnection, iActive);
 }
 
-void AudioManager::slot_set_audio_device(const QByteArray & iDeviceId)
+void AudioManager::slot_set_audio_device(const QByteArray& iDeviceId)
 {
   QMetaObject::invokeMethod(mpAudioPipeline, &AudioPipeline::slot_set_audio_device, Qt::QueuedConnection, iDeviceId);
 }

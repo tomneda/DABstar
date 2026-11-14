@@ -95,14 +95,14 @@ int showDdNewsSvcDecErr;
 extern "C"
 #endif
 NEWS_SVC_DEC_decoder_t NEWS_SVC_DEC_createDec(
-    NEWS_SVC_DEC_cb *update,
+    NEWS_SVC_DEC_cb* update,
     unsigned long max_memory,
-    unsigned long *max_objects,
+    unsigned long* max_objects,
     unsigned long extended_header_len,
-    void    *arg
+    void* arg
 )
 {
-    NEWS_SVC_DEC_IMPL_t *dec=new NEWS_SVC_DEC_IMPL_t;
+    NEWS_SVC_DEC_IMPL_t* dec=new NEWS_SVC_DEC_IMPL_t;
     if(dec==nullptr)
     {
         if(showDdNewsSvcDecErr)
@@ -153,7 +153,7 @@ void NEWS_SVC_DEC_deleteDec(
     NEWS_SVC_DEC_decoder_t decoder
 )
 {
-    NEWS_SVC_DEC_IMPL_t *dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
+    NEWS_SVC_DEC_IMPL_t* dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
     if(dec->d_magicId!=NEWS_SVC_MAGIC_ID)
     {
         if(showDdNewsSvcDecErr)
@@ -172,7 +172,7 @@ extern "C"
 unsigned long NEWS_SVC_DEC_putData(
     NEWS_SVC_DEC_decoder_t  decoder,
     const unsigned long len,
-    const unsigned char *buf
+    const unsigned char* buf
 )
 {
     if(showDdNewsSvcDecInfo)
@@ -180,7 +180,7 @@ unsigned long NEWS_SVC_DEC_putData(
         log_info << "NEWS_SVC_DEC_putData" << endmsg;
     }
 
-    NEWS_SVC_DEC_IMPL_t *dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
+    NEWS_SVC_DEC_IMPL_t* dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
     if(dec->d_magicId!=NEWS_SVC_MAGIC_ID)
     {
         if(showDdNewsSvcDecErr)
@@ -199,7 +199,7 @@ unsigned long NEWS_SVC_DEC_putData(
     struct timeval reception_time;
 
 #ifdef _WIN32
-    time((time_t *)&(reception_time.tv_sec));
+    time((time_t*)&(reception_time.tv_sec));
     reception_time.tv_usec=GetTickCount();
 #else
     struct timezone tz;
@@ -218,7 +218,7 @@ unsigned long NEWS_SVC_DEC_putData(
 #endif
 
     // do not throw an exception when out of memory
-    NewsObject *obj=new(std::nothrow)NewsObject(len, buf, &reception_time);
+    NewsObject* obj=new(std::nothrow)NewsObject(len, buf, &reception_time);
     if(obj==nullptr)
     {
         if(showDdNewsSvcDecErr)
@@ -252,7 +252,7 @@ unsigned long NEWS_SVC_DEC_putData(
         {
             log_info << "object already in map" << endmsg;
         }
-        NewsObject *old=dec->d_news_map[object_id];
+        NewsObject* old=dec->d_news_map[object_id];
         if(old->getRevisionIndex()==obj->getRevisionIndex())
         {
             // adjust reception time
@@ -295,11 +295,11 @@ unsigned long NEWS_SVC_DEC_putData(
     //
     if(dec->d_update)
     {
-        NEWS_SVC_DEC_IMPL_watch_list_t &l=dec->d_watch_list;
+        NEWS_SVC_DEC_IMPL_watch_list_t& l=dec->d_watch_list;
         if(find(l.begin(), l.end(), object_id)!=l.end())
         {
             const unsigned long no_of_elem=1;
-            auto * const chg_list = make_vla(NEWS_SVC_DEC_obj_availability_t, no_of_elem);
+            auto* const chg_list = make_vla(NEWS_SVC_DEC_obj_availability_t, no_of_elem);
             chg_list[0].object_id=static_cast<unsigned short>(object_id);
             if(obj->isUpdated())
             {
@@ -331,7 +331,7 @@ unsigned long NEWS_SVC_DEC_putData(
 #ifdef __cplusplus
 extern "C"
 #endif
-int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t *dec,
+int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t* dec,
         unsigned long objs_to_free)
 {
     for(unsigned long i=0; i<objs_to_free; ++i)
@@ -356,7 +356,7 @@ int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t *dec,
                                                 dec->d_news_map.begin(), dec->d_news_map.end(),
                                                 min);
         unsigned long obj_id=(e->second)->getObjectId();
-        NEWS_SVC_DEC_IMPL_keep_in_cache_list_t &l=dec->d_keep_in_cache_list;
+        NEWS_SVC_DEC_IMPL_keep_in_cache_list_t& l=dec->d_keep_in_cache_list;
         if(find(l.begin(), l.end(), obj_id)!=l.end())
         {
             if(showDdNewsSvcDecInfo)
@@ -373,11 +373,11 @@ int NEWS_SVC_DEC_IMPL_garbage_collection(NEWS_SVC_DEC_IMPL_t *dec,
 
         if(dec->d_update)
         {
-            NEWS_SVC_DEC_IMPL_watch_list_t &l=dec->d_watch_list;
+            NEWS_SVC_DEC_IMPL_watch_list_t& l=dec->d_watch_list;
             if(find(l.begin(), l.end(), obj_id)!=l.end())
             {
                 const unsigned long no_of_elem=1;
-                auto * const chg_list = make_vla(NEWS_SVC_DEC_obj_availability_t, no_of_elem);
+                auto* const chg_list = make_vla(NEWS_SVC_DEC_obj_availability_t, no_of_elem);
                 chg_list[0].object_id=static_cast<unsigned short>(obj_id);
                 chg_list[0].status=NEWS_SVC_DEC_OBJ_REMOVED;
 
@@ -400,15 +400,15 @@ extern "C"
 int NEWS_SVC_DEC_get_news_object(
     NEWS_SVC_DEC_decoder_t  decoder,
     unsigned short object_id,
-    unsigned long *extended_header_len,
-    unsigned long *len,
-    unsigned char *nml)
+    unsigned long* extended_header_len,
+    unsigned long* len,
+    unsigned char* nml)
 {
     if(showDdNewsSvcDecInfo)
     {
         log_info << "NEWS_SVC_DEC_get_news_object object_id: " << object_id << endmsg;
     }
-    NEWS_SVC_DEC_IMPL_t *dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
+    NEWS_SVC_DEC_IMPL_t* dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
     if(dec->d_magicId!=NEWS_SVC_MAGIC_ID)
     {
         if(showDdNewsSvcDecErr)
@@ -435,9 +435,9 @@ extern "C"
 int NEWS_SVC_DEC_watch_objects(
     NEWS_SVC_DEC_decoder_t  decoder,
     unsigned long number_of_elements,
-    NEWS_SVC_DEC_obj_availability_t *watch_list)
+    NEWS_SVC_DEC_obj_availability_t* watch_list)
 {
-    NEWS_SVC_DEC_IMPL_t *dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
+    NEWS_SVC_DEC_IMPL_t* dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
     if(dec->d_magicId!=NEWS_SVC_MAGIC_ID)
     {
         if(showDdNewsSvcDecErr)
@@ -492,9 +492,9 @@ extern "C"
 int NEWS_SVC_DEC_get_object_availability(
     NEWS_SVC_DEC_decoder_t  decoder,
     unsigned long number_of_elements,
-    NEWS_SVC_DEC_obj_availability_t *query_list)
+    NEWS_SVC_DEC_obj_availability_t* query_list)
 {
-    NEWS_SVC_DEC_IMPL_t *dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
+    NEWS_SVC_DEC_IMPL_t* dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
     if(dec->d_magicId!=NEWS_SVC_MAGIC_ID)
     {
         if(showDdNewsSvcDecErr)
@@ -510,14 +510,14 @@ int NEWS_SVC_DEC_get_object_availability(
     }
     for(unsigned long i=0; i<number_of_elements; ++i)
     {
-        NEWS_SVC_DEC_obj_availability_t *e=query_list+i;
+        NEWS_SVC_DEC_obj_availability_t* e=query_list+i;
         if(dec->d_news_map.count(e->object_id)==0)
         {
             e->status=NEWS_SVC_DEC_OBJ_NOT_YET_AVAILABLE;
         }
         else
         {
-            NewsObject &obj=*dec->d_news_map[e->object_id];
+            NewsObject& obj=*dec->d_news_map[e->object_id];
             if(obj.isUpdated())
             {
                 e->status=NEWS_SVC_DEC_OBJ_UPDATED;
@@ -538,10 +538,10 @@ extern "C"
 int NEWS_SVC_DEC_keep_in_cache(
     NEWS_SVC_DEC_decoder_t  decoder,
     unsigned long number_of_elements,
-    unsigned short *object_ids
+    unsigned short* object_ids
 )
 {
-    NEWS_SVC_DEC_IMPL_t *dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
+    NEWS_SVC_DEC_IMPL_t* dec=(NEWS_SVC_DEC_IMPL_t*)(decoder);
     if(dec->d_magicId!=NEWS_SVC_MAGIC_ID)
     {
         if(showDdNewsSvcDecErr)
@@ -590,7 +590,7 @@ int NEWS_SVC_DEC_keep_in_cache(
     return 1;
 }
 
-void NEWS_SVC_DEC_IMPL_printObjList(NEWS_SVC_DEC_IMPL_t *dec)
+void NEWS_SVC_DEC_IMPL_printObjList(NEWS_SVC_DEC_IMPL_t* dec)
 {
     log_info << "print object map:" << std::endl << endmsg;
     NEWS_SVC_DEC_IMPL_map_t::iterator e;
@@ -600,12 +600,12 @@ void NEWS_SVC_DEC_IMPL_printObjList(NEWS_SVC_DEC_IMPL_t *dec)
     }
 }
 
-FindMinFunctor::FindMinFunctor(NEWS_SVC_DEC_IMPL_t *dec) :
+FindMinFunctor::FindMinFunctor(NEWS_SVC_DEC_IMPL_t* dec) :
     d_dec(dec)
 {
 }
 
-FindMinFunctor::FindMinFunctor(const FindMinFunctor &rhs)
+FindMinFunctor::FindMinFunctor(const FindMinFunctor& rhs)
 {
     d_dec=rhs.d_dec;
 }
@@ -615,11 +615,11 @@ FindMinFunctor::~FindMinFunctor()
 }
 
 bool FindMinFunctor::operator()(
-    std::pair<const unsigned long, NewsObject*> &rhs,
-    std::pair<const unsigned long, NewsObject*> &lhs)
+    std::pair<const unsigned long, NewsObject*>& rhs,
+    std::pair<const unsigned long, NewsObject*>& lhs)
 {
-    NewsObject *no1=rhs.second;
-    NewsObject *no2=lhs.second;
+    NewsObject* no1=rhs.second;
+    NewsObject* no2=lhs.second;
 
     unsigned long obj_id1=no1->getObjectId();
     unsigned long obj_id2=no2->getObjectId();
@@ -630,7 +630,7 @@ bool FindMinFunctor::operator()(
     }
 #endif
 
-    NEWS_SVC_DEC_IMPL_keep_in_cache_list_t &l=d_dec->d_keep_in_cache_list;
+    NEWS_SVC_DEC_IMPL_keep_in_cache_list_t& l=d_dec->d_keep_in_cache_list;
     if(find(l.begin(), l.end(), obj_id1)!=l.end())
     {
         // special case root menu

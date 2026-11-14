@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <cmath>
 
-FaadDecoder::FaadDecoder(const DabRadio * const ipDR, RingBuffer<i16> * ipBuffer)
+FaadDecoder::FaadDecoder(const DabRadio* const ipDR, RingBuffer<i16>* ipBuffer)
 {
   mpAudioBuffer = ipBuffer;
   mAacCap = NeAACDecGetCapabilities();
@@ -68,7 +68,7 @@ i32 get_aac_channel_configuration(i16 m_mpeg_surround_config, u8 aacChannelMode)
   }
 }
 
-bool FaadDecoder::_initialize(const SStreamParms * iSP)
+bool FaadDecoder::_initialize(const SStreamParms* iSP)
 {
   /* AudioSpecificConfig structure (the only way to select 960 transform here!)
    *
@@ -113,7 +113,7 @@ bool FaadDecoder::_initialize(const SStreamParms * iSP)
   return true;
 }
 
-i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<const u8> & iBuffer)
+i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms* const iSP, const std::span<const u8>& iBuffer)
 {
   if (!mAacInitialized)
   {
@@ -125,7 +125,7 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::s
   }
 
   NeAACDecFrameInfo aacInfo;
-  const i16 * const outBuffer = (i16 *)NeAACDecDecode(mAacHandle, &aacInfo, const_cast<u8*>(iBuffer.data()), (unsigned long)iBuffer.size());
+  const i16* const outBuffer = (i16*)NeAACDecDecode(mAacHandle, &aacInfo, const_cast<u8*>(iBuffer.data()), (unsigned long)iBuffer.size());
   const u32 sampleRate = aacInfo.samplerate;
   const i16 samples = aacInfo.samples;
   const i32 audioBufferFillSize = sampleRate / 8; // 125ms
@@ -230,7 +230,7 @@ i32 FaadDecoder::_estimate_pitch_period() const
     return 0;
   }
 
-  const i16 * const x = mLastGoodFrame.data(); // interleaved; left channel at even indices
+  const i16* const x = mLastGoodFrame.data(); // interleaved; left channel at even indices
   const i32 base = histPerCh - 1;              // per-channel index of the last sample
 
   f64 refEnergy = 0.0;
@@ -277,7 +277,7 @@ i32 FaadDecoder::_estimate_pitch_period() const
   return (bestScore >= 0.30) ? bestLag : 0;
 }
 
-void FaadDecoder::_apply_exit_crossfade(const std::span<i16> & ioPcm) const
+void FaadDecoder::_apply_exit_crossfade(const std::span<i16>& ioPcm) const
 {
   const i32 iNumSamples = (i32)ioPcm.size();
   // Smooth the transition from concealed audio back to real audio with a short linear

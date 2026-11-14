@@ -11,15 +11,15 @@ class Rsp_device : public QObject
 {
 Q_OBJECT
 protected:
-  sdrplay_api_DeviceT * mpChosenDevice;
+  sdrplay_api_DeviceT* mpChosenDevice;
   i32 mFreq;
   i32 mLnaState;
-  sdrplay_api_RxChannelParamsT * mpChParams;
-  sdrplay_api_DeviceParamsT * mpDeviceParams;
-  SdrPlayHandler * mpParent;
+  sdrplay_api_RxChannelParamsT* mpChParams;
+  sdrplay_api_DeviceParamsT* mpDeviceParams;
+  SdrPlayHandler* mpParent;
 
 public:
-  Rsp_device(SdrPlayHandler * parent, sdrplay_api_DeviceT * chosenDevice,
+  Rsp_device(SdrPlayHandler* parent, sdrplay_api_DeviceT* chosenDevice,
              i32 startFrequency, bool agcMode, i32 lnaState, i32 GRdB, f64 ppmValue);
   ~Rsp_device() override;
 

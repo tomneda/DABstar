@@ -36,10 +36,10 @@
 #include "bit_extractors.h"
 #include "crc.h"
 
-MotHandler::MotHandler(DabRadio * mr)
+MotHandler::MotHandler(DabRadio* mr)
   : mpRadioInterface(mr)
 {
-  for (auto & mt: mMotTable)
+  for (auto& mt: mMotTable)
   {
     mt.orderNumber = -1;
     mt.motSlide = nullptr;
@@ -48,7 +48,7 @@ MotHandler::MotHandler(DabRadio * mr)
 
 MotHandler::~MotHandler()
 {
-  for (auto & mt: mMotTable)
+  for (auto& mt: mMotTable)
   {
     if (mt.orderNumber > 0)
     {
@@ -66,9 +66,9 @@ MotHandler::~MotHandler()
   }
 }
 
-void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
+void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
 {
-  const u8 * const data = msc.data();
+  const u8* const data = msc.data();
   const bool extensionFlag = getBits_1(data, 0) != 0;
   const bool crcFlag = getBits_1(data, 1) != 0;
   const bool segmentFlag = getBits_1(data, 2) != 0;
@@ -148,7 +148,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
   case 3:
     if (segmentNumber == 0)
     {
-      MotObject * h = getHandle(transportId);
+      MotObject* h = getHandle(transportId);
       if (h != nullptr)
       {
         break;
@@ -161,7 +161,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
 
   case 4:
   {
-    MotObject * h = getHandle(transportId);
+    MotObject* h = getHandle(transportId);
     if (h == nullptr)
     {
       h = new MotObject(mpRadioInterface, false, false, // not within a directory
@@ -190,7 +190,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
         delete mpDirectory;
 
       i32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
-      u8 * segment = &motVector[2];
+      u8* segment = &motVector[2];
       const i32 dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
       const u16 numObjects = (segment[4] << 8) | segment[5];
       //	         i32 period = (segment [6] << 16) |
@@ -214,9 +214,9 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
   }
 }
 
-MotObject * MotHandler::getHandle(u16 transportId) const
+MotObject* MotHandler::getHandle(u16 transportId) const
 {
-  for (const auto & mt: mMotTable)
+  for (const auto& mt: mMotTable)
   {
     qDebug() << "motHandler getHandle transportId" << transportId << "orderNumber" << mt.orderNumber << "transportId" << mt.transportId;
     if ((mt.orderNumber >= 0) && (mt.transportId == transportId))
@@ -232,9 +232,9 @@ MotObject * MotHandler::getHandle(u16 transportId) const
   return nullptr;
 }
 
-void MotHandler::setHandle(MotObject * h, u16 transportId)
+void MotHandler::setHandle(MotObject* h, u16 transportId)
 {
-  for (auto & mt: mMotTable)
+  for (auto& mt: mMotTable)
   {
     if (mt.orderNumber == -1)
     {

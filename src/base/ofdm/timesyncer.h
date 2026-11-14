@@ -42,7 +42,7 @@ public:
     IDLE, TIMESYNC_ESTABLISHED, NO_DIP_FOUND, NO_END_OF_DIP_FOUND
   };
 
-  TimeSyncer(SampleReader * mr);
+  TimeSyncer(SampleReader* mr);
   ~TimeSyncer() = default;
 
   EState read_samples_until_end_of_level_drop();
@@ -51,7 +51,7 @@ private:
   static constexpr i32 cSyncBufferSize = 4096;
   static constexpr i32 cLevelSearchSize = 50;
 
-  SampleReader * const mpSampleReader;
+  SampleReader* const mpSampleReader;
   i32 mSyncBufferIndex = 0;
 };
 

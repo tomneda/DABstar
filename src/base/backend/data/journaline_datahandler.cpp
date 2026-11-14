@@ -35,11 +35,11 @@
 #include <sys/time.h>
 #include "dabradio.h"
 
-static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * const pHeader,
-                          const unsigned long iLen, const unsigned char * ipBuffer, void * pArg)
+static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t* const pHeader,
+                          const unsigned long iLen, const unsigned char* ipBuffer, void* pArg)
 {
   (void)pHeader;
-  JournalineDataHandler * const pDataHandler = static_cast<JournalineDataHandler *>(pArg);
+  JournalineDataHandler* const pDataHandler = static_cast<JournalineDataHandler*>(pArg);
   assert(pDataHandler != nullptr);
 
   NML::RawNewsObject_t rawNewsObj;
@@ -53,7 +53,7 @@ static void callback_func(const DAB_DATAGROUP_DECODER_msc_datagroup_header_t * c
   pDataHandler->add_to_dataBase(pNml);
 }
 
-JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR)
+JournalineDataHandler::JournalineDataHandler(DabRadio* const ipDR)
   : mpDabRadio(ipDR)
   , mJournalineViewer(mDataMap)
 {
@@ -62,7 +62,7 @@ JournalineDataHandler::JournalineDataHandler(DabRadio * const ipDR)
   connect(this, &JournalineDataHandler::signal_new_data, &mJournalineViewer, &JournalineViewer::slot_new_data);
 
   // the JOUR button on the main window is enabled with the first received Journaline object
-  const QWidget * const pViewerWidget = mJournalineViewer.get_widget();
+  const QWidget* const pViewerWidget = mJournalineViewer.get_widget();
   connect(this, &JournalineDataHandler::signal_new_data, ipDR, [ipDR, pViewerWidget]() { ipDR->set_journaline_data_received(pViewerWidget); });
   ipDR->register_journaline_viewer(mJournalineViewer.get_widget());
 }
@@ -75,12 +75,12 @@ JournalineDataHandler::~JournalineDataHandler()
 }
 
 //void	journaline_dataHandler::add_mscDatagroup (QByteArray &msc) {
-void JournalineDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
+void JournalineDataHandler::add_MSC_data_group(const std::vector<u8>& msc)
 {
   const i32 len = (i32)msc.size();
   assert(len % 8 == 0);
   const i32 lenBytes = len / 8;
-  auto * const buffer = make_vla(u8, lenBytes);
+  auto* const buffer = make_vla(u8, lenBytes);
 
   for (i32 i = 0; i < lenBytes; i++)
   {
@@ -104,7 +104,7 @@ void JournalineDataHandler::_destroy_database()
   mDataMap.clear();
 }
 
-void JournalineDataHandler::add_to_dataBase(const std::shared_ptr<NML> & ipNmlElement)
+void JournalineDataHandler::add_to_dataBase(const std::shared_ptr<NML>& ipNmlElement)
 {
   switch (ipNmlElement->GetObjectType())
   {
@@ -123,7 +123,7 @@ void JournalineDataHandler::add_to_dataBase(const std::shared_ptr<NML> & ipNmlEl
 
     if (revIdxNew != revIdxMap)
     {
-      JournalineViewer::STableElement & tblElem = mDataMap[objId]; // a not existing map element will be created and initialized here
+      JournalineViewer::STableElement& tblElem = mDataMap[objId]; // a not existing map element will be created and initialized here
       tblElem.pElement = ipNmlElement->get_news_ptr(); // get data ownership here
       mDataMap.insert(objId, tblElem);
 

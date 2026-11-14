@@ -21,7 +21,7 @@
 #include "device_exceptions.h"
 #include "openfiledialog.h"
 
-AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
+AirspyHandler::AirspyHandler(QSettings* s, QString recorderVersion):
                              myFrame(nullptr),
                              _I_Buffer(4 * 1024 * 1024)
 {
@@ -54,9 +54,9 @@ AirspyHandler::AirspyHandler(QSettings *s, QString recorderVersion):
     serialNumber        = 0;
 
 #ifdef  _WIN32
-    const char *libraryString = "airspy.dll";
+    const char* libraryString = "airspy.dll";
 #else
-    const char *libraryString = "libairspy";
+    const char* libraryString = "libairspy";
 #endif
     phandle = new QLibrary(libraryString);
     phandle->load();
@@ -320,14 +320,14 @@ void    AirspyHandler::stopReader()
 //  Directly copied from the airspy extio dll from Andrea Montefusco
 i32 AirspyHandler::callback (airspy_transfer* transfer)
 {
-    AirspyHandler *p;
+    AirspyHandler* p;
 
     if (!transfer)
        return 0;        // should not happen
-    p = static_cast<AirspyHandler *> (transfer->ctx);
+    p = static_cast<AirspyHandler*> (transfer->ctx);
 
 // we read  AIRSPY_SAMPLE_INT16_IQ:
-    p->data_available (std::span (static_cast<const ci16 *> (transfer->samples), transfer->sample_count));
+    p->data_available (std::span (static_cast<const ci16*> (transfer->samples), transfer->sample_count));
     return 0;
 }
 
@@ -335,9 +335,9 @@ i32 AirspyHandler::callback (airspy_transfer* transfer)
 //  2*2 = 4 bytes for sample, as per AirSpy USB data stream format
 //  we do the rate conversion here, read in groups of 2 * xxx samples
 //  and transform them into groups of 2 * 512 samples
-i32     AirspyHandler::data_available (const std::span<const ci16> & iSamples)
+i32     AirspyHandler::data_available (const std::span<const ci16>& iSamples)
 {
-    const i16 * const sbuf = reinterpret_cast<const i16 *> (iSamples.data());
+    const i16* const sbuf = reinterpret_cast<const i16*> (iSamples.data());
     const i32 nSamples = (i32)iSamples.size();
     cf32 temp [2048];
     i32  i, j;
@@ -408,7 +408,7 @@ i32     AirspyHandler::data_available (const std::span<const ci16> & iSamples)
     return 0;
 }
 //
-const char *AirspyHandler::getSerial()
+const char* AirspyHandler::getSerial()
 {
     airspy_read_partid_serialno_t read_partid_serialno;
     i32 result = my_airspy_board_partid_serialno_read (device,
@@ -450,9 +450,9 @@ void    AirspyHandler::resetBuffer  ()
     _I_Buffer.flush_ring_buffer ();
 }
 
-i32 AirspyHandler::getSamples(const std::span<cf32> & oV)
+i32 AirspyHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const v = oV.data();
+  cf32* const v = oV.data();
   const i32 size = (i32)oV.size();
 
     return _I_Buffer.get_data_from_ring_buffer (v, size);

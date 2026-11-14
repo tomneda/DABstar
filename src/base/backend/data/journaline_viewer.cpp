@@ -25,7 +25,7 @@ static const QString cColorVisiting  = QSL("#FFFF00");  // opened and actual vis
 static const QString cColorVisited   = QSL("#FF6060");  // closed but visited before
 static const QString cColorText      = QSL("#FFFFFF");  // information text
 
-JournalineViewer::JournalineViewer(TMapData & ioTableVec)
+JournalineViewer::JournalineViewer(TMapData& ioTableVec)
   : mDataMap(ioTableVec)
 {
   mFrame.setWindowFlag(Qt::Tool, true);
@@ -88,14 +88,14 @@ JournalineViewer::JournalineViewer(TMapData & ioTableVec)
   mpScrollArea->setWidget(mpLblHtml);
   mpScrollArea->setWidgetResizable(true);
 
-  QHBoxLayout * pHBoxLayout = new QHBoxLayout(); // there is no memory leakage here (as clang tidy is thinking)
+  QHBoxLayout* pHBoxLayout = new QHBoxLayout(); // there is no memory leakage here (as clang tidy is thinking)
   pHBoxLayout->addWidget(mpLblCopyRight);
   pHBoxLayout->addStretch();
   pHBoxLayout->addWidget(mpLblLegends);
   pHBoxLayout->addStretch();
   pHBoxLayout->addWidget(mpLblDataReceiving);
 
-  QVBoxLayout * pVBoxLayout = new QVBoxLayout(&mFrame);  // there is no memory leakage here (as clang tidy is thinking)
+  QVBoxLayout* pVBoxLayout = new QVBoxLayout(&mFrame);  // there is no memory leakage here (as clang tidy is thinking)
   pVBoxLayout->addWidget(mpLblTitle, 0);
   pVBoxLayout->addWidget(mpScrollArea, 2);
   pVBoxLayout->addLayout(pHBoxLayout, 0);
@@ -142,7 +142,7 @@ void JournalineViewer::_slot_html_rebuild_timeout() const
   }
 }
 
-void JournalineViewer::_slot_html_link_activated(const QString & iLink)
+void JournalineViewer::_slot_html_link_activated(const QString& iLink)
 {
   // Expecting links like "open:<id>"
   if (!iLink.startsWith("open:"))
@@ -173,7 +173,7 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
 
     if (cSubMenusClosedAfterMenuOpen && it.value().isOpened)
     {
-      for (const auto & elem : it.value().pElement->item)
+      for (const auto& elem : it.value().pElement->item)
       {
         const auto it2 = mDataMap.find(elem.link_id);
         if (it2 != mDataMap.end())
@@ -191,9 +191,9 @@ void JournalineViewer::_slot_html_link_activated(const QString & iLink)
   }
 }
 
-void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iItElem, QString & ioHtml, const i32 iLevel, const bool iSuppressTitle) const
+void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator& iItElem, QString& ioHtml, const i32 iLevel, const bool iSuppressTitle) const
 {
-  const auto & pElem = iItElem.value().pElement;
+  const auto& pElem = iItElem.value().pElement;
   const i32 captionIdx = std::min(iLevel + 1, 6);
   const QString capTagBeg = QSL("<h%1 style=\"color: %2; margin-left: -20px;\">").arg(captionIdx).arg(cColorHeader);
   const QString capTagEnd = QSL("</h%1>").arg(captionIdx);
@@ -211,7 +211,7 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
   {
   case NML::MENU:
     ioHtml += QSL("<ul style=\"margin-left: -20px;\">");
-    for (const auto & item : pElem->item)
+    for (const auto& item : pElem->item)
     {
       const i32 linkId = item.link_id;
       const auto itSubMenu = mDataMap.find(linkId);
@@ -221,7 +221,7 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
 
       if (isLoaded)
       {
-        const QString & color = wasVisited ? (isOpened ? cColorVisiting : cColorVisited) : cColorNotOpened;
+        const QString& color = wasVisited ? (isOpened ? cColorVisiting : cColorVisited) : cColorNotOpened;
         ioHtml += QSL("<li><a href=\"open:%1\" style=\"color: %2; text-decoration:none;\">").arg(linkId).arg(color) + QString::fromUtf8(item.text) + QSL("</a>");
       }
       else
@@ -250,7 +250,7 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
 
   case NML::LIST:
     ioHtml += QSL("<ul style=\"color: %1; margin-left: -20px;\">").arg(cColorText);
-    for (const auto & item : pElem->item)
+    for (const auto& item : pElem->item)
     {
       ioHtml += QSL("<li>") + QString::fromUtf8(item.text) + QSL("</li>");
     }
@@ -263,7 +263,7 @@ void JournalineViewer::_build_html_tree_recursive(const TMapData::iterator & iIt
   if (!pElem->linkVec.empty())
   {
     ioHtml += QSL("<p>");
-    for (const auto & link : pElem->linkVec)
+    for (const auto& link : pElem->linkVec)
     {
       ioHtml += QSL(R"(<a style="color: lightcoral;" href=")") + QString::fromUtf8(link.urlStr) + QSL("\">") + QString::fromUtf8(!link.textStr.empty() ? link.textStr : link.urlStr) + QSL("</a><br>");
     }

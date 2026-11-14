@@ -58,10 +58,10 @@ class AudioDisplay : public QObject
 {
 Q_OBJECT
 public:
-  AudioDisplay(DabRadio *, PlotWidget *, QSettings *);
+  AudioDisplay(DabRadio*, PlotWidget*, QSettings*);
   ~AudioDisplay() override;
 
-  void plot_spectrum(const std::span<const i16> & iSampleData, i32 iSampleRate); // interleaved stereo samples
+  void plot_spectrum(const std::span<const i16>& iSampleData, i32 iSampleRate); // interleaved stereo samples
   void set_plot_mode(EAudioPlotMode iMode);
   [[nodiscard]] EAudioPlotMode get_plot_mode() const { return mPlotMode; }
   [[nodiscard]] static QStringList get_plot_mode_names();
@@ -82,14 +82,14 @@ private:
     62.5f, 125.0f, 500.0f, 1000.0f, 2000.0f, 4000.0f, 8000.0f
   };
 
-  DabRadio * const mpRadioInterface;
-  QSettings * const mpDabSettings;
-  PlotWidget * const mpPlot;
-  QLineSeries * mpLineSeries = nullptr;
-  QLineSeries * mpUpperCurve = nullptr;
-  QLineSeries * mpLowerCurve = nullptr;
-  QAreaSeries * mpAreaSeries = nullptr;
-  QCategoryAxis * mpCategoryAxis = nullptr;
+  DabRadio* const mpRadioInterface;
+  QSettings* const mpDabSettings;
+  PlotWidget* const mpPlot;
+  QLineSeries* mpLineSeries = nullptr;
+  QLineSeries* mpUpperCurve = nullptr;
+  QLineSeries* mpLowerCurve = nullptr;
+  QAreaSeries* mpAreaSeries = nullptr;
+  QCategoryAxis* mpCategoryAxis = nullptr;
 
   EAudioPlotMode mPlotMode = EAudioPlotMode::FFT_SPECTRUM_UNFILLED;
   bool mPlotModeChanged = false;
@@ -109,7 +109,7 @@ private:
 #else
   alignas(64) std::array<f32,  cSpectrumSize> mFftInBuffer;
   alignas(64) std::array<cf32, cSpectrumSize/2 + 1> mFftOutBuffer;
-  fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex *)mFftOutBuffer.data(), FFTW_MEASURE)};
+  fftwf_plan mFftPlan{fftwf_plan_dft_r2c_1d(cSpectrumSize, mFftInBuffer.data(), (fftwf_complex*)mFftOutBuffer.data(), FFTW_MEASURE)};
 #endif
 
   i32 mSampleRateLast = 0;

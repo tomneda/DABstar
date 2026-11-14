@@ -48,7 +48,7 @@
 // which read their samples there (rtl_tcp) deliver nothing at all during the settle time.
 static constexpr i32 cSettleSampleCnt = INPUT_RATE / 4; // 250 ms
 
-DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
+DabProcessor::DabProcessor(DabRadio* const mr, IDeviceHandler* const inputDevice, ProcessParams* const p)
   : mpRadioInterface(mr)
   , mpEtiSource(inputDevice->get_eti_source())
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
@@ -247,7 +247,7 @@ void DabProcessor::_run_eti()
 
 // Evaluates one ETI(NI) frame according ETSI EN 300 799 (similar to ETIPlayer::DecodeFrame() in dablin).
 // Returns false if the frame is not valid.
-bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEtiSubChannel> & oSubChannels)
+bool DabProcessor::_process_eti_frame(const TEtiFrame& iFrame, std::vector<SEtiSubChannel>& oSubChannels)
 {
   const std::span<const u8> f(iFrame);
 
@@ -324,7 +324,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
 
   for (i32 i = 0; i < nst; i++)
   {
-    const u8 * const stc = &f[8 + i * 4];
+    const u8* const stc = &f[8 + i * 4];
     const i32 size = ((stc[2] & 0x03) << 8 | stc[3]) * 8; // STL is given in 64 bit units
 
     if (mstOffset + size > mstEnd)
@@ -342,7 +342,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
   return true;
 }
 
-void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
+void DabProcessor::_state_process_rest_of_frame(i32& ioSampleCount)
 {
   /*
    * The current OFDM symbol 0 in mOfdmBuffer is special in that it is used for fine time synchronization,
@@ -418,7 +418,7 @@ void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
   }
 }
 
-void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
+void DabProcessor::_process_null_symbol(i32& ioSampleCount)
 {
   // We are at the end of the frame and we read the next T_n null samples
   mSampleReader.get_samples(mOfdmBuffer, 0, cTn, mFreqOffsBBHz, false);
@@ -455,7 +455,7 @@ void DabProcessor::_process_null_symbol(i32 & ioSampleCount)
   }
 }
 
-f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32 & ioSampleCount)
+f32 DabProcessor::_process_ofdm_symbols_1_to_L(i32& ioSampleCount)
 {
 /**
   * After symbol 0, we will just read in the other (params -> L - 1) blocks
@@ -540,7 +540,7 @@ void DabProcessor::_set_rf_freq_offs_Hz(const f32 iFreqHz)
   }
 }
 
-bool DabProcessor::_state_eval_sync_symbol(i32 & oSampleCount, const f32 iThreshold)
+bool DabProcessor::_state_eval_sync_symbol(i32& oSampleCount, const f32 iThreshold)
 {
   // get first OFDM symbol after time sync marker
   mSampleReader.get_samples(mOfdmBuffer, 0, cTu, mFreqOffsBBHz, false);
@@ -608,7 +608,7 @@ void DabProcessor::activate_cir_viewer(bool iActivate)
   mSampleReader.set_cir_buffer(iActivate ? mpCirBuffer : nullptr);
 }
 
-bool DabProcessor::is_service_running(const SDescriptorType & iDT, const EProcessFlag iProcessFlag) const
+bool DabProcessor::is_service_running(const SDescriptorType& iDT, const EProcessFlag iProcessFlag) const
 {
   // assert(!mScanMode);
   return mMscHandler.is_service_running(iDT.SubChId, iProcessFlag);
@@ -636,7 +636,7 @@ void DabProcessor::stop_all_services()
   }
 }
 
-bool DabProcessor::set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * ipoAudioBuffer, const EProcessFlag iProcessFlag)
+bool DabProcessor::set_audio_channel(const SAudioData& iAD, RingBuffer<i16>* ipoAudioBuffer, const EProcessFlag iProcessFlag)
 {
   if (!mScanMode)
   {
@@ -648,7 +648,7 @@ bool DabProcessor::set_audio_channel(const SAudioData & iAD, RingBuffer<i16> * i
   }
 }
 
-bool DabProcessor::set_data_channel(const SPacketData & iPD, RingBuffer<u8> * ipoDataBuffer, const EProcessFlag iProcessFlag)
+bool DabProcessor::set_data_channel(const SPacketData& iPD, RingBuffer<u8>* ipoDataBuffer, const EProcessFlag iProcessFlag)
 {
   if (!mScanMode)
   {
@@ -660,7 +660,7 @@ bool DabProcessor::set_data_channel(const SPacketData & iPD, RingBuffer<u8> * ip
   }
 }
 
-void DabProcessor::start_dumping(SNDFILE * f)
+void DabProcessor::start_dumping(SNDFILE* f)
 {
   mSampleReader.start_dumping(f);
 }
@@ -670,7 +670,7 @@ void DabProcessor::stop_dumping()
   mSampleReader.stop_dumping();
 }
 
-void DabProcessor::start_fic_dump(FILE * f)
+void DabProcessor::start_fic_dump(FILE* f)
 {
   mFicHandler.start_fic_dump(f);
 }
@@ -680,7 +680,7 @@ void DabProcessor::stop_fic_dump()
   mFicHandler.stop_fic_dump();
 }
 
-bool DabProcessor::start_eti_generator(const QString & s)
+bool DabProcessor::start_eti_generator(const QString& s)
 {
   if (mpEtiSource != nullptr) // there are no soft bits available to generate ETI from
   {

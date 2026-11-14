@@ -12,7 +12,7 @@
 //
 //	were extracted and the filter configuration is loaded
 
-const char * dabFilter =
+const char* dabFilter =
 "RX 3 GAIN -12 DEC 4\n"
 "TX 3 GAIN 0 INT 4\n"
 "924,226\n"

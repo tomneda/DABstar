@@ -41,7 +41,7 @@ static inline i64 getMyTime()
   return ((i64)tv.tv_sec * 1000000LL + (i64)tv.tv_usec);
 }
 
-WavReader::WavReader(WavFileHandler * ipWavFH, SNDFILE * ipFile, RingBuffer<cf32> * ipRingBuffer, const i32 iSampleRate)
+WavReader::WavReader(WavFileHandler* ipWavFH, SNDFILE* ipFile, RingBuffer<cf32>* ipRingBuffer, const i32 iSampleRate)
   : mpFile(ipFile)
   , mpRingBuffer(ipRingBuffer)
   , mpParent(ipWavFH)
@@ -167,7 +167,7 @@ void WavReader::run()
 
     nextStop_us += mPeriod_us;
 
-    const i32 n = (i32)sf_readf_float(mpFile, (f32 *)mCmplxBuffer.data(), cBufferSize);
+    const i32 n = (i32)sf_readf_float(mpFile, (f32*)mCmplxBuffer.data(), cBufferSize);
 
     if (n < cBufferSize)
     {

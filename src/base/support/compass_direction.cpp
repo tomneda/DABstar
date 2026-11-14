@@ -45,7 +45,7 @@
   std::string pResult = "N";
   f64 minDiff = 360.0;
 
-  for (const auto & point : compassPoints)
+  for (const auto& point : compassPoints)
   {
     if (f64 diff = std::abs(iAngleInDegree - point.angle);
         diff < minDiff)

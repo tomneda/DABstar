@@ -23,9 +23,9 @@
 // Q_LOGGING_CATEGORY(sLogFilePlayerDbHandler, "FilePlayerDbHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogFilePlayerDbHandler, "FilePlayerDbHandler", QtWarningMsg)
 
-void CustomItemDelegate2::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
+void CustomItemDelegate2::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  const QAbstractItemModel * pModel = index.model();
+  const QAbstractItemModel* pModel = index.model();
   const QModelIndex modIdxFId = pModel->index(index.row(), mCurFIdOrChColIdx);
   const QModelIndex modIdxSL = pModel->index(index.row(), mCurScanLevelIdx);
   const EScanLevel scanLevel = static_cast<EScanLevel>(pModel->data(modIdxSL).toInt());
@@ -58,7 +58,7 @@ void CustomItemDelegate2::paint(QPainter * painter, const QStyleOptionViewItem &
   QStyledItemDelegate::paint(painter, opt, index);
 }
 
-QSize CustomItemDelegate2::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+QSize CustomItemDelegate2::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   // Any row can become the currently-played (bold) row, and bold text is always at
   // least as wide as the regular text. So measure every cell with the bold font and
@@ -70,7 +70,7 @@ QSize CustomItemDelegate2::sizeHint(const QStyleOptionViewItem & option, const Q
   return QStyledItemDelegate::sizeHint(opt, index);
 }
 
-bool CustomItemDelegate2::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+bool CustomItemDelegate2::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
   if (event->type() == QEvent::MouseButtonPress)
   {
@@ -85,7 +85,7 @@ bool CustomItemDelegate2::editorEvent(QEvent * event, QAbstractItemModel * model
 }
 
 
-EnsembleListDbHandler::EnsembleListDbHandler(const QString & iDbFileName, QTableView * const ipSL) :
+EnsembleListDbHandler::EnsembleListDbHandler(const QString& iDbFileName, QTableView* const ipSL) :
   mpTableView(ipSL),
   mEnsembleListDb(iDbFileName)
 {
@@ -123,7 +123,7 @@ EnsembleListDbHandler::EnsembleListDbHandler(const QString & iDbFileName, QTable
   connect(&mCustomItemDelegate, &CustomItemDelegate2::signal_selection_changed, this, &EnsembleListDbHandler::_slot_selection_changed);
 }
 
-void EnsembleListDbHandler::insert_or_update_entry(const EnsembleListDB::SDbEntryData & iEntryData, const EnsembleListDB::EDbDataType iDataType)
+void EnsembleListDbHandler::insert_or_update_entry(const EnsembleListDB::SDbEntryData& iEntryData, const EnsembleListDB::EDbDataType iDataType)
 {
   if (mEnsembleListDb.insert_or_update_entry(iEntryData, iDataType)) // true if new entry was added
   {
@@ -133,7 +133,7 @@ void EnsembleListDbHandler::insert_or_update_entry(const EnsembleListDB::SDbEntr
   }
 }
 
-bool EnsembleListDbHandler::delete_entry(const QString & iFIdOrCh)
+bool EnsembleListDbHandler::delete_entry(const QString& iFIdOrCh)
 {
   const bool result = mEnsembleListDb.delete_entry(iFIdOrCh);
   _fill_table_view_from_db();
@@ -147,7 +147,7 @@ bool EnsembleListDbHandler::delete_invalid_entries()
   return result;
 }
 
-EnsembleListDB::SDbEntryData EnsembleListDbHandler::get_entry(const QString & iFIdOrCh) const
+EnsembleListDB::SDbEntryData EnsembleListDbHandler::get_entry(const QString& iFIdOrCh) const
 {
   return mEnsembleListDb.get_entry(iFIdOrCh);
 }
@@ -157,7 +157,7 @@ i32 EnsembleListDbHandler::get_nr_unscanned_entries() const
   return mEnsembleListDb.get_nr_unscanned_entries();
 }
 
-bool EnsembleListDbHandler::is_entry_existing(const QString & iFIdOrCh) const
+bool EnsembleListDbHandler::is_entry_existing(const QString& iFIdOrCh) const
 {
   return mEnsembleListDb.is_entry_existing(iFIdOrCh);
 }
@@ -199,7 +199,7 @@ bool EnsembleListDbHandler::is_table_existing(const EDataMode iDataMode) const
   return mEnsembleListDb.is_table_existing(iDataMode);
 }
 
-i32 EnsembleListDbHandler::set_selector(const QString & iFIdOrCh)
+i32 EnsembleListDbHandler::set_selector(const QString& iFIdOrCh)
 {
   mFIdOrChLast = iFIdOrCh;
   mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
@@ -207,14 +207,14 @@ i32 EnsembleListDbHandler::set_selector(const QString & iFIdOrCh)
   return _jump_to_list_entry(); // return row index of mFIdOrChLast
 }
 
-QString EnsembleListDbHandler::get_full_path(const QString & iFId) const
+QString EnsembleListDbHandler::get_full_path(const QString& iFId) const
 {
   return mEnsembleListDb.get_full_path(iFId);
 }
 
 void EnsembleListDbHandler::_fill_table_view_from_db()
 {
-  QAbstractItemModel * const oldModel = mProxyModel.sourceModel();
+  QAbstractItemModel* const oldModel = mProxyModel.sourceModel();
 
   mProxyModel.setSourceModel(mEnsembleListDb.create_model());
 
@@ -225,7 +225,7 @@ void EnsembleListDbHandler::_fill_table_view_from_db()
 
   _hide_columns(); // hide service level column
 
-  QHeaderView * const header = mpTableView->horizontalHeader();
+  QHeaderView* const header = mpTableView->horizontalHeader();
   header->setSectionResizeMode(QHeaderView::ResizeToContents);
   header->setStretchLastSection(true);
 }
@@ -235,7 +235,7 @@ void EnsembleListDbHandler::jump_entries(i32 iSteps)
   _jump_to_list_entry(iSteps, true);
 }
 
-void EnsembleListDbHandler::set_data_filter(const EnsembleListDB::SDataFilter & iDataFilter)
+void EnsembleListDbHandler::set_data_filter(const EnsembleListDB::SDataFilter& iDataFilter)
 {
   mEnsembleListDb.set_data_filter(iDataFilter);
   _fill_table_view_from_db();
@@ -277,7 +277,7 @@ i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, co
     }
 
     // scrollTo() would also scroll horizontally to the FId/channel column, keep the horizontal position as it is
-    QScrollBar * const hScrollBar = mpTableView->horizontalScrollBar();
+    QScrollBar* const hScrollBar = mpTableView->horizontalScrollBar();
     const i32 hScrollPos = hScrollBar->value();
     mpTableView->scrollTo(mProxyModel.index(rowIdxFound, _get_fid_or_ch_col_idx()),
                           (iCenterContent ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible));
@@ -288,7 +288,7 @@ i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, co
   return rowIdxFound;
 }
 
-void EnsembleListDbHandler::_slot_selection_changed(const QString & iFIdOrCh)
+void EnsembleListDbHandler::_slot_selection_changed(const QString& iFIdOrCh)
 {
   mFIdOrChLast = iFIdOrCh;
   mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());

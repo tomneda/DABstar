@@ -45,7 +45,7 @@
 
 constexpr i32 cBufferSize = 8 * 32768;
 
-WavFileHandler::WavFileHandler(const QString & iFilename)
+WavFileHandler::WavFileHandler(const QString& iFilename)
   : mFrame(nullptr)
   , mRingBuffer(cBufferSize)
 {
@@ -148,9 +148,9 @@ void WavFileHandler::stopReader()
 }
 
 //  size is in I/Q pairs
-i32 WavFileHandler::getSamples(const std::span<cf32> & oV)
+i32 WavFileHandler::getSamples(const std::span<cf32>& oV)
 {
-  cf32 * const V = oV.data();
+  cf32* const V = oV.data();
   const i32 size = (i32)oV.size();
   if (mpFile == nullptr)
   {

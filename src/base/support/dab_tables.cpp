@@ -27,16 +27,16 @@
 //	protection level/classes, ..
 //	https://www.etsi.org/deliver/etsi_tr/101400_101499/10149603/01.01.02_60/tr_10149603v010102p.pdf
 
-static const char *uep_rates [] = {"1/3", "2/5", "1/2", "3/5", "3/4"};  // roughly, see ETSI TR 101 496-3 V1.1.2 , Table 5.2, page 31
-static const char *eep_Arates[] = {"1/4", "3/8", "1/2", "3/4"};  // see ETSI EN 300 401 V1.3.2 (2000-09), Table 8, page 46
-static const char *eep_Brates[] = {"4/9", "4/7", "4/6", "4/5"};  // see ETSI EN 300 401 V1.3.2 (2000-09), Table 9, page 46
+static const char* uep_rates [] = {"1/3", "2/5", "1/2", "3/5", "3/4"};  // roughly, see ETSI TR 101 496-3 V1.1.2 , Table 5.2, page 31
+static const char* eep_Arates[] = {"1/4", "3/8", "1/2", "3/4"};  // see ETSI EN 300 401 V1.3.2 (2000-09), Table 8, page 46
+static const char* eep_Brates[] = {"4/9", "4/7", "4/6", "4/5"};  // see ETSI EN 300 401 V1.3.2 (2000-09), Table 9, page 46
 
 
 struct SCountryCodes
 {
   u8 ecc;
   u8 countryId;
-  const char * countryName;
+  const char* countryName;
 };
 
 //	following countryTable[] is sorted over all regions to make
@@ -310,7 +310,7 @@ static const SCountryCodes countryTable[] =
 };
 
 // from Table 2a
-const char * getASCTy (i16 ASCTy)
+const char* getASCTy (i16 ASCTy)
 {
   switch (ASCTy)
   {
@@ -320,7 +320,7 @@ const char * getASCTy (i16 ASCTy)
   }
 }
 
-const char * getAudioStandard (i16 ASCTy)
+const char* getAudioStandard (i16 ASCTy)
 {
   if (ASCTy == 0x3F)
   {
@@ -334,7 +334,7 @@ const char * getAudioStandard (i16 ASCTy)
 }
 
 // from Table 2b
-const char * getDSCTy (i16 DSCTy)
+const char* getDSCTy (i16 DSCTy)
 {
   switch (DSCTy)
   {
@@ -352,7 +352,7 @@ const char * getDSCTy (i16 DSCTy)
 }
 
 //	from Table 9 and 10
-const char * getLanguage (const i16 language)
+const char* getLanguage (const i16 language)
 {
   switch (language)
   {
@@ -480,7 +480,7 @@ const char * getLanguage (const i16 language)
   }
 }
 
-const char * getCountry(u8 ecc, u8 countryId)
+const char* getCountry(u8 ecc, u8 countryId)
 {
   i16 i = 0;
 
@@ -499,7 +499,7 @@ const char * getCountry(u8 ecc, u8 countryId)
 
 //	from Table 12
 //const char *getProgramType_Not_NorthAmerica (i16 programType) {
-const char *getProgramType (const i16 programType) {
+const char* getProgramType (const i16 programType) {
 
   switch (programType)
   {
@@ -540,7 +540,7 @@ const char *getProgramType (const i16 programType) {
 }
 
 //	from Table 13
-const char *getProgramType_For_NorthAmerica (const i16 programType)
+const char* getProgramType_For_NorthAmerica (const i16 programType)
 {
   switch (programType)
   {
@@ -581,7 +581,7 @@ const char *getProgramType_For_NorthAmerica (const i16 programType)
 }
 
 //	11-bit from HandleFIG0Extension13, see ETSI TS 101 756 table 16
-const char *getUserApplicationType (const i16 appType)
+const char* getUserApplicationType (const i16 appType)
 {
   switch (appType)
   {
@@ -603,7 +603,7 @@ const char *getUserApplicationType (const i16 appType)
   }
 }
 
-const char * getFECscheme(const i16 FEC_scheme)
+const char* getFECscheme(const i16 FEC_scheme)
 {
   switch (FEC_scheme)
   {
@@ -614,7 +614,7 @@ const char * getFECscheme(const i16 FEC_scheme)
 }
 
 
-const char * getProtectionLevel (const bool shortForm, const i16 protLevel)
+const char* getProtectionLevel (const bool shortForm, const i16 protLevel)
 {
   if (!shortForm)
   {
@@ -645,7 +645,7 @@ const char * getProtectionLevel (const bool shortForm, const i16 protLevel)
   }
 }
 
-const char * getCodeRate(const bool shortForm, const i16 protLevel)
+const char* getCodeRate(const bool shortForm, const i16 protLevel)
 {
   const i32 h = protLevel;
 
@@ -655,7 +655,7 @@ const char * getCodeRate(const bool shortForm, const i16 protLevel)
     return uep_rates[h - 1];     // UEP
 }
 
-const char * get_announcement_type_str(const u16 a)
+const char* get_announcement_type_str(const u16 a)
 {
   switch (a)
   {
@@ -672,7 +672,7 @@ const char * get_announcement_type_str(const u16 a)
   }
 }
 
-const char * get_DSCTy_AppType(const i8 iDSCTy, const i16 iAppType)
+const char* get_DSCTy_AppType(const i8 iDSCTy, const i16 iAppType)
 {
   switch (iDSCTy)
   {

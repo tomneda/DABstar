@@ -44,7 +44,7 @@ FirecodeChecker::FirecodeChecker()
   fill_syndrome_table();
 }
 
-void FirecodeChecker::fill_crc_table(u16 *crc_table, const u16 poly)
+void FirecodeChecker::fill_crc_table(u16* crc_table, const u16 poly)
 {
   // prepare the table
   for (int i = 0; i < 256; i++)
@@ -143,7 +143,7 @@ void FirecodeChecker::fill_syndrome_table()
 }
 
 // x[0-1] contains parity, x[2-10] contains data
-u16 FirecodeChecker::crc16(const u8 * x)
+u16 FirecodeChecker::crc16(const u8* x)
 {
   u16 crc = 0;
   for (int i = 2; i < 11; i++)
@@ -160,13 +160,13 @@ u16 FirecodeChecker::crc16(const u8 * x)
 }
 
 // return true if firecode check is passed
-bool FirecodeChecker::check(const u8 * x)
+bool FirecodeChecker::check(const u8* x)
 {
   return crc16(x) == 0;
 }
 
 // return true if firecode check is passed or a error burst up to 6 bits was corrected
-bool FirecodeChecker::check_and_correct_6bits(u8 * x)
+bool FirecodeChecker::check_and_correct_6bits(u8* x)
 {
   u16 syndrome = crc16(x);
   if (syndrome == 0) // no error

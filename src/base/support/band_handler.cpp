@@ -114,7 +114,7 @@ static BandHandler::SDabFrequencies frequencies_2[] =
 
 static BandHandler::SDabFrequencies alternatives[100];
 
-BandHandler::BandHandler(const QString & a_band, QSettings * s)
+BandHandler::BandHandler(const QString& a_band, QSettings* s)
   : theTable(nullptr)
 {
   selectedBand = nullptr;
@@ -133,7 +133,7 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
     return;
   }
 
-  FILE * f = fopen(a_band.toUtf8().data(), "r");
+  FILE* f = fopen(a_band.toUtf8().data(), "r");
   if (f == nullptr)
   {
     return;
@@ -142,7 +142,7 @@ BandHandler::BandHandler(const QString & a_band, QSettings * s)
   //	OK we have a file with - hopefully - some input
   size_t amount = 128;
   i32 filler = 0;
-  char * line = new char[512];
+  char* line = new char[512];
   while ((filler < 100) && (amount > 0))
   {
     amount = getline(&line, &amount, f);
@@ -192,7 +192,7 @@ BandHandler::~BandHandler()
 
 //
 //	The main program calls this once, the combobox will be filled
-void BandHandler::setupChannels(QComboBox * s, const EBand iBand)
+void BandHandler::setupChannels(QComboBox* s, const EBand iBand)
 {
   if (selectedBand == nullptr)
   {  // no preset band
@@ -289,7 +289,7 @@ void BandHandler::saveSettings()
 //
 //	when setup_skipList is called, we start with blacklisting all entries
 //
-void BandHandler::setup_skipList(const QString & fileName)
+void BandHandler::setup_skipList(const QString& fileName)
 {
   disconnect(&theTable, &QTableWidget::cellDoubleClicked, this, &BandHandler::slot_cell_selected);
 
@@ -330,7 +330,7 @@ void BandHandler::default_skipList() const
   dabSettings->endGroup();
 }
 
-void BandHandler::file_skipList(const QString & fileName) const
+void BandHandler::file_skipList(const QString& fileName) const
 {
   QDomDocument xml_bestand;
 
@@ -356,7 +356,7 @@ void BandHandler::file_skipList(const QString & fileName) const
   }
 }
 
-void BandHandler::updateEntry(const QString & channel) const
+void BandHandler::updateEntry(const QString& channel) const
 {
   for (i32 i = 0; selectedBand[i].channel != nullptr; i++)
   {
@@ -370,7 +370,7 @@ void BandHandler::updateEntry(const QString & channel) const
 }
 
 //	find the frequency for a given channel in a given band
-i32 BandHandler::get_frequency_Hz(const QString & Channel) const
+i32 BandHandler::get_frequency_Hz(const QString& Channel) const
 {
   i32 tunedFrequency = 0;
 

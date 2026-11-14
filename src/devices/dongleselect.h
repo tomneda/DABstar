@@ -35,10 +35,10 @@ Q_OBJECT
 public:
   dongleSelect();
   ~dongleSelect();
-  void addtoDongleList(const QString &s);
+  void addtoDongleList(const QString& s);
 private:
-  QLabel *toptext;
-  QListView *selectorDisplay;
+  QLabel* toptext;
+  QListView* selectorDisplay;
   QStringListModel dongleList;
   QStringList Dongles;
   i16 selectedItem;

@@ -47,10 +47,10 @@ class SpyServerHandler : public QThread
   Q_OBJECT
 
 public:
-  SpyServerHandler(SpyServerClient *, const QString &, i32, RingBuffer<u8> * outB);
+  SpyServerHandler(SpyServerClient*, const QString&, i32, RingBuffer<u8>* outB);
   ~SpyServerHandler();
 
-  bool get_deviceInfo(struct DeviceInfo & theDevice);
+  bool get_deviceInfo(struct DeviceInfo& theDevice);
   bool set_sample_rate_by_decim_stage(const u32 decim_stage);
   f64 get_sample_rate();
   bool set_iq_center_freq(f64 freq);
@@ -67,20 +67,20 @@ public:
 private:
   RingBuffer<u8> inBuffer;
   SpyServerTcpClient tcpHandler;
-  RingBuffer<u8> * outB;
-  SpyServerClient * parent;
+  RingBuffer<u8>* outB;
+  SpyServerClient* parent;
   void run();
-  bool process_device_info(u8 *, struct DeviceInfo &);
-  bool process_client_sync(u8 *, ClientSync &);
+  bool process_device_info(u8*, struct DeviceInfo&);
+  bool process_client_sync(u8*, ClientSync&);
   void cleanRecords();
   bool show_attendance();
-  bool readHeader(struct MessageHeader &);
-  bool readBody(const std::span<u8> & oBody);
-  void process_data(const std::span<const u8> & iBody);
-  bool send_command(u32, std::vector<u8> &);
-  bool set_setting(u32, std::vector<u32> &);
+  bool readHeader(struct MessageHeader&);
+  bool readBody(const std::span<u8>& oBody);
+  void process_data(const std::span<const u8>& iBody);
+  bool send_command(u32, std::vector<u8>&);
+  bool set_setting(u32, std::vector<u32>&);
 
-  QTimer * testTimer;
+  QTimer* testTimer;
   i32 streamingMode;
   std::atomic<bool> is_connected;
   std::atomic<bool> streaming;

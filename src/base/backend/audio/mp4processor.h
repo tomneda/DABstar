@@ -56,16 +56,16 @@ class Mp4Processor : public QObject, public FrameProcessor
 {
 Q_OBJECT
 public:
-  Mp4Processor(DabRadio *, i16, RingBuffer<i16> *, RingBuffer<u8> *);
+  Mp4Processor(DabRadio*, i16, RingBuffer<i16>*, RingBuffer<u8>*);
   ~Mp4Processor() override = default;
 
-  void add_to_frame(const std::vector<u8> &) override;
+  void add_to_frame(const std::vector<u8>&) override;
 
 private:
-  DabRadio * const mpRadioInterface;
+  DabRadio* const mpRadioInterface;
   PadHandler mPadhandler;
   i16 const mBitRate;
-  RingBuffer<u8> * const mpFrameBuffer;
+  RingBuffer<u8>* const mpFrameBuffer;
   const i16 mRsDims;
   ReedSolomon mRsDecoder;
 
@@ -100,9 +100,9 @@ private:
   std::unique_ptr<FaadDecoder> mpAacDecoder;
 #endif
 
-  bool _process_reed_solomon_frame(const u8 * ipFrameBytes, i16 iBase);
+  bool _process_reed_solomon_frame(const u8* ipFrameBytes, i16 iBase);
   bool _process_super_frame(const u8[], i16);
-  i32 _build_aac_stream(const SStreamParms * iSp, const std::span<const u8> & iAacFrame, std::vector<u8> & oFileBuffer) const;
+  i32 _build_aac_stream(const SStreamParms* iSp, const std::span<const u8>& iAacFrame, std::vector<u8>& oFileBuffer) const;
 
 signals:
   void signal_show_frame_errors(i32);

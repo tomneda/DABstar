@@ -20,17 +20,17 @@
 #include <QStylePainter>
 #include <QTimer>
 
-IndicatorButton::IndicatorButton(QWidget * parent)
+IndicatorButton::IndicatorButton(QWidget* parent)
   : QPushButton(parent)
 {
 }
 
-IndicatorButton::IndicatorButton(const QString & text, QWidget * parent)
+IndicatorButton::IndicatorButton(const QString& text, QWidget* parent)
   : QPushButton(text, parent)
 {
 }
 
-IndicatorButton::IndicatorButton(const QIcon & icon, const QString & text, QWidget * parent)
+IndicatorButton::IndicatorButton(const QIcon& icon, const QString& text, QWidget* parent)
   : QPushButton(icon, text, parent)
 {
 }
@@ -45,7 +45,7 @@ void IndicatorButton::set_indicator_active(const bool iActive)
   }
 }
 
-void IndicatorButton::set_indicator_color(const QColor & iColor)
+void IndicatorButton::set_indicator_color(const QColor& iColor)
 {
   if (mIndicatorColor != iColor)
   {
@@ -102,7 +102,7 @@ void IndicatorButton::set_icon_style_text(const bool iIconStyleText)
   }
 }
 
-void IndicatorButton::set_sub_text(const QString & iSubText)
+void IndicatorButton::set_sub_text(const QString& iSubText)
 {
   if (mSubText != iSubText)
   {
@@ -133,7 +133,7 @@ void IndicatorButton::trigger_activity_indicator(const i32 iDurationMs)
   mpActivityTimer->start(iDurationMs); // a retrigger extends the active time
 }
 
-void IndicatorButton::set_activity_indicator_color(const QColor & iColor)
+void IndicatorButton::set_activity_indicator_color(const QColor& iColor)
 {
   if (mActivityIndicatorColor != iColor)
   {
@@ -145,7 +145,7 @@ void IndicatorButton::set_activity_indicator_color(const QColor & iColor)
   }
 }
 
-void IndicatorButton::_draw_fitted_text(QPainter & iPainter, const QString & iText, const i32 iPixelSize, const f32 iBaseline, const f32 iWidth) const
+void IndicatorButton::_draw_fitted_text(QPainter& iPainter, const QString& iText, const i32 iPixelSize, const f32 iBaseline, const f32 iWidth) const
 {
   QFont font = this->font();
   font.setPixelSize(iPixelSize);
@@ -196,7 +196,7 @@ void IndicatorButton::_paint_icon_style_text()
   }
 }
 
-void IndicatorButton::paintEvent(QPaintEvent * event)
+void IndicatorButton::paintEvent(QPaintEvent* event)
 {
   if (mIconStyleText)
   {
@@ -224,7 +224,7 @@ void IndicatorButton::paintEvent(QPaintEvent * event)
   }
 }
 
-void IndicatorButton::_paint_indicator(QPainter & iPainter, const f32 iPosX, const QColor & iColor) const
+void IndicatorButton::_paint_indicator(QPainter& iPainter, const f32 iPosX, const QColor& iColor) const
 {
   const qreal d = mIndicatorDiameter;
   const qreal x = iPosX;

@@ -49,7 +49,7 @@
 // FFTW wisdom stores the results of the FFTW_MEASURE planning, so the (slow) measuring has to be done only once.
 // The string/callback API is used instead of the FILE* or filename variants to avoid C runtime mismatches with the
 // FFTW DLL on Windows and to handle non-ASCII paths via QFile. FFTW rejects wisdom of a different version/build itself.
-static void import_fftw_wisdom(const QString & iFileName)
+static void import_fftw_wisdom(const QString& iFileName)
 {
   QFile file(iFileName);
   if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -64,10 +64,10 @@ static void import_fftw_wisdom(const QString & iFileName)
   }
 }
 
-static void export_fftw_wisdom(const QString & iFileName)
+static void export_fftw_wisdom(const QString& iFileName)
 {
   QByteArray wisdom;
-  fftwf_export_wisdom([](char c, void * ipData) { static_cast<QByteArray *>(ipData)->append(c); }, &wisdom);
+  fftwf_export_wisdom([](char c, void* ipData) { static_cast<QByteArray*>(ipData)->append(c); }, &wisdom);
 
   QFile file(iFileName);
   if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text) || file.write(wisdom) != wisdom.size())
@@ -76,7 +76,7 @@ static void export_fftw_wisdom(const QString & iFileName)
   }
 }
 
-i32 main(i32 argc, char ** argv)
+i32 main(i32 argc, char** argv)
 {
   // Enable ANSI escape codes for Windows console
 #ifdef _WIN32

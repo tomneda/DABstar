@@ -18,10 +18,10 @@
 #include <cassert>
 #include <QDebug>
 
-AudioPipeline::AudioPipeline(RingBuffer<i16> * const ipAudioBufferFromDecoder,
-                             RingBuffer<i16> * const ipAudioBufferToOutput,
-                             RingBuffer<u8> * const ipFrameBuffer,
-                             QObject * const parent)
+AudioPipeline::AudioPipeline(RingBuffer<i16>* const ipAudioBufferFromDecoder,
+                             RingBuffer<i16>* const ipAudioBufferToOutput,
+                             RingBuffer<u8>* const ipFrameBuffer,
+                             QObject* const parent)
   : QObject(parent)
   , mpAudioBufferFromDecoder(ipAudioBufferFromDecoder)
   , mpAudioBufferToOutput(ipAudioBufferToOutput)
@@ -252,7 +252,7 @@ void AudioPipeline::slot_new_aac_mp2_frame()
   }
 }
 
-void AudioPipeline::_start_audio_dumping(const QString & iFileName)
+void AudioPipeline::_start_audio_dumping(const QString& iFileName)
 {
   if (mAudioFrameType == EAudioFrameType::None || mAudioDumpState != EAudioDumpState::Stopped || iFileName.isEmpty())
   {
@@ -276,7 +276,7 @@ void AudioPipeline::_stop_audio_dumping()
   emit signal_audio_dump_state_changed(false);
 }
 
-void AudioPipeline::_start_frame_dumping(const QString & iFileName)
+void AudioPipeline::_start_frame_dumping(const QString& iFileName)
 {
   if (mAudioFrameType == EAudioFrameType::None || iFileName.isEmpty())
   {
@@ -312,7 +312,7 @@ void AudioPipeline::_stop_audio_frame_dumping()
   emit signal_frame_dump_state_changed(false);
 }
 
-void AudioPipeline::slot_start_audio_dump(const QString & iFileName)
+void AudioPipeline::slot_start_audio_dump(const QString& iFileName)
 {
   _start_audio_dumping(iFileName);
 }
@@ -322,7 +322,7 @@ void AudioPipeline::slot_stop_audio_dump()
   _stop_audio_dumping();
 }
 
-void AudioPipeline::slot_start_frame_dump(const QString & iFileName)
+void AudioPipeline::slot_start_frame_dump(const QString& iFileName)
 {
   _start_frame_dumping(iFileName);
 }
@@ -355,7 +355,7 @@ void AudioPipeline::slot_set_scanning(const bool isScanning)
   mIsScanning = isScanning;
 }
 
-void AudioPipeline::slot_set_service_label(const QString & label)
+void AudioPipeline::slot_set_service_label(const QString& label)
 {
   mServiceLabel = label;
 }
@@ -388,7 +388,7 @@ void AudioPipeline::slot_set_test_tone(const bool iActive)
   mpAudioOutput->slot_set_test_tone(iActive);
 }
 
-void AudioPipeline::slot_set_audio_device(const QByteArray & iDeviceId)
+void AudioPipeline::slot_set_audio_device(const QByteArray& iDeviceId)
 {
   assert(mpAudioOutput != nullptr);
   mpAudioOutput->slot_set_audio_device(iDeviceId);

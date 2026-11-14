@@ -45,20 +45,20 @@ struct SEtiSubChannel
 class MscHandler
 {
 public:
-  MscHandler(DabRadio *, RingBuffer<u8> *);
+  MscHandler(DabRadio*, RingBuffer<u8>*);
   ~MscHandler();
 
-  void process_block(const std::vector<i16> & iSoftBits, i32 iBlockNr);
-  void process_eti_frame(const std::vector<SEtiSubChannel> & iSubChannels);
-  bool set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, EProcessFlag iProcessFlag);
+  void process_block(const std::vector<i16>& iSoftBits, i32 iBlockNr);
+  void process_eti_frame(const std::vector<SEtiSubChannel>& iSubChannels);
+  bool set_channel(const SDescriptorType* d, RingBuffer<i16>* ipoAudioBuffer, RingBuffer<u8>* ipoDataBuffer, EProcessFlag iProcessFlag);
   void reset_channel();
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
   void stop_all_services();
   bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
 
 private:
-  DabRadio * const mpRadioInterface;
-  RingBuffer<u8> * const mpFrameBuffer;
+  DabRadio* const mpRadioInterface;
+  RingBuffer<u8>* const mpFrameBuffer;
 
   mutable QMutex mMutex;
   QVector<QSharedPointer<Backend>> mBackendList;

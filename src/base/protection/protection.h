@@ -42,12 +42,12 @@ public:
   explicit Protection(i32);
   ~Protection() override = default;
 
-  virtual bool deconvolve(const std::span<const i16> & iV, u8 * oOutBuffer);
+  virtual bool deconvolve(const std::span<const i16>& iV, u8* oOutBuffer);
   
 protected:
   i32 bitRate;
   i32 outSize;
   std::vector<i16> viterbiBlock;
-  std::vector<i16 *> viterbiBlockAddresses; // addresses of non-punctured bits
+  std::vector<i16*> viterbiBlockAddresses; // addresses of non-punctured bits
 };
 

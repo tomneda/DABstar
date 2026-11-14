@@ -81,7 +81,7 @@ void DabRadio::_clean_up_dab_processor_and_input_device()
 }
 
 // This is called either direct after device selection or via ensemble list in file mode
-void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDeviceNameOrFileName)
+void DabRadio::_create_new_input_device_and_dab_processor(const QString& iDeviceNameOrFileName)
 {
   _clean_up_dab_processor_and_input_device();
 
@@ -101,7 +101,7 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
   }
 
   // Only the device handlers with asynchronous events derive from IDeviceNotifier, the others simply never emit
-  if (const auto * const pDeviceNotifier = dynamic_cast<IDeviceNotifier *>(mpInputDevice.get()))
+  if (const auto* const pDeviceNotifier = dynamic_cast<IDeviceNotifier*>(mpInputDevice.get()))
   {
     if (mIsFileMode)
     {
@@ -177,7 +177,7 @@ void DabRadio::_stop_services(const bool iStopAlsoGlobServices)
   _clean_screen(mStatusInfo);
 }
 
-void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
+void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)
 {
   assert(mpInputDevice != nullptr);
   const i32 tunedFrequencyHz = (mIsFileMode ? mpInputDevice->getVFOFrequency() : mpEnsembleList->get_band_handler().get_frequency_Hz(iFIdOrCh));
@@ -313,7 +313,7 @@ void DabRadio::_slot_device_connected()
 }
 
 // This is called after selecting the device or new file
-void DabRadio::_start_playing(const QString & iFIdOrCh, const u32 iSId, const bool iSameFIdOrCh)
+void DabRadio::_start_playing(const QString& iFIdOrCh, const u32 iSId, const bool iSameFIdOrCh)
 {
   if (mpInputDevice == nullptr)
   {

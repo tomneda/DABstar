@@ -47,12 +47,12 @@ class PhaseReference : public QObject, public PhaseTable
 {
 Q_OBJECT
 public:
-  PhaseReference(const DabRadio * const ipRadio, const ProcessParams * const ipParam);
+  PhaseReference(const DabRadio* const ipRadio, const ProcessParams* const ipParam);
   ~PhaseReference() override;
 
-  [[nodiscard]] i32 correlate_with_phase_ref_and_find_max_peak(const TArrayTn & iV, const f32 iThreshold);
-  [[nodiscard]] i32 estimate_carrier_offset_from_sync_symbol_0(const TArrayTu & iV);
-  [[nodiscard]] static f32 phase(const std::vector<cf32> & iV, i32 iTs);
+  [[nodiscard]] i32 correlate_with_phase_ref_and_find_max_peak(const TArrayTn& iV, const f32 iThreshold);
+  [[nodiscard]] i32 estimate_carrier_offset_from_sync_symbol_0(const TArrayTu& iV);
+  [[nodiscard]] static f32 phase(const std::vector<cf32>& iV, i32 iTs);
   void set_sync_on_strongest_peak(bool sync);
 
   static constexpr i32 IDX_NOT_FOUND = 100000;
@@ -73,11 +73,11 @@ private:
   fftwf_plan mFftPlanFwd;
   fftwf_plan mFftPlanBwd;
 
-  RingBuffer<f32> * const mpResponse;
+  RingBuffer<f32>* const mpResponse;
   QVector<i32> mIndices; // as member to avoid memory reallocations and signal takes only reference
 
-  void _calculate_relative_phase(TArrayTu & oArg, const TArrayTu & iFft) const;
+  void _calculate_relative_phase(TArrayTu& oArg, const TArrayTu& iFft) const;
 
 signals:
-  void signal_show_correlation(f32, const QVector<i32> &);
+  void signal_show_correlation(f32, const QVector<i32>&);
 };

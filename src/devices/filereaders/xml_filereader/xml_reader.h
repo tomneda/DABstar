@@ -51,7 +51,7 @@ class XmlReader : public QThread
 {
 Q_OBJECT
 public:
-  XmlReader(XmlFileReader * mr, FILE * f, XmlDescriptor * fd, u32 filePointer, RingBuffer<cf32> * b);
+  XmlReader(XmlFileReader* mr, FILE* f, XmlDescriptor* fd, u32 filePointer, RingBuffer<cf32>* b);
   ~XmlReader() override;
   void stopReader();
   void jump_to_relative_position(i32 pos);
@@ -64,20 +64,20 @@ private:
     f32 floatData;
   };
 
-  FILE * file;
-  XmlDescriptor * fd;
+  FILE* file;
+  XmlDescriptor* fd;
   u32 filePointer;
-  RingBuffer<cf32> * sampleBuffer;
-  XmlFileReader * parent;
+  RingBuffer<cf32>* sampleBuffer;
+  XmlFileReader* parent;
   std::atomic<bool> running;
   std::atomic<i64> mSetNewFilePos = -1;
   std::atomic<bool> mPaused = false;
   void run();
-  i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, const std::span<cf32> &));
-  void readElements_IQ(FILE * f, const std::span<cf32> & oBuffer);
-  void readElements_QI(FILE * f, const std::span<cf32> & oBuffer);
-  void readElements_I(FILE * f, const std::span<cf32> & oBuffer);
-  void readElements_Q(FILE * f, const std::span<cf32> & oBuffer);
+  i32 readSamples(FILE* f, void(XmlReader::*)(FILE*, const std::span<cf32>&));
+  void readElements_IQ(FILE* f, const std::span<cf32>& oBuffer);
+  void readElements_QI(FILE* f, const std::span<cf32>& oBuffer);
+  void readElements_I(FILE* f, const std::span<cf32>& oBuffer);
+  void readElements_Q(FILE* f, const std::span<cf32>& oBuffer);
   f32 mapTable[256];
 
 // for the conversion - if any

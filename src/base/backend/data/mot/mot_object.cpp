@@ -42,7 +42,7 @@
 Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
 
 
-MotObject::MotObject(DabRadio * ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const std::span<const u8> & iSegment, const bool iLastFlag)
+MotObject::MotObject(DabRadio* ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const std::span<const u8>& iSegment, const bool iLastFlag)
   : mpDR(ipDR)
   , mIsDirElement(iDirElement)
   , mIsPadElement(iPadElement)
@@ -56,7 +56,7 @@ MotObject::MotObject(DabRadio * ipDR, const bool iDirElement, const bool iPadEle
   set_header(iSegment, iLastFlag, iTransportId);
 }
 
-MotObject::MotObject(DabRadio * const ipDR, const bool iDirElement, const bool iPadElement)
+MotObject::MotObject(DabRadio* const ipDR, const bool iDirElement, const bool iPadElement)
   : mpDR(ipDR)
   , mIsDirElement(iDirElement)
   , mIsPadElement(iPadElement)
@@ -68,7 +68,7 @@ MotObject::MotObject(DabRadio * const ipDR, const bool iDirElement, const bool i
 }
 
 
-void MotObject::set_header(const std::span<const u8> & iSegment, const bool iLastFlag, const i32 iTransportId)
+void MotObject::set_header(const std::span<const u8>& iSegment, const bool iLastFlag, const i32 iTransportId)
 {
   qCDebug(sLogMotObject) << "SegmentSize" << iSegment.size() << "LastFlag" << iLastFlag << "TransportId" << iTransportId;
 
@@ -81,7 +81,7 @@ void MotObject::set_header(const std::span<const u8> & iSegment, const bool iLas
   mTransportId = iTransportId;
 
   // ETSI EN301 234, ch. 6.1 "Header core" — 7-byte big-endian bitfield (b55 = MSB of iSegment[0])
-  const u8 * const pSegment = iSegment.data();
+  const u8* const pSegment = iSegment.data();
   mHeaderCore.bodySize       = (i32)extract_bits_from_byte_stream(pSegment, 55-55, 28); // b55..b28
   mHeaderCore.headerSize     = (i32)extract_bits_from_byte_stream(pSegment, 55-27, 13); // b27..b15
   mHeaderCore.contentType    = (i32)extract_bits_from_byte_stream(pSegment, 55-14,  6); // b14..b9
@@ -115,7 +115,7 @@ void MotObject::set_header(const std::span<const u8> & iSegment, const bool iLas
   }
 }
 
-void MotObject::add_body_segment(const std::span<const u8> & iBodySegment, const i16 iSegmentNumber, const bool iLastFlag, const i32 iTransportId)
+void MotObject::add_body_segment(const std::span<const u8>& iBodySegment, const i16 iSegmentNumber, const bool iLastFlag, const i32 iTransportId)
 {
   const i32 iSegmentSize = (i32)iBodySegment.size();
   if (iSegmentNumber < 0 || iSegmentNumber >= 8192)
@@ -134,7 +134,7 @@ void MotObject::add_body_segment(const std::span<const u8> & iBodySegment, const
   if (mMotMap.find(iSegmentNumber) == mMotMap.end())
   {
     qCDebug(sLogMotObject) << "Adding segment" << iSegmentNumber << "to motMap with size" << iSegmentSize << "- lastFlag" << iLastFlag << "- transportId" << mTransportId;
-    QByteArray segment(reinterpret_cast<const char *>(iBodySegment.data()), iSegmentSize);
+    QByteArray segment(reinterpret_cast<const char*>(iBodySegment.data()), iSegmentSize);
     mMotMap.emplace(iSegmentNumber, std::move(segment));
     mSumSegmentSize += iSegmentSize;
   }
@@ -176,7 +176,7 @@ void MotObject::add_body_segment(const std::span<const u8> & iBodySegment, const
   }
 }
 
-void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointer, const u8 iParamId, const u16 iLength)
+void MotObject::_process_parameter_id(const u8* const ipSegment, i32& ioPointer, const u8 iParamId, const u16 iLength)
 {
   switch (iParamId)
   {
@@ -209,7 +209,7 @@ void MotObject::_process_parameter_id(const u8 * const ipSegment, i32 & ioPointe
   }
 }
 
-void MotObject::_process_header_extension(const u8 * const iSegment, i32 & ioPointer)
+void MotObject::_process_header_extension(const u8* const iSegment, i32& ioPointer)
 {
   const u8 PLI = (iSegment[ioPointer] & 0xC0) >> 6;
   const u8 paramId = (iSegment[ioPointer] & 0x3F);
@@ -287,7 +287,7 @@ void MotObject::_handle_complete()
 
   QByteArray result;
   result.reserve(mHeaderCore.bodySize);
-  for (const auto & it : mMotMap)
+  for (const auto& it : mMotMap)
   {
     result.append(it.second);
   }

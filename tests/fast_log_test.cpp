@@ -11,7 +11,7 @@
 
 namespace
 {
-bool nearly_equal(const char * name, const f32 input, const f32 actual, const f32 expected, const f32 tolerance = 2.0e-5f)
+bool nearly_equal(const char* name, const f32 input, const f32 actual, const f32 expected, const f32 tolerance = 2.0e-5f)
 {
   if (std::abs(actual - expected) <= tolerance * std::max(1.0f, std::abs(expected)))
   {
@@ -21,7 +21,7 @@ bool nearly_equal(const char * name, const f32 input, const f32 actual, const f3
   return false;
 }
 
-bool nearly_equal(const char * name, const cf32 & actual, const cf32 & expected, const f32 tolerance = 2.0e-5f)
+bool nearly_equal(const char* name, const cf32& actual, const cf32& expected, const f32 tolerance = 2.0e-5f)
 {
   if (std::abs(actual - expected) <= tolerance * std::max(1.0f, std::abs(expected)))
   {

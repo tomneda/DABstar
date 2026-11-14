@@ -11,7 +11,7 @@
 // Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogAudioIODevice, "AudioIODevice", QtInfoMsg)
 
-AudioIODevice::AudioIODevice(QObject * const iParent)
+AudioIODevice::AudioIODevice(QObject* const iParent)
   : QIODevice(iParent)
   , mpTechDataBuffer(sRingBufferFactoryInt16.get_ringbuffer(RingBufferFactory<i16>::EId::TechDataBuffer).get())
   , mpLevelMeterBuffer(sRingBufferFactoryFloat.get_ringbuffer(RingBufferFactory<f32>::EId::LevelMeterBuffer).get())
@@ -23,7 +23,7 @@ AudioIODevice::AudioIODevice(QObject * const iParent)
   mpTimerPeakLevel->start();
 }
 
-void AudioIODevice::set_buffer(SAudioFifo * const iBuffer)
+void AudioIODevice::set_buffer(SAudioFifo* const iBuffer)
 {
   qCDebug(sLogAudioIODevice) << "Audio sample rate:" << iBuffer->sampleRate;
   mpInFifo = iBuffer;
@@ -50,7 +50,7 @@ void AudioIODevice::stop()
   mStopFlag = true;     // set stop bit
 }
 
-void AudioIODevice::_fade(const i32 iNumStereoSamples, const f32 coe, f32 gain, i16 * dataPtr) const
+void AudioIODevice::_fade(const i32 iNumStereoSamples, const f32 coe, f32 gain, i16* dataPtr) const
 {
   for (int_fast32_t n = 0; n < iNumStereoSamples; ++n)
   {
@@ -65,10 +65,10 @@ void AudioIODevice::_fade(const i32 iNumStereoSamples, const f32 coe, f32 gain, 
   // printf("\n");
 }
 
-void AudioIODevice::_fade_in_audio_samples(const std::span<i16> & ioData) const
+void AudioIODevice::_fade_in_audio_samples(const std::span<i16>& ioData) const
 {
   const i32 iNumStereoSamples = (i32)ioData.size() / 2 /*channels*/;
-  i16 * const opData = ioData.data();
+  i16* const opData = ioData.data();
   qCDebug(sLogAudioIODevice) << "Unmuting audio";
   const i32 numFadedStereoSamples = std::min<i32>(iNumStereoSamples, (i32)(cFadeTimeMs * (f32)mSampleRateKHz));
   const f32 coe = 2.0f - powf(10.0f, cFadeMinDb / (20.0f * (f32)numFadedStereoSamples));
@@ -77,10 +77,10 @@ void AudioIODevice::_fade_in_audio_samples(const std::span<i16> & ioData) const
   _fade(numFadedStereoSamples, coe, cFadeMinLin, opData);
 }
 
-void AudioIODevice::_fade_out_audio_samples(const std::span<i16> & ioData) const
+void AudioIODevice::_fade_out_audio_samples(const std::span<i16>& ioData) const
 {
   const i32 iNumStereoSamples = (i32)ioData.size() / 2 /*channels*/;
-  i16 * const opData = ioData.data();
+  i16* const opData = ioData.data();
   qCDebug(sLogAudioIODevice, "Muting... [available %u samples]", static_cast<u32>(iNumStereoSamples));
   const i32 numFadedStereoSamples = std::min<i32>(iNumStereoSamples, (i32)(cFadeTimeMs * (f32)mSampleRateKHz));
   const f32 coe = powf(10.0f, cFadeMinDb / (20.0f * (f32)numFadedStereoSamples));
@@ -95,7 +95,7 @@ void AudioIODevice::_fade_out_audio_samples(const std::span<i16> & ioData) const
   }
 }
 
-qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWantedBytesBothChannels) // this is called periodically by QtAudio subsystem
+qint64 AudioIODevice::readData(char* const opDataBytes, const qint64 iMaxWantedBytesBothChannels) // this is called periodically by QtAudio subsystem
 {
   // qDebug() << Q_FUNC_INFO << iMaxWantedSizeOfReadDataBytes;
   if (mDoStop || iMaxWantedBytesBothChannels == 0)
@@ -103,8 +103,8 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
     return 0;
   }
 
-  RingBuffer<i16> * const rb = mpInFifo->pRingbuffer;
-  i16 * const opDataSamplesBothChannels = reinterpret_cast<i16 *>(opDataBytes); // left channel [2n + 0]: right channel [2n + 1]
+  RingBuffer<i16>* const rb = mpInFifo->pRingbuffer;
+  i16* const opDataSamplesBothChannels = reinterpret_cast<i16*>(opDataBytes); // left channel [2n + 0]: right channel [2n + 1]
 
   assert(iMaxWantedBytesBothChannels <= INT32_MAX); // would be strange but better check it, we go on using only i32 length further
   const i32 maxWantedBytesBothChannels = static_cast<i32>(iMaxWantedBytesBothChannels);
@@ -219,7 +219,7 @@ qint64 AudioIODevice::readData(char * const opDataBytes, const qint64 iMaxWanted
   return iMaxWantedBytesBothChannels;
 }
 
-qint64 AudioIODevice::writeData(const char * data, qint64 len)
+qint64 AudioIODevice::writeData(const char* data, qint64 len)
 {
   Q_UNUSED(data);
   Q_UNUSED(len);
@@ -252,10 +252,10 @@ void AudioIODevice::set_peak_level_delay(const i32 iDelaySteps)
   mDelayLine.set_delay_steps(iDelaySteps);
 }
 
-void AudioIODevice::_eval_peak_audio_level(const std::span<const i16> & iData)
+void AudioIODevice::_eval_peak_audio_level(const std::span<const i16>& iData)
 {
   const i32 iNumSamples = (i32)iData.size();
-  const i16 * const ipData = iData.data();
+  const i16* const ipData = iData.data();
   assert(iNumSamples % 2 == 0);
   mpTechDataBuffer->put_data_into_ring_buffer(ipData, (i32)iNumSamples);  // for audio spectrum analyzer
   emit signal_audio_data_available((i32)iNumSamples, (i32)mSampleRateKHz * 1000);

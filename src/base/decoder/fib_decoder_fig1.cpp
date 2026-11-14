@@ -15,7 +15,7 @@
 #include <QDebug>
 
 // Cover the different possible labels, section 5.2
-void FibDecoder::_process_Fig1(const u8 * const d)
+void FibDecoder::_process_Fig1(const u8* const d)
 {
   const u8 extension = getBits_3(d, 8 + 5);  // FIG Header + Charset + Rfu
 
@@ -46,7 +46,7 @@ void FibDecoder::_process_Fig1(const u8 * const d)
 }
 
 // Name of the ensemble
-void FibDecoder::_process_Fig1s0(const u8 * const d)
+void FibDecoder::_process_Fig1s0(const u8* const d)
 {
   FibConfigFig1::SFig1s0_EnsembleLabel fig1s0;
   fig1s0.EId = getBits(d, 16, 16);
@@ -70,7 +70,7 @@ void FibDecoder::_process_Fig1s0(const u8 * const d)
 }
 
 // Name of service
-void FibDecoder::_process_Fig1s1(const u8 * const d)
+void FibDecoder::_process_Fig1s1(const u8* const d)
 {
   FibConfigFig1::SFig1s1_ProgrammeServiceLabel fig1s1;
   fig1s1.SId = getBits(d, 16, 16);
@@ -80,7 +80,7 @@ void FibDecoder::_process_Fig1s1(const u8 * const d)
     return;
   }
 
-  if (const auto * const pFig1s1 = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(fig1s1.SId);
+  if (const auto* const pFig1s1 = mpFibConfigFig1->get_Fig1s1_ProgrammeServiceLabel_of_SId(fig1s1.SId);
       pFig1s1 == nullptr)
   {
     fig1s1.set_current_time();
@@ -91,12 +91,12 @@ void FibDecoder::_process_Fig1s1(const u8 * const d)
   }
   else
   {
-    const_cast<FibConfigFig1::SFig1s1_ProgrammeServiceLabel *>(pFig1s1)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
+    const_cast<FibConfigFig1::SFig1s1_ProgrammeServiceLabel*>(pFig1s1)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 
 // Service component label 8.1.14.3
-void FibDecoder::_process_Fig1s4(const u8 * const d)
+void FibDecoder::_process_Fig1s4(const u8* const d)
 {
   FibConfigFig1::SFig1s4_ServiceComponentLabel fig1s4;
   fig1s4.PD_Flag = getBits_1(d, 16);
@@ -104,7 +104,7 @@ void FibDecoder::_process_Fig1s4(const u8 * const d)
   fig1s4.SId = (fig1s4.PD_Flag ? getLBits(d, 24, 32) : getLBits(d, 24, 16));
   const i16 offset = fig1s4.PD_Flag ? 56 : 40;
 
-  if (const auto * const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(fig1s4.SId, fig1s4.SCIdS);
+  if (const auto* const pFig1s4 = mpFibConfigFig1->get_Fig1s4_ServiceComponentLabel_of_SId_SCIdS(fig1s4.SId, fig1s4.SCIdS);
       pFig1s4 == nullptr)
   {
     if (!_extract_character_set_label(fig1s4, d, offset))
@@ -120,18 +120,18 @@ void FibDecoder::_process_Fig1s4(const u8 * const d)
   }
   else
   {
-    const_cast<FibConfigFig1::SFig1s4_ServiceComponentLabel *>(pFig1s4)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
+    const_cast<FibConfigFig1::SFig1s4_ServiceComponentLabel*>(pFig1s4)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 
 // Data service label 8.1.14.2
-void FibDecoder::_process_Fig1s5(const u8 * const d)
+void FibDecoder::_process_Fig1s5(const u8* const d)
 {
   FibConfigFig1::SFig1s5_DataServiceLabel fig1s5;
   constexpr i16 offset = 48;
   fig1s5.SId = getLBits(d, 16, 32);
 
-  if (const auto * const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(fig1s5.SId);
+  if (const auto* const pFig1s5 = mpFibConfigFig1->get_Fig1s5_DataServiceLabel_of_SId(fig1s5.SId);
       pFig1s5 == nullptr)
   {
     if (!_extract_character_set_label(fig1s5, d, offset))
@@ -147,7 +147,7 @@ void FibDecoder::_process_Fig1s5(const u8 * const d)
   }
   else
   {
-    const_cast<FibConfigFig1::SFig1s5_DataServiceLabel *>(pFig1s5)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
+    const_cast<FibConfigFig1::SFig1s5_DataServiceLabel*>(pFig1s5)->set_current_time_2nd_call(); // won't give up the "const" of the get_..-method
   }
 }
 

@@ -25,7 +25,7 @@
 #include "dabradio.h"
 #include "qt_compat.h"
 
-TimeTableHandler::TimeTableHandler(DabRadio * radio)
+TimeTableHandler::TimeTableHandler(DabRadio* radio)
   : QListView(nullptr)
 {
   this->radio = radio;
@@ -38,7 +38,7 @@ TimeTableHandler::TimeTableHandler(DabRadio * radio)
 
 TimeTableHandler::~TimeTableHandler() {}
 
-void TimeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString & theText, const QString & theDescr)
+void TimeTableHandler::addElement(i32 theTime, i32 epgWidth, const QString& theText, const QString& theDescr)
 {
   //i32	hours	= theTime / 60;
   //i32	minutes	= theTime % 60;

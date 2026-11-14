@@ -46,7 +46,7 @@ class WavReader : public QThread
   Q_OBJECT
 
 public:
-  WavReader(WavFileHandler *, SNDFILE *, RingBuffer<cf32> *, i32 iSampleRate);
+  WavReader(WavFileHandler*, SNDFILE*, RingBuffer<cf32>*, i32 iSampleRate);
   ~WavReader();
 
   void start_reader();
@@ -57,9 +57,9 @@ public:
 private:
   static constexpr i32 cBufferSize = 32768;
 
-  SNDFILE * const mpFile;
-  RingBuffer<cf32> * const mpRingBuffer;
-  WavFileHandler * const mpParent;
+  SNDFILE* const mpFile;
+  RingBuffer<cf32>* const mpRingBuffer;
+  WavFileHandler* const mpParent;
   const i32 mSampleRate;
   std::atomic<bool> mRunning = false;
   std::atomic<i64> mSetNewFilePos = -1;

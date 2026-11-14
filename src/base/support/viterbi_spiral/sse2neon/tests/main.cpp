@@ -2,9 +2,9 @@
 #include <cstdio>
 #include "impl.h"
 
-i32 main(i32 /*argc*/, const char ** /*argv*/)
+i32 main(i32 /*argc*/, const char** /*argv*/)
 {
-    SSE2NEON::SSE2NEONTest *test = SSE2NEON::SSE2NEONTest::create();
+    SSE2NEON::SSE2NEONTest* test = SSE2NEON::SSE2NEONTest::create();
     u32 passCount = 0;
     u32 failedCount = 0;
     for (u32 i = 0; i < SSE2NEON::IT_LAST; i++) {

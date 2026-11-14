@@ -10,8 +10,8 @@
 // Initially, this is for how 16 byte aligned memory is allocated
 namespace SSE2NEON
 {
-void *platformAlignedAlloc(size_t size);
-void platformAlignedFree(void *ptr);
+void* platformAlignedAlloc(size_t size);
+void platformAlignedFree(void* ptr);
 
 }  // namespace SSE2NEON
 

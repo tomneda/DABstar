@@ -40,7 +40,7 @@ public:
   static const char GRIDCOLOR[];
   static const char CURVECOLOR[];
 
-  static bool show_dialog(QColor & ioColor, const QString & iTopText);
+  static bool show_dialog(QColor& ioColor, const QString& iTopText);
 };
 
 
