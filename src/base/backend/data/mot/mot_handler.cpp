@@ -94,6 +94,11 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     return;
   }
 
+  if (mIsSpi)
+  {
+    _signal_activity();
+  }
+
   if (extensionFlag)
   {
     next += 16;
@@ -208,6 +213,21 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
   default: fprintf(stdout, "mot groupType %d\n", groupType);
     return;
   }
+}
+
+// Shows the receiving of SPI (EPG) data on the EPG button (called within the backend thread)
+void MotHandler::_signal_activity()
+{
+  const auto now = std::chrono::steady_clock::now();
+
+  if (now - mLastActivityTime < cActivityMinInterval)
+  {
+    return;
+  }
+
+  mLastActivityTime = now;
+  DabRadio* const pRadio = mpRadioInterface;
+  QMetaObject::invokeMethod(pRadio, [pRadio]() { pRadio->slot_spi_data_received(); }, Qt::QueuedConnection);
 }
 
 MotObject* MotHandler::getHandle(u16 transportId) const

@@ -127,6 +127,7 @@ private:
   static constexpr i32 cScanningTimeoutMs    = 6000; // max. waiting time for signal and FIB audio data while scanning
   static constexpr i32 cClockResetTimeoutMs  = 5000;
   static constexpr i32 cJournalineActivityMs = 300;  // shown time of the data receiving indicator on the JOUR button
+  static constexpr i32 cEpgActivityMs        = 300;  // shown time of the data receiving indicator on the EPG button
 
   inline static bool sIsTerminating = false;
 
@@ -425,6 +426,7 @@ public slots:
   void slot_pad_mot_progress(i32 iPercent) const;
   void slot_handle_mot_object(const QByteArray& iResult, const QString& iObjectName, i32 iContentType, bool iDirElement) const;
   void slot_handle_spi_object(const SMotSpiObject& iObject) const;
+  void slot_spi_data_received() const;
   void slot_trigger_mot_indicator() const;
 
   // Data Services

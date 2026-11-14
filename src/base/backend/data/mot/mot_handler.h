@@ -32,6 +32,7 @@
 
 #include "dab_constants.h"
 #include "virtual_datahandler.h"
+#include <chrono>
 #include <vector>
 
 class DabRadio;
@@ -55,11 +56,15 @@ private:
   };
 
   MotDirectory* mpDirectory = nullptr;
+  static constexpr std::chrono::milliseconds cActivityMinInterval{ 100 }; // limits the activity notifications to the GUI
+
   DabRadio* const mpRadioInterface;
   const bool mIsSpi;
+  std::chrono::steady_clock::time_point mLastActivityTime{};
   int mOrderNumber = 0;
   std::array<SMotTable, 15> mMotTable; // TODO: are 55 or 15 the better number?
 
+  void _signal_activity();
   void setHandle(MotObject*, u16);
   MotObject* getHandle(u16) const;
 };

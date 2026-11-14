@@ -553,6 +553,17 @@ void DabRadio::set_journaline_data_received(const QWidget* const ipViewerWidget)
   }
 }
 
+// Called (queued) by the MOT handler of an SPI (EPG) service when data were received
+void DabRadio::slot_spi_data_received() const
+{
+  if (!mIsChannelRunning)
+  {
+    return;
+  }
+
+  ui->btnEpg->trigger_activity_indicator(cEpgActivityMs); // shown also if the button is not enabled yet (no programme data complete)
+}
+
 void DabRadio::_slot_handle_journaline_button() const
 {
   if (mpJournalineWindowWatcher == nullptr)
