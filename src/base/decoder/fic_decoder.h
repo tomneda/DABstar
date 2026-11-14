@@ -33,6 +33,7 @@
 #include "viterbi_spiral.h"
 #include "fib_decoder_if.h"
 #include <QObject>
+#include <span>
 #include <vector>
 #include <atomic>
 
@@ -47,7 +48,7 @@ public:
   ~FicDecoder() override = default;
 
   void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx);
-  void process_eti_fic(const u8 * ipFibBytes, i32 iNumFibs); // already decoded FIBs from an ETI frame (32 bytes each)
+  void process_eti_fic(const std::span<const u8> & iFibBytes); // already decoded FIBs from an ETI frame (32 bytes each)
   void stop();
   void restart();
   void get_fib_bits(u8 *, bool *);

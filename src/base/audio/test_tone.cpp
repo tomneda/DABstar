@@ -27,8 +27,10 @@ void TestTone::activate(const bool iActive)
   mEnabled = iActive;
 }
 
-void TestTone::process(i16 * const iopData, const i32 iNumSamples)
+void TestTone::process(const std::span<i16> & ioData)
 {
+  const i32 iNumSamples = (i32)ioData.size();
+  i16 * const iopData = ioData.data();
   if (!mEnabled)
   {
     return;

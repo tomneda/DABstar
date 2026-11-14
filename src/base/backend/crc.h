@@ -36,9 +36,11 @@
 #pragma once
 
 #include "glob_data_types.h"
+#include <span>
 //#include <cstdint>
 
-u16 calc_crc(const u8 * const data, const i32 length);
-bool check_crc_bytes(const u8 * const msg, const i32 len);
-bool check_CRC_bits(const u8 * const iIn, const i32 iSize);
+u16 calc_crc(const std::span<const u8> & iData);
+bool check_crc_bytes(const std::span<const u8> & iMsgWithCrc); // the last 2 bytes of iMsgWithCrc contain the CRC
+bool check_CRC_bits(const std::span<const u8> & iBits);
+bool check_CRC_bits(const std::span<const std::byte> & iBits);
 

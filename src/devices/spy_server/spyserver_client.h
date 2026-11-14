@@ -61,7 +61,7 @@ public:
 
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(cf32 * V, i32 size) override;
+  i32 getSamples(const std::span<cf32> & oV) override;
   i32 Samples() override;
   void setVFOFrequency(i32) override;
   i32 getVFOFrequency() override;

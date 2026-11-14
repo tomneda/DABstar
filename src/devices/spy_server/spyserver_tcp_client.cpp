@@ -135,9 +135,9 @@ void SpyServerTcpClient::close_conn()
   }
 }
 
-void SpyServerTcpClient::send_data(u8 * data, i32 length)
+void SpyServerTcpClient::send_data(const std::span<const u8> & iData)
 {
-  outBuffer.put_data_into_ring_buffer(data, length);
+  outBuffer.put_data_into_ring_buffer(iData.data(), (i32)iData.size());
 }
 
 char tempBuffer_8[1000000];

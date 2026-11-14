@@ -37,6 +37,7 @@
 #include <cstdio>
 #include "ringbuffer.h"
 #include <stdint.h>
+#include <span>
 #include <vector>
 #include <atomic>
 #ifdef HAVE_LIQUID
@@ -72,11 +73,11 @@ private:
   std::atomic<i64> mSetNewFilePos = -1;
   std::atomic<bool> mPaused = false;
   void run();
-  i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, cf32 *, i32));
-  void readElements_IQ(FILE * f, cf32 *, i32 amount);
-  void readElements_QI(FILE * f, cf32 *, i32 amount);
-  void readElements_I(FILE * f, cf32 *, i32 amount);
-  void readElements_Q(FILE * f, cf32 *, i32 amount);
+  i32 readSamples(FILE * f, void(XmlReader::*)(FILE *, const std::span<cf32> &));
+  void readElements_IQ(FILE * f, const std::span<cf32> & oBuffer);
+  void readElements_QI(FILE * f, const std::span<cf32> & oBuffer);
+  void readElements_I(FILE * f, const std::span<cf32> & oBuffer);
+  void readElements_Q(FILE * f, const std::span<cf32> & oBuffer);
   f32 mapTable[256];
 
 // for the conversion - if any

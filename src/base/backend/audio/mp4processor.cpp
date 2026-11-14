@@ -329,11 +329,12 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
       if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
     }
     //	but first the crc check
-    else if (check_crc_bytes(&mOutVec[mAuStartArr[auIdx]], aacFrameLen))
+    else if (const std::span<const u8> auWithCrc = std::span(mOutVec).subspan(mAuStartArr[auIdx], aacFrameLen + 2);
+             check_crc_bytes(auWithCrc))
     {
       //	first prepare dumping
       std::vector<u8> aacStreamBuffer;
-      const i32 segmentSize = _build_aac_stream(aacFrameLen, &streamParameters, &(mOutVec[mAuStartArr[auIdx]]), aacStreamBuffer);
+      const i32 segmentSize = _build_aac_stream(&streamParameters, auWithCrc.first(aacFrameLen), aacStreamBuffer);
 
       mSum_good_crcs++;
 
@@ -353,14 +354,14 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
 
       //	then handle the audio
 #ifdef  __WITH_FDK_AAC__
-      const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer.data(), segmentSize);
+      const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer);
 #else
       std::array<u8, cAacCoreFrameBytes + 10> theAudioUnit;  // max size is ensured above but for what are the +10?
       assert(aacFrameLen <= cAacCoreFrameBytes);
       memcpy(theAudioUnit.data(), &mOutVec[mAuStartArr[auIdx]], aacFrameLen);
       memset(&theAudioUnit[aacFrameLen], 0, 10);
 
-      const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, theAudioUnit.data(), aacFrameLen);
+      const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, std::span(theAudioUnit).first(aacFrameLen));
 #endif
 
       emit signal_is_stereo(streamParameters.aacChannelMode == 1 || streamParameters.psFlag == 1);
@@ -391,8 +392,9 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
   return true;
 }
 
-i32 Mp4Processor::_build_aac_stream(const i16 iAacFrameLen, const SStreamParms * const iSp, const u8 * const iData, std::vector<u8> & oFileBuffer) const
+i32 Mp4Processor::_build_aac_stream(const SStreamParms * const iSp, const std::span<const u8> & iAacFrame, std::vector<u8> & oFileBuffer) const
 {
+  const i16 iAacFrameLen = (i16)iAacFrame.size();
   BitWriter au_bw(oFileBuffer); // fileBuffer will filled up in BitWriter
 
   au_bw.AddBits(0x2B7, 11);  // syncword
@@ -437,7 +439,7 @@ i32 Mp4Processor::_build_aac_stream(const i16 iAacFrameLen, const SStreamParms *
   }
   au_bw.AddBits(iAacFrameLen % 255, 8);
 
-  au_bw.AddBytes(iData, iAacFrameLen);
+  au_bw.AddBytes(iAacFrame);
   au_bw.WriteAudioMuxLengthBytes();
 
   return oFileBuffer.size();

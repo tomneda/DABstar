@@ -72,31 +72,44 @@ static u16 const crctab_1021[256] = {
   0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-u16 calc_crc(const u8 * const data, const i32 length)
+u16 calc_crc(const std::span<const u8> & iData)
 {
   u16 crc = 0xffff;
 
-  for (int i = 0; i < length; i++)
+  for (const u8 d : iData)
   {
-    u32 pos = (data[i] ^ (crc >> 8)) & 0xff;
+    u32 pos = (d ^ (crc >> 8)) & 0xff;
     crc = crctab_1021[pos] ^ (crc << 8);
   }
 
   return ~crc;
 }
 
-// the CRC is expected behind the msg pointer + len with length 2 bytes
-bool check_crc_bytes(const u8 * const msg, const i32 len)
+// the CRC is expected in the last 2 bytes of iMsgWithCrc
+bool check_crc_bytes(const std::span<const u8> & iMsgWithCrc)
 {
-  u16 accumulator = calc_crc(msg, len);
+  if (iMsgWithCrc.size() < 2)
+  {
+    return false;
+  }
+
+  const size_t len = iMsgWithCrc.size() - 2;
+  const u16 accumulator = calc_crc(iMsgWithCrc.first(len));
 
   // ok, now check with the crc that is contained in the au
-  const u16 crc = (msg[len] << 8) | msg[len + 1];
+  const u16 crc = (iMsgWithCrc[len] << 8) | iMsgWithCrc[len + 1];
   return (crc ^ accumulator) == 0;
 }
 
-bool check_CRC_bits(const u8 * const iIn, const i32 iSize)
+bool check_CRC_bits(const std::span<const std::byte> & iBits)
 {
+  return check_CRC_bits(std::span(reinterpret_cast<const u8 *>(iBits.data()), iBits.size()));
+}
+
+bool check_CRC_bits(const std::span<const u8> & iBits)
+{
+  const u8 * const iIn = iBits.data();
+  const i32 iSize = (i32)iBits.size();
   static const u8 crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
   i32 f;
   u8 b[16];

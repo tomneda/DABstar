@@ -34,6 +34,7 @@
 #include <QFile>
 #include <map>
 #include <set>
+#include <span>
 #include "dab_constants.h"
 
 struct STiiDataEntry
@@ -110,7 +111,7 @@ private:
   bool _is_already_cached(u32 iKey, const QString & iChannel) const;
   i32 _read_columns(std::vector<QString> & oV, const char * b, i32 N) const;
   void _read_file(QFile & fp);
-  char * _eread(char * buffer, i32 amount, QFile & fp) const;
+  char * _eread(const std::span<char> & oBuffer, QFile & fp) const;
   bool _load_dyn_library_functions();
 };
 

@@ -101,12 +101,9 @@ void SpyServerHandler::run()
 
     sequenceNumberLast = theHeader.SequenceNumber;
 
-    if (theHeader.BodySize > buffer.size())
-    {
-      buffer.resize(theHeader.BodySize);
-    }
+    buffer.resize(theHeader.BodySize); // shrinking keeps the capacity, so no reallocation in the long run
 
-    readBody(buffer.data(), theHeader.BodySize);
+    readBody(buffer);
 
     switch (theHeader.MessageType)
     {
@@ -114,7 +111,7 @@ void SpyServerHandler::run()
       got_device_info = process_device_info(buffer.data(), deviceInfo);
       break;
     case MSG_TYPE_UINT8_IQ:
-      process_data(buffer.data(), theHeader.BodySize);
+      process_data(buffer);
       break;
     case MSG_TYPE_CLIENT_SYNC:
       process_client_sync(buffer.data(), m_curr_client_sync);
@@ -139,8 +136,10 @@ bool SpyServerHandler::readHeader(struct MessageHeader & header)
   return true;
 }
 
-bool SpyServerHandler::readBody(u8 * buffer, i32 size)
+bool SpyServerHandler::readBody(const std::span<u8> & oBody)
 {
+  u8 * const buffer = oBody.data();
+  const i32 size = (i32)oBody.size();
   i32 filler = 0;
   while (running.load())
   {
@@ -190,7 +189,7 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
   bool result;
   u32 headerLen = sizeof(CommandHeader);
   u16 argLen = args.size();
-  u8 *buffer = make_vla(u8, headerLen + argLen);
+  const auto buffer = make_vla_span(u8, headerLen + argLen);
   CommandHeader header;
 
 //  if (!is_connected) {
@@ -218,7 +217,7 @@ bool SpyServerHandler::send_command(u32 cmd, std::vector<u8> & args)
 
   try
   {
-    tcpHandler.send_data(buffer, headerLen + argLen);
+    tcpHandler.send_data(buffer);
     result = true;
   }
   catch (std::exception & e)
@@ -388,9 +387,9 @@ bool SpyServerHandler::set_setting(u32 settingType, std::vector<u32> & params)
   return send_command(CMD_SET_SETTING, argBytes);
 }
 
-void SpyServerHandler::process_data(u8 * theBody, i32 length)
+void SpyServerHandler::process_data(const std::span<const u8> & iBody)
 {
-  outB->put_data_into_ring_buffer(theBody, length);
+  outB->put_data_into_ring_buffer(iBody.data(), (i32)iBody.size());
   emit signal_data_ready();
 }
 

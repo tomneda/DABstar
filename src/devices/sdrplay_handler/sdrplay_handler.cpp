@@ -194,13 +194,15 @@ void SdrPlayHandler::stopReader()
   resetBuffer();
 }
 
-i32 SdrPlayHandler::getSamples(cf32 * V, i32 size)
+i32 SdrPlayHandler::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
   static constexpr f32 denominator = (f32)(1 << (nrBits-1));
 
-  auto * const temp = make_vla(ci16, size);
+  const auto temp = make_vla_span(ci16, size);
 
-  const i32 amount = p_I_Buffer->get_data_from_ring_buffer(temp, size);
+  const i32 amount = p_I_Buffer->get_data_from_ring_buffer(temp.data(), size);
 
   for (i32 i = 0; i < amount; i++)
   {
@@ -209,7 +211,7 @@ i32 SdrPlayHandler::getSamples(cf32 * V, i32 size)
 
   if (dumping.load())
   {
-    xmlWriter->add(temp, amount);
+    xmlWriter->add(temp.first(amount));
   }
   return amount;
 }

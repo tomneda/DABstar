@@ -29,7 +29,7 @@ class   soapyWorker: public QThread
     soapyWorker (void);
     virtual ~soapyWorker  (void);
     virtual i32 Samples   (void);
-    virtual i32 getSamples(cf32 *, i32);
+    virtual i32 getSamples(const std::span<cf32> & oV);
 };
 
 

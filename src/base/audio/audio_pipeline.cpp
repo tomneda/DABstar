@@ -213,7 +213,7 @@ void AudioPipeline::slot_new_audio(const i32 iNumSamples, const u32 iAudioSample
 
     if (mAudioDumpState == EAudioDumpState::Running)
     {
-      mWavWriter.write(mAudioTempBuffer.data(), availableSamples);
+      mWavWriter.write(std::span(mAudioTempBuffer).first(availableSamples));
     }
   }
 

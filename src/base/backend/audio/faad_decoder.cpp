@@ -113,7 +113,7 @@ bool FaadDecoder::_initialize(const SStreamParms * iSP)
   return true;
 }
 
-i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const ipBuffer, const i16 iBufferLength)
+i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<const u8> & iBuffer)
 {
   if (!mAacInitialized)
   {
@@ -125,7 +125,7 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
   }
 
   NeAACDecFrameInfo aacInfo;
-  const i16 * const outBuffer = (i16 *)NeAACDecDecode(mAacHandle, &aacInfo, const_cast<u8*>(ipBuffer), iBufferLength);
+  const i16 * const outBuffer = (i16 *)NeAACDecDecode(mAacHandle, &aacInfo, const_cast<u8*>(iBuffer.data()), (unsigned long)iBuffer.size());
   const u32 sampleRate = aacInfo.samplerate;
   const i16 samples = aacInfo.samples;
   const i32 audioBufferFillSize = sampleRate / 8; // 125ms
@@ -146,7 +146,7 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
     if (mConcealActive)
     {
       std::vector<i16> pcm(outBuffer, outBuffer + samples);
-      _apply_exit_crossfade(pcm.data(), samples);
+      _apply_exit_crossfade(pcm);
       mpAudioBuffer->put_data_into_ring_buffer(pcm.data(), samples);
     }
     else
@@ -163,7 +163,7 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
   else if (aacInfo.channels == 1) // TODO: this is not called with a mono service but the stereo above
   {
     const i32 stereoSamples = 2 * samples; // we nevertheless send "stereo" samples
-    auto * const buffer = make_vla(i16, stereoSamples);
+    const auto buffer = make_vla_span(i16, stereoSamples);
 
     for (i16 i = 0; i < samples; ++i)
     {
@@ -172,11 +172,11 @@ i16 FaadDecoder::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * c
 
     if (mConcealActive)
     {
-      _apply_exit_crossfade(buffer, stereoSamples);
+      _apply_exit_crossfade(buffer);
     }
 
-    mpAudioBuffer->put_data_into_ring_buffer(buffer, stereoSamples);
-    mLastGoodFrame.assign(buffer, buffer + stereoSamples);
+    mpAudioBuffer->put_data_into_ring_buffer(buffer.data(), stereoSamples);
+    mLastGoodFrame.assign(buffer.begin(), buffer.end());
 
     if (mpAudioBuffer->get_ring_buffer_read_available() > audioBufferFillSize)
     {
@@ -277,8 +277,9 @@ i32 FaadDecoder::_estimate_pitch_period() const
   return (bestScore >= 0.30) ? bestLag : 0;
 }
 
-void FaadDecoder::_apply_exit_crossfade(i16 * const ioPcm, const i32 iNumSamples) const
+void FaadDecoder::_apply_exit_crossfade(const std::span<i16> & ioPcm) const
 {
+  const i32 iNumSamples = (i32)ioPcm.size();
   // Smooth the transition from concealed audio back to real audio with a short linear
   // cross-fade so the boundary does not click. The concealment is extrapolated a few more
   // samples (continuing its pitch phase from the previous good frame still held in

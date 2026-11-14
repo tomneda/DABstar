@@ -277,8 +277,10 @@ void RtlTcpClient::stopReader()
   resetBuffer();
 }
 
-i32 RtlTcpClient::getSamples(cf32 * V, i32 size)
+i32 RtlTcpClient::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
   return mpBuffer->get_data_from_ring_buffer(V, size);
 }
 
@@ -373,7 +375,7 @@ void RtlTcpClient::_slot_read_data()
 
       if (mIsXmlDumping.load())
       {
-        mpXmlWriter->add((std::complex<uint8_t>*)byteBuffer.data(), sampleCnt);
+        mpXmlWriter->add(std::span((const cu8 *)byteBuffer.data(), sampleCnt));
       }
     }
   }

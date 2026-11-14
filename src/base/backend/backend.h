@@ -33,6 +33,7 @@
 #include "ringbuffer.h"
 #include "backend_driver.h"
 #include "backend_deconvolver.h"
+#include <span>
 #include <vector>
 #ifdef  __THREADED_BACKEND__
   #include <QSemaphore>
@@ -57,8 +58,8 @@ public:
   Backend(DabRadio * ipRI, const SDescriptorType * ipDescType, RingBuffer<i16> * ipoAudiobuffer, RingBuffer<u8> * ipoDatabuffer, RingBuffer<u8> * frameBuffer, EProcessFlag iProcessFlag);
   ~Backend();
 
-  i32 process(const i16 * iV, i32 cnt);
-  void process_eti(const u8 * ipData, i32 iSize); // already decoded sub-channel data of one CIF from an ETI frame
+  i32 process(const std::span<const i16> & iV);
+  void process_eti(const std::span<const u8> & iData); // already decoded sub-channel data of one CIF from an ETI frame
   void stop_running();
 
   // we need sometimes to access the key parameters for decoding

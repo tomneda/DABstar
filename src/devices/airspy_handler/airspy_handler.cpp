@@ -327,9 +327,7 @@ i32 AirspyHandler::callback (airspy_transfer* transfer)
     p = static_cast<AirspyHandler *> (transfer->ctx);
 
 // we read  AIRSPY_SAMPLE_INT16_IQ:
-    i32 bytes_to_write = transfer->sample_count * sizeof (i16) * 2;
-    u8 *pt_rx_buffer   = (u8 *)transfer->samples;
-    p->data_available (pt_rx_buffer, bytes_to_write);
+    p->data_available (std::span (static_cast<const ci16 *> (transfer->samples), transfer->sample_count));
     return 0;
 }
 
@@ -337,15 +335,15 @@ i32 AirspyHandler::callback (airspy_transfer* transfer)
 //  2*2 = 4 bytes for sample, as per AirSpy USB data stream format
 //  we do the rate conversion here, read in groups of 2 * xxx samples
 //  and transform them into groups of 2 * 512 samples
-i32     AirspyHandler::data_available (void *buf, i32 buf_size)
+i32     AirspyHandler::data_available (const std::span<const ci16> & iSamples)
 {
-    i16 *sbuf   = (i16 *)buf;
-    i32 nSamples    = buf_size / (sizeof (i16) * 2);
+    const i16 * const sbuf = reinterpret_cast<const i16 *> (iSamples.data());
+    const i32 nSamples = (i32)iSamples.size();
     cf32 temp [2048];
     i32  i, j;
 
     if (dumping.load ())
-       xmlWriter->add ((std::complex<i16> *)sbuf, nSamples);
+       xmlWriter->add (iSamples);
     if (filtering)
     {
        if (filterDepth->value () != currentDepth)
@@ -452,8 +450,10 @@ void    AirspyHandler::resetBuffer  ()
     _I_Buffer.flush_ring_buffer ();
 }
 
-i32 AirspyHandler::getSamples (cf32 *v, i32 size)
+i32 AirspyHandler::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const v = oV.data();
+  const i32 size = (i32)oV.size();
 
     return _I_Buffer.get_data_from_ring_buffer (v, size);
 }

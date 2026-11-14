@@ -109,21 +109,24 @@ void DataProcessor::add_to_frame(const std::vector<u8> & outV)
 
   if ((this->mDSCTy == 5) && (this->mDGflag))
   {  // no datagroups
-    _handle_TDC_async_stream(outV.data(), 24 * mBitRate);
+    _handle_TDC_async_stream(outV);
   }
   else
   {
-    _handle_packets(outV.data(), 24 * mBitRate);
+    _handle_packets(outV);
   }
 }
 
 // While for a full mix data and audio there will be a single packet in a
 // data compartment, for an empty mix, there may be many more
-void DataProcessor::_handle_packets(const u8 * data, i32 lengthBits)
+void DataProcessor::_handle_packets(const std::span<const u8> & iBits)
 {
+  std::span<const u8> bits = iBits;
+
   while (true)
   {
-    const i32 pLengthBits = (getBits_2(data, 0) + 1) * 24 * 8;
+    const i32 lengthBits = (i32)bits.size();
+    const i32 pLengthBits = (getBits_2(bits.data(), 0) + 1) * 24 * 8;
 
     if (lengthBits < pLengthBits)
     {  // be on the safe side
@@ -131,30 +134,28 @@ void DataProcessor::_handle_packets(const u8 * data, i32 lengthBits)
       return;
     }
 
-    _handle_packet(data);
+    _handle_packet(bits.first(pLengthBits));
 
-    lengthBits -= pLengthBits;
+    bits = bits.subspan(pLengthBits);
 
-    if (lengthBits < 2)
+    if (bits.size() < 2)
     {
-      if (lengthBits != 0)
+      if (!bits.empty())
       {
-        qWarning() << "Packet lengthBits not zero with" << lengthBits << "bits";
+        qWarning() << "Packet lengthBits not zero with" << bits.size() << "bits";
       }
       return;
     }
-
-    data = &(data[pLengthBits]);
   }
 }
 
 // Handle a single DAB packet:
 // Note, although not yet encountered, the standard says that there may be multiple streams, to be identified by the address.
 // For the time being we only handle a single stream!!!!
-void DataProcessor::_handle_packet(const u8 * const data)
+void DataProcessor::_handle_packet(const std::span<const u8> & iPacketBits)
 {
+  const u8 * const data = iPacketBits.data();
   // see TS 300 401 5.3.2.0
-  const i32 packetLengthBytes = (getBits_2(data, 0) + 1) * 24;
   const i16 continuityIndex = getBits_2(data, 2);
   const i16 firstLast = getBits_2(data, 4);
   const i16 address = getBits(data, 6, 10);
@@ -180,7 +181,7 @@ void DataProcessor::_handle_packet(const u8 * const data)
   mExpectedIndex = (mExpectedIndex + 1) % 4;
   (void)command;
 
-  if (!check_CRC_bits(data, packetLengthBytes * 8))
+  if (!check_CRC_bits(iPacketBits))
   {
     return;
   }
@@ -253,8 +254,9 @@ void DataProcessor::_handle_packet(const u8 * const data)
 }
 
 //	Really no idea what to do here
-void DataProcessor::_handle_TDC_async_stream(const u8 * data, i32 length)
+void DataProcessor::_handle_TDC_async_stream(const std::span<const u8> & iBits)
 {
+  const u8 * const data = iBits.data();
   i16 packetLength = (getBits_2(data, 0) + 1) * 24;
   i16 continuityIndex = getBits_2(data, 2);
   i16 firstLast = getBits_2(data, 4);
@@ -262,7 +264,6 @@ void DataProcessor::_handle_TDC_async_stream(const u8 * data, i32 length)
   u16 command = getBits_1(data, 16);
   i16 usefulLength = getBits_7(data, 17);
 
-  (void)length;
   (void)packetLength;
   (void)continuityIndex;
   (void)firstLast;
@@ -270,7 +271,7 @@ void DataProcessor::_handle_TDC_async_stream(const u8 * data, i32 length)
   (void)command;
   (void)usefulLength;
 
-  if (!check_CRC_bits(data, packetLength * 8))
+  if (packetLength * 8 > (i32)iBits.size() || !check_CRC_bits(iBits.first(packetLength * 8)))
   {
     return;
   }

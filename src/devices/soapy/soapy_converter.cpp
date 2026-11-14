@@ -83,8 +83,10 @@ i32 SoapyConverter::Samples(void)
   return theBuffer.get_ring_buffer_read_available();
 }
 
-i32 SoapyConverter::getSamples(cf32 * v, i32 amount)
+i32 SoapyConverter::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const v = oV.data();
+  const i32 amount = (i32)oV.size();
   i32 realAmount;
   realAmount = theBuffer.get_data_from_ring_buffer(v, amount);
   return realAmount;

@@ -46,8 +46,8 @@ BackendDeconvolver::BackendDeconvolver(const SDescriptorType * d)
 
 BackendDeconvolver::~BackendDeconvolver() = default; // keep it in the cpp file as unique_ptr() will not compile else
 
-void BackendDeconvolver::deconvolve(const i16 * rawBits_in, i32 length, u8 * outData) const
+void BackendDeconvolver::deconvolve(const std::span<const i16> & iRawBits, u8 * const opOutData) const
 {
-  mpProtectionHandler->deconvolve(rawBits_in, length, outData);
+  mpProtectionHandler->deconvolve(iRawBits, opOutData);
 }
 

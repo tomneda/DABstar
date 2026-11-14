@@ -48,9 +48,9 @@
 	delete buffer;
 }
 
-void	tcpServer::sendData (u8 *data, i32 amount) {
+void	tcpServer::sendData (const std::span<const u8> & iData) {
 	if (connected)
-	   buffer -> put_data_into_ring_buffer (data, amount);
+	   buffer -> put_data_into_ring_buffer (iData.data(), (i32)iData.size());
 }
 #define	BUF_SIZE	1024
 

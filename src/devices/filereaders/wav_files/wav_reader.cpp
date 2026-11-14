@@ -176,7 +176,7 @@ void WavReader::run()
       sf_seek(mpFile, 0, SEEK_SET);
       for (i32 i = n; i < cBufferSize; i++)
       {
-        mCmplxBuffer[i] = std::complex<f32>(0, 0);
+        mCmplxBuffer[i] = cf32(0, 0);
       }
       emit signal_file_looped();
     }

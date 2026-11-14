@@ -42,18 +42,18 @@
 Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
 
 
-MotObject::MotObject(DabRadio * ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const u8 * const ipSegment, const i32 iSegmentSize, const bool iLastFlag)
+MotObject::MotObject(DabRadio * ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const std::span<const u8> & iSegment, const bool iLastFlag)
   : mpDR(ipDR)
   , mIsDirElement(iDirElement)
   , mIsPadElement(iPadElement)
 {
-  qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << iDirElement << "and transportId" << iTransportId << "and segmentSize" << iSegmentSize << "and lastFlag" << iLastFlag;
+  qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << iDirElement << "and transportId" << iTransportId << "and segmentSize" << iSegment.size() << "and lastFlag" << iLastFlag;
   qCWarning(sLogMotObject()) << "This is not working well yet";
 
   connect(this, &MotObject::signal_new_mot_object, ipDR, &DabRadio::slot_handle_mot_object);
   connect(this, &MotObject::signal_pad_mot_progress, ipDR, &DabRadio::slot_pad_mot_progress);
 
-  set_header(ipSegment, iSegmentSize, iLastFlag, iTransportId);
+  set_header(iSegment, iLastFlag, iTransportId);
 }
 
 MotObject::MotObject(DabRadio * const ipDR, const bool iDirElement, const bool iPadElement)
@@ -68,9 +68,9 @@ MotObject::MotObject(DabRadio * const ipDR, const bool iDirElement, const bool i
 }
 
 
-void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, const bool iLastFlag, const i32 iTransportId)
+void MotObject::set_header(const std::span<const u8> & iSegment, const bool iLastFlag, const i32 iTransportId)
 {
-  qCDebug(sLogMotObject) << "SegmentSize" << iSegmentSize << "LastFlag" << iLastFlag << "TransportId" << iTransportId;
+  qCDebug(sLogMotObject) << "SegmentSize" << iSegment.size() << "LastFlag" << iLastFlag << "TransportId" << iTransportId;
 
   if (mTransportId != iTransportId) // if transportId changes here this is a new series of segments
   {
@@ -81,10 +81,11 @@ void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, co
   mTransportId = iTransportId;
 
   // ETSI EN301 234, ch. 6.1 "Header core" — 7-byte big-endian bitfield (b55 = MSB of iSegment[0])
-  mHeaderCore.bodySize       = (i32)extract_bits_from_byte_stream(iSegment, 55-55, 28); // b55..b28
-  mHeaderCore.headerSize     = (i32)extract_bits_from_byte_stream(iSegment, 55-27, 13); // b27..b15
-  mHeaderCore.contentType    = (i32)extract_bits_from_byte_stream(iSegment, 55-14,  6); // b14..b9
-  mHeaderCore.contentSubType = (i32)extract_bits_from_byte_stream(iSegment, 55- 8,  9); // b8..b0
+  const u8 * const pSegment = iSegment.data();
+  mHeaderCore.bodySize       = (i32)extract_bits_from_byte_stream(pSegment, 55-55, 28); // b55..b28
+  mHeaderCore.headerSize     = (i32)extract_bits_from_byte_stream(pSegment, 55-27, 13); // b27..b15
+  mHeaderCore.contentType    = (i32)extract_bits_from_byte_stream(pSegment, 55-14,  6); // b14..b9
+  mHeaderCore.contentSubType = (i32)extract_bits_from_byte_stream(pSegment, 55- 8,  9); // b8..b0
 
   // check if method mHeaderCore.get_content_type() is compatible
   if (mHeaderCore.contentType > (MOTCTBaseTypeMask >> 8) || mHeaderCore.contentSubType > MOTCTSubTypeMask)
@@ -100,7 +101,7 @@ void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, co
 
   while (pointer < (signed)mHeaderCore.headerSize) // Header extension data available?
   {
-    _process_header_extension(iSegment, pointer);
+    _process_header_extension(pSegment, pointer);
   }
 
   if (pointer != (signed)mHeaderCore.headerSize)
@@ -114,8 +115,9 @@ void MotObject::set_header(const u8 * const iSegment, const i32 iSegmentSize, co
   }
 }
 
-void MotObject::add_body_segment(const u8 * const iBodySegment, const i16 iSegmentNumber, const i32 iSegmentSize, const bool iLastFlag, const i32 iTransportId)
+void MotObject::add_body_segment(const std::span<const u8> & iBodySegment, const i16 iSegmentNumber, const bool iLastFlag, const i32 iTransportId)
 {
+  const i32 iSegmentSize = (i32)iBodySegment.size();
   if (iSegmentNumber < 0 || iSegmentNumber >= 8192)
   {
     qCCritical(sLogMotObject)  << "Invalid segment number" << iSegmentNumber;
@@ -132,7 +134,7 @@ void MotObject::add_body_segment(const u8 * const iBodySegment, const i16 iSegme
   if (mMotMap.find(iSegmentNumber) == mMotMap.end())
   {
     qCDebug(sLogMotObject) << "Adding segment" << iSegmentNumber << "to motMap with size" << iSegmentSize << "- lastFlag" << iLastFlag << "- transportId" << mTransportId;
-    QByteArray segment(reinterpret_cast<const char *>(iBodySegment), iSegmentSize);
+    QByteArray segment(reinterpret_cast<const char *>(iBodySegment.data()), iSegmentSize);
     mMotMap.emplace(iSegmentNumber, std::move(segment));
     mSumSegmentSize += iSegmentSize;
   }

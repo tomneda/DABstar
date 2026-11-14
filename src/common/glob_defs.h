@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
+#include <span>
 
 
 #ifndef M_PI
@@ -58,11 +59,14 @@ constexpr auto cFibSizeVitOut = cFicSizeVitOut / cFibPerFic; // =  256 Bits (FIB
 
 using cf32 = std::complex<f32>;
 using ci16 = std::complex<i16>;
+using ci8  = std::complex<i8>;
+using cu8  = std::complex<u8>;
 using TArrayTu = std::array<cf32, cTu>;
 using TArrayTn = std::array<cf32, cTn>;
 
 // do not make this as a template as it freed the allocated stack buffer at once after call
 #define make_vla(T, iSize) static_cast<T *>(alloca(iSize * sizeof(T))) // vla = variable length array on stack
+#define make_vla_span(T, iSize) std::span<T>(make_vla(T, (iSize)), (iSize)) // same as make_vla() but as std::span (iSize is evaluated twice)
 
 template<typename T> inline T conv_rad_to_deg(T iVal)
 {
@@ -286,8 +290,11 @@ template<typename T> inline void mean_filter_adaptive(T & ioVal, const T iVal, c
   ioVal += alpha * (iVal - ioVal);
 }
 
-template<typename T> inline void create_blackman_window(T * opVal, i32 iWindowWidth)
+inline void create_blackman_window(const std::span<f32> & oVal)
 {
+  using T = f32;
+  T * const opVal = oVal.data();
+  const i32 iWindowWidth = (i32)oVal.size();
 #if 0 // The exact(er) version place zeros at the 3rd and 4th side-lobes but result in a discontinuity at the edges and a 6 dB/oct fall-off
   constexpr f64 a0 = 7938.0/18608.0; // 0.426590714
   constexpr f64 a1 = 9240.0/18608.0; // 0.496560619
@@ -309,8 +316,11 @@ template<typename T> inline void create_blackman_window(T * opVal, i32 iWindowWi
 #endif
 }
 
-template<typename T> inline void create_flattop_window(T * opVal, i32 iWindowWidth)
+inline void create_flattop_window(const std::span<f32> & oVal)
 {
+  using T = f32;
+  T * const opVal = oVal.data();
+  const i32 iWindowWidth = (i32)oVal.size();
   //constexpr f64 a[5] = { 1.000, -1.930, 1.290, -0.388, 0.028 }; // max signal DC gain = 1.0 (sum / iWindowsWidth)
   constexpr f64 a[5] = { 0.21557895, -0.41663158, 0.277263158, -0.083578947, 0.006947368 }; // max. pulse gain is 1.0
 

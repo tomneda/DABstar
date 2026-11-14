@@ -82,12 +82,12 @@ void XmlFileWriter::computeHeader()
 #define BLOCK_SIZE 8192
 static i16 buffer_int16[BLOCK_SIZE];
 static i32 bufferP_int16 = 0;
-void XmlFileWriter::add(std::complex<i16> * data, i32 count)
+void XmlFileWriter::add(const std::span<const ci16> & iData)
 {
-  for (i32 i = 0; i < count; i++)
+  for (const ci16 & v : iData)
   {
-    buffer_int16[bufferP_int16++] = real(data [i]);
-    buffer_int16[bufferP_int16++] = imag(data [i]);
+    buffer_int16[bufferP_int16++] = real(v);
+    buffer_int16[bufferP_int16++] = imag(v);
     if (bufferP_int16 >= BLOCK_SIZE)
     {
       fwrite(buffer_int16, sizeof(i16), BLOCK_SIZE, xmlFile);
@@ -99,12 +99,12 @@ void XmlFileWriter::add(std::complex<i16> * data, i32 count)
 
 static u8 buffer_uint8[BLOCK_SIZE];
 static i32 bufferP_uint8 = 0;
-void XmlFileWriter::add(std::complex<u8> * data, i32 count)
+void XmlFileWriter::add(const std::span<const cu8> & iData)
 {
-  for (i32 i = 0; i < count; i++)
+  for (const cu8 & v : iData)
   {
-    buffer_uint8[bufferP_uint8++] = real(data[i]);
-    buffer_uint8[bufferP_uint8++] = imag(data[i]);
+    buffer_uint8[bufferP_uint8++] = real(v);
+    buffer_uint8[bufferP_uint8++] = imag(v);
     if (bufferP_uint8 >= BLOCK_SIZE)
     {
       fwrite(buffer_uint8, sizeof(u8), BLOCK_SIZE, xmlFile);
@@ -116,12 +116,12 @@ void XmlFileWriter::add(std::complex<u8> * data, i32 count)
 
 static i8 buffer_int8[BLOCK_SIZE];
 static i32 bufferP_int8 = 0;
-void XmlFileWriter::add(std::complex<i8> * data, i32 count)
+void XmlFileWriter::add(const std::span<const ci8> & iData)
 {
-  for (i32 i = 0; i < count; i++)
+  for (const ci8 & v : iData)
   {
-    buffer_int8[bufferP_int8++] = real(data[i]);
-    buffer_int8[bufferP_int8++] = imag(data[i]);
+    buffer_int8[bufferP_int8++] = real(v);
+    buffer_int8[bufferP_int8++] = imag(v);
     if (bufferP_int8 >= BLOCK_SIZE)
     {
       fwrite (buffer_int8, sizeof (i8), BLOCK_SIZE, xmlFile);

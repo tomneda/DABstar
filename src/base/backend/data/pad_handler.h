@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <atomic>
 #include <memory>
+#include <span>
 #include <vector>
 #include <QObject>
 #include <QScopedPointer>
@@ -65,7 +66,7 @@ private:
   void _dynamic_label(const std::vector<u8> &, u8 iApplType);
   void _new_MSC_element(const std::vector<u8> &);
   void _add_MSC_element(const std::vector<u8> &);
-  void _build_MSC_segment(const std::vector<u8> &);
+  void _build_MSC_segment(const std::span<const u8> & iData);
   void _handle_xpad_journaline(u8 iAppType, const std::vector<u8> &);
   void _new_journaline_element(const std::vector<u8> &);
   void _add_journaline_element(const std::vector<u8> &);

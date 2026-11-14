@@ -66,7 +66,7 @@ void SampleReader::set_running(bool b)
     i32 readSampleSize = 0;
     do
     {
-      readSampleSize = theRig->getSamples(mSampleBuffer.data(), (i32)mSampleBuffer.size());
+      readSampleSize = theRig->getSamples(mSampleBuffer);
     }
     while(readSampleSize >= (i32)mSampleBuffer.size()); // repeat if full buffer could be read-in as there could be more
   }
@@ -103,7 +103,8 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
 {
   assert((signed)oV.size() >= iStartIdx + iNoSamples);
 
-  cf32 * const buffer = oV.data() + iStartIdx;
+  const std::span<cf32> samples = std::span(oV).subspan(iStartIdx, iNoSamples);
+  cf32 * const buffer = samples.data();
 
   while (running.load() && theRig->Samples() < iNoSamples)
   {
@@ -112,7 +113,7 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
 
   if (!running.load()) throw 20; // stops the DAB processor
 
-  iNoSamples = theRig->getSamples(buffer, iNoSamples);
+  iNoSamples = theRig->getSamples(samples);
 
   // it is the suspicion that sometimes the iNoSamples == 0 so sLevel becomes nan below
   if (iNoSamples <= 0)
@@ -123,7 +124,7 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
 
   if (dumpfilePointer.load() != nullptr)
   {
-    _dump_samples_to_file(buffer, iNoSamples);
+    _dump_samples_to_file(samples.first(iNoSamples));
   }
 
   assert(iNoSamples > 0);
@@ -296,14 +297,14 @@ void SampleReader::get_samples(TArrayTn & oV, const i32 iStartIdx, i32 iNoSample
   }
 }
 
-void SampleReader::_dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples)
+void SampleReader::_dump_samples_to_file(const std::span<const cf32> & iV)
 {
   const f32 scaleFactor = (INT16_MAX >> 2) / sLevel; // scale to 14 bit mean dynamic range
 
-  for (i32 i = 0; i < iNoSamples; i++)
+  for (const cf32 & v : iV)
   {
-    dumpBuffer[2 * dumpIndex + 0] = (i16)(real(ipV[i]) * scaleFactor);
-    dumpBuffer[2 * dumpIndex + 1] = (i16)(imag(ipV[i]) * scaleFactor);
+    dumpBuffer[2 * dumpIndex + 0] = (i16)(real(v) * scaleFactor);
+    dumpBuffer[2 * dumpIndex + 1] = (i16)(imag(v) * scaleFactor);
 
     if (++dumpIndex >= DUMP_SIZE / 2)
     {

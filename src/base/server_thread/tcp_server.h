@@ -33,12 +33,13 @@
 #include	<thread>
 #include	<unistd.h>
 #include	<atomic>
+#include	<span>
 
 class	tcpServer {
 public:
 		tcpServer	(i32);
 		~tcpServer	(void);
-	void	sendData	(u8 *, i32);
+	void	sendData	(const std::span<const u8> & iData);
 	void	run		(i32 port);
 private:
 	std::thread	threadHandle;

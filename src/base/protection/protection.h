@@ -33,6 +33,7 @@
 
 #include "viterbi_spiral.h"
 #include "glob_data_types.h"
+#include <span>
 #include <vector>
 
 class Protection : public ViterbiSpiral
@@ -41,7 +42,7 @@ public:
   explicit Protection(i32);
   ~Protection() override = default;
 
-  virtual bool deconvolve(const i16 *, i32, u8 *);
+  virtual bool deconvolve(const std::span<const i16> & iV, u8 * oOutBuffer);
   
 protected:
   i32 bitRate;

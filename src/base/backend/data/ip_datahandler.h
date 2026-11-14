@@ -32,6 +32,7 @@
 
 #include "dab_constants.h"
 #include "virtual_datahandler.h"
+#include <span>
 #include <vector>
 #include "ringbuffer.h"
 
@@ -47,8 +48,8 @@ public:
   void add_MSC_data_group(const std::vector<u8> &) override ;
 
 private:
-  void process_ipVector(const std::vector<u8> &);
-  void process_udpVector(const u8 *, i16);
+  void process_ipVector(const std::span<const u8> & iIpData);
+  void process_udpVector(const std::span<const u8> & iUdpData);
 
   i16 handledPackets;
   RingBuffer<u8> * dataBuffer;

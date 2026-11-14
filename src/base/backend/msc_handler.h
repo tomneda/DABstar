@@ -28,6 +28,7 @@
 #include <QVector>
 #include <QSharedPointer>
 #include <QMutex>
+#include <span>
 #include <vector>
 
 class DabRadio;
@@ -38,8 +39,7 @@ struct SEtiSubChannel
 {
   i32 subChId;     // SCID
   i32 startAddr;   // SAD in CUs
-  const u8 * pData;
-  i32 size;        // in bytes (STL * 8)
+  std::span<const u8> data; // size in bytes (STL * 8)
 };
 
 class MscHandler

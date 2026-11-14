@@ -88,7 +88,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
     return;
   }
 
-  if (crcFlag && !check_CRC_bits(data, msc.size()))
+  if (crcFlag && !check_CRC_bits(msc))
   {
     return;
   }
@@ -137,6 +137,12 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
   }
 
   u32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
+  if (motVector.size() < 2 + segmentSize)
+  {
+    return;
+  }
+  const std::span<const u8> segment = std::span(motVector).subspan(2, segmentSize);
+
   switch (groupType)
   {
   case 3:
@@ -148,7 +154,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
         break;
       }
       h = new MotObject(mpRadioInterface, false, false, // not within a directory
-                        transportId, &motVector[2], segmentSize, lastFlag);
+                        transportId, segment, lastFlag);
       setHandle(h, transportId);
     }
     break;
@@ -159,12 +165,12 @@ void MotHandler::add_MSC_data_group(const std::vector<u8> & msc)
     if (h == nullptr)
     {
       h = new MotObject(mpRadioInterface, false, false, // not within a directory
-                        transportId, &motVector[2], segmentSize, lastFlag);
+                        transportId, segment, lastFlag);
       setHandle(h, transportId);
     }
     if (h != nullptr)
     {
-      h->add_body_segment(&motVector[2], segmentNumber, segmentSize, lastFlag, transportId);
+      h->add_body_segment(segment, segmentNumber, lastFlag, transportId);
     }
   }
     break;

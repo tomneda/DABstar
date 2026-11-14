@@ -15,6 +15,8 @@
 #include "glob_defs.h"
 #include <algorithm>
 #include <cmath>
+#include <cassert>
+#include <span>
 
 // Stereo linear-interpolation resampler for clock-drift compensation (±5%).
 //
@@ -48,14 +50,16 @@ public:
 
   // Resample a block of stereo interleaved i16 samples.
   //
-  // pIn     : input buffer, interleaved L/R, length = inCount i16 values
-  // inCount : number of i16 values in pIn  (must be even; inCount/2 = frames)
-  // pOut    : caller-allocated output buffer
-  //           required capacity: (inCount/2 + 2) * 2  i16 values
+  // iIn     : input buffer, interleaved L/R (size must be even; size/2 = frames)
+  // oOut    : caller-allocated output buffer
+  //           required capacity: (iIn.size()/2 + 2) * 2  i16 values
   // outCount: set by the method to the number of i16 values written
-  void resample(const i16 * pIn, i32 inCount, i16 * pOut, i32 & outCount)
+  void resample(const std::span<const i16> & iIn, const std::span<i16> & oOut, i32 & outCount)
   {
-    const i32 inFrames = inCount / 2;
+    const i32 inFrames = (i32)iIn.size() / 2;
+    assert(oOut.size() >= (iIn.size() / 2 + 2) * 2);
+    const i16 * const pIn = iIn.data();
+    i16 * const pOut = oOut.data();
     const f32 step = 1.0f / mRatio; // input advance per output sample
     i32 written = 0;
     i32 inIdx = 0; // index of the "right" boundary frame in pIn

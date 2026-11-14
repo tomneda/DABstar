@@ -32,6 +32,7 @@
 
 #include "glob_defs.h"
 #include <QString>
+#include <span>
 
 class QWidget;
 class IEtiSource;
@@ -45,7 +46,7 @@ public:
   virtual void stopReader() = 0;
   virtual void setVFOFrequency(i32) = 0;
   virtual i32 getVFOFrequency() = 0;
-  virtual i32 getSamples(cf32 *, i32) = 0;
+  virtual i32 getSamples(const std::span<cf32> & oV) = 0;
   virtual i32 Samples() = 0;
   virtual void resetBuffer() = 0;
   virtual void hide() = 0;

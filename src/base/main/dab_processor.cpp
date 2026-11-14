@@ -249,7 +249,7 @@ void DabProcessor::_run_eti()
 // Returns false if the frame is not valid.
 bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEtiSubChannel> & oSubChannels)
 {
-  const u8 * const f = iFrame.data();
+  const std::span<const u8> f(iFrame);
 
   // ERR
   if (f[0] != 0xFF)
@@ -279,7 +279,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
   // header CRC over FC, STC and MNSC
   const i32 headerCrcDataLen = 4 + nst * 4 + 2;
   const u16 headerCrcStored = (u16)(f[4 + headerCrcDataLen] << 8 | f[4 + headerCrcDataLen + 1]);
-  if (calc_crc(f + 4, headerCrcDataLen) != headerCrcStored)
+  if (calc_crc(f.subspan(4, headerCrcDataLen)) != headerCrcStored)
   {
     return false;
   }
@@ -294,7 +294,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
 
   // EOF CRC over MST
   const u16 mstCrcStored = (u16)(f[mstOffset + mstLen] << 8 | f[mstOffset + mstLen + 1]);
-  if (calc_crc(f + mstOffset, mstLen) != mstCrcStored)
+  if (calc_crc(f.subspan(mstOffset, mstLen)) != mstCrcStored)
   {
     return false;
   }
@@ -310,7 +310,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
 
   if (ficLen > 0)
   {
-    mFicHandler.process_eti_fic(f + mstOffset, ficLen / 32);
+    mFicHandler.process_eti_fic(f.subspan(mstOffset, ficLen));
   }
   mstOffset += ficLen;
 
@@ -324,7 +324,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
 
   for (i32 i = 0; i < nst; i++)
   {
-    const u8 * const stc = f + 8 + i * 4;
+    const u8 * const stc = &f[8 + i * 4];
     const i32 size = ((stc[2] & 0x03) << 8 | stc[3]) * 8; // STL is given in 64 bit units
 
     if (mstOffset + size > mstEnd)
@@ -334,8 +334,7 @@ bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEti
 
     oSubChannels.push_back({ .subChId = (stc[0] & 0xFC) >> 2,
                              .startAddr = (stc[0] & 0x03) << 8 | stc[1],
-                             .pData = f + mstOffset,
-                             .size = size });
+                             .data = f.subspan(mstOffset, size) });
     mstOffset += size;
   }
 

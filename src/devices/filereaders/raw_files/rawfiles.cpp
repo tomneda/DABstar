@@ -124,8 +124,10 @@ void RawFileHandler::stopReader()
 }
 
 //  size is in I/Q pairs, file contains 8 bits values
-i32 RawFileHandler::getSamples(cf32 * V, const i32 size)
+i32 RawFileHandler::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
   if (mpFile == nullptr)
   {
     return 0;

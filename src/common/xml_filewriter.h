@@ -26,11 +26,12 @@
 
 #pragma once
 
-#include "glob_data_types.h"
+#include "glob_defs.h"
 #include <QString>
 #include <stdint.h>
 #include <cstdio>
 #include <complex>
+#include <span>
 #include <QtXml>
 
 class Blocks {
@@ -55,9 +56,9 @@ public:
                 QString,
                 QString);
   ~XmlFileWriter();
-  void add(std::complex<i16> *, i32);
-  void add(std::complex<u8> *, i32);
-  void add(std::complex<i8> *, i32);
+  void add(const std::span<const ci16> & iData);
+  void add(const std::span<const cu8> & iData);
+  void add(const std::span<const ci8> & iData);
   void computeHeader();
 private:
   i32 nrBits;

@@ -33,6 +33,7 @@
 #include	<cstdio>
 #include <iostream>
 #include <sstream>
+#include <span>
 #include "epgdec.h"
 
 static QDomElement element (QDomDocument &doc, const tag_length_value &tlv);
@@ -303,7 +304,7 @@ static eltab_t element_tables[] = {
 
 //
 //	forward declarations
-std::string decode_string (const _BYTE * p, size_t len);
+std::string decode_string (const std::span<const _BYTE> & iV);
 const std::string element_name (_BYTE tag);
 
 static
@@ -392,7 +393,7 @@ dectab *at	= element_tables [tlv. tag]. tags;
 	   }
 	   else
 	   if (a. is_cdata()) {
-	      std::string value = decode_string (a. value, a. length);
+	      std::string value = decode_string (a. data());
 	      QDomText t = doc. createTextNode (QString(). fromUtf8 (value. c_str()));
 	      e. appendChild (t);
 	   }
@@ -407,14 +408,17 @@ dectab *at	= element_tables [tlv. tag]. tags;
 }
 
 static
-std::string decode_genre_href (const _BYTE* p, size_t len) {
+std::string decode_genre_href (const std::span<const _BYTE> & iV) {
+	if (iV.empty())
+	   return "";
+const _BYTE * const p = iV.data();
 int cs = p[0] & 0xff;
 
 	if(cs < 1 || cs > 8)
 	   return "";
 	std::stringstream out;
 	out << "urn:tva:metadata:cs:" << classificationScheme[cs] << ":2005:";
-	switch (len) {
+	switch (iV.size()) {
 	   case 2:
 	      out << cs << '.' << int(p[1]);
 	      break;
@@ -429,17 +433,16 @@ int cs = p[0] & 0xff;
 	return out. str();
 }
 
-std::string	decode_string (const _BYTE* p, size_t len) {
-size_t i;
+std::string	decode_string (const std::span<const _BYTE> & iV) {
 std::string out;
 
-	for (i = 0; i < len; i++) {
-	   char c = p[i];
+	for (const _BYTE b : iV) {
+	   char c = b;
 	   if (1 <= c && c <= 19)
 	      if (c == 0x9 || c == 0xa || c == 0xd)
 	         out += c;
 	      else
-	         out += token_list [p [i]];
+	         out += token_list [b];
 	   else
 	      out += c;
 	}
@@ -592,7 +595,8 @@ std::string	decode_attribute_name (const dectab& tab) {
 
 static
 std::string	decode_attribute_value (enum_attr_t format,
-	                        const _BYTE* p, size_t len) {
+	                        const std::span<const _BYTE> & iV) {
+const _BYTE * const p = iV.data();
 	switch (format) {
 	   case nu_attr:
 	      return "undefined";
@@ -601,7 +605,7 @@ std::string	decode_attribute_value (enum_attr_t format,
 	      return "undecoded enum";
 
 	   case string_attr:
-	      return decode_string (p, len);
+	      return decode_string (iV);
 
 	   case u16_attr:
 	      return decode_uint16 (p);
@@ -619,7 +623,7 @@ std::string	decode_attribute_value (enum_attr_t format,
 	      return decode_sid (p);
 
 	   case genre_href_attr:
-	      return decode_genre_href (p, len);
+	      return decode_genre_href (iV);
 
 	   case bitrate_attr:
 	      return decode_bitrate(p);
@@ -660,8 +664,7 @@ size_t e	= sizeof (element_tables) / sizeof (eltab_t);
 	      else
 	         value = "out of range";
 	   } else {
-	      value = decode_attribute_value (tab. decode,
-	                                      tlv. value, tlv.length);
+	      value = decode_attribute_value (tab. decode, tlv. data());
 	   }
 	   out [name] = value;
 	}

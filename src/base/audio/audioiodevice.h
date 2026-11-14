@@ -17,6 +17,7 @@
 #include "ringbuffer.h"
 #include "delay_line.h"
 #include <QTimer>
+#include <span>
 #include <QIODevice>
 
 class DabRadio;
@@ -88,9 +89,9 @@ private:
   TestTone mTestTone{};
 
   void _fade(i32 iNumStereoSamples, f32 coe, f32 gain, i16 * dataPtr) const;
-  void _fade_in_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
-  void _fade_out_audio_samples(i16 * opData, i32 iNumStereoSamples) const;
-  void _eval_peak_audio_level(const i16 * ipData, i32 iNumSamples);
+  void _fade_in_audio_samples(const std::span<i16> & ioData) const; // interleaved stereo samples
+  void _fade_out_audio_samples(const std::span<i16> & ioData) const; // interleaved stereo samples
+  void _eval_peak_audio_level(const std::span<const i16> & iData);
 
 private slots:
   void _slot_timer_level_meter();

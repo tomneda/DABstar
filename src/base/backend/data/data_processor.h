@@ -33,6 +33,7 @@
 #include "frame_processor.h"
 #include "ringbuffer.h"
 #include "virtual_datahandler.h"
+#include <span>
 #include <vector>
 #include <cstdio>
 #include <cstring>
@@ -67,9 +68,9 @@ private:
   i32 mStreamAddress;    // int since we init with -1
 
   // result handlers
-  void _handle_TDC_async_stream(const u8 *, i32);
-  void _handle_packets(const u8 *, i32);
-  void _handle_packet(const u8 *);
+  void _handle_TDC_async_stream(const std::span<const u8> & iBits);
+  void _handle_packets(const std::span<const u8> & iBits);
+  void _handle_packet(const std::span<const u8> & iPacketBits);
 
 signals:
   void signal_show_MSC_errors(int);

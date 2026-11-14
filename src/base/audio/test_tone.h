@@ -13,13 +13,14 @@
 #pragma once
 
 #include "glob_defs.h"
+#include <span>
 
 class TestTone
 {
 public:
   void set_sample_rate(u32 iSampleRateKHz);
   void activate(bool iActive);
-  void process(i16 * iopData, i32 iNumSamples);
+  void process(const std::span<i16> & ioData); // interleaved stereo samples
 
 private:
   static constexpr f32 cTimePeriod = 2.0f;

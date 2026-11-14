@@ -170,8 +170,10 @@ void XmlFileReader::stopReader()
 }
 
 //  size is in "samples"
-i32 XmlFileReader::getSamples(cf32 * V, i32 size)
+i32 XmlFileReader::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
 
   if (theFile == nullptr)
   {    // should not happen

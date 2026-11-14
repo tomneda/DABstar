@@ -123,13 +123,13 @@ void WavWriter::close()
   fclose(mFilePointer);
 }
 
-void WavWriter::write(const i16 * iBuffer, const i32 iSamples)
+void WavWriter::write(const std::span<const i16> & iSamples)
 {
   std::lock_guard lock(mMutex);
 
   if (!mIsValid)
     return;
 
-  fwrite(iBuffer, sizeof(i16), iSamples, mFilePointer);
-  mNrElements += iSamples;
+  fwrite(iSamples.data(), sizeof(i16), iSamples.size(), mFilePointer);
+  mNrElements += (u32)iSamples.size();
 }

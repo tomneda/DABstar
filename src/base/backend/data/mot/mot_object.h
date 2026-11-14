@@ -39,6 +39,7 @@
 #include <QString>
 #include <QDir>
 #include <map>
+#include <span>
 
 class DabRadio;
 
@@ -47,11 +48,11 @@ class MotObject : public QObject
 Q_OBJECT
 public:
   MotObject(DabRadio * ipDR, bool iDirElement, bool iPadElement);
-  MotObject(DabRadio * ipDR, bool iDirElement, bool iPadElement, u16 iTransportId, const u8 * ipSegment, i32 iSegmentSize, bool iLastFlag);
+  MotObject(DabRadio * ipDR, bool iDirElement, bool iPadElement, u16 iTransportId, const std::span<const u8> & iSegment, bool iLastFlag);
   ~MotObject() override = default;
 
-  void set_header(const u8 * iSegment, i32 iSegmentSize, bool iLastFlag, i32 iTransportId);
-  void add_body_segment(const u8 * iBodySegment, i16 iSegmentNumber, i32 iSegmentSize, bool iLastFlag, i32 iTransportId);
+  void set_header(const std::span<const u8> & iSegment, bool iLastFlag, i32 iTransportId);
+  void add_body_segment(const std::span<const u8> & iBodySegment, i16 iSegmentNumber, bool iLastFlag, i32 iTransportId);
   int get_header_size() const;
   void reset();
 

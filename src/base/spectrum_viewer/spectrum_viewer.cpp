@@ -61,8 +61,8 @@ SpectrumViewer::SpectrumViewer(DabRadio * ipRI, QSettings * ipDabSettings, RingB
   Settings::SpectrumViewer::posAndSize.read_widget_geometry(&myFrame);
   myFrame.hide();
 
-  //create_blackman_window(mWindowVec.data(), SP_SPECTRUMSIZE);
-  create_flattop_window(mWindowVec.data(), SP_SPECTRUMSIZE);
+  //create_blackman_window(mWindowVec);
+  create_flattop_window(mWindowVec);
 
   mpSpectrumScope = new SpectrumScope(plotRfFft, SP_DISPLAYSIZE, ipDabSettings);
   dabWaterfall->init(SP_DISPLAYSIZE, 50);

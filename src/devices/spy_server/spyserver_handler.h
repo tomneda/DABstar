@@ -35,6 +35,7 @@
 #include "device_handler_if.h"
 #include "ringbuffer.h"
 #include <atomic>
+#include <span>
 #include <QThread>
 #include <QTimer>
 #include <QString>
@@ -74,8 +75,8 @@ private:
   void cleanRecords();
   bool show_attendance();
   bool readHeader(struct MessageHeader &);
-  bool readBody(u8 *, i32);
-  void process_data(u8 *, i32);
+  bool readBody(const std::span<u8> & oBody);
+  void process_data(const std::span<const u8> & iBody);
   bool send_command(u32, std::vector<u8> &);
   bool set_setting(u32, std::vector<u32> &);
 

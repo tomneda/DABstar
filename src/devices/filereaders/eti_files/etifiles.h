@@ -36,7 +36,7 @@ public:
   ~EtiFileHandler() override;
 
   // IDeviceHandler
-  i32 getSamples(cf32 *, i32) override { return 0; } // no samples available
+  i32 getSamples(const std::span<cf32> & /*oV*/) override { return 0; } // no samples available
   i32 Samples() override { return 0; }
   bool restartReader(i32) override;
   void stopReader() override;

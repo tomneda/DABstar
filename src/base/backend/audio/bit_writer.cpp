@@ -45,10 +45,10 @@ void BitWriter::AddBits(i32 data_new, size_t count)
   }
 }
 
-void BitWriter::AddBytes(const u8 * data, size_t len)
+void BitWriter::AddBytes(const std::span<const u8> & iData)
 {
-  for (size_t i = 0; i < len; i++)
-    AddBits(data[i], 8);
+  for (const u8 d : iData)
+    AddBits(d, 8);
 }
 
 void BitWriter::WriteAudioMuxLengthBytes()

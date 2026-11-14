@@ -31,6 +31,7 @@
 
 #include "dab_constants.h"
 #include <memory>
+#include <span>
 
 class Protection;
 
@@ -40,7 +41,7 @@ public:
   explicit BackendDeconvolver(const SDescriptorType * d);
   ~BackendDeconvolver();
 
-  void deconvolve(const i16 * rawBits_in, i32 length, u8 * outData) const;
+  void deconvolve(const std::span<const i16> & iRawBits, u8 * opOutData) const;
   
 private:
   std::unique_ptr<Protection> mpProtectionHandler;

@@ -161,9 +161,10 @@ void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBl
   // OK, now we have a full CIF and it seems there is some work to be done.
   // We assume that the backend itself does the work in a separate thread.
   QMutexLocker lock(&mMutex);
+  const std::span<const i16> cif(mCifVector);
   for (const auto & b: mBackendList)
   {
-    b->process(&mCifVector[b->CuStartAddr * cCUSizeBits], b->CuSize * cCUSizeBits);
+    b->process(cif.subspan(b->CuStartAddr * cCUSizeBits, b->CuSize * cCUSizeBits));
   }
 }
 
@@ -178,7 +179,7 @@ void MscHandler::process_eti_frame(const std::vector<SEtiSubChannel> & iSubChann
     {
       if (sc.subChId == b->subChId && sc.startAddr == b->CuStartAddr)
       {
-        b->process_eti(sc.pData, sc.size);
+        b->process_eti(sc.data);
         break;
       }
     }

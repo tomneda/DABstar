@@ -31,6 +31,7 @@
 #include "dab_constants.h"
 #include "dabradio.h"
 #include "backend.h"
+#include <cassert>
 
 // Interleaving is - for reasons of simplicity - done inline rather than through a special class-object
 constexpr i32 cCuSizeBits = 64;
@@ -106,9 +107,9 @@ Backend::~Backend()
 #endif
 }
 
-i32 Backend::process(const i16 * const iV, const i32 cnt)
+i32 Backend::process(const std::span<const i16> & iV)
 {
-  (void)cnt;
+  assert((i32)iV.size() >= fragmentSize);
 #ifdef  __THREADED_BACKEND__
   while (!freeSlots.tryAcquire(1, 200))
   {
@@ -117,11 +118,11 @@ i32 Backend::process(const i16 * const iV, const i32 cnt)
       return 0;
     }
   }
-  memcpy(theData[nextIn].data(), iV, fragmentSize * sizeof(i16));
+  memcpy(theData[nextIn].data(), iV.data(), fragmentSize * sizeof(i16));
   nextIn = (nextIn + 1) % NUMBER_SLOTS;
   usedSlots.release(1);
 #else
-  _process_segment(iV);
+  _process_segment(iV.data());
 #endif
   return 1;
 }
@@ -149,7 +150,7 @@ void Backend::_process_segment(const i16 * iData)
     return;
   }
 
-  deconvolver.deconvolve(tempX.data(), fragmentSize, outV.data());
+  deconvolver.deconvolve(tempX, outV.data());
 
   // Reverse the energy dispersal
   for (i32 i = 0; i < bitRate * 24; i++)
@@ -161,8 +162,9 @@ void Backend::_process_segment(const i16 * iData)
 }
 
 // The ETI data is processed synchronously (also with __THREADED_BACKEND__) as the expensive Viterbi decoding is not necessary.
-void Backend::process_eti(const u8 * const ipData, const i32 iSize)
+void Backend::process_eti(const std::span<const u8> & iData)
 {
+  const i32 iSize = (i32)iData.size();
   const i32 numBits = bitRate * 24;
 
   if (iSize * 8 != numBits)
@@ -177,7 +179,7 @@ void Backend::process_eti(const u8 * const ipData, const i32 iSize)
 
   for (i32 i = 0; i < numBits; i++) // unpack bits MSB first
   {
-    outV[i] = (ipData[i >> 3] >> (7 - (i & 7))) & 1;
+    outV[i] = (iData[i >> 3] >> (7 - (i & 7))) & 1;
   }
 
   driver.add_to_frame(outV);

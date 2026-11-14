@@ -263,7 +263,7 @@ void DabRadio::slot_handle_tdc_data(i32 iFrameType, i32 iLength)
   localBuffer[7] = iFrameType == 0 ? 0 : 0xFF;
   if (mIsChannelRunning)
   {
-    dataStreamer->sendData(localBuffer, iLength + 8);
+    dataStreamer->sendData(std::span(localBuffer, iLength + 8));
   }
 #endif
 }

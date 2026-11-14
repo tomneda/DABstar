@@ -30,6 +30,7 @@
 #pragma once
 
 #include "glob_data_types.h"
+#include <span>
 #include <vector>
 #include <qdom.h>
 
@@ -48,6 +49,8 @@ public:
 
 	size_t length;
 	_BYTE* value;
+
+	std::span<const _BYTE> data() const { return { value, length }; }
 };
 
 class CEPGDecoder {

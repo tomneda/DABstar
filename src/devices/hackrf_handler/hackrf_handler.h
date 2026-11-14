@@ -99,7 +99,7 @@ public:
 
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(cf32 *, i32) override;
+  i32 getSamples(const std::span<cf32> & oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   void show() override;
@@ -112,7 +112,7 @@ public:
   void stopDumping() override;
 
 
-  using TRingBuffer = RingBuffer<std::complex<i8> >;
+  using TRingBuffer = RingBuffer<ci8>;
   TRingBuffer mRingBuffer{ 4 * 1024 * 1024 }; // The buffer should be visible by the callback function
 #ifdef HAVE_LIQUID
   static constexpr i32 OVERSAMPLING = 4; // The value should be visible by the callback function

@@ -141,8 +141,7 @@ u16 extensionLength	= (dir_segments [currentBase] << 8) |
                                          true,
                                          false,
                                          transportId,
-                                         segment,
-                                         -1,
+                                         std::span<const u8>(segment, dir_segments.size() - (currentBase + 2)),
                                          false);
 
 	   

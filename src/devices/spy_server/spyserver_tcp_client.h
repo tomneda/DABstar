@@ -45,6 +45,7 @@
 #include "ringbuffer.h"
 #include <atomic>
 #include <mutex>
+#include <span>
 #include <QThread>
 
 
@@ -76,5 +77,5 @@ public:
   bool is_connected();
   void connect_conn();
   void close_conn();
-  void send_data(u8 * data, i32 length);
+  void send_data(const std::span<const u8> & iData);
 };

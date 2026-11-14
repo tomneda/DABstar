@@ -240,7 +240,7 @@ void FicDecoder::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
 
 void FicDecoder::_process_one_fib(const std::array<std::byte, cFibSizeVitOut> & iOneFib, const i16 iFicIdx, bool & ioFicValid)
 {
-  if (check_CRC_bits(reinterpret_cast<const u8 *>(iOneFib.data()), cFibSizeVitOut))
+  if (check_CRC_bits(iOneFib))
   {
     if (mpFicDump != nullptr)
     {
@@ -266,7 +266,7 @@ void FicDecoder::_process_one_fib(const std::array<std::byte, cFibSizeVitOut> & 
 }
 
 // An ETI frame (24 ms) contains the FIBs of one CIF already Viterbi decoded and without energy dispersal (3 FIBs in mode I).
-void FicDecoder::process_eti_fic(const u8 * const ipFibBytes, const i32 iNumFibs)
+void FicDecoder::process_eti_fic(const std::span<const u8> & iFibBytes)
 {
   if (!mIsRunning.load())
   {
@@ -281,12 +281,13 @@ void FicDecoder::process_eti_fic(const u8 * const ipFibBytes, const i32 iNumFibs
   }
 
   constexpr i32 cFibBytes = cFibSizeVitOut / 8;
+  const i32 numFibs = (i32)iFibBytes.size() / cFibBytes;
   std::array<std::byte, cFibSizeVitOut> oneFib;
   bool ficValid = true;
 
-  for (i32 fibIdx = 0; fibIdx < iNumFibs; fibIdx++)
+  for (i32 fibIdx = 0; fibIdx < numFibs; fibIdx++)
   {
-    const u8 * const pFib = ipFibBytes + fibIdx * cFibBytes;
+    const u8 * const pFib = iFibBytes.data() + fibIdx * cFibBytes;
 
     for (i32 i = 0; i < cFibSizeVitOut; i++) // unpack bits MSB first
     {

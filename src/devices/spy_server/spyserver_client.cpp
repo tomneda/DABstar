@@ -426,8 +426,10 @@ void SpyServerClient::stopReader()
 
 //
 //
-i32 SpyServerClient::getSamples(cf32 * V, i32 size)
+i32 SpyServerClient::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
   i32 amount = 0;
   amount = mRingBuffer2.get_data_from_ring_buffer(V, size);
   return amount;

@@ -320,7 +320,7 @@ void TiiHandler::_read_file(QFile & fp)
 
   fp.read(reinterpret_cast<char *>(&mShift), 1);
 
-  while (_eread(buffer.data(), buffer.size(), fp) != nullptr)
+  while (_eread(buffer, fp) != nullptr)
   {
     STiiDataEntry ed;
     if (fp.atEnd())
@@ -426,10 +426,11 @@ i32 TiiHandler::_read_columns(std::vector<QString> & oV, const char * b, i32 N) 
   return elementCount;
 }
 
-char * TiiHandler::_eread(char * buffer, i32 amount, QFile & fp) const
+char * TiiHandler::_eread(const std::span<char> & oBuffer, QFile & fp) const
 {
+  char * const buffer = oBuffer.data();
   char * bufferP;
-  if (fp.readLine(buffer, amount) < 0)
+  if (fp.readLine(buffer, (qint64)oBuffer.size()) < 0)
   {
     return nullptr;
   }

@@ -94,7 +94,7 @@ AudioDisplay::AudioDisplay(DabRadio * mr, PlotWidget * pPlot, QSettings * dabSet
   mYBand8Buffer.fill(-120.0f);
   _calculate_band_limits(48000);
 
-  create_blackman_window(mWindow.data(), cSpectrumSize);
+  create_blackman_window(mWindow);
 }
 
 AudioDisplay::~AudioDisplay()
@@ -271,8 +271,9 @@ void AudioDisplay::_setup_x_axis(const i32 iSampleRate)
   }
 }
 
-void AudioDisplay::plot_spectrum(const i16 * const ipSampleData, const i32 iNumSamples, i32 iSampleRate)
+void AudioDisplay::plot_spectrum(const std::span<const i16> & iSampleData, i32 iSampleRate)
 {
+  const i32 iNumSamples = (i32)iSampleData.size();
   if (mPlotMode == EAudioPlotMode::OFF)
   {
     return;
@@ -287,7 +288,7 @@ void AudioDisplay::plot_spectrum(const i16 * const ipSampleData, const i32 iNumS
 
   for (i32 i = 0; i < numStereoSamples; i++)
   {
-    mFftInBuffer[i] = ((f32)ipSampleData[2 * i + 0] + (f32)ipSampleData[2 * i + 1]) / (2.0f * (f32)INT16_MAX);
+    mFftInBuffer[i] = ((f32)iSampleData[2 * i + 0] + (f32)iSampleData[2 * i + 1]) / (2.0f * (f32)INT16_MAX);
   }
 
   // and window it

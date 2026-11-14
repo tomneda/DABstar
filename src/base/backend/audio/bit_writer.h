@@ -21,6 +21,7 @@
 
 #include "glob_data_types.h"
 #include <cstddef>
+#include <span>
 #include <vector>
 
 class BitWriter
@@ -34,7 +35,7 @@ public:
 
   void Reset();
   void AddBits(i32 data_new, size_t count);
-  void AddBytes(const u8 * data, size_t len);
+  void AddBytes(const std::span<const u8> & iData);
 
   void WriteAudioMuxLengthBytes();        // needed for LATM
 

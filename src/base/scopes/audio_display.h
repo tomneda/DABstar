@@ -32,6 +32,7 @@
 
 #include "dab_constants.h"
 #include <array>
+#include <span>
 #include <QSettings>
 #include <QObject>
 #include <QLineSeries>
@@ -60,7 +61,7 @@ public:
   AudioDisplay(DabRadio *, PlotWidget *, QSettings *);
   ~AudioDisplay() override;
 
-  void plot_spectrum(const i16 *, i32, i32);
+  void plot_spectrum(const std::span<const i16> & iSampleData, i32 iSampleRate); // interleaved stereo samples
   void set_plot_mode(EAudioPlotMode iMode);
   [[nodiscard]] EAudioPlotMode get_plot_mode() const { return mPlotMode; }
   [[nodiscard]] static QStringList get_plot_mode_names();

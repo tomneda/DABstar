@@ -218,8 +218,10 @@ void UhdHandler::stopReader()
   m_workerHandle = nullptr;
 }
 
-i32 UhdHandler::getSamples(cf32 * v, i32 size)
+i32 UhdHandler::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const v = oV.data();
+  i32 size = (i32)oV.size();
   size = std::min(size, theBuffer->get_ring_buffer_read_available());
   theBuffer->get_data_from_ring_buffer(v, size);
   return size;

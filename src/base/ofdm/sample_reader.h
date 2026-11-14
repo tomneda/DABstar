@@ -110,7 +110,7 @@ private:
   i32 mWholeFrameCount = 0;
   cf32  mWholeFrameBuff[CIR_BUFF_SIZE];
 
-  void _dump_samples_to_file(const cf32 * const ipV, const i32 iNoSamples);
+  void _dump_samples_to_file(const std::span<const cf32> & iV);
 
 signals:
   void signal_show_spectrum(i32);

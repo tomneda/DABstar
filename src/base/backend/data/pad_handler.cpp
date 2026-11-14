@@ -315,7 +315,7 @@ void PadHandler::_handle_variable_PAD(const u8 * const iBuffer, const i16 iLast,
     switch (appType)
     {
     case 1:
-      if (length == 4 && check_crc_bytes(mDataBuffer.data(), 2)) // the CRC is expected behind the length of 2!
+      if (length == 4 && check_crc_bytes(mDataBuffer)) // 2 data bytes followed by the 2 CRC bytes
       {
         mDataGroupLength = ((mDataBuffer[0] & 0x3F) << 8) | mDataBuffer[1];
       }
@@ -634,7 +634,7 @@ void PadHandler::_slot_handle_journaline_data_group(const QByteArray & iDataGrou
 }
 
 // see chapter 5.3.3 in ETSI EN 300 401
-void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
+void PadHandler::_build_MSC_segment(const std::span<const u8> & iData)
 {
   struct SDataGrpHeader0 { u8 DataGroupType : 4; u8 UserAccessFlag : 1; u8 SegmentFlag : 1;  u8 CrcFlag : 1; u8 ExtensionFlag : 1; };
   struct SDataGrpHeader1 { u8 RepetitionIdx : 4; u8 ContinuityIdx : 4; };
@@ -653,7 +653,7 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
 
   if (dataGrpHeader0.CrcFlag != 0)
   {
-    if (!check_crc_bytes(iData.data(), size - 2)) // the last 2 bytes contains the CRC syndrome
+    if (!check_crc_bytes(iData.first(size))) // the last 2 bytes contains the CRC syndrome
     {
       qCWarning(sLogPadHandler) << "Fails on CRC check -> stop decoding MSC segment";
       return;
@@ -718,17 +718,24 @@ void PadHandler::_build_MSC_segment(const std::vector<u8> & iData)
    **/
   // Segmentation header (repetitionCount + segmentSize)
   const i32 segmentSize = ((iData[index + 0] & 0x1F) << 8) | iData[index + 1]; // in bytes, 13 bit
+
+  if (index + 2 + segmentSize > (i32)iData.size())
+  {
+    qCWarning(sLogPadHandler) << "MOT segment size" << segmentSize << "exceeds the data group size" << iData.size();
+    return;
+  }
+  const std::span<const u8> segment = iData.subspan(index + 2, segmentSize);
   // const u16 repetitionCount = (iData[index + 0] & 0xE0) >> 5;
 
   //	handling MOT in the PAD, we only deal here with type 3/4
   switch (groupType)
   {
   case 3:
-    mpMotObject->set_header(&iData[index + 2], segmentSize, lastFlag, transportId);
+    mpMotObject->set_header(segment, lastFlag, transportId);
     break;
 
   case 4:
-    mpMotObject->add_body_segment(&iData[index + 2], segmentNumber, segmentSize, lastFlag, transportId);
+    mpMotObject->add_body_segment(segment, segmentNumber, lastFlag, transportId);
     break;
 
   default:    // cannot happen

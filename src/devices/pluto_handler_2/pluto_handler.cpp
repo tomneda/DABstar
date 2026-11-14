@@ -594,7 +594,7 @@ void    PlutoHandler::run()
     i32 p_inc;
     //i32   nbytes_rx;
     cf32 localBuf [DAB_RATE / DIVIDER];
-    std::complex<i16> dumpBuf [DAB_RATE / DIVIDER];
+    std::array<ci16, CONV_SIZE + 1> dumpBuf; // same size as convBuffer
 
     state -> setText ("running");
     running. store (true);
@@ -609,14 +609,14 @@ void    PlutoHandler::run()
        {
           const i16 i_p = ((i16 *)p_dat) [0];
           const i16 q_p = ((i16 *)p_dat) [1];
-          std::complex<i16>dumpS = std::complex<i16> (i_p, q_p);
+          ci16 dumpS = ci16(i_p, q_p);
           dumpBuf [convIndex] = dumpS;
           cf32 sample = cf32 (i_p / 2048.0, q_p / 2048.0);
           convBuffer [convIndex ++] = sample;
           if (convIndex > CONV_SIZE)
           {
              if (dumping. load ())
-                xmlWriter -> add (dumpBuf, CONV_SIZE);
+                xmlWriter -> add (std::span(dumpBuf).first(CONV_SIZE));
              for (i32 j = 0; j < DAB_RATE / DIVIDER; j ++)
              {
                 i16 inpBase = mapTable_int [j];
@@ -633,8 +633,10 @@ void    PlutoHandler::run()
     }
 }
 
-i32 PlutoHandler::getSamples (cf32 *V, i32 size)
+i32 PlutoHandler::getSamples(const std::span<cf32> & oV)
 {
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
     if (!isRunning ())
        return 0;
     return _I_Buffer. get_data_from_ring_buffer (V, size);

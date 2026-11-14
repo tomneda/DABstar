@@ -32,6 +32,7 @@
  * Simple base class for combining uep and eep deconvolvers
  */
 #include "protection.h"
+#include <cassert>
 
 Protection::Protection(const i32 iBitRate) :
   ViterbiSpiral(24 * iBitRate, true),
@@ -43,14 +44,16 @@ Protection::Protection(const i32 iBitRate) :
   viterbiBlockAddresses.reserve(outSize * 4 + 24);
 }
 
-bool Protection::deconvolve(const i16 * iV, i32 /*iSize*/, u8 * oOutBuffer)
+bool Protection::deconvolve(const std::span<const i16> & iV, u8 * oOutBuffer)
 {
+  assert(iV.size() >= viterbiBlockAddresses.size());
+  const i16 * const pV = iV.data();
   i32 inputCounter = 0;
 
   // do de-puncturing
   for (i16 * const addr : viterbiBlockAddresses)
   {
-    *addr = iV[inputCounter++];  // the addresses map to the viterbiBlock vector
+    *addr = pV[inputCounter++];  // the addresses map to the viterbiBlock vector
   }
 
   ViterbiSpiral::deconvolve(viterbiBlock.data(), oOutBuffer);

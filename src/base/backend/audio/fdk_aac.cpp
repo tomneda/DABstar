@@ -74,8 +74,9 @@ FdkAAC::~FdkAAC()
   }
 }
 
-i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const ipBuffer, const i16 iPacketLength)
+i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const std::span<const u8> & iPacket)
 {
+  const u8 * ipBuffer = iPacket.data();
   static_assert(sizeof(i16) == sizeof(INT_PCM));
   INT_PCM decode_buf[8 * sizeof(INT_PCM) * 2048];
   INT_PCM * bufp = &decode_buf[0];
@@ -86,14 +87,14 @@ i16 FdkAAC::convert_mp4_to_pcm(const SStreamParms * const iSP, const u8 * const 
     return -1;
   }
 
-  if ((ipBuffer[0] != 0x56) || ((ipBuffer[1] >> 5) != 7))
+  if (iPacket.size() < 3 || (ipBuffer[0] != 0x56) || ((ipBuffer[1] >> 5) != 7))
   {
     return -2;
   }
 
   const u32 packet_size = (((ipBuffer[1] & 0x1F) << 8) | ipBuffer[2]) + 3;
 
-  if ((signed)packet_size != iPacketLength)
+  if (packet_size != iPacket.size())
   {
     return -3;
   }

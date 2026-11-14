@@ -78,7 +78,7 @@ public:
   i32 getVFOFrequency() override;
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(cf32 * v, i32 size) override;
+  i32 getSamples(const std::span<cf32> & oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   void show() override;
@@ -173,7 +173,7 @@ private:
   u64 serialNumber;
   char serial[128];
   static i32 callback(airspy_transfer_t *);
-  i32 data_available(void * buf, i32 buf_size);
+  i32 data_available(const std::span<const ci16> & iSamples);
   const char * getSerial();
   i32 open();
 };

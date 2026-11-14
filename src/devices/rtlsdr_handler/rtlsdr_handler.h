@@ -95,7 +95,7 @@ public:
   i32 getVFOFrequency() override;
   bool restartReader(i32) override;
   void stopReader() override;
-  i32 getSamples(cf32 *, i32) override;
+  i32 getSamples(const std::span<cf32> & oV) override;
   i32 Samples() override;
   void resetBuffer() override;
   QString deviceName() override;
@@ -106,10 +106,10 @@ public:
   bool hasDump() override;
   bool startDumping() override;
   void stopDumping() override;
-  bool detect_overload(u8 *buf, i32 len);
+  bool detect_overload(const std::span<const u8> & iBuf) const;
 
   //    These need to be visible for the separate usb handling thread
-  RingBuffer<std::complex<u8>> _I_Buffer;
+  RingBuffer<cu8> _I_Buffer;
   pfnrtlsdr_read_async rtlsdr_read_async;
   struct rtlsdr_dev * theDevice;
   std::atomic<bool> isActive;

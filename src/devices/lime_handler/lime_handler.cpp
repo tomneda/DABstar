@@ -268,11 +268,13 @@ void LimeHandler::stopReader()
   (void)LMS_DestroyStream(theDevice, &stream);
 }
 
-i32 LimeHandler::getSamples(cf32 *V, i32 size)
+i32 LimeHandler::getSamples(const std::span<cf32> & oV)
 {
-  std::complex<i16> *temp = make_vla(std::complex<i16>, size);
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
+  const auto temp = make_vla_span(ci16, size);
 
-  i32 amount = _I_Buffer. get_data_from_ring_buffer(temp, size);
+  i32 amount = _I_Buffer. get_data_from_ring_buffer(temp.data(), size);
   if (filtering)
   {
     if (filterDepth->value() != currentDepth)
@@ -288,7 +290,7 @@ i32 LimeHandler::getSamples(cf32 *V, i32 size)
       V[i] = cf32(real(temp[i]) / 2048.0, imag(temp[i]) / 2048.0);
 
   if (dumping.load())
-    xmlWriter->add(temp, amount);
+    xmlWriter->add(temp.first(amount));
   return amount;
 }
 

@@ -65,13 +65,13 @@ static void RTLSDRCallBack(u8 * buf, u32 len, void * ctx)
   {
     if (theStick->_I_Buffer.get_ring_buffer_write_available() < (signed)len / 2)
       fprintf(stderr, "xx? ");
-    (void)theStick->_I_Buffer.put_data_into_ring_buffer((std::complex<u8> *)buf, len / 2);
+    (void)theStick->_I_Buffer.put_data_into_ring_buffer((cu8 *)buf, len / 2);
     //fprintf(stderr, "put_data=%d\n", len/2);
 
     time2 = clock();
     if ((time2 - time1) >= (CLOCKS_PER_SEC)) // >= 1s
     {
-      i32 overload = (i32)theStick->detect_overload(buf, len);
+      i32 overload = (i32)theStick->detect_overload(std::span(buf, len));
       //fprintf(stderr, "Overload=%d\n", overload);
       emit theStick->signal_timer(overload);
       time1 = time2;
@@ -451,15 +451,17 @@ void RtlSdrHandler::set_ppmCorrection(f64 ppm)
     this->rtlsdr_set_freq_correction(theDevice, (i32)std::round(ppm));
 }
 
-i32 RtlSdrHandler::getSamples(cf32 * V, i32 size)
+i32 RtlSdrHandler::getSamples(const std::span<cf32> & oV)
 {
-  std::complex<u8> *temp = make_vla(std::complex<u8>, size);
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
+  const auto temp = make_vla_span(cu8, size);
   i32 amount;
 
   if (!isActive.load())
     return 0;
 
-  amount = _I_Buffer.get_data_from_ring_buffer(temp, size);
+  amount = _I_Buffer.get_data_from_ring_buffer(temp.data(), size);
   //if(size > 1) fprintf(stderr, "get_data=%d\n", size);
   if (filtering)
   {
@@ -477,7 +479,7 @@ i32 RtlSdrHandler::getSamples(cf32 * V, i32 size)
       V[i] = cf32(mapTable[real(temp[i]) & 0xFF],
                   mapTable[imag(temp[i]) & 0xFF]);
   if (xml_dumping.load())
-    xmlWriter->add(temp, amount);
+    xmlWriter->add(temp.first(amount));
   return amount;
 }
 
@@ -748,15 +750,15 @@ void RtlSdrHandler::enable_gainControl(i32 agc)
   dbLabel->setEnabled(agc == 1);
 }
 
-bool RtlSdrHandler::detect_overload(u8 * buf, i32 len)
+bool RtlSdrHandler::detect_overload(const std::span<const u8> & iBuf) const
 {
   i32 overload_count = 0;
-  for (i32 i = 0; i < len; i++)
+  for (const u8 b : iBuf)
   {
-    if ((buf[i] == 0) || (buf[i] == 255))
+    if ((b == 0) || (b == 255))
       overload_count++;
   }
-  return (8000 * overload_count >= len);
+  return (8000 * overload_count >= (i32)iBuf.size());
 }
 
 void RtlSdrHandler::slot_timer(i32 overload)

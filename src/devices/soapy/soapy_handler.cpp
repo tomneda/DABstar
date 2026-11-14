@@ -341,11 +341,11 @@ bool SoapyHandler::restartReader(i32 freq)
 
 void SoapyHandler::stopReader(void) {}
 
-i32 SoapyHandler::getSamples(cf32 * v, i32 a)
+i32 SoapyHandler::getSamples(const std::span<cf32> & oV)
 {
   if (worker == nullptr)
     return 0;
-  return worker->getSamples(v, a);
+  return worker->getSamples(oV);
 }
 
 i32 SoapyHandler::Samples(void)

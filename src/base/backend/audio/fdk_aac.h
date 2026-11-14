@@ -34,6 +34,7 @@
 #ifdef  __WITH_FDK_AAC__
 
 #include <QObject>
+#include <span>
 #include <vector>
 #include <aacdecoder_lib.h>
 #include "ringbuffer.h"
@@ -61,7 +62,7 @@ public:
   FdkAAC(const DabRadio * ipDR, RingBuffer<i16> * ipBuffer);
   ~FdkAAC() override;
 
-  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iPacketLength);
+  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const std::span<const u8> & iPacket);
   void conceal_lost_frame(i32 iNumSamples);
 
 private:

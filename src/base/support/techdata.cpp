@@ -254,9 +254,9 @@ void TechData::slot_audio_data_available(i32 /*iNumSamples*/, i32 iSampleRate) c
 
   if (!mFrame.isHidden() && mpAudioDisplay->get_plot_mode() != EAudioPlotMode::OFF)
   {
-    auto * const buffer = make_vla(i16, cNumNeededSample);
-    mpAudioBuffer->get_data_from_ring_buffer(buffer, cNumNeededSample); // get 512 stereo samples
-    mpAudioDisplay->plot_spectrum(buffer, cNumNeededSample, iSampleRate);
+    const auto buffer = make_vla_span(i16, cNumNeededSample);
+    mpAudioBuffer->get_data_from_ring_buffer(buffer.data(), cNumNeededSample); // get 512 stereo samples
+    mpAudioDisplay->plot_spectrum(buffer, iSampleRate);
   }
 
   mpAudioBuffer->flush_ring_buffer();

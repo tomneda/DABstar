@@ -56,7 +56,7 @@ void IpDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
   u8 lengthInd;
   i16 i;
 
-  if (crcFlag && !check_CRC_bits(data, msc.size()))
+  if (crcFlag && !check_CRC_bits(msc))
   {
     return;
   }
@@ -108,9 +108,9 @@ void IpDataHandler::add_MSC_data_group(const std::vector<u8> & msc)
   }
 }
 
-void IpDataHandler::process_ipVector(const std::vector<u8> & v)
+void IpDataHandler::process_ipVector(const std::span<const u8> & iIpData)
 {
-  u8 * data = (u8 *)(v.data());
+  const u8 * const data = iIpData.data();
   i16 headerSize = data[0] & 0x0F;  // in 32 bits words
   i16 ipSize = (data[2] << 8) | data[3];
   u8 protocol = data[9];
@@ -131,7 +131,11 @@ void IpDataHandler::process_ipVector(const std::vector<u8> & v)
   switch (protocol)
   {
   case 17:      // UDP protocol
-    process_udpVector(&data[4 * headerSize], ipSize - 4 * headerSize);
+    if (ipSize > (i32)iIpData.size() || ipSize < 4 * headerSize)
+    {
+      return;
+    }
+    process_udpVector(iIpData.subspan(4 * headerSize, ipSize - 4 * headerSize));
     return;
   default: return;
   }
@@ -140,10 +144,14 @@ void IpDataHandler::process_ipVector(const std::vector<u8> & v)
 //
 //	We keep it simple now, just hand over the data from the
 //	udp packet to port 8888
-void IpDataHandler::process_udpVector(const u8 * data, i16 length)
+void IpDataHandler::process_udpVector(const std::span<const u8> & iUdpData)
 {
-  char * message = (char *)(&(data[8]));
-  dataBuffer->put_data_into_ring_buffer((u8 *)message, length - 8);
-  signal_write_datagramm(length - 8);
+  if (iUdpData.size() < 8)
+  {
+    return;
+  }
+  const i32 length = (i32)iUdpData.size() - 8; // skip the UDP header
+  dataBuffer->put_data_into_ring_buffer(&iUdpData[8], length);
+  signal_write_datagramm(length);
 }
 

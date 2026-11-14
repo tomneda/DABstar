@@ -235,7 +235,7 @@ void HackRfHandler::slot_set_ppm_correction(i32 ppm)
 }
 
 //  we use a static large buffer, rather than trying to allocate a buffer on the stack
-static std::array<std::complex<i8>, 32 * 32768> buffer;
+static std::array<ci8, 32 * 32768> buffer;
 
 static i32 callback(hackrf_transfer * transfer)
 {
@@ -257,7 +257,7 @@ static i32 callback(hackrf_transfer * transfer)
     y = x;
 #endif
     assert(bufferIndex < (signed)buffer.size());
-    buffer[bufferIndex] = std::complex<i8>((i8)(y.real()), (i8)(y.imag()));
+    buffer[bufferIndex] = ci8((i8)(y.real()), (i8)(y.imag()));
     ++bufferIndex;
   }
   q->put_data_into_ring_buffer(buffer.data(), bufferIndex);
@@ -309,10 +309,12 @@ void HackRfHandler::stopReader()
 
 //  The brave old getSamples. For the hackrf, we get
 //  size still in I/Q pairs
-i32 HackRfHandler::getSamples(cf32 * V, i32 size)
+i32 HackRfHandler::getSamples(const std::span<cf32> & oV)
 {
-  auto * const temp = make_vla(std::complex<i8>, size);
-  i32 amount = mRingBuffer.get_data_from_ring_buffer(temp, size);
+  cf32 * const V = oV.data();
+  const i32 size = (i32)oV.size();
+  const auto temp = make_vla_span(ci8, size);
+  i32 amount = mRingBuffer.get_data_from_ring_buffer(temp.data(), size);
 
   for (i32 i = 0; i < amount; i++)
   {
@@ -321,7 +323,7 @@ i32 HackRfHandler::getSamples(cf32 * V, i32 size)
 
   if (mDumping.load())
   {
-    mpXmlWriter->add(temp, amount);
+    mpXmlWriter->add(temp.first(amount));
   }
 
   return amount;

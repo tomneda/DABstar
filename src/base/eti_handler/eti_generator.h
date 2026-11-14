@@ -49,6 +49,7 @@
 #include <cstdio>
 #include <stdint.h>
 #include <cstdio>
+#include <span>
 #include <vector>
 #include <mutex>
 #include <atomic>
@@ -97,7 +98,7 @@ private:
   std::mutex mMutex;
   std::vector<i8> mSubChIdList;
 
-  i32 _init_eti(u8 *, i16, i16, i16);
+  i32 _init_eti(const std::span<u8> & oEti, i16, i16, i16);
   i32 _process_cif(const i16 *, u8 *, i32);
   void _process_sub_channel(i32, parameter *, Protection * prot, u8 *);
 };

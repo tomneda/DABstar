@@ -216,9 +216,9 @@ void XmlReader::run()
   while (running.load());
 }
 
-i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, cf32 *, i32))
+i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, const std::span<cf32> &))
 {
-  (*this.*r)(theFile, &convBuffer[1], convBufferSize);
+  (*this.*r)(theFile, std::span(convBuffer).subspan(1)); // convBuffer[0] holds the last sample of the previous block
   if (fd->sampleRate != INPUT_RATE)
   {
     std::array<cf32, 2048+10> ResampBuffer; // add some exaggerated samples
@@ -250,8 +250,10 @@ i32 XmlReader::readSamples(FILE * theFile, void(XmlReader::*r)(FILE * theFile, c
 }
 
 //  the readers
-void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, i32 amount)
+void XmlReader::readElements_IQ(FILE * theFile, const std::span<cf32> & oBuffer)
 {
+  cf32 * const buffer = oBuffer.data();
+  const i32 amount = (i32)oBuffer.size();
   i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
 
@@ -396,8 +398,10 @@ void XmlReader::readElements_IQ(FILE * theFile, cf32 * buffer, i32 amount)
   }
 }
 
-void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, i32 amount)
+void XmlReader::readElements_QI(FILE * theFile, const std::span<cf32> & oBuffer)
 {
+  cf32 * const buffer = oBuffer.data();
+  const i32 amount = (i32)oBuffer.size();
 
   i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
@@ -543,8 +547,10 @@ void XmlReader::readElements_QI(FILE * theFile, cf32 * buffer, i32 amount)
   }
 }
 
-void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, i32 amount)
+void XmlReader::readElements_I(FILE * theFile, const std::span<cf32> & oBuffer)
 {
+  cf32 * const buffer = oBuffer.data();
+  const i32 amount = (i32)oBuffer.size();
 
   i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));
@@ -674,8 +680,10 @@ void XmlReader::readElements_I(FILE * theFile, cf32 * buffer, i32 amount)
   }
 }
 
-void XmlReader::readElements_Q(FILE * theFile, cf32 * buffer, i32 amount)
+void XmlReader::readElements_Q(FILE * theFile, const std::span<cf32> & oBuffer)
 {
+  cf32 * const buffer = oBuffer.data();
+  const i32 amount = (i32)oBuffer.size();
 
   i32 nrBits = fd->bitsperChannel;
   f32 scaler = f32(shift(nrBits));

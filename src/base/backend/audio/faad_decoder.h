@@ -30,6 +30,7 @@
 #pragma once
 
 #include <QObject>
+#include <span>
 #include <vector>
 #include "neaacdec.h"
 #include "ringbuffer.h"
@@ -56,7 +57,7 @@ public:
   FaadDecoder(const DabRadio * ipDR, RingBuffer<i16> * ipBuffer);
   ~FaadDecoder();
 
-  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const u8 * ipBuffer, i16 iBufferLength);
+  i16 convert_mp4_to_pcm(const SStreamParms * iSP, const std::span<const u8> & iBuffer);
   void conceal_lost_frame(i32 iNumSamples);
 
 private:
@@ -79,7 +80,7 @@ private:
 
   bool _initialize(const SStreamParms *);
   i32 _estimate_pitch_period() const;
-  void _apply_exit_crossfade(i16 * ioPcm, i32 iNumSamples) const;
+  void _apply_exit_crossfade(const std::span<i16> & ioPcm) const;
 
 signals:
   void signal_new_audio(i32 oNumSamples, u32 oSampleRate, u32 oAudioFlags);

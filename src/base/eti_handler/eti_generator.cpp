@@ -177,7 +177,7 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
     //
     //	EOF - CRC
     //	The "data bytes" are stored in the range base .. offset
-    u16 crc = calc_crc(&(theVector[base]), offset - base);
+    u16 crc = calc_crc(std::span(theVector).subspan(base, offset - base));
     theVector[offset++] = (crc & 0xFF00) >> 8;
     theVector[offset++] = crc & 0xFF;
     //
@@ -204,7 +204,7 @@ void EtiGenerator::process_block(const std::vector<i16> & ibits, i32 iOfdmSymbId
 }
 
 //	Copied  from dabtools:
-i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
+i32 EtiGenerator::_init_eti(const std::span<u8> & oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 minor)
 {
   i32 fillPointer = 0;
   SChannelData data;
@@ -300,7 +300,7 @@ i32 EtiGenerator::_init_eti(u8 * oEti, i16 CIFCount_hi, i16 CIFCount_lo, i16 min
   oEti[fillPointer++] = 0xFF;
   oEti[fillPointer++] = 0xFF;
   //	HCRC
-  u16 HCRC = calc_crc(&oEti[4], fillPointer - 4);
+  u16 HCRC = calc_crc(oEti.subspan(4, fillPointer - 4));
   oEti[fillPointer++] = (HCRC & 0xff00) >> 8;
   oEti[fillPointer++] = HCRC & 0xff;
 
@@ -392,7 +392,7 @@ void EtiGenerator::_process_sub_channel(i32 /*nr*/, parameter * p, Protection * 
 
   memset(outVector.get(), 0, sizeof(u8) * 24 * p->bitRate);
 
-  prot->deconvolve(&p->input[p->start_cu * cCuSizeBytes], p->size * cCuSizeBytes, outVector.get());
+  prot->deconvolve(std::span(&p->input[p->start_cu * cCuSizeBytes], p->size * cCuSizeBytes), outVector.get());
   //
   for (i32 j = 0; j < 24 * p->bitRate; j++)
   {

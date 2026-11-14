@@ -33,6 +33,7 @@
 
 #include "glob_data_types.h"
 #include <mutex>
+#include <span>
 #include <QMutex>
 #include <QString>
 
@@ -43,7 +44,7 @@ public:
   ~WavWriter() = default;
 
   bool init(const QString &, u32 iSampleRate, u16 iNumChannels);
-  void write(const i16 *, i32);
+  void write(const std::span<const i16> & iSamples);
   void close();
 
 private:

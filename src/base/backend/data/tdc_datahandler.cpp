@@ -35,14 +35,12 @@ tdc_dataHandler::tdc_dataHandler(DabRadio * mr, RingBuffer<u8> * dataBuffer, i16
 #define  swap(a)  (((a) << 8) | ((a) >> 8))
 
 //---------------------------------------------------------------------------
-u16 usCalculCRC(u8 * buf, int lg)
+static u16 usCalculCRC(const std::span<const u8> & iBuf)
 {
-  u16 crc;
-  int count;
-  crc = 0xFFFF;
-  for (count = 0; count < lg; count++)
+  u16 crc = 0xFFFF;
+  for (const u8 b : iBuf)
   {
-    crc = (u16)(swap(crc) ^ (u16)buf[count]);
+    crc = (u16)(swap(crc) ^ (u16)b);
     crc ^= ((u8)crc) >> 4;
     crc = (u16)(crc ^ (swap((u8)(crc)) << 4) ^ ((u8)(crc) << 5));
   }
@@ -88,7 +86,8 @@ void tdc_dataHandler::add_MSC_data_group(const std::vector<u8> & m)
     }    // garbage
     //
     //	OK, prepare to check the crc
-    u8 checkVector[18];
+    const i32 numDataBytes = length < 11 ? length : 11;
+    const auto checkVector = make_vla_span(u8, 5 + numDataBytes + 2); // the last 2 bytes contain the CRC
     //
     //	first the syncword and the length
     for (i = 0; i < 4; i++)
@@ -99,14 +98,13 @@ void tdc_dataHandler::add_MSC_data_group(const std::vector<u8> & m)
     //	we skip the crc in the incoming data and take the frametype
     checkVector[4] = getBits(data, offset + 6 * 8, 8);
 
-    int size = length < 11 ? length : 11;
-    for (i = 0; i < size; i++)
+    for (i = 0; i < numDataBytes; i++)
     {
       checkVector[5 + i] = getBits(data, offset + 7 * 8 + i * 8, 8);
     }
-    checkVector[5 + size] = getBits(data, offset + 4 * 8, 8);
-    checkVector[5 + size + 1] = getBits(data, offset + 5 * 8, 8);
-    if (!check_crc_bytes(checkVector, 5 + size))
+    checkVector[5 + numDataBytes] = getBits(data, offset + 4 * 8, 8);
+    checkVector[5 + numDataBytes + 1] = getBits(data, offset + 5 * 8, 8);
+    if (!check_crc_bytes(checkVector))
     {
       qWarning("CRC failed");
       return;
@@ -131,13 +129,13 @@ i32 tdc_dataHandler::handleFrame_type_0(u8 * data, i32 offset, i32 length)
 {
   i16 i;
   //i16 noS	= getBits (data, offset, 8);
-  auto * const buffer = make_vla(u8, length);
+  const auto buffer = make_vla_span(u8, length);
 
   for (i = 0; i < length; i++)
   {
     buffer[i] = getBits(data, offset + i * 8, 8);
   }
-  if (!check_crc_bytes(buffer, length - 2))
+  if (!check_crc_bytes(buffer))
   {
     fprintf(stdout, "crc check failed\n");
   }
@@ -145,7 +143,7 @@ i32 tdc_dataHandler::handleFrame_type_0(u8 * data, i32 offset, i32 length)
   fprintf (stdout, "nrServices %d, SID-A %d SID-B %d SID-C %d\n",
                     buffer [0], buffer [1], buffer [2], buffer [3]);
 #endif
-  dataBuffer->put_data_into_ring_buffer(buffer, length);
+  dataBuffer->put_data_into_ring_buffer(buffer.data(), length);
   emit signal_bytes_out(0, length);
   return offset + length * 8;
 }
@@ -201,7 +199,6 @@ i32 tdc_dataHandler::handleFrame_type_1(u8 * data, i32 offset, i32 length)
 //	length and all component data shall be taken into account.
 bool tdc_dataHandler::serviceComponentFrameheaderCRC(const u8 * data, i16 offset, i16 /*maxL*/)
 {
-  u8 testVector[18];
   i16 i;
   i16 length = getBits(data, offset + 8, 16);
   i16 size = length < 13 ? length : 13;
@@ -211,6 +208,7 @@ bool tdc_dataHandler::serviceComponentFrameheaderCRC(const u8 * data, i16 offset
   {
     return false;
   }    // assumed garbage
+  const auto testVector = make_vla_span(u8, 3 + size);
   crc = getBits(data, offset + 24, 16);  // the crc
   testVector[0] = getBits(data, offset + 0, 8);
   testVector[1] = getBits(data, offset + 8, 8);
@@ -220,7 +218,7 @@ bool tdc_dataHandler::serviceComponentFrameheaderCRC(const u8 * data, i16 offset
     testVector[3 + i] = getBits(data, offset + 40 + i * 8, 8);
   }
 
-  return usCalculCRC(testVector, 3 + size) == crc;
+  return usCalculCRC(testVector) == crc;
 }
 
 
