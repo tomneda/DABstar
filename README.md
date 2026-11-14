@@ -50,6 +50,7 @@
     * [Installing USRP UHD](#installing-usrp-uhd)
     * [Installing AirSpy](#installing-airspy)
   * [Licences](#licences)
+    * [OpenStreetMap](#openstreetmap)
     * [Journaline](#journaline)
 <!-- TOC -->
 
@@ -572,6 +573,11 @@ As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The 
 | [Spectrum icons](https://www.flaticon.com/free-icons/spectrum)               | Eucalyp       |
 | [Target icons](https://www.flaticon.com/free-icons/target)                   | Pixel perfect |
 | [Folder icons](https://www.flaticon.com/free-icons/folder)                   | gariebaldy    |
+
+### OpenStreetMap
+
+Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, available under the Open Database License (ODbL).
+Map tiles are provided by the OpenStreetMap Foundation and used according to their [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 
 ### Journaline
 

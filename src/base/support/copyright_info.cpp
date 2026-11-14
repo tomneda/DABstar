@@ -109,6 +109,10 @@ QString get_copyright_text()
                  QSL("Rights of other contributors gratefully acknowledged.</p>");
   versionText += QSL("<p>Features NewsService Journaline(R) decoder technology by Fraunhofer IIS, Erlangen, Germany.<br/>") +
                  QSL("For more information visit ") + hyperlink(QSL("http://www.iis.fhg.de/dab")) + QSL(".</p>");
+  versionText += QSL("<p>Map data © ") + hyperlink_text(QSL("https://www.openstreetmap.org/copyright"), QSL("OpenStreetMap")) +
+                 QSL(" contributors, available under the Open Database License (ODbL).<br/>") +
+                 QSL("Map tiles are provided by the OpenStreetMap Foundation and used according to their ") +
+                 hyperlink_text(QSL("https://operations.osmfoundation.org/policies/tiles/"), QSL("tile usage policy")) + QSL(".</p>");
   versionText += QSL("</body></html>");
   return versionText;
 }

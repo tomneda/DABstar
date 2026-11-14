@@ -115,6 +115,7 @@ CATEGORY_END(TiiViewer)
 
 CATEGORY_BEGIN(MapViewer)
   DEFINE_POS_SIZE(MapViewer)
+  DEFINE_VARIANT(MapViewer, varSplitterState, QByteArray())
 CATEGORY_END(MapViewer)
 
 CATEGORY_BEGIN(ServiceList)

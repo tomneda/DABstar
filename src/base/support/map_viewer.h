@@ -21,6 +21,7 @@
 class DabRadio;
 class TileMapWidget;
 class QTextBrowser;
+class QSplitter;
 struct STiiDataEntry;
 
 // Transmitter map window: shows the home position and the received transmitters on an OpenStreetMap
@@ -68,6 +69,7 @@ private:
   const cf32 mHomeLocation;
   TileMapWidget* mpMap = nullptr;
   QTextBrowser* mpSideBar = nullptr;
+  QSplitter* mpSplitter = nullptr;
   QTimer mUpdateTimer;
 
   std::vector<STransmitter> mPendingTransmitters;   // collected since last update

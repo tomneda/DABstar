@@ -37,19 +37,26 @@ MapViewer::MapViewer(DabRadio* const ipDabRadio, const cf32& iHomeLocation)
   mpSideBar->setOpenLinks(false);
   mpSideBar->setMinimumWidth(150);
 
-  auto* const pSplitter = new QSplitter(Qt::Horizontal, this);
-  pSplitter->addWidget(mpMap);
-  pSplitter->addWidget(mpSideBar);
-  pSplitter->setStretchFactor(0, 4);
-  pSplitter->setStretchFactor(1, 1);
-  pSplitter->setChildrenCollapsible(false);
+  mpSplitter = new QSplitter(Qt::Horizontal, this);
+  mpSplitter->addWidget(mpMap);
+  mpSplitter->addWidget(mpSideBar);
+  mpSplitter->setStretchFactor(0, 1); // only the map grows when the window is resized
+  mpSplitter->setStretchFactor(1, 0);
+  mpSplitter->setChildrenCollapsible(false);
 
   auto* const pLayout = new QHBoxLayout(this);
   pLayout->setContentsMargins(0, 0, 0, 0);
-  pLayout->addWidget(pSplitter);
+  pLayout->addWidget(mpSplitter);
 
   resize(1000, 650);
   Settings::MapViewer::posAndSize.read_widget_geometry(this);
+
+  if (!mpSplitter->restoreState(Settings::MapViewer::varSplitterState.read().toByteArray()))
+  {
+    // default: side bar just wide enough for the longest typical text line of a transmitter entry
+    const i32 sideBarWidth = mpSideBar->fontMetrics().horizontalAdvance("Latitude 00.0000°, Longitude 000.0000°") + 40;
+    mpSplitter->setSizes({ std::max(200, width() - sideBarWidth), sideBarWidth });
+  }
 
   const SGeoPos home{ std::real(mHomeLocation), std::imag(mHomeLocation) };
   mpMap->set_home(home);
@@ -70,6 +77,7 @@ MapViewer::~MapViewer()
 {
   mUpdateTimer.stop();
   Settings::MapViewer::posAndSize.write_widget_geometry(this);
+  Settings::MapViewer::varSplitterState.write(mpSplitter->saveState());
 }
 
 void MapViewer::closeEvent(QCloseEvent* const ipEvent)

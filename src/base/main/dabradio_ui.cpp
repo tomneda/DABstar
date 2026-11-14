@@ -337,7 +337,7 @@ void DabRadio::_show_copyright_window()
   auto* const pDialog = new QDialog(this);
   pDialog->setAttribute(Qt::WA_DeleteOnClose);
   pDialog->setWindowTitle(QSL("Version and Copyright Information"));
-  pDialog->resize(870, 470);
+  pDialog->resize(870, 500);
 
   auto* const pBrowser = new QTextBrowser(pDialog);
   pBrowser->setOpenExternalLinks(true); // makes the links in the text clickable
