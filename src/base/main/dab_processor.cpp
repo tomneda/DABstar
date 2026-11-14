@@ -628,11 +628,11 @@ void DabProcessor::stop_service(const i32 iSubChId, const EProcessFlag iProcessF
   }
 }
 
-void DabProcessor::stop_all_services()
+void DabProcessor::stop_all_services(const bool iKeepGlobalServices)
 {
   if (!mScanMode)
   {
-    mMscHandler.stop_all_services();
+    mMscHandler.stop_all_services(iKeepGlobalServices);
   }
 }
 

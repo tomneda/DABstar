@@ -1,4 +1,12 @@
-#
+/*
+ * This file is adapted by Thomas Neder (https://github.com/tomneda)
+ *
+ * This project was originally forked from the project Qt-DAB by Jan van Katwijk. See https://github.com/JvanKatwijk/qt-dab.
+ * Due to massive changes it got the new name DABstar. See: https://github.com/tomneda/DABstar
+ *
+ * The original copyright information is preserved below and is acknowledged.
+ */
+
 /*
  *    Copyright (C) 2015 .. 2017
  *    Jan van Katwijk (J.vanKatwijk@gmail.com)
@@ -25,45 +33,45 @@
  */
 #pragma once
 
-#include "mot_object.h"
-#include	<QString>
-#include	<vector>
-class	DabRadio;
+#include "glob_data_types.h"
+#include <memory>
+#include <span>
+#include <vector>
 
-class	MotDirectory {
+class DabRadio;
+class MotObject;
+
+// Collects the segments of a MOT directory (ETSI EN 301 234, 7.2) and holds the MOT objects described by it
+class MotDirectory
+{
 public:
-			MotDirectory	(DabRadio*,
-                     u16,
-                     i16,
-                     i32,
-                     i16,
-                     u8*);
-			~MotDirectory();
-	MotObject* getHandle	(u16);
-	void		setHandle	(MotObject*, u16);
-	void		directorySegment (u16 transportId,
-                                        u8* segment,
-                                        i16 segmentNumber,
-                                        i32 segmentSize,
-                                        bool    lastSegment);
-	u16	get_transportId();
+  MotDirectory(DabRadio* ipRadio, u16 iTransportId, const std::span<const u8>& iFirstSegment, bool iLastSegment, bool iIsSpi);
+  ~MotDirectory();
+
+  MotObject* getHandle(u16 iTransportId) const;
+  void directorySegment(u16 iTransportId, const std::span<const u8>& iSegment, i16 iSegmentNumber, bool iLastSegment);
+  u16 get_transportId() const { return mTransportId; }
+
 private:
-	void		analyse_theDirectory();
-	u16	transportId;
+  static constexpr i32 cDirSizeMax = 4 * 1024 * 1024; // protection against corrupt data, SPI allows only 8 kByte
 
-	DabRadio* myRadioInterface;
-	std::vector<u8>	dir_segments;
-	bool		marked [512];
-	i16		dir_segmentSize;
-	i16		num_dirSegments;
-	i16		dirSize;
-	i16		numObjects;
-	typedef struct {
-	   bool		inUse;
-	   u16	transportId;
-	   MotObject* motSlide;
-	} motComponentType;
-	std::vector<motComponentType>	motComponents;
+  struct SMotComponent
+  {
+    u16 transportId;
+    std::unique_ptr<MotObject> pMotObject;
+  };
+
+  DabRadio* const mpRadioInterface;
+  const u16 mTransportId;
+  const bool mIsSpi;
+  std::vector<u8> mDirData;
+  std::vector<bool> mSegmentReceived;
+  i32 mDirSegmentSize = 0;
+  i32 mNumDirSegments = -1; // known after receiving the last segment
+  i32 mNumObjects = 0;
+  bool mIsAnalysed = false;
+  std::vector<SMotComponent> mMotComponents;
+
+  void _add_segment(const std::span<const u8>& iSegment, i32 iSegmentNumber, bool iLastSegment);
+  void _analyse_the_directory();
 };
-
-

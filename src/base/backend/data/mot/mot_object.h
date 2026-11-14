@@ -33,6 +33,7 @@
 
 #include "dab_constants.h"
 #include "mot_content_types.h"
+#include "mot_spi_object.h"
 #include <QObject>
 #include <QLabel>
 #include <QByteArray>
@@ -47,19 +48,21 @@ class MotObject : public QObject
 {
 Q_OBJECT
 public:
-  MotObject(DabRadio* ipDR, bool iDirElement, bool iPadElement);
-  MotObject(DabRadio* ipDR, bool iDirElement, bool iPadElement, u16 iTransportId, const std::span<const u8>& iSegment, bool iLastFlag);
+  MotObject(DabRadio* ipDR, bool iDirElement, bool iPadElement, bool iIsSpi = false);
+  MotObject(DabRadio* ipDR, bool iDirElement, bool iPadElement, u16 iTransportId, const std::span<const u8>& iSegment, bool iLastFlag, bool iIsSpi = false);
   ~MotObject() override = default;
 
   void set_header(const std::span<const u8>& iSegment, bool iLastFlag, i32 iTransportId);
   void add_body_segment(const std::span<const u8>& iBodySegment, i16 iSegmentNumber, bool iLastFlag, i32 iTransportId);
   int get_header_size() const;
+  [[nodiscard]] bool has_header() const { return mHeaderCore.initialized; }
   void reset();
 
 private:
   DabRadio* const mpDR;
   const bool mIsDirElement;
   const bool mIsPadElement;
+  const bool mIsSpi; // object of an SPI (EPG) service, it is emitted with signal_new_spi_object()
 
   struct SHeaderCore
   {
@@ -85,13 +88,16 @@ private:
   i32 mStartSegment = -1;
   i32 mProgressMax = -1;
   i32 mSumSegmentSize = 0;
+  SMotSpiObject mSpiParams; // collected SPI relevant MOT parameters (without body)
 
   bool _check_if_complete();
   void _handle_complete();
+  void _connect_signals();
   void _process_parameter_id(const u8* ipSegment, i32& ioPointer, u8 iParamId, u16 iLength);
-  void _process_header_extension(const u8* iSegment, i32& ioPointer);
+  bool _process_header_extension(const std::span<const u8>& iSegment, i32& ioPointer);
 
 signals:
   void signal_new_mot_object(const QByteArray& oData, const QString& oName, i32 oContentType, bool oDirElement);
+  void signal_new_spi_object(const SMotSpiObject& oObject);
   void signal_pad_mot_progress(i32 oPercent);
 };

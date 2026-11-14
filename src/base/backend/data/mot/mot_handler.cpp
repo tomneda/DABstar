@@ -36,8 +36,9 @@
 #include "bit_extractors.h"
 #include "crc.h"
 
-MotHandler::MotHandler(DabRadio* mr)
-  : mpRadioInterface(mr)
+MotHandler::MotHandler(DabRadio* const ipRadio, const bool iIsSpi)
+  : mpRadioInterface(ipRadio)
+  , mIsSpi(iIsSpi)
 {
   for (auto& mt: mMotTable)
   {
@@ -50,7 +51,7 @@ MotHandler::~MotHandler()
 {
   for (auto& mt: mMotTable)
   {
-    if (mt.orderNumber > 0)
+    if (mt.orderNumber >= 0)
     {
       if (mt.motSlide != nullptr)
       {
@@ -136,6 +137,11 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     motVector[i] = t;
   }
 
+  if (motVector.size() < 2)
+  {
+    return;
+  }
+
   u32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
   if (motVector.size() < 2 + segmentSize)
   {
@@ -154,20 +160,16 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
         break;
       }
       h = new MotObject(mpRadioInterface, false, false, // not within a directory
-                        transportId, segment, lastFlag);
+                        transportId, segment, lastFlag, mIsSpi);
       setHandle(h, transportId);
     }
     break;
 
   case 4:
   {
-    MotObject* h = getHandle(transportId);
-    if (h == nullptr)
-    {
-      h = new MotObject(mpRadioInterface, false, false, // not within a directory
-                        transportId, segment, lastFlag);
-      setHandle(h, transportId);
-    }
+    // Body segments without a known header (data group type 3) or directory entry are dropped. The header is
+    // not known yet or the directory is not completely received, the segments are repeated in the carousel.
+    MotObject* const h = getHandle(transportId);
     if (h != nullptr)
     {
       h->add_body_segment(segment, segmentNumber, lastFlag, transportId);
@@ -187,17 +189,11 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
       }  // already existing
 
       if (mpDirectory != nullptr)  // an old one, replace it
+      {
         delete mpDirectory;
+      }
 
-      i32 segmentSize = ((motVector[0] & 0x1F) << 8) | motVector[1];
-      u8* segment = &motVector[2];
-      const i32 dirSize = ((segment[0] & 0x3F) << 24) | ((segment[1]) << 16) | ((segment[2]) << 8) | segment[3];
-      const u16 numObjects = (segment[4] << 8) | segment[5];
-      //	         i32 period = (segment [6] << 16) |
-      //	                          (segment [7] <<  8) | segment [8];
-      //	         i32 segSize
-      //	                        = ((segment [9] & 0x1F) << 8) | segment [10];
-      mpDirectory = new MotDirectory(mpRadioInterface, transportId, segmentSize, dirSize, numObjects, segment);
+      mpDirectory = new MotDirectory(mpRadioInterface, transportId, segment, lastFlag, mIsSpi);
     }
     else
     {
@@ -205,7 +201,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
       {
         break;
       }
-      mpDirectory->directorySegment(transportId, &motVector[2], segmentNumber, segmentSize, lastFlag);
+      mpDirectory->directorySegment(transportId, segment, (i16)segmentNumber, lastFlag);
     }
     break;
 
@@ -218,7 +214,6 @@ MotObject* MotHandler::getHandle(u16 transportId) const
 {
   for (const auto& mt: mMotTable)
   {
-    qDebug() << "motHandler getHandle transportId" << transportId << "orderNumber" << mt.orderNumber << "transportId" << mt.transportId;
     if ((mt.orderNumber >= 0) && (mt.transportId == transportId))
     {
       return mt.motSlide;

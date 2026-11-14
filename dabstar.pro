@@ -97,7 +97,7 @@ INCLUDEPATH += \
     src/base/backend/audio \
     src/base/backend/data \
     src/base/backend/data/epg \
-    src/base/backend/data/epg_2 \
+    src/base/backend/data/spi \
     src/base/backend/data/journaline \
     src/base/backend/data/mot \
     src/base/configuration \
@@ -174,7 +174,8 @@ HEADERS += \
     src/base/backend/data/tdc_datahandler.h \
     src/base/backend/data/virtual_datahandler.h \
     src/base/backend/data/epg/epgdec.h \
-    src/base/backend/data/epg_2/epg_decoder.h \
+    src/base/backend/data/spi/spi_decoder.h \
+    src/base/backend/data/spi/spi_types.h \
     src/base/backend/data/journaline/cpplog.h \
     src/base/backend/data/journaline/crc_8_16.h \
     src/base/backend/data/journaline/dabdatagroupdecoder.h \
@@ -188,6 +189,7 @@ HEADERS += \
     src/base/backend/data/mot/mot_dir.h \
     src/base/backend/data/mot/mot_handler.h \
     src/base/backend/data/mot/mot_object.h \
+    src/base/backend/data/mot/mot_spi_object.h \
     src/base/configuration/configuration.h \
     src/base/decoder/fib_config_fig0.h \
     src/base/decoder/fib_config_fig1.h \
@@ -206,6 +208,7 @@ HEADERS += \
     src/base/main/dab_processor.h \
     src/base/main/dabradio.h \
     src/base/main/epg_mot_handler.h \
+    src/base/main/epg_manager.h \
     src/base/main/gap_progress_bar.h \
     src/base/main/glob_enums.h \
     src/base/main/mot_content_types.h \
@@ -250,7 +253,7 @@ HEADERS += \
     src/base/support/techdata.h \
     src/base/support/tii_list_display.h \
     src/base/support/time_meas.h \
-    src/base/support/time_table.h \
+    src/base/support/epg_viewer.h \
     src/base/support/traffic_light.h \
     src/base/support/wav_writer.h \
     src/base/support/window_visibility_watcher.h \
@@ -308,7 +311,7 @@ SOURCES += \
     src/base/backend/data/pad_handler.cpp \
     src/base/backend/data/tdc_datahandler.cpp \
     src/base/backend/data/epg/epgdec.cpp \
-    src/base/backend/data/epg_2/epg_decoder.cpp \
+    src/base/backend/data/spi/spi_decoder.cpp \
     src/base/backend/data/journaline/crc_8_16.c \
     src/base/backend/data/journaline/dabdgdec_impl.c \
     src/base/backend/data/journaline/log.c \
@@ -340,6 +343,7 @@ SOURCES += \
     src/base/main/dabradio_el.cpp \
     src/base/main/dabradio_ui.cpp \
     src/base/main/epg_mot_handler.cpp \
+    src/base/main/epg_manager.cpp \
     src/base/main/main.cpp \
     src/base/main/mot_slide_progress.cpp \
     src/base/main/tii_manager.cpp \
@@ -379,7 +383,7 @@ SOURCES += \
     src/base/support/ringbuffer.cpp \
     src/base/support/techdata.cpp \
     src/base/support/tii_list_display.cpp \
-    src/base/support/time_table.cpp \
+    src/base/support/epg_viewer.cpp \
     src/base/support/traffic_light.cpp \
     src/base/support/wav_writer.cpp \
     src/base/support/window_visibility_watcher.cpp \

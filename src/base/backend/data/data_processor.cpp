@@ -37,6 +37,7 @@
 #include "tdc_datahandler.h"
 #include "bit_extractors.h"
 #include "crc.h"
+#include <algorithm>
 
 // The main function of this class is to assemble the MSCdatagroups and dispatch to the appropriate handler
 DataProcessor::DataProcessor(DabRadio* ipDR, const SPacketData* const ipPD, RingBuffer<u8>* const ipDataBuffer)
@@ -88,10 +89,13 @@ DataProcessor::DataProcessor(DabRadio* ipDR, const SPacketData* const ipPD, Ring
     mpDataHandler.reset(new IpDataHandler(ipDR, mpDataBuffer));
     break;
 
-  case 60:
-    qInfo() << "Create MOT (DSCTy 60) data handler";
-    mpDataHandler.reset(new MotHandler(ipDR));
+  case cDSCTyMot:
+  {
+    const bool isSpi = std::find(ipPD->appTypeVec.cbegin(), ipPD->appTypeVec.cend(), cUserAppTypeSpi) != ipPD->appTypeVec.cend();
+    qInfo() << "Create MOT (DSCTy 60) data handler" << (isSpi ? "for SPI (EPG)" : "");
+    mpDataHandler.reset(new MotHandler(ipDR, isSpi));
     break;
+  }
 
   default:
     qWarning() << "DSCTy " << mDSCTy << " not supported";

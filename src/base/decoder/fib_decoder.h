@@ -41,6 +41,7 @@ public:
   void get_data_for_audio_service_addon(u32 iSId, SAudioDataAddOns& oADAO) const override;
   void get_data_for_packet_service(u32 iSId, std::vector<SPacketData>& oPDVec) const override;
   std::vector<SXPadUserApp> get_xpad_user_apps_of_audio_service(u32 iSId) const override;
+  std::vector<SPacketData> get_spi_packet_services() const override;
   std::vector<SServiceId> get_service_list() const override;
 
   const QString& get_service_label_from_SId_SCIdS(u32, i32) const override;
@@ -54,12 +55,6 @@ public:
   void get_cif_count(i16*, i16*) const override;
   u32 get_mod_julian_date() const override;
   QStringList get_fib_content_str_list(i32& oNumCols) const override;
-
-  // void set_epg_data(u32, i32, const QString &, const QString &) const override;
-  // std::vector<SEpgElement> get_timeTable(u32) const override;
-  // std::vector<SEpgElement> get_timeTable(const QString &) const override;
-  // bool has_time_table(u32 SId) const override;
-  // std::vector<SEpgElement> find_epg_data(u32) const override;
 
 private:
   DabRadio* const mpRadioInterface = nullptr;
@@ -135,6 +130,7 @@ private:
   bool _get_data_for_audio_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2, SAudioData* opAD) const;
   bool _get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2, SAudioDataAddOns* opADAO) const;
   bool _get_data_for_packet_service(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2, i16 iCompIdx, SPacketData* opPD) const;
+  std::vector<SPacketData> _get_spi_packet_services() const;
 
   QString _get_audio_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2) const;
   QString _get_packet_data_str(const FibConfigFig0::SFig0s2_BasicService_ServiceCompDef& iFig0s2) const;

@@ -72,7 +72,8 @@ constexpr char sSettingContentStorageDir[] = "saveDirContent";
 enum class EProcessFlag
 {
   Primary,
-  Secondary
+  Secondary,
+  Global     // background service of the ensemble (like SPI/EPG), independent of the selected service
 };
 
 enum ETMId // TransportMechanismMode
@@ -90,13 +91,6 @@ struct SpecViewLimits
   // the sequence is in typical level order
   SMaxMin Glob {-30, -90};
   SMaxMin Loc  {-31, -50};
-};
-
-struct SEpgElement
-{
-  i32 theTime;
-  QString theText;
-  QString theDescr;
 };
 
 struct SServiceId
@@ -146,6 +140,9 @@ struct SAudioData : SDescriptorType
   // i32 fmFrequency = -1;
   SAudioData() { TMId = ETMId::StreamModeAudio; }
 };
+
+constexpr i16 cUserAppTypeSpi = 0x007; // ETSI TS 101 756, table 16: SPI (Service and Programme Information, formerly EPG)
+constexpr i16 cDSCTyMot = 60;          // ETSI TS 101 756, table 2b: Multimedia Object Transfer (MOT)
 
 struct SXPadUserApp // user application carried in the X-PAD of an audio service component (signalled via FIG 0/13)
 {

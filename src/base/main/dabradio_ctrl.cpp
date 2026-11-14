@@ -7,6 +7,7 @@
 #include "cir_viewer.h"
 #include "service_list_handler.h"
 #include "map_viewer.h"
+#include "epg_manager.h"
 #include "setting_helper.h"
 #include "techdata.h"
 #include "ui_dabradio.h"
@@ -23,7 +24,6 @@ void DabRadio::_create_and_init_dab_processor()
   assert(mpDabProcessor != nullptr);
 
   _connect_dab_processor_signals();
-  mpEpgMotHandler->set_dab_processor(mpDabProcessor.get());
   mpTiiManager->set_dab_processor(mpDabProcessor.get());
 
   mpDabProcessor->set_scan_mode(mIsScanning);
@@ -43,7 +43,6 @@ void DabRadio::_delete_dab_processor()
   // Be aware: DabProcessor (if existing) holds the pointer to the inputDevice, so it must be valid also while destruction of the DabProcessor
   assert(mpDabProcessor == nullptr || mpInputDevice != nullptr);
   _disconnect_dab_processor_signals();
-  mpEpgMotHandler->set_dab_processor(nullptr);
   mpTiiManager->set_dab_processor(nullptr);
   mpDabProcessor.reset(); // deletes the DAB processor
 }
@@ -155,14 +154,12 @@ void DabRadio::_stop_services(const bool iStopAlsoGlobServices)
 
   mpAudioManager->stop_audio_output();
 
+  // keep the global services (like SPI/EPG) running if only the selected service changes
+  mpDabProcessor->stop_all_services(!iStopAlsoGlobServices);
+
   if (iStopAlsoGlobServices)
   {
-    mpDabProcessor->stop_all_services();
-  }
-  else
-  {
-    // TODO: keep "global" services like EPGs running, but currently clear all services in the MSC handler
-    mpDabProcessor->stop_all_services();
+    mCurGlobalServiceVec.clear();
   }
 
   mCurPrimaryAudioService = {};
@@ -175,6 +172,7 @@ void DabRadio::_stop_services(const bool iStopAlsoGlobServices)
 
   mpEpgMotHandler->show_pause_slide();
   _clean_screen(mStatusInfo);
+  _show_epg_label(mpEpgManager->has_data()); // the EPG data of the ensemble are still valid
 }
 
 void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)
@@ -220,7 +218,6 @@ void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)
   if (!mIsScanning)
   {
     _write_fid_or_Ch_to_settings(iFIdOrCh);
-    mEpgTimer.start(cEpgTimeoutMs);
   }
 
   mIsChannelRunning.store(true);
@@ -257,7 +254,7 @@ void DabRadio::_stop_channel()
     mpFicDumpPointer = nullptr;
   }
 
-  mEpgTimer.stop();
+  mpEpgManager->clear(); // the EPG data belong to the ensemble
   mpInputDevice->stopReader();
   mpDabProcessor->stop();
   usleep(1000); // minimum task-switch time on Windows; lets the processor threads wind down

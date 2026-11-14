@@ -16,6 +16,7 @@
 #include "bit_extractors.h"
 #include <cstring>
 #include <vector>
+#include <algorithm>
 
 #ifdef NDEBUG // for release-version
   static constexpr bool cShowFigDataOverview = false;
@@ -342,6 +343,63 @@ std::vector<SXPadUserApp> FibDecoder::get_xpad_user_apps_of_audio_service(const 
   return xpadUserAppVec;
 }
 
+std::vector<SPacketData> FibDecoder::get_spi_packet_services() const
+{
+  QMutexLocker lock(&mMutex);
+  return _get_spi_packet_services();
+}
+
+std::vector<SPacketData> FibDecoder::_get_spi_packet_services() const
+{
+  std::vector<SPacketData> spiVec;
+
+  if (mFibLoadingState < EFibLoadingState::S4_FullyPacketDataLoaded)
+  {
+    return spiVec;
+  }
+
+  for (const auto& fig0s2 : mpFibConfigFig0Curr->Fig0s2_BasicService_ServiceCompDefVec)
+  {
+    if (fig0s2.ServiceComp_C.TMId != ETMId::PacketModeData)
+    {
+      continue;
+    }
+
+    // check the DSCTy first to avoid warnings of not fully signalled other packet services
+    const auto* const pFig0s3 = mpFibConfigFig0Curr->get_Fig0s3_ServiceComponentPacketMode_of_SCId(fig0s2.ServiceComp_C.TMId11.SCId);
+
+    if (pFig0s3 == nullptr || pFig0s3->DSCTy != cDSCTyMot)
+    {
+      continue;
+    }
+
+    SPacketData pd;
+
+    if (!_get_data_for_packet_service(fig0s2, (i16)fig0s2.ServiceComp_C_index, &pd))
+    {
+      continue;
+    }
+
+    if (std::find(pd.appTypeVec.cbegin(), pd.appTypeVec.cend(), cUserAppTypeSpi) == pd.appTypeVec.cend())
+    {
+      continue;
+    }
+
+    // the same SPI packet stream could be signalled for several services
+    const bool alreadyAdded = std::any_of(spiVec.cbegin(), spiVec.cend(), [&pd](const SPacketData& iPD)
+    {
+      return iPD.SubChId == pd.SubChId && iPD.PacketAddress == pd.PacketAddress;
+    });
+
+    if (!alreadyAdded)
+    {
+      spiVec.emplace_back(pd);
+    }
+  }
+
+  return spiVec;
+}
+
 void FibDecoder::get_data_for_packet_service(const u32 iSId, std::vector<SPacketData>& oPDVec) const
 {
   QMutexLocker lock(&mMutex);
@@ -516,6 +574,12 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
   QMutexLocker lock(&mMutex);
   std::vector<SServiceId> services;
 
+  std::set<u32> spiSIds;
+  for (const auto& pd : _get_spi_packet_services())
+  {
+    spiSIds.insert(pd.SId);
+  }
+
   // if (_are_fib_data_loaded())
   // {
     services.reserve(mpFibConfigFig1->serviceLabel_To_SId_SCIdS_Map.size());
@@ -526,7 +590,7 @@ std::vector<SServiceId> FibDecoder::get_service_list() const
         const auto* pFig0s2 = mpFibConfigFig0Curr->get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(SId_SCIdS.SId, ETMId::StreamModeAudio);
         SServiceId ed;
         ed.isAudioChannel = pFig0s2 != nullptr; // else is a primary data service
-        ed.hasSpiEpgData = false; // TODO: fill out
+        ed.hasSpiEpgData = spiSIds.contains(SId_SCIdS.SId);
         ed.serviceLabel = serviceLabel;
         ed.SId = SId_SCIdS.SId;
         services.emplace_back(ed);
@@ -632,89 +696,6 @@ u8 FibDecoder::get_ecc() const
   return 0;
 }
 
-#if 0
-void FibDecoder::set_epg_data(u32 iSId, i32 iTheTime, const QString & iTheText, const QString & iTheDescr) const
-{
-  const auto it = mpFibConfigFig1->servicesMap.find(iSId);
-
-  if (it == mpFibConfigFig1->servicesMap.end())
-  {
-    return;
-  }
-
-  Service * S = &(it->second);
-  for (u16 j = 0; j < S->epgData.size(); j++)
-  {
-    if (S->epgData.at(j).theTime == iTheTime)
-    {
-      S->epgData.at(j).theText = iTheText;
-      S->epgData.at(j).theDescr = iTheDescr;
-      return;
-    }
-  }
-
-  SEpgElement ep;
-  ep.theTime = iTheTime;
-  ep.theText = iTheText;
-  ep.theDescr = iTheDescr;
-  S->epgData.push_back(ep);
-}
-
-std::vector<SEpgElement> FibDecoder::get_timeTable(u32 SId) const
-{
-  std::vector<SEpgElement> res;
-
-  const auto it = mpFibConfigFig1->servicesMap.find(SId);
-
-  if (it == mpFibConfigFig1->servicesMap.end())
-  {
-    return res;
-  }
-
-  return it->second.epgData;
-}
-
-std::vector<SEpgElement> FibDecoder::get_timeTable(const QString & service) const
-{
-  std::vector<SEpgElement> res;
-
-  const auto it = find_service_from_service_name(service);
-
-  if (it == mpFibConfigFig1->servicesMap.end())
-  {
-    return res;
-  }
-
-  return it->second.epgData;
-}
-
-bool FibDecoder::has_time_table(u32 SId) const
-{
-  const auto it = mpFibConfigFig1->servicesMap.find(SId);
-
-  if (it == mpFibConfigFig1->servicesMap.end())
-  {
-    return false;
-  }
-
-  return it->second.epgData.size() > 2;
-}
-
-std::vector<SEpgElement> FibDecoder::find_epg_data(u32 SId) const
-{
-  const auto it = mpFibConfigFig1->servicesMap.find(SId);
-
-  std::vector<SEpgElement> res;
-
-  if (it == mpFibConfigFig1->servicesMap.end())
-  {
-    return res;
-  }
-
-  res = it->second.epgData;
-  return res;
-}
-#endif
 
 u32 FibDecoder::get_mod_julian_date() const
 {

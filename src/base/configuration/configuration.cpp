@@ -69,6 +69,7 @@ Configuration::Configuration(DabRadio* ipRI) :
   Settings::Config::cbAlwaysOnTop.register_widget_and_update_ui_from_setting(cbAlwaysOnTop, 0);
   Settings::Config::cmbMotObjectSaving5.register_widget_and_update_ui_from_setting(cmbMotObjectSaving5, "");
   Settings::Config::cmbEpgObjectSaving5.register_widget_and_update_ui_from_setting(cmbEpgObjectSaving5, "");
+  Settings::Config::cbReceiveEpg.register_widget_and_update_ui_from_setting(cbReceiveEpg, 2);
   Settings::Config::cbUseDcAvoidance.register_widget_and_update_ui_from_setting(cbUseDcAvoidance, 0);
   Settings::Config::cbDoDcCorrOnly.register_widget_and_update_ui_from_setting(cbDoDcCorrOnly, 0);
   Settings::Config::cbDoDcAndIqCorr.register_widget_and_update_ui_from_setting(cbDoDcAndIqCorr, 0);

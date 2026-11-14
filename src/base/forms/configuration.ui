@@ -384,6 +384,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="cbReceiveEpg">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Receive the EPG (SPI) of the ensemble in the background&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If the ensemble carries an EPG service (Service and Programme Information), it is received in the background, independent of the selected service. The EPG button opens the programme guide.&lt;/p&gt;&lt;p&gt;A change takes effect with the next channel selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Receive EPG in background</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="cbUseNativeIqFormat">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Use native IQ format of input devices in 'Dump RAW'&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Not available for Soapy, UHD, Spyserver and file device.&lt;/p&gt;

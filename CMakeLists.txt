@@ -294,6 +294,11 @@ if (BUILD_TESTING)
   add_executable(map_projection_test tests/map_projection_test.cpp)
   target_include_directories(map_projection_test PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src/common)
   add_test(NAME map_projection_test COMMAND map_projection_test)
+
+  add_executable(spi_decoder_test tests/spi_decoder_test.cpp src/base/backend/data/spi/spi_decoder.cpp)
+  target_include_directories(spi_decoder_test PRIVATE ${CMAKE_SOURCE_DIR}/src/base/backend/data/spi ${CMAKE_SOURCE_DIR}/src/common)
+  target_link_libraries(spi_decoder_test PRIVATE Qt6::Core)
+  add_test(NAME spi_decoder_test COMMAND spi_decoder_test)
 endif ()
 
 configure_file(

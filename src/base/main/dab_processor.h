@@ -97,7 +97,7 @@ public:
   bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
   bool is_sample_reader_running() const { return mSampleReader.is_running(); }
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
-  void stop_all_services();
+  void stop_all_services(bool iKeepGlobalServices = false);
   bool set_audio_channel(const SAudioData& iAD, RingBuffer<i16>* ipoAudioBuffer, EProcessFlag iProcessFlag);
   bool set_data_channel(const SPacketData& iPD, RingBuffer<u8>*, EProcessFlag iProcessFlag);
 

@@ -118,6 +118,7 @@ set(${baseLibName}_HDRS
         main/dabradio.h
         main/audio_manager.h
         main/epg_mot_handler.h
+        main/epg_manager.h
         main/tii_manager.h
         main/gap_progress_bar.h
         main/dab_channel_desc.h
@@ -170,12 +171,14 @@ set(${baseLibName}_HDRS
         backend/data/journaline/newsobject.h
         backend/data/journaline/NML.h
         backend/data/epg/epgdec.h
-        backend/data/epg_2/epg_decoder.h
+        backend/data/spi/spi_decoder.h
+        backend/data/spi/spi_types.h
         backend/data/virtual_datahandler.h
         backend/data/pad_handler.h
         backend/data/mot/mot_handler.h
         backend/data/mot/mot_object.h
         backend/data/mot/mot_dir.h
+        backend/data/mot/mot_spi_object.h
         backend/data/data_processor.h
         audio/audiofifo.h
         audio/audiooutput_if.h
@@ -188,7 +191,7 @@ set(${baseLibName}_HDRS
         support/tii_list_display.h
         support/viterbi_spiral/viterbi_spiral.h
         support/color_selector.h
-        support/time_table.h
+        support/epg_viewer.h
         support/content_table.h
         support/dl_cache.h
         support/itu_regions.h
@@ -234,6 +237,7 @@ set(${baseLibName}_SRCS
         main/dabradio_dump.cpp
         main/audio_manager.cpp
         main/epg_mot_handler.cpp
+        main/epg_manager.cpp
         main/tii_manager.cpp
         main/dabradio_el.cpp
         main/dabradio_ctrl.cpp
@@ -281,7 +285,7 @@ set(${baseLibName}_SRCS
         backend/data/journaline/dabdgdec_impl.c
         backend/data/journaline/newsobject.cpp
         backend/data/journaline/NML.cpp
-        backend/data/epg_2/epg_decoder.cpp
+        backend/data/spi/spi_decoder.cpp
         backend/data/epg/epgdec.cpp
         backend/data/tdc_datahandler.cpp
         backend/data/pad_handler.cpp
@@ -298,7 +302,7 @@ set(${baseLibName}_SRCS
         support/dab_tables.cpp
         support/viterbi_spiral/viterbi_spiral.cpp
         support/color_selector.cpp
-        support/time_table.cpp
+        support/epg_viewer.cpp
         support/content_table.cpp
         support/dl_cache.cpp
         support/itu_regions.cpp
@@ -362,7 +366,7 @@ target_include_directories(${baseLibName}
         backend/data
         backend/data/journaline
         backend/data/mot
-        backend/data/epg_2
+        backend/data/spi
         backend/data/epg
         support
         support/tii_library

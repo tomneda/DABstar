@@ -76,7 +76,7 @@ The status bar below the MOT picture shows:
 | PS        | Whether Parametric Stereo mode is active                                           |
 | SBR       | Whether Spectral Band Replication mode is active                                   |
 | MOT       | A Media Object Transfer is currently happening                                     |
-| EPG       | Whether Electronic Program Guide data are available (needs further implementation) |
+| EPG       | Whether Electronic Program Guide data (SPI) of the ensemble were received          |
 | ANN       | Whether an announcement is currently being broadcast                               |
 | EWS       | The ensemble participates in the Emergency Warning System (ASA in Germany)         |
 

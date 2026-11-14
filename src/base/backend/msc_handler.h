@@ -53,7 +53,7 @@ public:
   bool set_channel(const SDescriptorType* d, RingBuffer<i16>* ipoAudioBuffer, RingBuffer<u8>* ipoDataBuffer, EProcessFlag iProcessFlag);
   void reset_channel();
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);
-  void stop_all_services();
+  void stop_all_services(bool iKeepGlobalServices = false);
   bool is_service_running(i32 iSubChId, EProcessFlag iProcessFlag) const;
 
 private:

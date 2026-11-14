@@ -11,6 +11,9 @@
 #include "map_viewer.h"
 #include "spectrum_viewer.h"
 #include "cir_viewer.h"
+#include "epg_manager.h"
+#include "epg_viewer.h"
+#include <QTimeZone>
 #include "configuration.h"
 #include "gui_helpers.h"
 #include "audio_manager.h"
@@ -869,6 +872,9 @@ void DabRadio::slot_fib_time(const IFibDecoder::SUtcTimeSet& iFibTimeInfo)
   mUTC.second = mLocalTime.second = iFibTimeInfo.Second;
 
   _get_ymd_from_mod_julian_date(mUTC.year, mUTC.month, mUTC.day, iFibTimeInfo.ModJulianDate);
+
+  mpEpgManager->set_current_time(QDateTime(QDate(mUTC.year, mUTC.month, mUTC.day), QTime(mUTC.hour, mUTC.minute, std::max<i32>(iFibTimeInfo.Second, 0)), QTimeZone::UTC),
+                                 iFibTimeInfo.LTO_Minutes);
 
   if (daysOffs != 0) // save a bit calculation time if local date is same than UTC date
   {

@@ -12,9 +12,7 @@
  */
 #include "epg_mot_handler.h"
 #include "configuration.h"
-#include "dab_processor.h"
 #include "epgdec.h"
-#include "epg_decoder.h"
 #include "mot_content_types.h"
 #include "setting_helper.h"
 #include "gui_helpers.h"
@@ -46,17 +44,12 @@ EpgMotHandler::EpgMotHandler(const SResourceConfig& iCfg, QObject* ipParent)
   assert(mpOpenFileDialog != nullptr);
 
   mpEpgHandler.reset(new CEPGDecoder);
-  mpEpgProcessor.reset(new EpgDecoder);
-
-  connect(mpEpgProcessor.get(), &EpgDecoder::signal_set_epg_data, this, &EpgMotHandler::slot_set_epg_data);
 
   set_dl_text_button_emphasized(false);
 
   mTimerMotReceived.setInterval(100);
   mTimerMotReceived.setSingleShot(true);
   connect(&mTimerMotReceived, &QTimer::timeout, this, &EpgMotHandler::_slot_mot_timer_timeout);
-
-  emit signal_epg_indicator(false);
 }
 
 EpgMotHandler::~EpgMotHandler()
@@ -130,7 +123,7 @@ void EpgMotHandler::handle_mot_object(const QByteArray& iResult, const QString& 
   case MOTBaseTypeVideo: break;
   case MOTBaseTypeTransport:   _save_mot_object(iResult, iObjectName); break;
   case MOTBaseTypeSystem: break;
-  case MOTBaseTypeApplication: _save_mot_epg_data(iResult, iObjectName, iContentType); break;
+  case MOTBaseTypeApplication: break; // SPI (EPG) objects are handled by the EpgManager
   case MOTBaseTypeProprietary: break;
   }
 }
@@ -147,11 +140,6 @@ void EpgMotHandler::trigger_mot_indicator()
     emit signal_mot_indicator(true);
   }
   mTimerMotReceived.start();
-}
-
-void EpgMotHandler::slot_set_epg_data(i32 /*iSId*/, i32 /*iTheTime*/, const QString& /*iTheText*/, const QString& /*iTheDescr*/)
-{
-  // TODO: check EPG
 }
 
 void EpgMotHandler::slot_handle_dl_text_button()
@@ -178,34 +166,23 @@ void EpgMotHandler::_slot_mot_timer_timeout()
   emit signal_mot_indicator(false);
 }
 
-bool EpgMotHandler::_save_mot_epg_data(const QByteArray& iResult, const QString& iObjectName, const i32 iContentType) const
+void EpgMotHandler::save_epg_object(const SMotSpiObject& iObject) const
 {
-  if (mEpgPath.isEmpty() || mpDabProcessor == nullptr)
+  if (mEpgPath.isEmpty() || mpConfig->cmbEpgObjectSaving5->currentIndex() <= 0)
   {
-    return false;
+    return;
   }
 
-  std::vector<u8> epgData(iResult.begin(), iResult.end());
-  const u32 ensembleId = mpDabProcessor->get_fib_decoder()->get_EId();
-  const u32 currentSId = _extract_epg(iObjectName, ensembleId);
-  const u32 julianDate = mpDabProcessor->get_fib_decoder()->get_mod_julian_date();
-  const i32 subType = getContentSubType((MOTContentType)iContentType);
-  mpEpgProcessor->process_epg(epgData.data(), (i32)epgData.size(), currentSId, subType, julianDate);
-
-  if (mpConfig->cmbEpgObjectSaving5->currentIndex() > 0)
+  if (getContentBaseType(static_cast<MOTContentType>(iObject.contentType)) != MOTBaseTypeApplication || iObject.isCompressed || iObject.body.isEmpty())
   {
-    QString temp = iObjectName;
-    if (temp.isEmpty())
-    {
-      temp = "epg_file";
-    }
-
-    const i32 dirLevel = mpConfig->cmbEpgObjectSaving5->currentIndex() - 1;
-    const QString path = _generate_file_path(mEpgPath, temp, dirLevel);
-    mpEpgHandler->decode(epgData, QDir::toNativeSeparators(path));
+    return;
   }
 
-  return true;
+  const std::vector<u8> epgData(iObject.body.begin(), iObject.body.end());
+  const QString name = (iObject.contentName.isEmpty() ? QString("epg_file") : iObject.contentName);
+  const i32 dirLevel = mpConfig->cmbEpgObjectSaving5->currentIndex() - 1;
+  const QString path = _generate_file_path(mEpgPath, name, dirLevel);
+  mpEpgHandler->decode(epgData, QDir::toNativeSeparators(path));
 }
 
 void EpgMotHandler::_save_mot_text(const QByteArray& iResult, const i32 /*iContentType*/, const QString& /*iName*/) const
@@ -379,16 +356,4 @@ QString EpgMotHandler::_generate_file_path(const QString& iBasePath, const QStri
   _create_directory(path, true);
 
   return path;
-}
-
-u32 EpgMotHandler::_extract_epg(const QString& iName, const u32 /*iEnsembleId*/) const
-{
-  for (const auto& serv : *mpServiceList)
-  {
-    if (iName.contains(QString::number(serv.SId, 16), Qt::CaseInsensitive))
-    {
-      return serv.SId;
-    }
-  }
-  return 0;
 }

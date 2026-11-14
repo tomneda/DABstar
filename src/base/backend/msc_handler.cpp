@@ -33,6 +33,17 @@
 #include "msc_handler.h"
 #include "backend.h"
 
+static const char* _get_process_flag_str(const EProcessFlag iProcessFlag)
+{
+  switch (iProcessFlag)
+  {
+  case EProcessFlag::Primary:   return "Primary";
+  case EProcessFlag::Secondary: return "Secondary";
+  case EProcessFlag::Global:    return "Global";
+  }
+  return "?";
+}
+
 // Interface program for processing the MSC.
 // The DabProcessor assumes the existence of an msc-handler, whether a service is selected or not.
 
@@ -101,16 +112,28 @@ void MscHandler::stop_service(const i32 iSubChId, const EProcessFlag iProcessFla
   }
 }
 
-void MscHandler::stop_all_services()
+void MscHandler::stop_all_services(const bool iKeepGlobalServices)
 {
   QVector<QSharedPointer<Backend>> backendsToStop;
   {
     QMutexLocker lock(&mMutex);
-    backendsToStop.swap(mBackendList);
+    if (iKeepGlobalServices)
+    {
+      QVector<QSharedPointer<Backend>> backendsToKeep;
+      for (auto& b : mBackendList)
+      {
+        (b->processFlag == EProcessFlag::Global ? backendsToKeep : backendsToStop).append(b);
+      }
+      mBackendList.swap(backendsToKeep);
+    }
+    else
+    {
+      backendsToStop.swap(mBackendList);
+    }
   }
   for (auto& b: backendsToStop)
   {
-    qDebug() << "Stopping SId" << Qt::hex << Qt::showbase << b->serviceId << Qt::dec << "SubChannel" << b->subChId << "ProcessFlag" << (b->processFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
+    qDebug() << "Stopping SId" << Qt::hex << Qt::showbase << b->serviceId << Qt::dec << "SubChannel" << b->subChId << "ProcessFlag" << _get_process_flag_str(b->processFlag);
     b->stop_running();
     b.reset();
   }
@@ -134,7 +157,7 @@ bool MscHandler::set_channel(const SDescriptorType* d, RingBuffer<i16>* ipoAudio
   qInfo() << "Create backend" << mBackendList.size() + 1 << "for SId" <<  Qt::hex << Qt::showbase << d->SId
           << "and ServiceLabel" << (d->serviceLabel.isEmpty() ? "(Unknown yet)" : d->serviceLabel.trimmed())
           << "Audio" << (ipoAudioBuffer != nullptr) << "Data" << (ipoDataBuffer != nullptr)
-          << "ProcessFlag" << (iProcessFlag == EProcessFlag::Primary ? "Primary" : "Secondary");
+          << "ProcessFlag" << _get_process_flag_str(iProcessFlag);
 
   QMutexLocker lock(&mMutex);
   const QSharedPointer<Backend> backend(new Backend(mpRadioInterface, d, ipoAudioBuffer, ipoDataBuffer, mpFrameBuffer, iProcessFlag));

@@ -42,29 +42,40 @@
 Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtWarningMsg)
 
 
-MotObject::MotObject(DabRadio* ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const std::span<const u8>& iSegment, const bool iLastFlag)
+MotObject::MotObject(DabRadio* ipDR, const bool iDirElement, const bool iPadElement, const u16 iTransportId, const std::span<const u8>& iSegment, const bool iLastFlag, const bool iIsSpi)
   : mpDR(ipDR)
   , mIsDirElement(iDirElement)
   , mIsPadElement(iPadElement)
+  , mIsSpi(iIsSpi)
 {
   qCDebug(sLogMotObject()) << "Init MotObject() (1) with dirElement" << iDirElement << "and transportId" << iTransportId << "and segmentSize" << iSegment.size() << "and lastFlag" << iLastFlag;
-  qCWarning(sLogMotObject()) << "This is not working well yet";
 
-  connect(this, &MotObject::signal_new_mot_object, ipDR, &DabRadio::slot_handle_mot_object);
-  connect(this, &MotObject::signal_pad_mot_progress, ipDR, &DabRadio::slot_pad_mot_progress);
-
+  _connect_signals();
   set_header(iSegment, iLastFlag, iTransportId);
 }
 
-MotObject::MotObject(DabRadio* const ipDR, const bool iDirElement, const bool iPadElement)
+MotObject::MotObject(DabRadio* const ipDR, const bool iDirElement, const bool iPadElement, const bool iIsSpi)
   : mpDR(ipDR)
   , mIsDirElement(iDirElement)
   , mIsPadElement(iPadElement)
+  , mIsSpi(iIsSpi)
 {
   qCDebug(sLogMotObject()) << "Init MotObject() (2) with dirElement" << iDirElement;
 
-  connect(this, &MotObject::signal_new_mot_object, ipDR, &DabRadio::slot_handle_mot_object);
-  connect(this, &MotObject::signal_pad_mot_progress, ipDR, &DabRadio::slot_pad_mot_progress);
+  _connect_signals();
+}
+
+void MotObject::_connect_signals()
+{
+  if (mIsSpi)
+  {
+    connect(this, &MotObject::signal_new_spi_object, mpDR, &DabRadio::slot_handle_spi_object);
+  }
+  else
+  {
+    connect(this, &MotObject::signal_new_mot_object, mpDR, &DabRadio::slot_handle_mot_object);
+  }
+  connect(this, &MotObject::signal_pad_mot_progress, mpDR, &DabRadio::slot_pad_mot_progress);
 }
 
 
@@ -80,6 +91,12 @@ void MotObject::set_header(const std::span<const u8>& iSegment, const bool iLast
 
   mTransportId = iTransportId;
 
+  if (iSegment.size() < 7)
+  {
+    qCWarning(sLogMotObject) << "MOT header of" << iTransportId << "too short with" << iSegment.size() << "bytes";
+    return;
+  }
+
   // ETSI EN301 234, ch. 6.1 "Header core" — 7-byte big-endian bitfield (b55 = MSB of iSegment[0])
   const u8* const pSegment = iSegment.data();
   mHeaderCore.bodySize       = (i32)extract_bits_from_byte_stream(pSegment, 55-55, 28); // b55..b28
@@ -93,15 +110,28 @@ void MotObject::set_header(const std::span<const u8>& iSegment, const bool iLast
     qCritical() << "Incompatible contentType" << mHeaderCore.contentType << "contentSubType" << mHeaderCore.contentSubType;
   }
 
+  if (mHeaderCore.headerSize < 7 || mHeaderCore.headerSize > (i32)iSegment.size())
+  {
+    qCWarning(sLogMotObject) << "MOT header of" << iTransportId << "with invalid header size" << mHeaderCore.headerSize << "(" << iSegment.size() << "bytes available)";
+    mHeaderCore = {};
+    return;
+  }
+
   mHeaderCore.initialized = true;
 
   qCDebug(sLogMotObject) << "HeaderSize" << mHeaderCore.headerSize << "BodySize" << mHeaderCore.bodySize << "ContentType" << mHeaderCore.contentType << "ContentSubType" << mHeaderCore.contentSubType;
 
   i32 pointer = 7; // 7 bytes are the HeaderCore size
+  const std::span<const u8> header = iSegment.first(mHeaderCore.headerSize);
 
   while (pointer < (signed)mHeaderCore.headerSize) // Header extension data available?
   {
-    _process_header_extension(pSegment, pointer);
+    if (!_process_header_extension(header, pointer))
+    {
+      qCWarning(sLogMotObject) << "MOT header extension of" << iTransportId << "exceeds the header size";
+      pointer = mHeaderCore.headerSize;
+      break;
+    }
   }
 
   if (pointer != (signed)mHeaderCore.headerSize)
@@ -178,18 +208,28 @@ void MotObject::add_body_segment(const std::span<const u8>& iBodySegment, const 
 
 void MotObject::_process_parameter_id(const u8* const ipSegment, i32& ioPointer, const u8 iParamId, const u16 iLength)
 {
+  // ioPointer points to the parameter data with iLength bytes, the pointer is moved behind the data in any case
+  const QByteArray data(reinterpret_cast<const char*>(ipSegment + ioPointer), iLength);
+
   switch (iParamId)
   {
-  case 0x0C:
+  case 0x0C: // ContentName, the first byte contains the character set indicator
     mName.clear();
-    for (u16 i = 0; i < iLength - 1; i++)
+    for (u16 i = 1; i < iLength; i++)
     {
-      mName.append((QChar)ipSegment[ioPointer + i + 1]);
+      mName.append((QChar)ipSegment[ioPointer + i]);
     }
     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has name" << mName;
-    ioPointer += iLength;
     break;
 
+  case 0x11: mSpiParams.isCompressed = true; break; // CompressionType
+  case 0x21: mSpiParams.profileSubset = data; break; // ProfileSubset
+  case 0x23: mSpiParams.isEncrypted = true; break;   // CAInfo
+  case 0x25: mSpiParams.scopeStart = data; break;    // ScopeStart (ETSI TS 102 371, 6.4.6)
+  case 0x26: mSpiParams.scopeEnd = data; break;      // ScopeEnd (ETSI TS 102 371, 6.4.7)
+  case 0x27: mSpiParams.scopeId = data; break;       // ScopeID (ETSI TS 102 371, 6.4.8)
+
+  case 0x01:  // PermitOutdatedVersions
   case 0x02:  // creation time
   case 0x03:  // start validity
   case 0x04:  // expiretime
@@ -199,44 +239,64 @@ void MotObject::_process_parameter_id(const u8* const ipSegment, i32& ioPointer,
   case 0x08:  // group reference
   case 0x0A:  // priority
   case 0x0B:  // label
+  case 0x0D:  // UniqueBodyVersion
   case 0x0F:  // content description
+  case 0x10:  // MimeType
     break;
 
   default:
-    qWarning() << "MOT object" << mTransportId << "has unknown parameter" << iParamId << "of length" << iLength;
-    ioPointer += iLength;
+    qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has unknown parameter" << iParamId << "of length" << iLength;
     break;
   }
+
+  ioPointer += iLength;
 }
 
-void MotObject::_process_header_extension(const u8* const iSegment, i32& ioPointer)
+bool MotObject::_process_header_extension(const std::span<const u8>& iSegment, i32& ioPointer)
 {
-  const u8 PLI = (iSegment[ioPointer] & 0xC0) >> 6;
-  const u8 paramId = (iSegment[ioPointer] & 0x3F);
+  const i32 size = (i32)iSegment.size();
+  const u8* const pSegment = iSegment.data();
+  const u8 PLI = (pSegment[ioPointer] & 0xC0) >> 6;
+  const u8 paramId = (pSegment[ioPointer] & 0x3F);
 
   u16 length = 0;
 
   switch (PLI) // PLI = Parameter Length Indicator
   {
-  case 0x0: ioPointer += 1; break;
-  case 0x1: ioPointer += 2; break;
-  case 0x2: ioPointer += 5; break;
+  case 0x0: length = 0; ioPointer += 1; break;
+  case 0x1: length = 1; ioPointer += 1; break;
+  case 0x2: length = 4; ioPointer += 1; break;
   case 0x3:
-    if ((iSegment[ioPointer + 1] & 0x80) != 0) // Ext field: 7 or 15 bit length field is used
+    if (ioPointer + 1 >= size)
     {
-      length = (iSegment[ioPointer + 1] & 0x7F) << 8 | iSegment[ioPointer + 2];
+      return false;
+    }
+    if ((pSegment[ioPointer + 1] & 0x80) != 0) // Ext field: 7 or 15 bit length field is used
+    {
+      if (ioPointer + 2 >= size)
+      {
+        return false;
+      }
+      length = (pSegment[ioPointer + 1] & 0x7F) << 8 | pSegment[ioPointer + 2];
       ioPointer += 3;
     }
     else
     {
-      length = iSegment[ioPointer + 1] & 0x7F;
+      length = pSegment[ioPointer + 1] & 0x7F;
       ioPointer += 2;
     }
-    qCDebug(sLogMotObject) << "Process parameter id" << paramId << "with length" << length << "at pointer" << ioPointer;
-    _process_parameter_id(iSegment, ioPointer, paramId, length);
     break;
   default:; // never happened as we have only 2 bits to process
   }
+
+  if (ioPointer + length > size)
+  {
+    return false;
+  }
+
+  qCDebug(sLogMotObject) << "Process parameter id" << paramId << "with length" << length << "at pointer" << ioPointer;
+  _process_parameter_id(pSegment, ioPointer, paramId, length);
+  return true;
 }
 
 bool MotObject::_check_if_complete()
@@ -298,6 +358,17 @@ void MotObject::_handle_complete()
     qCDebug(sLogMotObject) << "MOT object" << mTransportId << "has no name, using" << mName;
   }
 
+  if (mIsSpi)
+  {
+    qCDebug(sLogMotObject) << "emit signal_new_spi_object" << mTransportId << "with name" << mName << "and content type" << mHeaderCore.get_content_type();
+    SMotSpiObject spiObject = mSpiParams;
+    spiObject.body = result;
+    spiObject.contentName = mName;
+    spiObject.contentType = mHeaderCore.get_content_type();
+    emit signal_new_spi_object(spiObject);
+    return;
+  }
+
   qCDebug(sLogMotObject) << "emit signal_new_mot_object" << mTransportId << "with name" << mName << "and content type" << mHeaderCore.get_content_type() << "and dirElement" << mIsDirElement;
   emit signal_new_mot_object(result, mName, mHeaderCore.get_content_type(), mIsDirElement);
 }
@@ -322,4 +393,5 @@ void MotObject::reset()
   mHeaderCore = {};
   mName.clear();
   mMotMap.clear();
+  mSpiParams = {};
 }

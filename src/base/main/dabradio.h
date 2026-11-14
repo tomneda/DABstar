@@ -40,6 +40,7 @@
 #include "openfiledialog.h"
 #include "device_selector_if.h"
 #include "epg_mot_handler.h"
+#include "mot_spi_object.h"
 #include "tii_manager.h"
 #include "ensemble_list.h"
 #include "dab_channel_desc.h"
@@ -61,7 +62,8 @@ class CirViewer;
 class Configuration;
 class QSettings;
 class Qt_Audio;
-class TimeTableHandler;
+class EpgManager;
+class EpgViewer;
 class ServiceListHandler;
 class TechData;
 class MapViewer;
@@ -123,7 +125,6 @@ private:
   static constexpr i32 cDisplayTimeoutMs     = 1000;
   static constexpr i32 cDynInfoReserveHeight = 30;   // reserved window height for the dynamic info fields (sizes not known at startup)
   static constexpr i32 cScanningTimeoutMs    = 6000; // max. waiting time for signal and FIB audio data while scanning
-  static constexpr i32 cEpgTimeoutMs         = 3000;
   static constexpr i32 cClockResetTimeoutMs  = 5000;
   static constexpr i32 cJournalineActivityMs = 300;  // shown time of the data receiving indicator on the JOUR button
 
@@ -191,7 +192,8 @@ private:
   QScopedPointer<Configuration> mpConfig;
   QScopedPointer<ItuTables> mpItuTables;
   QScopedPointer<DabProcessor> mpDabProcessor;
-  QScopedPointer<TimeTableHandler> mpTimeTable;
+  QScopedPointer<EpgManager> mpEpgManager;
+  QScopedPointer<EpgViewer> mpEpgViewer;
   QScopedPointer<ServiceListHandler> mpServiceListHandler;
   QScopedPointer<EnsembleList> mpEnsembleList;
   QScopedPointer<AudioManager> mpAudioManager;
@@ -221,7 +223,6 @@ private:
   uint32_t mEtiDumpTimer = 0;
 
   // QTimer objects
-  QTimer mEpgTimer;
   QTimer mDisplayTimer;
   QTimer mScanSecurityTimer;
   QTimer mClockResetTimer;
@@ -269,6 +270,7 @@ private:
 
   // Vectors
   std::vector<SDabService> mCurSecondaryServiceVec;
+  std::vector<SPacketData> mCurGlobalServiceVec; // running background services (SPI/EPG)
   std::vector<SServiceId> mServiceList;
   std::vector<QMetaObject::Connection> mSignalSlotConn;
 
@@ -378,7 +380,8 @@ private:
   void _initialize_audio_output();
   void _initialize_epg_mot_handler();
   void _initialize_tii_manager();
-  void _initialize_time_table();
+  void _initialize_epg();
+  void _start_epg_services();
   void _initialize_version_and_copyright_info();
   void _show_copyright_window();
   void _initialize_and_start_timers();
@@ -421,6 +424,7 @@ public slots:
   // MOT (Multimedia Object Transfer) — thin wrappers delegating to mpEpgMotHandler
   void slot_pad_mot_progress(i32 iPercent) const;
   void slot_handle_mot_object(const QByteArray& iResult, const QString& iObjectName, i32 iContentType, bool iDirElement) const;
+  void slot_handle_spi_object(const SMotSpiObject& iObject) const;
   void slot_trigger_mot_indicator() const;
 
   // Data Services
@@ -432,7 +436,6 @@ public slots:
   void slot_start_announcement(const QString& iName, i32 iSubChId);
   void slot_stop_announcement(const QString& iName, i32 iSubChId);
   void slot_ews_available();
-  void slot_epg_timer_timeout();
 
   // Configuration and Settings
   void slot_handle_dc_avoidance_algorithm(bool);
@@ -447,7 +450,7 @@ protected slots:
 
 private slots:
   // Button Handlers - UI Navigation
-  void _slot_handle_time_table();
+  void _slot_handle_epg_button();
   void _slot_handle_content_button();
   void _slot_handle_journaline_button() const;
   void _slot_handle_tech_detail_button();

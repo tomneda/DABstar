@@ -36,7 +36,8 @@
 #include "service_list_handler.h"
 #include "setting_helper.h"
 #include "qt_compat.h"
-#include "time_table.h"
+#include "epg_manager.h"
+#include "epg_viewer.h"
 #include "map_viewer.h"
 #include "updatechecker.h"
 #include "updatedialog.h"
@@ -49,6 +50,7 @@
 #include "audio_manager.h"
 #include "audio_pipeline.h"
 #include "mot_slide_progress.h"
+#include "mot_content_types.h"
 #include "window_visibility_watcher.h"
 #include "gui_helpers.h"
 #include <QMessageBox>
@@ -118,6 +120,7 @@ DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFil
   _initialize_traffic_lights();
   _initialize_audio_output();
   _initialize_epg_mot_handler();
+  _initialize_epg();
   _initialize_tii_manager();
   _initialize_signal_slot_connections();
   _initialize_ui_elements();
@@ -125,7 +128,6 @@ DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFil
   _initialize_indicator_buttons();
   _initialize_status_info();
   _initialize_dynamic_label();
-  _initialize_time_table();
   _initialize_version_and_copyright_info();
   _initialize_device_selector(mChannelDesc);
 
@@ -151,7 +153,7 @@ DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFil
 #endif
 
   connect(ui->btnMap, &QPushButton::clicked, this,  &DabRadio::_slot_handle_map_button);
-  connect(ui->btnEpg, &QPushButton::clicked, this, &DabRadio::_slot_handle_time_table);
+  connect(ui->btnEpg, &QPushButton::clicked, this, &DabRadio::_slot_handle_epg_button);
   connect(ui->btnJournaline, &QPushButton::clicked, this, &DabRadio::_slot_handle_journaline_button);
   connect(this, &DabRadio::signal_dab_processor_started, mpSpectrumViewer.get(), &SpectrumViewer::slot_update_settings);
   connect(ui->configButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_config_button);
@@ -309,7 +311,7 @@ void DabRadio::_slot_terminate_process()
   mDisplayTimer.stop();
   mEnsListRetriggerTimer.stop();
   mScanSecurityTimer.stop();
-  mEpgTimer.stop();
+  mpEpgViewer.reset();
 
   mpAudioManager->stop_audio_output();
 
@@ -625,11 +627,10 @@ bool DabRadio::_start_primary_and_secondary_service(const u32 iSId, const bool i
     _set_status_info_status(mStatusInfo.ProtLevel, getProtectionLevel(ad.shortForm, ad.protLevel));
     _set_status_info_status(mStatusInfo.AudioStandard, getAudioStandard(ad.ASCTy));
 
-    // TODO: how handle EPG?
-    // if (mpDabProcessor->get_fib_decoder()->has_time_table(ad.SId))
-    // {
-    //   ui->btnEpg->setEnabled(true);
-    // }
+    if (mpEpgViewer != nullptr)
+    {
+      mpEpgViewer->set_current_service(iSId);
+    }
 
     // Now try to find and create the secondary service(s)
     if (!iStartPrimaryAudioOnly) // only if FIB data complete loaded
@@ -666,7 +667,16 @@ bool DabRadio::_start_primary_and_secondary_service(const u32 iSId, const bool i
         ds.SubChId = pd.SubChId;
         ds.SCIdS = pd.SCIdS;
 
-        if (!_create_secondary_backend_packet_service(pd))
+        const bool isRunningAsGlobal = std::any_of(mCurGlobalServiceVec.cbegin(), mCurGlobalServiceVec.cend(), [&pd](const SPacketData& iPD)
+        {
+          return iPD.SubChId == pd.SubChId && iPD.PacketAddress == pd.PacketAddress;
+        });
+
+        if (isRunningAsGlobal)
+        {
+          qCDebug(sLogDabRadio) << "Secondary packet service is already running as global (EPG) service";
+        }
+        else if (!_create_secondary_backend_packet_service(pd))
         {
           qCCritical(sLogDabRadio) << "Could not create a secondary packet service";
           return false;
@@ -889,7 +899,7 @@ void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingS
 
   // mServiceList is mainly filled for audio in state S3_FullyAudioDataLoaded but for primary data services, also S4_FullyPacketDataLoaded should be evaluated
   mServiceList = mpDabProcessor->get_fib_decoder()->get_service_list();
-  mpEpgMotHandler->set_service_list(&mServiceList);
+  mpEpgManager->set_service_list(mServiceList);
 
   // In the service list we only collected audio services. But while scanning we run here also for packet data to update the scan statistics
   if (mIsScanning || fibDataNeeded || iFibLoadingState == IFibDecoder::EFibLoadingState::S3_FullyAudioDataLoaded)
@@ -922,6 +932,8 @@ void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingS
   {
     if (!mIsScanning) // ioChannelDesc.SId_next is invalid while scanning
     {
+      _start_epg_services();
+
       // u32 sId = mChannelDesc.get_sId_next();
       //
       // // If no SID is given, look in the service list for the first audio service
@@ -974,7 +986,6 @@ void DabRadio::_start_scanning(SChannelDescriptor& ioChannelDesc)
 {
   mEnsListRetriggerTimer.stop();
   mScanSecurityTimer.stop();
-  mEpgTimer.stop();
   _stop_channel();
   mChannelDesc.clean_channel();
 
@@ -1020,107 +1031,57 @@ void DabRadio::_stop_scanning(SChannelDescriptor& ioChannelDesc)
   }
 }
 
-void DabRadio::slot_epg_timer_timeout()
+// Starts the SPI (EPG) services of the ensemble in the background, they keep running when the selected service changes
+void DabRadio::_start_epg_services()
 {
-  mEpgTimer.stop();
-
-  // TODO: there is a public switch for this missing?!
-  // if (!mpSH->read(SettingHelper::epgFlag).toBool())
+  if (mIsScanning || !Settings::Config::cbReceiveEpg.read().toBool())
   {
     return;
   }
 
-  if (mIsScanning)
+  for (const SPacketData& pd : mpDabProcessor->get_fib_decoder()->get_spi_packet_services())
   {
-    return;
-  }
-
-  // TODO: make this EPG true!
-  for (const auto& serv: mServiceList)
-  {
-    if (serv.hasSpiEpgData)
+    if (!pd.isDefined || pd.bitRate == 0)
     {
-      std::vector<SPacketData> pdVec;
-      mpDabProcessor->get_fib_decoder()->get_data_for_packet_service(serv.SId, pdVec);
-
-      if (pdVec.empty())
-      {
-        continue;
-      }
-
-      const SPacketData& pd = pdVec[0];
-
-      if ((!pd.isDefined) || (pd.DSCTy == 0) || (pd.bitRate == 0))
-      {
-        continue;
-      }
-
-      if (pd.DSCTy == 60)
-      {
-        _show_epg_label(true);
-        qCDebug(sLogDabRadio) << "Starting hidden service " << serv.serviceLabel;
-        mpDabProcessor->set_data_channel(pd, mpDataBuffer, EProcessFlag::Primary);  // which ProcessFlag?
-        SDabService s;
-        // s.channel = pd.channel;
-        // s.serviceLabel = pd.serviceName;
-        s.SId = pd.SId;
-        s.SCIdS = pd.SCIdS;
-        s.SubChId = pd.SubChId;
-        // s.fd = nullptr;
-        mCurSecondaryServiceVec.emplace_back(s);
-      }
+      continue;
     }
-#ifdef  __DABDATA__
-    else
+
+    const bool isRunning = std::any_of(mCurGlobalServiceVec.cbegin(), mCurGlobalServiceVec.cend(), [&pd](const SPacketData& iPD)
     {
-      packetdata pd;
-      my_dabProcessor->dataforPacketService(serv.name, &pd, 0);
-      if ((pd.defined) && (pd.DSCTy == 59))
-      {
-        _show_epg_label(true);
-        fprintf(stdout, "Starting hidden service %s\n", serv.name.toUtf8().data());
-        my_dabProcessor->set_dataChannel(&pd, &dataBuffer, BACK_GROUND);
-        dabService s;
-        s.channel = channel.channelName;
-        s.serviceName = pd.serviceName;
-        s.SId = pd.SId;
-        s.SCIdS = pd.SCIdS;
-        s.subChId = pd.subchId;
-        s.fd = nullptr;
-        channel.backgroundServices.push_back(s);
-        break;
-      }
+      return iPD.SubChId == pd.SubChId && iPD.PacketAddress == pd.PacketAddress;
+    });
+
+    if (isRunning)
+    {
+      continue;
     }
-#endif
+
+    qCInfo(sLogDabRadio).nospace() << "Starting EPG service " << pd.serviceLabel.trimmed() << " (SId " << Qt::hex << pd.SId << Qt::dec
+                                   << ", SubChId " << pd.SubChId << ", packet address " << pd.PacketAddress << ") in background";
+    mpDabProcessor->set_data_channel(pd, mpDataBuffer, EProcessFlag::Global);
+    mCurGlobalServiceVec.emplace_back(pd);
   }
 }
 
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-
-void DabRadio::_slot_handle_time_table()
+void DabRadio::_slot_handle_epg_button()
 {
-  i32 epgWidth = 70; // comes only from ini file formerly
-
-  if (mCurPrimaryPacketService.SId == 0)
+  if (mpEpgViewer == nullptr)
   {
-    return;
+    mpEpgViewer.reset(new EpgViewer(mpEpgManager.get()));
+    connect(mpEpgViewer.get(), &EpgViewer::signal_service_selected, this, [this](const u32 iSId)
+    {
+      // only audio services of the current ensemble can be selected
+      const bool isAvailable = std::any_of(mServiceList.cbegin(), mServiceList.cend(), [iSId](const SServiceId& iS) { return iS.SId == iSId && iS.isAudioChannel; });
+      if (isAvailable)
+      {
+        slot_handle_fib_content_selector(iSId);
+      }
+    });
   }
 
-  mpTimeTable->clear();
-
-  if (epgWidth < 50)
-  {
-    epgWidth = 50;
-  }
-  // TODO: check EPG
-  // std::vector<SEpgElement> res = mpDabProcessor->get_fib_decoder()->find_epg_data(mChannelDesc.currentService.SId);
-  // for (const auto & element: res)
-  // {
-  //   mpTimeTable->addElement(element.theTime, epgWidth, element.theText, element.theDescr);
-  // }
+  mpEpgViewer->set_current_service(mCurPrimaryAudioService.SId);
+  mpEpgViewer->show_and_raise();
 }
-
 
 void DabRadio::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
 {
@@ -1266,7 +1227,27 @@ AudioPipeline* DabRadio::get_audio_pipeline() const
 void DabRadio::slot_handle_mot_object(const QByteArray& iResult, const QString& iObjectName, const i32 iContentType, const bool iDirElement) const
 {
   // qDebug() << "MOT progress: " << iResult.length() << iObjectName << iContentType << iDirElement;
+
+  // SPI (EPG) objects could also be carried in the X-PAD of an audio service, these are not marked as SPI objects
+  // (ETSI TS 102 371, table 12: ContentType 7 with ContentSubType 0 .. 2)
+  if (const auto contentType = static_cast<MOTContentType>(iContentType);
+      getContentBaseType(contentType) == MOTBaseTypeApplication && getContentSubType(contentType) <= (u8)Spi::EContentSubType::GroupInformation)
+  {
+    SMotSpiObject spiObject;
+    spiObject.body = iResult;
+    spiObject.contentName = iObjectName;
+    spiObject.contentType = iContentType;
+    slot_handle_spi_object(spiObject);
+    return;
+  }
+
   mpEpgMotHandler->handle_mot_object(iResult, iObjectName, iContentType, iDirElement);
+}
+
+void DabRadio::slot_handle_spi_object(const SMotSpiObject& iObject) const
+{
+  mpEpgManager->handle_spi_object(iObject);
+  mpEpgMotHandler->save_epg_object(iObject);
 }
 
 void DabRadio::slot_trigger_mot_indicator() const
@@ -1287,17 +1268,21 @@ void DabRadio::_initialize_epg_mot_handler()
   mpEpgMotHandler->slot_init_paths();
 
   connect(mpEpgMotHandler.get(), &EpgMotHandler::signal_mot_indicator, this, [this](bool b) { _set_status_info_status(mStatusInfo.MOT, b); });
-  connect(mpEpgMotHandler.get(), &EpgMotHandler::signal_epg_indicator, this, [this](bool b) { _show_epg_label(b); });
-
-  // EPG timer for autostart epg service
-  mEpgTimer.setSingleShot(true);
-  connect(&mEpgTimer, &QTimer::timeout, this, &DabRadio::slot_epg_timer_timeout);
 }
 
-void DabRadio::_initialize_time_table()
+void DabRadio::_initialize_epg()
 {
-  mpTimeTable.reset(new TimeTableHandler(this));
-  mpTimeTable->hide();
+  qRegisterMetaType<SMotSpiObject>();
+
+  mpEpgManager.reset(new EpgManager(this));
+  connect(mpEpgManager.get(), &EpgManager::signal_epg_available, this, [this](const bool iAvailable) { _show_epg_label(iAvailable); });
+  connect(mpEpgManager.get(), &EpgManager::signal_epg_changed, this, [this]()
+  {
+    if (mpEpgViewer != nullptr && mpEpgViewer->isVisible())
+    {
+      mpEpgViewer->slot_update();
+    }
+  });
 }
 
 void DabRadio::_initialize_tii_manager()

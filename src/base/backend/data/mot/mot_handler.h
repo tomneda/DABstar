@@ -41,7 +41,7 @@ class MotDirectory;
 class MotHandler : public VirtualDataHandler
 {
 public:
-  explicit MotHandler(DabRadio*);
+  MotHandler(DabRadio* ipRadio, bool iIsSpi); // iIsSpi: MOT carousel of an SPI (EPG) service
   ~MotHandler() override;
 
   void add_MSC_data_group(const std::vector<u8>&);
@@ -56,6 +56,7 @@ private:
 
   MotDirectory* mpDirectory = nullptr;
   DabRadio* const mpRadioInterface;
+  const bool mIsSpi;
   int mOrderNumber = 0;
   std::array<SMotTable, 15> mMotTable; // TODO: are 55 or 15 the better number?
 
