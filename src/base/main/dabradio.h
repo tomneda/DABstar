@@ -231,7 +231,7 @@ private:
   bool mIsFileMode = false;
   bool mIsEtiMode = false;                // the input device delivers ETI frames, so no sample related displays are possible
   bool mSuppressVisibilityStore = false;  // windows are hidden/shown temporarily, do not store this in the settings
-  struct SEtiHiddenWindows { bool spectrum = false; bool cir = false; bool tii = false; } mEtiHiddenWindows;
+  struct SEtiHiddenWindows { bool spectrum = false; bool cir = false; bool tii = false; bool map = false; } mEtiHiddenWindows;
   i32 mFileSliderMovementPos = -1;
   bool mFilePaused = false;
   i32 mWindowBaseHeight = 0; // fixed window height without the file player bar

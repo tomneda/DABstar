@@ -8,6 +8,7 @@
 #include "techdata.h"
 #include "itu_regions.h"
 #include "copyright_info.h"
+#include "map_viewer.h"
 #include "spectrum_viewer.h"
 #include "cir_viewer.h"
 #include "configuration.h"
@@ -477,10 +478,15 @@ void DabRadio::_adapt_gui_for_eti_mode(const bool iEtiMode)
     mEtiHiddenWindows.spectrum = !mpSpectrumViewer->is_hidden();
     mEtiHiddenWindows.cir = !mpCirViewer->is_hidden();
     mEtiHiddenWindows.tii = !mpTiiManager->get_widget()->isHidden();
+    mEtiHiddenWindows.map = (mpMapViewer != nullptr && !mpMapViewer->isHidden());
 
     mpSpectrumViewer->hide();
     mpCirViewer->hide();
     mpTiiManager->get_widget()->hide();
+    if (mpMapViewer != nullptr)
+    {
+      mpMapViewer->hide(); // no TII data available in ETI mode, the map is kept open in background
+    }
 
     // SNR/MER is not available, show the audio level instead (without storing this mode)
     if (mLevelMeterMode == ELevelMeterMode::SnrMer)
@@ -492,8 +498,10 @@ void DabRadio::_adapt_gui_for_eti_mode(const bool iEtiMode)
   else
   {
     if (mEtiHiddenWindows.spectrum) mpSpectrumViewer->show();
-    if (mEtiHiddenWindows.cir)      mpCirViewer->show();
-    if (mEtiHiddenWindows.tii)      mpTiiManager->show_tii_display();
+    if (mEtiHiddenWindows.cir) mpCirViewer->show();
+    if (mEtiHiddenWindows.tii) mpTiiManager->show_tii_display();
+    if (mEtiHiddenWindows.map && mpMapViewer != nullptr) mpMapViewer->show();
+
     mEtiHiddenWindows = {};
 
     _set_level_meter_mode(static_cast<ELevelMeterMode>(Settings::Main::varLevelMeterMode.read().toUInt()), false);
@@ -506,6 +514,7 @@ void DabRadio::_adapt_gui_for_eti_mode(const bool iEtiMode)
   ui->btnSpectrumScope->setEnabled(!iEtiMode);
   ui->btnCir->setEnabled(!iEtiMode);
   ui->btnTii->setEnabled(!iEtiMode);
+  ui->btnMap->setEnabled(!iEtiMode && mChannelDesc.tiiFile);
   ui->btnToggleMeterMode->setEnabled(!iEtiMode);
   ui->btnDumpRaw->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
   ui->btnDumpEti->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
@@ -1452,11 +1461,11 @@ void DabRadio::_set_map_button(const EMapButtonState iMapButtonState) const
   {
   case EMapButtonState::Off:
     ui->btnMap->set_indicator_active(false);
-    ui->btnMap->setEnabled(true);
+    ui->btnMap->setEnabled(!mIsEtiMode);
     break;
   case EMapButtonState::On:
     ui->btnMap->set_indicator_active(true);
-    ui->btnMap->setEnabled(true);
+    ui->btnMap->setEnabled(!mIsEtiMode);
     break;
   }
 

@@ -1314,7 +1314,7 @@ void DabRadio::_initialize_tii_manager()
 
   connect(mpTiiManager.get(), &TiiManager::signal_tii_file_status, this, [this](bool valid, const QString& toolTip) {
     mChannelDesc.tiiFile = valid;
-    ui->btnMap->setEnabled(valid);
+    ui->btnMap->setEnabled(valid && !mIsEtiMode);
     if (!valid)
     {
       ui->btnMap->setToolTip(toolTip);
