@@ -36,6 +36,7 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QDir>
+#include <vector>
 
 OpenFileDialog::OpenFileDialog(QSettings * ipSetting) :
   mpSettings(ipSetting)
@@ -221,7 +222,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading() const
   fileName = QFileDialog::getOpenFileName(nullptr,
                                           "Open file ...",
                                           storedDir.path(),
-                                          "Sample data (*.uff *.sdr *.wav *.raw *.iq)",
+                                          "Sample data (*.uff *.sdr *.wav *.raw *.iq *.eti)",
                                           &selectedFilter,
                                           useNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
@@ -260,7 +261,13 @@ OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & iFileNam
     return EFileType::UNDEF;
   }
 
+  const bool isEti = _is_eti_ni_file(pFile);
   fclose(pFile);
+
+  if (isEti)
+  {
+    return EFileType::ETI_NI;
+  }
 
   if (memcmp(mByteBuffer, "<?xml", 5) == 0)
   {
@@ -277,6 +284,44 @@ OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString & iFileNam
 #endif
 
   return fileType;
+}
+
+// Looks for two consecutive ETI(NI) frames (ERR byte 0xFF followed by a FSYNC word) starting within the first frame.
+bool OpenFileDialog::_is_eti_ni_file(FILE * const ipFile)
+{
+  constexpr i32 cFrameSize = 6144;
+  std::vector<u8> buffer(2 * cFrameSize + 4);
+
+  fseek(ipFile, 0, SEEK_SET);
+  const size_t n = fread(buffer.data(), sizeof(u8), buffer.size(), ipFile);
+
+  if (n < buffer.size())
+  {
+    return false;
+  }
+
+  auto get_fsync = [&buffer](const i32 iIdx) -> u32
+  {
+    return (u32)buffer[iIdx + 1] << 16 | (u32)buffer[iIdx + 2] << 8 | (u32)buffer[iIdx + 3];
+  };
+
+  for (i32 idx = 0; idx < cFrameSize; ++idx)
+  {
+    const u32 fsync1 = get_fsync(idx);
+
+    if (buffer[idx] == 0xFF && (fsync1 == 0x073AB6 || fsync1 == 0xF8C549))
+    {
+      const u32 fsync2 = get_fsync(idx + cFrameSize);
+
+      // the FSYNC words should alternate, but some writers (e.g. older Qt-DAB versions) always use the same one
+      if (buffer[idx + cFrameSize] == 0xFF && (fsync2 == 0x073AB6 || fsync2 == 0xF8C549))
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 void OpenFileDialog::_remove_invalid_characters(QString & ioStr) const

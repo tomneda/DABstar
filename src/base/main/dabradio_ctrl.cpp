@@ -88,6 +88,7 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
   // Here, a new device handler will created, a maybe former existing will be destroyed
   // If it is a file and the file is invalid, then it returns nullptr else well
   mpInputDevice = mpDeviceSelector->create_device(iDeviceNameOrFileName, mIsFileMode, mIsScanning);
+  _adapt_gui_for_eti_mode(mpInputDevice != nullptr && mpInputDevice->get_eti_source() != nullptr);
 
   if (mpInputDevice == nullptr) // something went wrong with the device creation
   {
@@ -130,7 +131,7 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString & iDevic
 
   emit signal_dab_processor_started(); // triggers the DAB processor rereading (new) settings
 
-  if (Settings::CirViewer::varUiVisible.read().toBool())
+  if (!mIsEtiMode && Settings::CirViewer::varUiVisible.read().toBool())
   {
     mpDabProcessor->activate_cir_viewer(true);
     mpCirViewer->show();
@@ -181,6 +182,13 @@ void DabRadio::_start_channel(const QString & iFIdOrCh, const u32 iSId)
   assert(mpInputDevice != nullptr);
   const i32 tunedFrequencyHz = (mIsFileMode ? mpInputDevice->getVFOFrequency() : mpEnsembleList->get_band_handler().get_frequency_Hz(iFIdOrCh));
   mChannelDesc.deferredData.nomFreqHz = tunedFrequencyHz;
+  if (mIsEtiMode)
+  {
+    // these values are evaluated from the samples, which ETI input does not provide, so do not wait for them
+    mChannelDesc.deferredData.snr = 0.0f;
+    mChannelDesc.deferredData.mer = 0.0f;
+    mChannelDesc.deferredData.bbOffset = 0;
+  }
   mpSpectrumViewer->show_nominal_frequency_MHz((f32)tunedFrequencyHz / 1'000'000.0f);
   mDipSyncState = EDipSyncState::NotSetYet;
   mpInputDevice->resetBuffer();

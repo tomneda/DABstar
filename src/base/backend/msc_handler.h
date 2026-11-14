@@ -33,6 +33,15 @@
 class DabRadio;
 class Backend;
 
+// One sub-channel stream of an ETI frame (MST data is already decoded and without energy dispersal)
+struct SEtiSubChannel
+{
+  i32 subChId;     // SCID
+  i32 startAddr;   // SAD in CUs
+  const u8 * pData;
+  i32 size;        // in bytes (STL * 8)
+};
+
 class MscHandler
 {
 public:
@@ -40,6 +49,7 @@ public:
   ~MscHandler();
 
   void process_block(const std::vector<i16> & iSoftBits, i32 iBlockNr);
+  void process_eti_frame(const std::vector<SEtiSubChannel> & iSubChannels);
   bool set_channel(const SDescriptorType * d, RingBuffer<i16> * ipoAudioBuffer, RingBuffer<u8> * ipoDataBuffer, EProcessFlag iProcessFlag);
   void reset_channel();
   void stop_service(i32 iSubChId, EProcessFlag iProcessFlag);

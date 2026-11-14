@@ -53,7 +53,7 @@ TiiManager::TiiManager(const SResourceConfig & cfg, QObject * parent)
   auto * watcher = new WindowVisibilityWatcher(mTiiListDisplay.get_widget(), this);
   connect(watcher, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
     mShowTiiListWindow = visible;
-    if (!DabRadio::is_terminating())
+    if (!DabRadio::is_terminating() && !mSuppressVisibilityStore)
     {
       Settings::TiiViewer::varUiVisible.write(visible);
     }

@@ -33,6 +33,7 @@
 #include "dabradio.h"
 #include "process_params.h"
 #include "eti_generator.h"
+#include "crc.h"
 
 /**
   * \brief DabProcessor
@@ -49,6 +50,7 @@ static constexpr i32 cSettleSampleCnt = INPUT_RATE / 4; // 250 ms
 
 DabProcessor::DabProcessor(DabRadio * const mr, IDeviceHandler * const inputDevice, ProcessParams * const p)
   : mpRadioInterface(mr)
+  , mpEtiSource(inputDevice->get_eti_source())
   , mSampleReader(mr, inputDevice, p->spectrumBuffer)
   , mFicHandler(mr)
   , mpFibDecoder(mFicHandler.get_fib_decoder())
@@ -115,6 +117,12 @@ void DabProcessor::run()  // run QThread
   mRfFreqShiftUsed = false;
 
   mSampleReader.set_running(true);  // useful after a restart
+
+  if (mpEtiSource != nullptr)
+  {
+    _run_eti(); // no samples available, the ETI frames contain already decoded data
+    return;
+  }
 
   enum class EState
   {
@@ -186,6 +194,153 @@ void DabProcessor::run()  // run QThread
     (void)e;
     if (e != 20) qWarning() << "DabProcessor has stopped via exception:" << e; // e == 20 is normal condition
   }
+}
+
+// Processing loop for ETI input. The FIC and sub-channel data are fed directly into the FicDecoder and the MscHandler,
+// all the OFDM related processing (and its displays) is not used.
+void DabProcessor::_run_eti()
+{
+  constexpr i32 cFrameTimeout_ms = 100;
+  constexpr i32 cNoSyncTimeout_ms = 2000;
+
+  TEtiFrame frame;
+  std::vector<SEtiSubChannel> subChannels;
+  subChannels.reserve(64);
+  bool synced = false;
+  i32 noSyncTime_ms = 0;
+
+  while (mSampleReader.is_running())
+  {
+    bool frameOk = false;
+
+    if (mpEtiSource->get_eti_frame(frame, cFrameTimeout_ms))
+    {
+      frameOk = _process_eti_frame(frame, subChannels);
+      if (!frameOk)
+      {
+        noSyncTime_ms += 24;
+      }
+    }
+    else
+    {
+      noSyncTime_ms += cFrameTimeout_ms; // no frame available (e.g. file paused), but this is no loss of sync
+      continue;
+    }
+
+    if (frameOk)
+    {
+      noSyncTime_ms = 0;
+      if (!synced)
+      {
+        synced = true;
+        emit signal_dip_sync_found();
+      }
+    }
+    else if (noSyncTime_ms >= cNoSyncTimeout_ms)
+    {
+      noSyncTime_ms = 0;
+      synced = false;
+      emit signal_no_dip_sync_found();
+    }
+  }
+}
+
+// Evaluates one ETI(NI) frame according ETSI EN 300 799 (similar to ETIPlayer::DecodeFrame() in dablin).
+// Returns false if the frame is not valid.
+bool DabProcessor::_process_eti_frame(const TEtiFrame & iFrame, std::vector<SEtiSubChannel> & oSubChannels)
+{
+  const u8 * const f = iFrame.data();
+
+  // ERR
+  if (f[0] != 0xFF)
+  {
+    return false;
+  }
+
+  // FSYNC
+  if (const u32 fsync = (u32)f[1] << 16 | (u32)f[2] << 8 | (u32)f[3];
+      fsync != 0x073AB6 && fsync != 0xF8C549)
+  {
+    return false;
+  }
+
+  // null transmission
+  if (f[4] == 0xFF && f[5] == 0xFF && f[6] == 0xFF && f[7] == 0xFF)
+  {
+    return false;
+  }
+
+  // FC
+  const bool ficf = (f[5] & 0x80) != 0;
+  const i32 nst = f[5] & 0x7F;
+  const i32 mid = (f[6] & 0x18) >> 3;
+  const i32 fl = (f[6] & 0x07) << 8 | f[7]; // in 32 bit words
+
+  // header CRC over FC, STC and MNSC
+  const i32 headerCrcDataLen = 4 + nst * 4 + 2;
+  const u16 headerCrcStored = (u16)(f[4 + headerCrcDataLen] << 8 | f[4 + headerCrcDataLen + 1]);
+  if (calc_crc(f + 4, headerCrcDataLen) != headerCrcStored)
+  {
+    return false;
+  }
+
+  i32 mstOffset = 4 + 4 + nst * 4 + 4;
+  const i32 mstLen = (fl - nst - 1) * 4;
+
+  if (mstLen < 0 || mstOffset + mstLen + 4 > cEtiFrameSize)
+  {
+    return false;
+  }
+
+  // EOF CRC over MST
+  const u16 mstCrcStored = (u16)(f[mstOffset + mstLen] << 8 | f[mstOffset + mstLen + 1]);
+  if (calc_crc(f + mstOffset, mstLen) != mstCrcStored)
+  {
+    return false;
+  }
+
+  // FIC: 24 words (3 FIBs) in mode I, II, IV; 32 words (4 FIBs) in mode III
+  const i32 ficLen = ficf ? (mid == 3 ? 32 : 24) * 4 : 0;
+  const i32 mstEnd = mstOffset + mstLen;
+
+  if (mstOffset + ficLen > mstEnd)
+  {
+    return false;
+  }
+
+  if (ficLen > 0)
+  {
+    mFicHandler.process_eti_fic(f + mstOffset, ficLen / 32);
+  }
+  mstOffset += ficLen;
+
+  if (mScanMode)
+  {
+    return true;
+  }
+
+  // STC
+  oSubChannels.clear();
+
+  for (i32 i = 0; i < nst; i++)
+  {
+    const u8 * const stc = f + 8 + i * 4;
+    const i32 size = ((stc[2] & 0x03) << 8 | stc[3]) * 8; // STL is given in 64 bit units
+
+    if (mstOffset + size > mstEnd)
+    {
+      return false;
+    }
+
+    oSubChannels.push_back({ .subChId = (stc[0] & 0xFC) >> 2,
+                             .startAddr = (stc[0] & 0x03) << 8 | stc[1],
+                             .pData = f + mstOffset,
+                             .size = size });
+    mstOffset += size;
+  }
+
+  mMscHandler.process_eti_frame(oSubChannels);
+  return true;
 }
 
 void DabProcessor::_state_process_rest_of_frame(i32 & ioSampleCount)
@@ -528,6 +683,11 @@ void DabProcessor::stop_fic_dump()
 
 bool DabProcessor::start_eti_generator(const QString & s)
 {
+  if (mpEtiSource != nullptr) // there are no soft bits available to generate ETI from
+  {
+    return false;
+  }
+
   if (mEtiOn)
   {
     return true;

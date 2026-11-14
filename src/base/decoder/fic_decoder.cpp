@@ -234,30 +234,66 @@ void FicDecoder::_process_fic_input(const i16 iFicIdx, bool & oFicValid)
   for (i16 fibIdx = 0; fibIdx < cFibPerFic; fibIdx++)
   {
     const auto & oneFib = *reinterpret_cast<std::array<std::byte, cFibSizeVitOut> *>(&fibBitsOf3Fibs[fibIdx * cFibSizeVitOut]);
+    _process_one_fib(oneFib, iFicIdx, oFicValid);
+  }
+}
 
-    if (check_CRC_bits(reinterpret_cast<const u8 *>(oneFib.data()), cFibSizeVitOut))
+void FicDecoder::_process_one_fib(const std::array<std::byte, cFibSizeVitOut> & iOneFib, const i16 iFicIdx, bool & ioFicValid)
+{
+  if (check_CRC_bits(reinterpret_cast<const u8 *>(iOneFib.data()), cFibSizeVitOut))
+  {
+    if (mpFicDump != nullptr)
     {
-      if (mpFicDump != nullptr)
-      {
-        _dump_fib_to_file(oneFib.data());
-      }
-
-      mpFibDecoder->process_FIB(oneFib, iFicIdx);
-
-      if (mFicDecodeSuccessRatio < 10)
-      {
-        mFicDecodeSuccessRatio++; // this is increased with each correct FIB
-      }
+      _dump_fib_to_file(iOneFib.data());
     }
-    else
+
+    mpFibDecoder->process_FIB(iOneFib, iFicIdx);
+
+    if (mFicDecodeSuccessRatio < 10)
     {
-      oFicValid = false;
-
-      if (mFicDecodeSuccessRatio > 0)
-      {
-        mFicDecodeSuccessRatio--;
-      }
+      mFicDecodeSuccessRatio++; // this is increased with each correct FIB
     }
+  }
+  else
+  {
+    ioFicValid = false;
+
+    if (mFicDecodeSuccessRatio > 0)
+    {
+      mFicDecodeSuccessRatio--;
+    }
+  }
+}
+
+// An ETI frame (24 ms) contains the FIBs of one CIF already Viterbi decoded and without energy dispersal (3 FIBs in mode I).
+void FicDecoder::process_eti_fic(const u8 * const ipFibBytes, const i32 iNumFibs)
+{
+  if (!mIsRunning.load())
+  {
+    return;
+  }
+
+  // one call per 24 ms, so the status is emitted nearly each second like in the OFDM path (there are no bit errors known)
+  if (++mFicBlock >= 40)
+  {
+    emit signal_fic_status(mFicDecodeSuccessRatio * 10 /*in full percent*/, 0.0f);
+    mFicBlock = 0;
+  }
+
+  constexpr i32 cFibBytes = cFibSizeVitOut / 8;
+  std::array<std::byte, cFibSizeVitOut> oneFib;
+  bool ficValid = true;
+
+  for (i32 fibIdx = 0; fibIdx < iNumFibs; fibIdx++)
+  {
+    const u8 * const pFib = ipFibBytes + fibIdx * cFibBytes;
+
+    for (i32 i = 0; i < cFibSizeVitOut; i++) // unpack bits MSB first
+    {
+      oneFib[i] = static_cast<std::byte>((pFib[i >> 3] >> (7 - (i & 7))) & 1);
+    }
+
+    _process_one_fib(oneFib, 0, ficValid);
   }
 }
 

@@ -167,6 +167,10 @@ CATEGORY_BEGIN(FileReaderWav)
   DEFINE_POS_SIZE(FileReaderWav)
 CATEGORY_END(FileReaderWav)
 
+CATEGORY_BEGIN(FileReaderEti)
+  DEFINE_POS_SIZE(FileReaderEti)
+CATEGORY_END(FileReaderEti)
+
 CATEGORY_BEGIN(EnsembleList)
   DEFINE_POS_SIZE_NAMED(EnsembleList, posAndSizeChMode)
   DEFINE_POS_SIZE_NAMED(EnsembleList, posAndSizeFMode)

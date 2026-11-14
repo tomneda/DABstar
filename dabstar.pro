@@ -120,6 +120,7 @@ INCLUDEPATH += \
 INCLUDEPATH += \
     src/devices \
     src/devices/filereaders/filereader \
+    src/devices/filereaders/eti_files \
     src/devices/filereaders/raw_files \
     src/devices/filereaders/wav_files \
     src/devices/filereaders/xml_filereader
@@ -130,6 +131,7 @@ HEADERS += \
     src/common/device_handler_if.h \
     src/common/device_selector_if.h \
     src/common/device_notifier_if.h \
+    src/common/eti_source_if.h \
     src/common/fir_filters.h \
     src/common/glob_data_types.h \
     src/common/glob_defs.h \
@@ -264,6 +266,8 @@ HEADERS += \
     src/devices/device_selector.h \
     src/devices/dongleselect.h \
     src/devices/filereaders/filereader/filereader_widget.h \
+    src/devices/filereaders/eti_files/eti_reader.h \
+    src/devices/filereaders/eti_files/etifiles.h \
     src/devices/filereaders/raw_files/raw_reader.h \
     src/devices/filereaders/raw_files/rawfiles.h \
     src/devices/filereaders/wav_files/wav_reader.h \
@@ -388,6 +392,8 @@ SOURCES += \
 SOURCES += \
     src/devices/device_selector.cpp \
     src/devices/dongleselect.cpp \
+    src/devices/filereaders/eti_files/eti_reader.cpp \
+    src/devices/filereaders/eti_files/etifiles.cpp \
     src/devices/filereaders/raw_files/raw_reader.cpp \
     src/devices/filereaders/raw_files/rawfiles.cpp \
     src/devices/filereaders/wav_files/wav_reader.cpp \

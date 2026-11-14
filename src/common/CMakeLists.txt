@@ -8,6 +8,7 @@ set(${commonLibName}_SRCS
         xml_filewriter.cpp
         setting_helper.cpp
         device_notifier_if.h
+        eti_source_if.h
 )
 
 if (USE_LIQUID)

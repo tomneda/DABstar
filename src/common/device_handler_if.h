@@ -34,6 +34,7 @@
 #include <QString>
 
 class QWidget;
+class IEtiSource;
 
 class IDeviceHandler
 {
@@ -64,4 +65,7 @@ public:
   virtual f32 get_file_duration_s() const { return 0.0f; }
   virtual void jump_to_file_pos_per_mill(i32 /*iPerMill*/) {}
   virtual void set_file_paused(bool /*iPaused*/) {}
+
+  // only used by devices which deliver ETI frames instead of IQ samples
+  virtual IEtiSource * get_eti_source() { return nullptr; }
 };

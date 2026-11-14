@@ -44,6 +44,7 @@
 #include "xml_filereader.h"
 #include "wavfiles.h"
 #include "rawfiles.h"
+#include "etifiles.h"
 #include "setting_helper.h"
 #include <QSettings>
 #include <thread>
@@ -151,6 +152,7 @@ std::unique_ptr<IDeviceHandler> DeviceSelector::_open_input_file_device_from_fil
   case OpenFileDialog::EFileType::UFF_XML: return std::make_unique<XmlFileReader>(iFilepath);
   case OpenFileDialog::EFileType::SDR_WAV: return std::make_unique<WavFileHandler>(iFilepath);
   case OpenFileDialog::EFileType::RAW_IQ:  return std::make_unique<RawFileHandler>(iFilepath);
+  case OpenFileDialog::EFileType::ETI_NI:  return std::make_unique<EtiFileHandler>(iFilepath);
   }
 
   return nullptr;

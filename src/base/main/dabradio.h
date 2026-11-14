@@ -229,6 +229,9 @@ private:
 
   // Booleans
   bool mIsFileMode = false;
+  bool mIsEtiMode = false;                // the input device delivers ETI frames, so no sample related displays are possible
+  bool mSuppressVisibilityStore = false;  // windows are hidden/shown temporarily, do not store this in the settings
+  struct SEtiHiddenWindows { bool spectrum = false; bool cir = false; bool tii = false; } mEtiHiddenWindows;
   i32 mFileSliderMovementPos = -1;
   bool mFilePaused = false;
   i32 mWindowBaseHeight = 0; // fixed window height without the file player bar
@@ -332,13 +335,14 @@ private:
 
   // UI Controls and Styling
   void _set_favorite_button_style();
-  void _set_level_meter_mode(ELevelMeterMode iMode);
+  void _set_level_meter_mode(ELevelMeterMode iMode, bool iStoreSetting = true);
   void _show_epg_label(const bool iShowLabel);
   enum class EHttpButtonState { Off, On, Waiting };
   void _set_http_server_button(EHttpButtonState iHttpServerState) const;
   void _set_clock_text(const QString & iText = QString());
   void _enable_ui_elements_for_safety(bool iEnable) const;
   void _adapt_gui_for_device_or_file_play(bool iPlayingDevice) const;
+  void _adapt_gui_for_eti_mode(bool iEtiMode);
   void _cleanup_ui() const;
   void _set_mot_progress(i32 iMotStart, i32 iMotEnd) const;
 

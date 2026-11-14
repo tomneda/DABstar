@@ -57,7 +57,7 @@ public:
   QString get_dl_text_file_name();
   QString get_eti_file_name(const QString &, const QString &) const;
 
-  enum class EFileType { UNDEF, UFF_XML, SDR_WAV, RAW_IQ }; // do not use "RAW" as it seems to be used as macro
+  enum class EFileType { UNDEF, UFF_XML, SDR_WAV, RAW_IQ, ETI_NI }; // do not use "RAW" as it seems to be used as macro
   QString open_sample_data_file_dialog_for_reading() const;
   EFileType get_file_type(const QString & iFileName) const;
 
@@ -66,5 +66,6 @@ private:
 
   QString _open_file_dialog(const QString & iFileNamePrefix, const QString & iSettingName, const QString & iFileDesc, const QString & iFileExt) const;
   void _remove_invalid_characters(QString & ioStr) const;
+  static bool _is_eti_ni_file(FILE * ipFile);
 };
 

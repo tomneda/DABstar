@@ -47,6 +47,7 @@ public:
   ~FicDecoder() override = default;
 
   void process_block(const std::vector<i16> & iOfdmSoftBits, const i32 iOfdmSymbIdx);
+  void process_eti_fic(const u8 * ipFibBytes, i32 iNumFibs); // already decoded FIBs from an ETI frame (32 bytes each)
   void stop();
   void restart();
   void get_fib_bits(u8 *, bool *);
@@ -79,6 +80,7 @@ private:
 
   void _process_fic_input(i16 iFicIdx, bool & oFicValid);
   void _dump_fib_to_file(const std::byte * ipOneFibBits) const;
+  void _process_one_fib(const std::array<std::byte, cFibSizeVitOut> & iOneFib, i16 iFicIdx, bool & ioFicValid);
 
 signals:
   void signal_fic_status(i32, f32);

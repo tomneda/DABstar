@@ -199,6 +199,8 @@ set(${devicesLibName}_HDRS
         filereaders/raw_files/raw_reader.h
         filereaders/wav_files/wavfiles.h
         filereaders/wav_files/wav_reader.h
+        filereaders/eti_files/etifiles.h
+        filereaders/eti_files/eti_reader.h
 )
 
 set(${devicesLibName}_SRCS
@@ -212,6 +214,8 @@ set(${devicesLibName}_SRCS
         filereaders/raw_files/raw_reader.cpp
         filereaders/wav_files/wavfiles.cpp
         filereaders/wav_files/wav_reader.cpp
+        filereaders/eti_files/etifiles.cpp
+        filereaders/eti_files/eti_reader.cpp
 )
 
 qt6_wrap_ui(${devicesLibName}_UI_HDRS
@@ -235,6 +239,7 @@ target_include_directories(${devicesLibName}
         filereaders/xml_filereader
         filereaders/raw_files
         filereaders/wav_files
+        filereaders/eti_files
         ${devicesExtraIncludes}
 )
 

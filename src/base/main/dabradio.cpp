@@ -392,7 +392,7 @@ void DabRadio::_slot_handle_tech_detail_button()
 
 void DabRadio::_slot_handle_cir_button()
 {
-  if (!mIsChannelRunning)
+  if (!mIsChannelRunning || mIsEtiMode)
     return;
 
   mpCirViewer->setVisible(mpCirViewer->is_hidden());
@@ -418,6 +418,10 @@ void DabRadio::_slot_handle_reset_button()
 
 void DabRadio::_slot_handle_spectrum_button()
 {
+  if (mIsEtiMode)
+  {
+    return;
+  }
   mpSpectrumViewer->setVisible(mpSpectrumViewer->is_hidden());
 }
 

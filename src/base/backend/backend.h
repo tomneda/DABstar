@@ -58,6 +58,7 @@ public:
   ~Backend();
 
   i32 process(const i16 * iV, i32 cnt);
+  void process_eti(const u8 * ipData, i32 iSize); // already decoded sub-channel data of one CIF from an ETI frame
   void stop_running();
 
   // we need sometimes to access the key parameters for decoding
@@ -86,6 +87,7 @@ private:
 #endif
   void _process_segment(const i16 * iData);
   DabRadio * radioInterface;
+  bool etiSizeWarned = false;
 
   i32 fragmentSize;
   std::vector<std::vector<i16>> interleaveData;

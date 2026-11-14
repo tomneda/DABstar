@@ -166,3 +166,21 @@ void MscHandler::process_block(const std::vector<i16> & iSoftBits, const i32 iBl
     b->process(&mCifVector[b->CuStartAddr * cCUSizeBits], b->CuSize * cCUSizeBits);
   }
 }
+
+// Called from within the DabProcessor thread for each ETI frame (one CIF). The sub-channel data in an ETI frame is
+// already time-deinterleaved, Viterbi decoded and the energy dispersal is reverted.
+void MscHandler::process_eti_frame(const std::vector<SEtiSubChannel> & iSubChannels)
+{
+  QMutexLocker lock(&mMutex);
+  for (const auto & b: mBackendList)
+  {
+    for (const auto & sc : iSubChannels)
+    {
+      if (sc.subChId == b->subChId && sc.startAddr == b->CuStartAddr)
+      {
+        b->process_eti(sc.pData, sc.size);
+        break;
+      }
+    }
+  }
+}

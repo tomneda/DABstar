@@ -42,6 +42,7 @@
 #include "ringbuffer.h"
 #include "tii_detector.h"
 #include "timesyncer.h"
+#include "eti_source_if.h"
 #include <fftw3.h>
 #include <QThread>
 #include <QObject>
@@ -110,6 +111,7 @@ public:
 
 private:
   DabRadio * const mpRadioInterface;
+  IEtiSource * const mpEtiSource; // != nullptr if the input device delivers ETI frames instead of samples
   SampleReader mSampleReader;
   FicDecoder mFicHandler;
   IFibDecoder * const mpFibDecoder;
@@ -151,6 +153,8 @@ private:
 #endif
 
   void run() override; // the new QThread
+  void _run_eti();
+  bool _process_eti_frame(const TEtiFrame & iFrame, std::vector<SEtiSubChannel> & oSubChannels);
 
   bool _state_wait_for_time_sync_marker();
   bool _state_eval_sync_symbol(i32 & oSampleCount, f32 iThreshold);

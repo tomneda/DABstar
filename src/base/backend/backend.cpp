@@ -160,6 +160,29 @@ void Backend::_process_segment(const i16 * iData)
   driver.add_to_frame(outV);
 }
 
+// The ETI data is processed synchronously (also with __THREADED_BACKEND__) as the expensive Viterbi decoding is not necessary.
+void Backend::process_eti(const u8 * const ipData, const i32 iSize)
+{
+  const i32 numBits = bitRate * 24;
+
+  if (iSize * 8 != numBits)
+  {
+    if (!etiSizeWarned)
+    {
+      qWarning() << "ETI sub-channel" << subChId << "has" << iSize << "bytes but expected" << numBits / 8 << "bytes";
+      etiSizeWarned = true;
+    }
+    return;
+  }
+
+  for (i32 i = 0; i < numBits; i++) // unpack bits MSB first
+  {
+    outV[i] = (ipData[i >> 3] >> (7 - (i & 7))) & 1;
+  }
+
+  driver.add_to_frame(outV);
+}
+
 #ifdef  __THREADED_BACKEND__
 
 void Backend::run()

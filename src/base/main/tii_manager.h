@@ -49,6 +49,7 @@ public:
   void set_http_handler(MapHttpServer * p)   { mpHttpHandler = p; }
   void set_channel_running(bool isRunning)   { mIsChannelRunning = isRunning; }
   void set_file_mode(bool isFileMode)        { mIsFileMode = isFileMode; }
+  void set_suppress_visibility_store(bool iSuppress) { mSuppressVisibilityStore = iSuppress; }
   void set_local_pos(const cf32 & localPos)  { mLocalPos = localPos; }
   void set_channel_info(const QString & fIdOrCh, u32 eid, const QString & countryName, const QString & typeInfo);
 
@@ -108,6 +109,7 @@ private:
   bool    mIsChannelRunning = false;
   bool    mIsFileMode       = false;
   bool    mShowTiiListWindow = false;
+  bool    mSuppressVisibilityStore = false;
 
 private slots:
   void _slot_tii_index_cnt_timeout();

@@ -205,8 +205,8 @@ void DabRadio::_initialize_ui_elements()
 void DabRadio::_initialize_indicator_buttons()
 {
   const auto * watcherSpec = WindowVisibilityWatcher::bind(mpSpectrumViewer->get_widget(), ui->btnSpectrumScope);
-  connect(watcherSpec, &WindowVisibilityWatcher::signal_visibility_changed, [](bool visible) {
-    if (!DabRadio::is_terminating())
+  connect(watcherSpec, &WindowVisibilityWatcher::signal_visibility_changed, this, [this](bool visible) {
+    if (!DabRadio::is_terminating() && !mSuppressVisibilityStore)
     {
       Settings::SpectrumViewer::varUiVisible.write(visible);
     }
@@ -225,7 +225,7 @@ void DabRadio::_initialize_indicator_buttons()
     if (!DabRadio::is_terminating())
     {
       if (mpDabProcessor) mpDabProcessor->activate_cir_viewer(visible);
-      Settings::CirViewer::varUiVisible.write(visible);
+      if (!mSuppressVisibilityStore) Settings::CirViewer::varUiVisible.write(visible);
     }
   });
 
@@ -460,6 +460,58 @@ void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) con
 #endif
 }
 
+// ETI input contains no samples, so all displays and functions depending on samples are switched off while playing ETI.
+// The windows are hidden and restored later without touching their stored visibility settings.
+void DabRadio::_adapt_gui_for_eti_mode(const bool iEtiMode)
+{
+  if (iEtiMode == mIsEtiMode)
+  {
+    return;
+  }
+
+  mIsEtiMode = iEtiMode;
+  mSuppressVisibilityStore = true;
+  mpTiiManager->set_suppress_visibility_store(true);
+
+  if (iEtiMode)
+  {
+    mEtiHiddenWindows.spectrum = !mpSpectrumViewer->is_hidden();
+    mEtiHiddenWindows.cir = !mpCirViewer->is_hidden();
+    mEtiHiddenWindows.tii = !mpTiiManager->get_widget()->isHidden();
+
+    mpSpectrumViewer->hide();
+    mpCirViewer->hide();
+    mpTiiManager->get_widget()->hide();
+
+    // SNR/MER is not available, show the audio level instead (without storing this mode)
+    if (mLevelMeterMode == ELevelMeterMode::SnrMer)
+    {
+      _set_level_meter_mode(ELevelMeterMode::AudioLevel, false);
+    }
+    ui->tlCoherent->setEnabled(false);
+  }
+  else
+  {
+    if (mEtiHiddenWindows.spectrum) mpSpectrumViewer->show();
+    if (mEtiHiddenWindows.cir)      mpCirViewer->show();
+    if (mEtiHiddenWindows.tii)      mpTiiManager->show_tii_display();
+    mEtiHiddenWindows = {};
+
+    _set_level_meter_mode(static_cast<ELevelMeterMode>(Settings::Main::varLevelMeterMode.read().toUInt()), false);
+    _slot_update_coherent_traffic_light(mpConfig->cmbSoftBitGen->currentIndex());
+  }
+
+  mSuppressVisibilityStore = false;
+  mpTiiManager->set_suppress_visibility_store(false);
+
+  ui->btnSpectrumScope->setEnabled(!iEtiMode);
+  ui->btnCir->setEnabled(!iEtiMode);
+  ui->btnTii->setEnabled(!iEtiMode);
+  ui->btnToggleMeterMode->setEnabled(!iEtiMode);
+  ui->btnDumpRaw->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
+  ui->btnDumpEti->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
+}
+
 void DabRadio::register_journaline_viewer(QWidget * const ipViewerWidget)
 {
   if (mpJournalineWindowWatcher != nullptr)
@@ -554,10 +606,13 @@ void DabRadio::_slot_toggle_level_meter_mode()
   _set_level_meter_mode(newMode);
 }
 
-void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode)
+void DabRadio::_set_level_meter_mode(const ELevelMeterMode iMode, const bool iStoreSetting /*= true*/)
 {
   mLevelMeterMode = iMode;
-  Settings::Main::varLevelMeterMode.write(static_cast<u32>(iMode));
+  if (iStoreSetting)
+  {
+    Settings::Main::varLevelMeterMode.write(static_cast<u32>(iMode));
+  }
 
   static const QString sCompactBtnStyle = QSL("QPushButton { padding: 0px; margin: 0px; }"); // needed to show the letter in the button
 
@@ -1370,8 +1425,8 @@ void DabRadio::_slot_handle_target_service_button()
 // In those case we are sure not to have an operating dabProcessor, we hide some buttons
 void DabRadio::_enable_ui_elements_for_safety(const bool iEnable) const
 {
-  ui->btnDumpRaw->setEnabled(iEnable);
-  ui->btnDumpEti->setEnabled(iEnable);
+  ui->btnDumpRaw->setEnabled(iEnable && !mIsEtiMode); // there are no samples or soft bits available with ETI input
+  ui->btnDumpEti->setEnabled(iEnable && !mIsEtiMode);
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);

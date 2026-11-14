@@ -114,7 +114,7 @@ void DabRadio::_stop_source_dumping(SDumpStatus & ioDumpStatus) const
 
 void DabRadio::_slot_handle_source_dump_button()
 {
-  if (!mIsChannelRunning || mIsScanning)
+  if (!mIsChannelRunning || mIsScanning || mIsEtiMode)
   {
     return;
   }
@@ -131,7 +131,7 @@ void DabRadio::_slot_handle_source_dump_button()
 
 void DabRadio::_slot_handle_eti_button()
 {
-  if (!mIsChannelRunning || mIsScanning)
+  if (!mIsChannelRunning || mIsScanning || mIsEtiMode)
   {
     return;
   }
