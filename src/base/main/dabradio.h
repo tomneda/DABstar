@@ -105,6 +105,8 @@ public:
   DabRadio(QSettings* ipSettings, const QString& iServiceListDbFileName, const QString& iEnsembleListDbFileName, i32 iDataPort, QWidget* iParent);
   ~DabRadio() override;
 
+  static constexpr i32 cExitCodeSetToDefaults = 0x5E7D; // application exit code to request a reset of all settings and a restart
+
   [[nodiscard]] static bool is_terminating() { return sIsTerminating || (qApp != nullptr && qApp->closingDown()); }
 
   AudioPipeline* get_audio_pipeline() const;
@@ -460,6 +462,7 @@ private slots:
   void _slot_handle_journaline_button() const;
   void _slot_handle_tech_detail_button();
   void _slot_handle_reset_button();
+  void _slot_handle_set_to_defaults_button();
   void _slot_handle_spectrum_button();
   void _slot_handle_cir_button();
   void _slot_handle_open_pic_folder_button() const;

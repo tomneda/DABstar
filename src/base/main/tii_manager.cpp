@@ -30,6 +30,12 @@
 
 Q_LOGGING_CATEGORY(sLogTii, "TiiManager", QtInfoMsg)
 
+// the TII library writes the downloaded TII database always to this file
+static QString get_tii_file_name()
+{
+  return QDir::homePath() + "/.txdata.tii";
+}
+
 static QString tiiNumber(const i32 n)
 {
   return n < 10 ? QSL("0%1").arg(n) : QString::number(n);
@@ -77,9 +83,9 @@ void TiiManager::set_channel_info(const QString& fIdOrCh, const u32 eid, const Q
 
 bool TiiManager::init_tii_file()
 {
-  QString tiiFileName = Settings::Config::varTiiFile.read().toString();
+  QString tiiFileName = get_tii_file_name();
 
-  if (tiiFileName.isEmpty() || !QFile(tiiFileName).exists())
+  if (!QFile::exists(tiiFileName))
   {
     tiiFileName = ":res/txdata.tii";
   }
@@ -125,13 +131,7 @@ void TiiManager::clear_tii_list_and_label()
 
 void TiiManager::load_table()
 {
-  QString tableFile = Settings::Config::varTiiFile.read().toString();
-
-  if (tableFile.isEmpty())
-  {
-    tableFile = QDir::homePath() + "/.txdata.tii";
-    Settings::Config::varTiiFile.write(tableFile);
-  }
+  const QString tableFile = get_tii_file_name();
 
   mTiiHandler.loadTable(tableFile);
 

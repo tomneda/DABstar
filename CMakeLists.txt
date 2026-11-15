@@ -299,6 +299,11 @@ if (BUILD_TESTING)
   target_include_directories(spi_decoder_test PRIVATE ${CMAKE_SOURCE_DIR}/src/base/backend/data/spi ${CMAKE_SOURCE_DIR}/src/common)
   target_link_libraries(spi_decoder_test PRIVATE Qt6::Core)
   add_test(NAME spi_decoder_test COMMAND spi_decoder_test)
+
+  add_executable(setting_reset_test tests/setting_reset_test.cpp src/common/setting_helper.cpp)
+  target_include_directories(setting_reset_test PRIVATE ${CMAKE_SOURCE_DIR}/src/common)
+  target_link_libraries(setting_reset_test PRIVATE Qt6::Widgets)
+  add_test(NAME setting_reset_test COMMAND setting_reset_test)
 endif ()
 
 configure_file(

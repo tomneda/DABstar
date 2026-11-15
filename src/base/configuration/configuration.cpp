@@ -87,7 +87,6 @@ Configuration::Configuration(DabRadio* ipRI) :
   lblDataBasePath->setText(Settings::Config::varDataBasePath5.read().toString());
 
   Settings::Config::varSkipFile.define_default_value("");
-  Settings::Config::varTiiFile.define_default_value("");
 
   connect(btnSelectBasePath, &QPushButton::clicked, this, &Configuration::_slot_select_base_path);
   connect(cbDoDcCorrOnly, &QCheckBox::clicked, this, &Configuration::_slot_handle_dc_corr);
@@ -103,6 +102,8 @@ Configuration::Configuration(DabRadio* ipRI) :
 
   btnCheckForUpdate->setStyleSheet(get_bg_style_sheet(0x2878C0, Qt::white));
   loadTableButton->setStyleSheet(get_bg_style_sheet(0x607898, Qt::white));
+  resetButton->setStyleSheet(get_bg_style_sheet(0x9E6A28, Qt::white));
+  btnSetToDefaults->setStyleSheet(get_bg_style_sheet(0x9E3A3A, Qt::white));
 
   cmbSoundOutput->setStyleSheet(get_combo_style_sheet(0xB87828));        // amber  — audio output
   cmbSoftBitGen->setStyleSheet(get_combo_style_sheet(0x5060A0));         // indigo — decoding algorithm

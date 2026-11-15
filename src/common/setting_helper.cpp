@@ -250,6 +250,29 @@ void Widget::_update_ui_state_to_setting_deferred()
   mpDeferTimer->start();
 }
 
+void reset_to_defaults(const std::vector<QString>& iKeepKeys)
+{
+  QSettings& settings = Storage::instance();
+  std::vector<std::pair<QString, QVariant>> keptEntries;
+
+  for (const QString& key : iKeepKeys)
+  {
+    if (settings.contains(key))
+    {
+      keptEntries.emplace_back(key, settings.value(key));
+    }
+  }
+
+  settings.clear();
+
+  for (const auto& [key, value] : keptEntries)
+  {
+    settings.setValue(key, value);
+  }
+
+  settings.sync();
+}
+
 PosAndSize::PosAndSize(const QString& iCat)
 : mKey(iCat + "/posAndSize")
 {}

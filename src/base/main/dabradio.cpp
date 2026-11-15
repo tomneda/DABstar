@@ -53,6 +53,9 @@
 #include "mot_content_types.h"
 #include "window_visibility_watcher.h"
 #include "gui_helpers.h"
+#include <QApplication>
+#include <QDir>
+#include <QFileInfo>
 #include <QMessageBox>
 
 #if defined(_WIN32)
@@ -411,6 +414,35 @@ void DabRadio::_slot_handle_reset_button()
   _stop_channel();
   mChannelDesc.clean_channel();
   _start_channel(mChannelDesc.get_fId_or_ch(), mChannelDesc.get_sId_next());
+}
+
+void DabRadio::_slot_handle_set_to_defaults_button()
+{
+  const QFileInfo settingsFileInfo(Settings::Storage::instance().fileName());
+
+  QMessageBox msgBox(QMessageBox::Warning, PRJ_NAME,
+    "<p><b>Set all settings to their default values?</b></p>"
+    "<p>This also includes the SDR device settings and the window positions.</p>"
+    "<p>The home coordinates, the peak level delay, the TII database file and the scanned service and ensemble database entries are kept.</p>"
+    "<p>This settings file will be reset (make a backup copy by hand if you may want to restore it):<br>"
+    "<b>" + QDir::toNativeSeparators(settingsFileInfo.absoluteFilePath()).toHtmlEscaped() + "</b></p>"
+    "<p>The file <b>fftwf_wisdom.txt</b> in the same folder will be deleted and generated anew.</p>"
+    "<p>" PRJ_NAME " will restart afterwards.</p>"
+    "<p>Are you really sure?</p>",
+    QMessageBox::No | QMessageBox::Yes, mpConfig.get());
+  msgBox.setTextFormat(Qt::RichText);
+  msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse); // allow copying the file path
+  msgBox.setDefaultButton(QMessageBox::No);
+  const i32 resultButton = msgBox.exec();
+
+  if (resultButton != QMessageBox::Yes)
+  {
+    return;
+  }
+
+  // the settings are cleared in main() after all components have written their last settings on shutdown
+  _slot_terminate_process();
+  QApplication::exit(cExitCodeSetToDefaults);
 }
 
 void DabRadio::_slot_handle_spectrum_button()
@@ -1108,14 +1140,18 @@ void DabRadio::_slot_handle_epg_button()
 
 void DabRadio::slot_handle_dc_avoidance_algorithm(bool iIsChecked)
 {
-  assert(mpDabProcessor != nullptr);
-  mpDabProcessor->set_dc_avoidance_algorithm(!mIsFileMode && iIsChecked);
+  if (mpDabProcessor != nullptr) // the setting is applied also when the DAB processor is (re)created
+  {
+    mpDabProcessor->set_dc_avoidance_algorithm(!mIsFileMode && iIsChecked);
+  }
 }
 
 void DabRadio::slot_handle_dc_and_iq_corr(const bool iDcCorr, const bool iIqCorr)
 {
-  assert(mpDabProcessor != nullptr);
-  mpDabProcessor->set_dc_and_iq_correction(iDcCorr, iIqCorr);
+  if (mpDabProcessor != nullptr) // the setting is applied also when the DAB processor is (re)created
+  {
+    mpDabProcessor->set_dc_and_iq_correction(iDcCorr, iIqCorr);
+  }
 }
 
 
@@ -1498,6 +1534,7 @@ void DabRadio::_initialize_signal_slot_connections()
   connect(mpConfig->cbTestTone, &QPushButton::clicked, mpAudioManager.get(), &AudioManager::slot_set_test_tone);
   connect(mpConfig->sbPeakLevelDelay, &QSpinBox::valueChanged, mpAudioManager.get(), &AudioManager::slot_update_peak_level_delay);
   connect(mpConfig->resetButton, &QPushButton::clicked, this, &DabRadio::_slot_handle_reset_button);
+  connect(mpConfig->btnSetToDefaults, &QPushButton::clicked, this, &DabRadio::_slot_handle_set_to_defaults_button);
   connect(ui->btnDumpRaw, &QPushButton::clicked, this, &DabRadio::_slot_handle_source_dump_button);
   connect(ui->btnDumpEti, &QPushButton::clicked, this, &DabRadio::_slot_handle_eti_button);
   connect(mpConfig->loadTableButton, &QPushButton::clicked, this, &DabRadio::slot_load_table);

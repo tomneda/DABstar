@@ -17,6 +17,7 @@
 
 #include "glob_data_types.h"
 #include <QSettings>
+#include <vector>
 
 class QTimer;
 
@@ -49,6 +50,7 @@ public:
   void define_default_value(const QVariant& iDefaultValue);
   [[nodiscard]] QVariant read() const;
   void write(const QVariant& iValue) const;
+  [[nodiscard]] const QString& get_key() const { return mKey; }
 
 private:
   QString mKey;
@@ -66,6 +68,7 @@ public:
   void register_widget_and_update_ui_from_setting(QWidget* const ipWidget, const QVariant& iDefaultValue);
   [[nodiscard]] QVariant read() const;
   i32 get_combobox_index() const;  // only usable for ComboBoxes, returns the last selected index
+  [[nodiscard]] const QString& get_key() const { return mKey; }
 
 private:
   void _update_ui_state_from_setting();
@@ -89,6 +92,9 @@ public:
 private:
   QString mKey;
 };
+
+// removes all entries from the setting storage (so the default values are used afterwards), only the entries with the keys in iKeepKeys are retained
+void reset_to_defaults(const std::vector<QString>& iKeepKeys);
 
 // here all the declarations of the ini file objects are done via macro filters
 #define FILTER_DECLARATIONS

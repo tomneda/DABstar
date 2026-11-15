@@ -64,7 +64,6 @@ CATEGORY_BEGIN_NEW_NAME(Config, "Configuration")  // provide the name "Configura
   DEFINE_POS_SIZE(Config)
   DEFINE_VARIANT_NODEF(Config, varDataBasePath5) // with ..._NODEF the default is set later in the code, "5" is for >= v5 DABstar version
   DEFINE_VARIANT_NODEF(Config, varSkipFile)
-  DEFINE_VARIANT_NODEF(Config, varTiiFile)
   DEFINE_VARIANT(Config, varLatitude, 0)
   DEFINE_VARIANT(Config, varLongitude, 0)
   DEFINE_WIDGET(Config, cbCloseDirect)

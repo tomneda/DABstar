@@ -36,8 +36,10 @@
 #include "qt_compat.h"
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include <QMessageBox>
 #include <QPalette>
+#include <QProcess>
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
@@ -187,12 +189,39 @@ i32 main(i32 argc, char** argv)
 
   import_fftw_wisdom(fftwWisdomFileName); // must happen before any FFTW plan is created
 
-  const auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbServiceListFileName, dbEnsembleListFileName, dataPort, nullptr));
+  auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbServiceListFileName, dbEnsembleListFileName, dataPort, nullptr));
   radioInterface->show();
 
-  QApplication::exec();
+  const i32 exitCode = QApplication::exec();
 
-  export_fftw_wisdom(fftwWisdomFileName);
+  radioInterface.reset(); // all components have written their last settings after that
+
+  if (exitCode == DabRadio::cExitCodeSetToDefaults)
+  {
+    // keep the home coordinates and the (calibrated) peak level delay,
+    // the TII database and the service and ensemble databases are separate files and are not touched
+    Settings::reset_to_defaults({ Settings::Config::varLatitude.get_key(), Settings::Config::varLongitude.get_key(), Settings::Config::sbPeakLevelDelay.get_key() });
+
+    // the FFTW wisdom is not exported but deleted, so it is generated anew
+    if (QFile::exists(fftwWisdomFileName) && !QFile::remove(fftwWisdomFileName))
+    {
+      qWarning() << "Could not delete FFTW wisdom file:" << fftwWisdomFileName;
+    }
+
+    qInfo() << "All settings are set to their defaults, restarting" << PRJ_NAME;
+
+    // within an AppImage the application file path points to a temporary mount point, so restart the AppImage itself
+    const QString appImagePath = qEnvironmentVariable("APPIMAGE");
+    const QString program = appImagePath.isEmpty() ? QCoreApplication::applicationFilePath() : appImagePath;
+    if (!QProcess::startDetached(program, QCoreApplication::arguments().mid(1)))
+    {
+      qWarning() << "Could not restart" << program;
+    }
+  }
+  else
+  {
+    export_fftw_wisdom(fftwWisdomFileName);
+  }
 
   fflush(stdout);
   fflush(stderr);

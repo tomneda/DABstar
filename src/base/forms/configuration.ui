@@ -599,6 +599,16 @@
        <item>
         <layout class="QHBoxLayout" name="hl_bottom">
          <item>
+          <widget class="QPushButton" name="resetButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Restart synchronization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Stops and restarts the current channel and service from scratch.&lt;/p&gt;&lt;p&gt;Use this if the synchronization got stuck or to reload the ensemble information.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Reset Synchronization</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="sp_bottom_left">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
@@ -612,16 +622,12 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="resetButton">
+          <widget class="QPushButton" name="btnSetToDefaults">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Restart synchronization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Stops and restarts the current channel and service from scratch.&lt;/p&gt;&lt;p&gt;Use this if the synchronization got stuck or to reload the ensemble information.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton { background-color:qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 rgba(158, 58, 58, 255),stop:1 rgba(118, 18, 18, 255)); color: #ffffff; }
-          </string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Set all settings to defaults&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Resets all settings (including the SDR device settings and window positions) to their default values and restarts DABstar after a confirmation.&lt;/p&gt;&lt;p&gt;The home coordinates, the peak level delay, the TII database file and the scanned service and ensemble database entries are kept.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Reset Synchronization</string>
+            <string>Set to Defaults…</string>
            </property>
           </widget>
          </item>

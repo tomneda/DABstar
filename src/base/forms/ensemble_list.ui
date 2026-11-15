@@ -213,7 +213,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Select the base folder for sample files&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the base folder containing one or more sample data files. The chosen path is shown to the right.&lt;/p&gt;&lt;p&gt;Use &amp;quot;Add files in folder to list&amp;quot; to add all files in the selected folder (and subfolders) to the ensemble list as &amp;quot;Not scanned&amp;quot; entries (greenish).&lt;/p&gt;&lt;p&gt;You can repeat this with a different base folder to add more files.&lt;/p&gt;&lt;p&gt;Invalid sample files are permitted; they will eventually be marked as &amp;quot;No signal&amp;quot;. File types are detected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Folder with files to add</string>
+         <string>Folder with files to add…</string>
         </property>
        </widget>
       </item>
@@ -269,7 +269,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add a single file to the ensemble list and start it immediately&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This replaces the former &amp;quot;Eject&amp;quot; button on the main window.&lt;/p&gt;&lt;p&gt;The chosen file is added to the ensemble list if not already present. If it already exists, it is selected and played immediately.&lt;/p&gt;&lt;p&gt;The minimum file size setting is ignored (only the absolute 4 MB minimum applies).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Add a single file and play</string>
+         <string>Add a single file and play…</string>
         </property>
        </widget>
       </item>
