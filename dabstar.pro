@@ -52,7 +52,6 @@ write_file($$OUT_PWD/git_hash.h, GIT_HASH_LINES)
 INCLUDEPATH += $$OUT_PWD
 
 #DESTDIR 	= ../../DABstar-Qt6.12.0
-LIBS		+= -L$$_PRO_FILE_PWD_/../dabstar-libs/lib
 CONFIG		+= airspy
 CONFIG		+= spyServer
 CONFIG		+= rtl_tcp
@@ -69,22 +68,67 @@ CONFIG		+= sse2
 CONFIG		+= fdk-aac
 CONFIG		+= volk
 CONFIG		+= liquid
-LIBS		+= -lsndfile.dll
-LIBS		+= -lwinpthread
-LIBS		+= -lws2_32
-LIBS		+= -lz.dll
-LIBS		+= -lfftw3f.dll
 # very experimental, simple server for connecting to a tdc handler
 #CONFIG		+= datastreamer
 
-# --- external ---
-# Bundled third-party headers (liquid-dsp, ...) we do not control. Use -isystem
-# instead of INCLUDEPATH (-I) so the compiler suppresses their warnings (e.g.
-# liquid's -Wdeprecated-declarations) while still fully warning on our own code.
-# Matches the CMake include_directories(SYSTEM ...) treatment.
-EXT_INC = $$_PRO_FILE_PWD_/../dabstar-libs/include
-QMAKE_CXXFLAGS += -isystem $$EXT_INC
-QMAKE_CFLAGS   += -isystem $$EXT_INC
+# The SSE2/AVX2 Viterbi decoders are x86 only, use NEON on ARM instead
+!contains(QT_ARCH, x86_64):!contains(QT_ARCH, i386) {
+    CONFIG	-= sse2 avx2
+    contains(QT_ARCH, arm.*): CONFIG += neon
+}
+
+win32 {
+    # --- external ---
+    # Bundled third-party headers (liquid-dsp, ...) we do not control. Use -isystem
+    # instead of INCLUDEPATH (-I) so the compiler suppresses their warnings (e.g.
+    # liquid's -Wdeprecated-declarations) while still fully warning on our own code.
+    # Matches the CMake include_directories(SYSTEM ...) treatment.
+    EXT_INC = $$_PRO_FILE_PWD_/../dabstar-libs/include
+    QMAKE_CXXFLAGS += -isystem $$EXT_INC
+    QMAKE_CFLAGS   += -isystem $$EXT_INC
+
+    LIBS	+= -L$$_PRO_FILE_PWD_/../dabstar-libs/lib
+    LIBS	+= -lsndfile.dll
+    LIBS	+= -lwinpthread
+    LIBS	+= -lws2_32
+    LIBS	+= -lz.dll
+    LIBS	+= -lfftw3f.dll
+}
+
+unix {
+    # Libraries are taken from the system (pkg-config). The SDR device libraries
+    # are loaded at runtime, so only their headers are needed for building.
+    CONFIG	+= link_pkgconfig
+    PKGCONFIG	+= fftw3f sndfile zlib
+    LIBS	+= -lpthread -ldl
+
+    # Returns true if the header file can be found in one of the default include paths
+    defineTest(hasHeader) {
+        for (dir, $$list(/usr/include /usr/local/include)) {
+            exists($$dir/$$1): return(true)
+        }
+        return(false)
+    }
+
+    # Disable optional features whose external dependencies are not installed
+    defineTest(disableIfMissing) {
+        CONFIG -= $$1
+        export(CONFIG)
+        message("$$1 disabled: $$2 not found")
+        return(true)
+    }
+
+    dabstick:!hasHeader(rtl-sdr.h):             disableIfMissing(dabstick, rtl-sdr.h)
+    rtl_tcp:!hasHeader(rtl-sdr.h):              disableIfMissing(rtl_tcp, rtl-sdr.h)
+    airspy:!hasHeader(libairspy/airspy.h):      disableIfMissing(airspy, libairspy/airspy.h)
+    hackrf:!hasHeader(libhackrf/hackrf.h):      disableIfMissing(hackrf, libhackrf/hackrf.h)
+    sdrplay:!hasHeader(sdrplay_api.h):          disableIfMissing(sdrplay, sdrplay_api.h)
+    soapy:!packagesExist(SoapySDR):             disableIfMissing(soapy, SoapySDR)
+    uhd:!packagesExist(uhd):                    disableIfMissing(uhd, uhd)
+    volk:!packagesExist(volk):                  disableIfMissing(volk, volk)
+    liquid:!hasHeader(liquid/liquid.h):         disableIfMissing(liquid, liquid/liquid.h)
+    fdk-aac:!packagesExist(fdk-aac):            disableIfMissing(fdk-aac, fdk-aac)
+}
 
 # --- src/common ---
 INCLUDEPATH += \
@@ -439,8 +483,8 @@ dabstick {
 #
 sdrplay {
     DEFINES		+= HAVE_SDRPLAY
-    INCLUDEPATH	+= src/devices/sdrplay_handler \
-               $$EXT_INC/sdrplay
+    INCLUDEPATH	+= src/devices/sdrplay_handler
+    win32: INCLUDEPATH += $$EXT_INC/sdrplay
     HEADERS		+= src/devices/sdrplay_handler/sdrplay_handler.h \
                src/devices/sdrplay_handler/sdrplay_commands.h \
                src/devices/sdrplay_handler/Rsp_device.h \
@@ -575,14 +619,20 @@ avx2	{
 
 fdk-aac {
     DEFINES		+= __WITH_FDK_AAC__
-    INCLUDEPATH	+= $$EXT_INC/fdk-aac
     HEADERS		+= src/base/backend/audio/fdk_aac.h
     SOURCES		+= src/base/backend/audio/fdk_aac.cpp
-    LIBS		+= -lfdk-aac.dll
+    win32 {
+        INCLUDEPATH	+= $$EXT_INC/fdk-aac
+        LIBS		+= -lfdk-aac.dll
+    } else {
+        PKGCONFIG	+= fdk-aac
+        INCLUDEPATH	+= $$system(pkg-config --variable=includedir fdk-aac)/fdk-aac
+    }
 }else	{
     HEADERS		+= src/base/backend/audio/faad_decoder.h
     SOURCES		+= src/base/backend/audio/faad_decoder.cpp
-    LIBS		+= -lfaad.dll
+    win32: LIBS		+= -lfaad.dll
+    else:  LIBS		+= -lfaad
 }
 
 volk	{
@@ -592,7 +642,8 @@ volk	{
 			src/base/ofdm/coherent_demod_simd.h
     SOURCES		+= src/base/ofdm/ofdm_decoder_simd.cpp \
 			src/base/ofdm/coherent_demod_simd.cpp
-    LIBS		+= -lvolk.dll
+    win32: LIBS		+= -lvolk.dll
+    else:  PKGCONFIG	+= volk
 }else	{
     HEADERS		+= src/base/ofdm/ofdm_decoder.h \
 			src/base/ofdm/coherent_demod.h
@@ -604,5 +655,6 @@ liquid	{
     DEFINES		+= HAVE_LIQUID
     HEADERS		+= src/common/halfbandfilter.h
     SOURCES		+= src/common/halfbandfilter.cpp
-    LIBS		+= -lliquid.dll
+    win32: LIBS		+= -lliquid.dll
+    else:  LIBS		+= -lliquid
 }
