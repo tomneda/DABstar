@@ -80,7 +80,10 @@ FibContentTable::FibContentTable(DabRadio* ipDabRadio, QSettings* /*s*/, const Q
 {
   mpScrollArea.reset(new QScrollArea(nullptr));
   mpScrollArea->setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  Settings::FibContentViewer::posAndSize.read_widget_geometry(mpScrollArea.get());
+  // the (still empty) scroll area has only a small size hint, so give the table enough room on the first start
+  constexpr i32 cMinDefaultWidth = 760;
+  constexpr i32 cDefaultHeightOffs = 300;
+  Settings::FibContentViewer::posAndSize.read_widget_geometry(mpScrollArea.get(), false, false, cMinDefaultWidth, cDefaultHeightOffs);
   mpScrollArea->setWindowTitle("FIB content of current ensemble");
   mpScrollArea->setWidgetResizable(true);
 

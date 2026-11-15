@@ -1127,6 +1127,7 @@ void DabRadio::_slot_handle_epg_button()
         slot_handle_fib_content_selector(iSId);
       }
     });
+    WindowVisibilityWatcher::bind(mpEpgViewer.get(), ui->btnEpg); // the viewer is created on demand, so bind it here
   }
   else if (mpEpgViewer->isVisible()) // the button toggles the window like the other window buttons
   {

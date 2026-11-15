@@ -23,7 +23,10 @@ CirViewer::CirViewer(RingBuffer<cf32>* iCirBuffer)
   mFrame.setWindowFlag(Qt::Tool, true);
   mFrame.hide();
 
-  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame);
+  // the plot has only a small minimum size, so give it enough room on the first start
+  constexpr i32 cMinDefaultWidth = 760;
+  constexpr i32 cDefaultHeightOffs = 300;
+  Settings::CirViewer::posAndSize.read_widget_geometry(&mFrame, false, false, cMinDefaultWidth, cDefaultHeightOffs);
 
   // cirPlot is a PlotWidget (promoted in the UI)
   cirPlot->get_x_axis()->setGridLineVisible(true);

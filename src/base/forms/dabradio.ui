@@ -683,7 +683,7 @@
               </size>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start or stop the map web server&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Displays a map showing the locations of detected transmitters.&lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the map&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Displays a map (OpenStreetMap) showing the locations of the detected transmitters.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>MAP</string>

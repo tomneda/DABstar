@@ -30,6 +30,7 @@ MapViewer::MapViewer(DabRadio* const ipDabRadio, const cf32& iHomeLocation)
   , mHomeLocation(iHomeLocation)
 {
   setWindowTitle(PRJ_NAME " - TII map");
+  setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   setAttribute(Qt::WA_QuitOnClose, false);
 
   mpMap = new TileMapWidget(this);
