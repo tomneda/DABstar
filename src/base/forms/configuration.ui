@@ -300,14 +300,14 @@
             <item>
              <widget class="QLabel" name="lbl_base_path_header">
               <property name="text">
-               <string>Base MOT/EPG path:</string>
+               <string>Base path for slides/EPG:</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QToolButton" name="btnSelectBasePath">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose the base directory for MOT and EPG data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Subdirectories MOT/, EPG/, and PIC/ will be created inside it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose the base directory for slides, MOT and EPG data&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Subdirectories PIC/ (slides), MOT/ (other MOT objects) and EPG/ will be created inside it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="icon">
                <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
@@ -319,7 +319,7 @@
           <item>
            <widget class="QLabel" name="lblDataBasePath">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Current base directory for MOT and EPG data storage&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Current base directory for slides, MOT and EPG data storage&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>-</string>
@@ -332,26 +332,26 @@
           <item>
            <widget class="QComboBox" name="cmbMotObjectSaving5">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether MOT objects (such as slides/images) should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files can be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Choose whether slides should be saved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Slideshow pictures are saved in PIC/, other MOT objects (text/transport) in MOT/.&lt;/p&gt;&lt;p&gt;Files can be saved in a single folder or in a directory tree.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <item>
              <property name="text">
-              <string>Do not save MOT objects</string>
+              <string>Do not save slides</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Save MOT objects in the MOT base folder</string>
+              <string>Save slides in the PIC base folder</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Save MOT obj. in a sub-folder &lt;ensemble&gt;</string>
+              <string>Save slides in a sub-folder &lt;ensemble&gt;</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Save MOT obj. in a sub-folder &lt;ens&gt;/&lt;service&gt;</string>
+              <string>Save slides in a sub-folder &lt;ens&gt;/&lt;service&gt;</string>
              </property>
             </item>
            </widget>
