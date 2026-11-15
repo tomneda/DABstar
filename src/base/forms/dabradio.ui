@@ -621,7 +621,7 @@
               </size>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open SPI (formerly EPG) timetable preview&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only enabled if EPG data is received.&lt;/p&gt;&lt;p&gt;Note: this feature is still a work in progress.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open the EPG (programme guide)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows the programme schedule of the services of the ensemble, received via SPI (Service and Programme Information). Double-click a service in the guide to select it.&lt;/p&gt;&lt;p&gt;Only enabled if programme data has been received. The orange circle flashes on receiving SPI data.&lt;/p&gt;&lt;p&gt;Background reception of the SPI of the ensemble can be activated in the configuration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>EPG</string>
