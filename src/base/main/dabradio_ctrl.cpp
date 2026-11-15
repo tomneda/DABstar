@@ -68,7 +68,10 @@ void DabRadio::_clean_up_dab_processor_and_input_device()
     {
       mpDeviceWindowWatcher->attach(nullptr);
     }
+
     mpInputDevice.reset();
+    mpEnsembleList->set_device_available(false);
+
     if (!mIsFileMode)
     {
       // In file mode, the bar is kept visible as usually a new file reader follows directly (avoids a flicker and window height jumps)
@@ -88,6 +91,7 @@ void DabRadio::_create_new_input_device_and_dab_processor(const QString& iDevice
   // If it is a file and the file is invalid, then it returns nullptr else well
   mpInputDevice = mpDeviceSelector->create_device(iDeviceNameOrFileName, mIsFileMode, mIsScanning);
   _adapt_gui_for_eti_mode(mpInputDevice != nullptr && mpInputDevice->get_eti_source() != nullptr);
+  mpEnsembleList->set_device_available(mpInputDevice != nullptr);
 
   if (mpInputDevice == nullptr) // something went wrong with the device creation
   {

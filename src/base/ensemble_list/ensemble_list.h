@@ -60,6 +60,7 @@ public:
   void show();
   void setVisible(bool iVisible) { if (iVisible) show(); else hide(); }
   void init_after_connect();
+  void set_device_available(bool iIsAvailable); // only relevant in device mode, the auto scan is possible only with a selected device
 
 private:
   static constexpr u32 cBgColorAutoScanInactive = 0x4858C8;
@@ -82,6 +83,7 @@ private:
   BandHandler mBandHandler;
   EnsembleListDB::SDataFilter mDataFilter{};
   QString mFIdOrChClickOnList; // FId/channel clicked without known SId, waits for the first SId to replay (not empty if active)
+  bool mIsDeviceAvailable = false;
 
   enum class ELogType { WARN, ERROR2, INFONEUT, INFOACK, INFONACK }; // ERROR is not working on Windows -> renamed to ERROR2
   void _log_to_result_display(ELogType iLogType, const QString& iMessage, i32 iAddIndent = 0) const;
@@ -99,6 +101,7 @@ private:
   bool _get_ident_info_from_row_idx(SIdentInfoEL& oIdentInfo, i32 iRowIdx);
   void _signal_ident_info(const SIdentInfoEL& iIdentInfo);
   void _update_remove_invalid_files_button_state() const;
+  void _update_scan_button_state() const;
   void _stop_scan_process();
 
 public slots:

@@ -205,6 +205,29 @@ void EnsembleList::init_after_connect()
   emit signal_show_current_fid_or_ch_only(ui->cbShowSLCurChOnly->isChecked());
 }
 
+void EnsembleList::set_device_available(const bool iIsAvailable)
+{
+  if (mIsDeviceAvailable == iIsAvailable)
+  {
+    return;
+  }
+
+  mIsDeviceAvailable = iIsAvailable;
+  _update_scan_button_state();
+}
+
+void EnsembleList::_update_scan_button_state() const
+{
+  // in file mode each file is its own source, so the scan is always possible there
+  const bool isScanPossible = mIsScanning || mListMode == EListMode::PlayFromFiles || mIsDeviceAvailable;
+  ui->btnScanStart->setEnabled(isScanPossible);
+
+  if (!isScanPossible)
+  {
+    _log_to_result_display(ELogType::WARN, "Select an SDR device in the main window first to start an auto scan");
+  }
+}
+
 void EnsembleList::_log_to_result_display(const ELogType iLogType, const QString& iMessage, const i32 iAddIndent /*= 0*/) const
 {
   QString indentStr;
@@ -252,6 +275,7 @@ void EnsembleList::_setup_ui_regarding_list_mode() const
   ui->btnRemoveFilesWithoutSignal->setVisible(isFileMode);
   ui->teScanResult->clear();
   _update_remove_invalid_files_button_state();
+  _update_scan_button_state();
 
   if (isFileMode)
   {
@@ -374,6 +398,7 @@ void EnsembleList::slot_decoded_data_status(const SScanResultEL& iResult)
     else if (mIsScanning)
     {
       _stop_scan_process();
+      _set_el_filter_check_states_active(); // nothing was scanned, so keep all (also the not scanned) entries visible
       _log_to_result_display(ELogType::ERROR2, "The scan was premature finished as there is no device selected yet");
       return;
     }
