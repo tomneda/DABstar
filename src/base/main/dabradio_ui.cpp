@@ -1481,6 +1481,7 @@ void DabRadio::_enable_dab_processor_dependent_buttons() const
   const bool isRunning = mIsChannelRunning && mpDabProcessor != nullptr;
   const bool hasSamples = isRunning && !mIsEtiMode; // there are no samples or soft bits available with ETI input
 
+  ui->btnTechDetails->setEnabled(isRunning);
   ui->btnFib->setEnabled(isRunning && !mIsScanning);
   ui->btnCir->setEnabled(hasSamples);
   ui->btnTii->setEnabled(hasSamples);
