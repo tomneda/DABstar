@@ -27,11 +27,11 @@ RESOURCES	+= resources.qrc
 
 DEFINES		+= APP_NAME=\\\"$$TARGET\\\"
 DEFINES		+= PRJ_NAME=\\\"DABstar\\\"
-DEFINES		+= PRJ_VERS=\\\"5.9.0\\\"
+DEFINES		+= PRJ_VERS=\\\"6.0.0\\\"
 
 # For more parallel processing, uncomment the following
 # defines
-#DEFINES	+=  __THREADED_BACKEND
+#DEFINES	+=  __THREADED_BACKEND__
 
 # For showing trace output
 #DEFINES	+= __EPG_TRACE__
@@ -247,10 +247,12 @@ HEADERS += \
     src/base/support/gui_helpers.h \
     src/base/support/indicator_button.h \
     src/base/support/itu_regions.h \
-    src/base/support/map_http_server.h \
+    src/base/support/map_projection.h \
+    src/base/support/map_viewer.h \
     src/base/support/plotter.h \
     src/base/support/process_params.h \
     src/base/support/techdata.h \
+    src/base/support/tile_map_widget.h \
     src/base/support/tii_list_display.h \
     src/base/support/time_meas.h \
     src/base/support/epg_viewer.h \
@@ -379,9 +381,10 @@ SOURCES += \
     src/base/support/gui_helpers.cpp \
     src/base/support/indicator_button.cpp \
     src/base/support/itu_regions.cpp \
-    src/base/support/map_http_server.cpp \
+    src/base/support/map_viewer.cpp \
     src/base/support/ringbuffer.cpp \
     src/base/support/techdata.cpp \
+    src/base/support/tile_map_widget.cpp \
     src/base/support/tii_list_display.cpp \
     src/base/support/epg_viewer.cpp \
     src/base/support/traffic_light.cpp \
