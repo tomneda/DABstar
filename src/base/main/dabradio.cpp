@@ -1096,6 +1096,11 @@ void DabRadio::_slot_handle_epg_button()
       }
     });
   }
+  else if (mpEpgViewer->isVisible()) // the button toggles the window like the other window buttons
+  {
+    mpEpgViewer->hide();
+    return;
+  }
 
   mpEpgViewer->set_current_service(mCurPrimaryAudioService.SId);
   mpEpgViewer->show_and_raise();
@@ -1293,7 +1298,16 @@ void DabRadio::_initialize_epg()
   qRegisterMetaType<SMotSpiObject>();
 
   mpEpgManager.reset(new EpgManager(this));
-  connect(mpEpgManager.get(), &EpgManager::signal_epg_available, this, [this](const bool iAvailable) { _enable_epg_button(iAvailable); });
+  connect(mpEpgManager.get(), &EpgManager::signal_epg_available, this, [this](const bool iAvailable)
+  {
+    _enable_epg_button(iAvailable);
+
+    // no EPG data (e.g. after an ensemble change) -> close the viewer, it can be reopened with the button when new data arrive
+    if (!iAvailable && mpEpgViewer != nullptr && mpEpgViewer->isVisible())
+    {
+      mpEpgViewer->hide();
+    }
+  });
   connect(mpEpgManager.get(), &EpgManager::signal_epg_changed, this, [this]()
   {
     if (mpEpgViewer != nullptr && mpEpgViewer->isVisible())

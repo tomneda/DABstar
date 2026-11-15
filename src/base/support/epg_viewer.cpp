@@ -39,6 +39,7 @@ EpgViewer::EpgViewer(const EpgManager* const ipEpgManager)
   , mpEpgManager(ipEpgManager)
 {
   setWindowTitle(PRJ_NAME " - EPG");
+  setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
   setAttribute(Qt::WA_QuitOnClose, false);
 
   mpServiceList = new QListWidget(this);
