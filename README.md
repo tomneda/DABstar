@@ -89,23 +89,17 @@ The status bar below the MOT picture shows:
 
 The tool buttons in the main window are labeled with short texts (move over them to get tooltip information):
 
-| Button | Function                                                                                                         |
-|--------|------------------------------------------------------------------------------------------------------------------|
-| EL     | Show the [Ensemble List](#ensemble-list) to scan live channels or sample files                                   |
-| RAW    | Save the raw input signal (IQ samples) to a file                                                                 |
-| ETI    | Save the ensemble content as ETI file (can be played again, see [ETI file playback](#eti-file-playback))         |
-| AAC    | Save the audio frames (AAC or MP2) to a file                                                                     |
-| WAV    | Save the audio output as uncompressed PCM file                                                                   |
-| DYL    | Save the dynamic label text to a file                                                                            |
-| EPG    | Open the programme guide (see [EPG](#epg-service-and-programme-information)), enabled if EPG data are available  |
-| JOUR   | Open the [Journaline](#journaline-window) window, enabled if Journaline data are received                       |
-| MAP    | Show the [map](#map-view-of-received-transmitters) of the received transmitters                                  |
-| FIB    | Show the [FIB content](#fib-content-window) list                                                                 |
-| TII    | Show the detailed [TII list](#tii-list-window-which-shows-received-transmitter-details) (needs the receiver coordinates in the configuration) |
-| CIR    | Show the [Channel Impulse Response](#the-prs-correlation-window-of-a-whole-dab-frame-cir) of a whole DAB frame  |
-| INFO   | Show the [details of the selected audio service](#audio-service-details-window-of-the-selected-service)          |
-| SIG    | Show the [spectrum, constellation and other DAB signal views](#scope-spectrum-correlation-statistic-window)     |
-| SDR    | Show the control widget of the [SDR device](#some-of-the-device-windows)                                         |
+| Left | Function                                                                                                | Right | Function                                                                                                    |
+|------|---------------------------------------------------------------------------------------------------------|-------|-------------------------------------------------------------------------------------------------------------|
+| INFO | Show the [details of the selected audio service](#audio-service-details-window-of-the-selected-service) | RAW   | Save the raw input signal (IQ samples) to a file                                                            |
+| FIB  | Show the [FIB content](#fib-content-window) list                                                        | ETI   | Save the ensemble content as ETI file (can be played again, see [ETI file playback](#eti-file-playback))    |
+| CIR  | Show the [Channel Impulse Response](#the-prs-correlation-window-of-a-whole-dab-frame-cir) of a whole DAB frame | AAC   | Save the audio frames (AAC or MP2) to a file                                                          |
+| TII  | Show the detailed [TII list](#tii-list-window-which-shows-received-transmitter-details) (needs the receiver coordinates in the configuration) | WAV   | Save the audio output as uncompressed PCM file           |
+| MAP  | Show the [map](#map-view-of-received-transmitters) of the received transmitters                         | DYL   | Save the dynamic label text to a file                                                                       |
+| SIG  | Show the [spectrum, constellation and other DAB signal views](#scope-spectrum-correlation-statistic-window) | EPG   | Open the programme guide (see [EPG](#epg-service-and-programme-information)), enabled if EPG data are available |
+| SDR  | Show the control widget of the [SDR device](#some-of-the-device-windows)                                | JOUR  | Open the [Journaline](#journaline-window) window, enabled if Journaline data are received                   |
+
+The **EL** button opens the [Ensemble List](#ensemble-list) to scan live channels or sample files.
 
 Buttons whose function is not usable in the current state (e.g. no running channel, a scan in progress or ETI file playback) are disabled.
 
@@ -205,7 +199,8 @@ Displays detected Transmitter Identification Information (TII), including main/s
 
 ![](res/for_readme/map.png)
 
-The map is shown in its own DABstar window (map tiles are loaded from OpenStreetMap and cached locally). 
+The map is rendered directly in its own DABstar window (map tiles are loaded from OpenStreetMap and cached locally).
+The former local web server (`http://localhost:8080`) and the need for an external web browser are gone.
 Drag to pan, use the mouse wheel or double-click to zoom, and click a transmitter to show its details.
 
 ### Application update dialog
