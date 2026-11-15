@@ -27,6 +27,7 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QLineEdit>
+#include <algorithm>
 
 
 namespace Settings
@@ -281,7 +282,7 @@ PosAndSize::PosAndSize(const QString& iCat, const QString& iName)
 : mKey(iCat + "/" + iName)
 {}
 
-void PosAndSize::read_widget_geometry(QWidget* const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, const i32 iWidthOffs /*= 0*/, const i32 iHeightOffs /*= 0*/) const
+void PosAndSize::read_widget_geometry(QWidget* const iopWidget, const bool iIsFixedWidth /*= false*/, const bool iIsFixedHeight /*= false*/, const i32 iMinDefaultWidth /*= 0*/, const i32 iHeightOffs /*= 0*/) const
 {
   if (iopWidget == nullptr)
   {
@@ -322,7 +323,7 @@ void PosAndSize::read_widget_geometry(QWidget* const iopWidget, const bool iIsFi
   }
   else
   {
-    iopWidget->resize(QSize(newWidth + iWidthOffs, newHeight));
+    iopWidget->resize(QSize(std::max(newWidth, iMinDefaultWidth), newHeight)); // no stored width yet, use at least the given default width
     newWidth = iopWidget->width();
     // qDebug() << "Window height adjustment (w invalid)" << w << newWidth << newHeight;
   }

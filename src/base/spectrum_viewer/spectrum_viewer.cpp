@@ -58,7 +58,8 @@ SpectrumViewer::SpectrumViewer(DabRadio* ipRI, QSettings* ipDabSettings, RingBuf
   lblFreqCorrRF->setText("0");
 
   myFrame.setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
-  Settings::SpectrumViewer::posAndSize.read_widget_geometry(&myFrame);
+  constexpr i32 cMinDefaultWidth = 760; // the plots have no minimum width, so give them enough room on the first start
+  Settings::SpectrumViewer::posAndSize.read_widget_geometry(&myFrame, false, false, cMinDefaultWidth);
   myFrame.hide();
 
   //create_blackman_window(mWindowVec);

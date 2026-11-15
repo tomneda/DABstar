@@ -15,3 +15,8 @@ add_executable(setting_reset_test setting_reset_test.cpp ${PROJECT_SOURCE_DIR}/s
 target_include_directories(setting_reset_test PRIVATE ${PROJECT_SOURCE_DIR}/src/common)
 target_link_libraries(setting_reset_test PRIVATE Qt6::Widgets)
 add_test(NAME setting_reset_test COMMAND setting_reset_test)
+
+add_executable(pos_and_size_test pos_and_size_test.cpp ${PROJECT_SOURCE_DIR}/src/common/setting_helper.cpp)
+target_include_directories(pos_and_size_test PRIVATE ${PROJECT_SOURCE_DIR}/src/common)
+target_link_libraries(pos_and_size_test PRIVATE Qt6::Widgets)
+add_test(NAME pos_and_size_test COMMAND pos_and_size_test)
