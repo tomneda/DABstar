@@ -2,20 +2,20 @@
 
 ## Table of Content
 <!-- TOC -->
-  * [Table of Content](#table-of-content)
-  * [Pictures from DABstar](#pictures-from-dabstar)
+* [Table of Content](#table-of-content)
+* [Pictures from DABstar](#pictures-from-dabstar)
     * [Main window](#main-window)
-      * [Buttons in the main window](#buttons-in-the-main-window)
-      * [Traffic Light indicators in the main window](#traffic-light-indicators-in-the-main-window)
-      * [SNR and MER bar graph in the main window](#snr-and-mer-bar-graph-in-the-main-window)
-      * [File player in the main window](#file-player-in-the-main-window)
+        * [Buttons in the main window](#buttons-in-the-main-window)
+        * [Traffic Light indicators in the main window](#traffic-light-indicators-in-the-main-window)
+        * [SNR and MER bar graph in the main window](#snr-and-mer-bar-graph-in-the-main-window)
+        * [File player in the main window](#file-player-in-the-main-window)
     * [Ensemble List window (device mode)](#ensemble-list-window-device-mode)
     * [Ensemble List window (file mode)](#ensemble-list-window-file-mode)
     * [Configuration window](#configuration-window)
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
     * [FIB content window](#fib-content-window)
     * [Journaline window](#journaline-window)
-    * [EPG window (Service and Programme Information)](#epg-window-service-and-programme-information)
+    * [EPG window](#epg-window)
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
     * [Application update dialog](#application-update-dialog)
@@ -23,38 +23,38 @@
     * [Audio Service Details window of the selected service](#audio-service-details-window-of-the-selected-service)
     * [The PRS correlation window of a whole DAB frame (CIR)](#the-prs-correlation-window-of-a-whole-dab-frame-cir)
     * [Some of the device windows](#some-of-the-device-windows)
-  * [Releases](#releases)
-  * [Introduction and history](#introduction-and-history)
-  * [Ensemble List](#ensemble-list)
+* [Releases](#releases)
+* [Introduction and history](#introduction-and-history)
+* [Ensemble List](#ensemble-list)
     * [Two operation modes](#two-operation-modes)
     * [Controls](#controls)
     * [Color coding in the table](#color-coding-in-the-table)
     * [Filter checkboxes](#filter-checkboxes)
     * [Stored data per ensemble](#stored-data-per-ensemble)
-  * [Service List](#service-list)
+* [Service List](#service-list)
     * [Favorites](#favorites)
     * [Sorting](#sorting)
     * [Channel Buttons](#channel-buttons)
     * [Target Button](#target-button)
     * [File end action (Stop / Loop / ANS)](#file-end-action-stop--loop--ans)
     * [Some help for scanning](#some-help-for-scanning)
-  * [EPG (Service and Programme Information)](#epg-service-and-programme-information)
-  * [ETI file playback](#eti-file-playback)
-  * [Coherent demodulation](#coherent-demodulation)
-  * [Configuration and Data Files](#configuration-and-data-files)
-  * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
+* [EPG (Electronic Programme Guide)](#epg-electronic-programme-guide)
+* [ETI file playback](#eti-file-playback)
+* [Coherent demodulation](#coherent-demodulation)
+* [Configuration and Data Files](#configuration-and-data-files)
+* [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
     * [Installing VOLK](#installing-volk)
     * [Installing FDK-AAC](#installing-fdk-aac)
     * [Building DABstar](#building-dabstar)
-      * [CMake Build Options](#cmake-build-options)
-        * [Supported SDR Hardware](#supported-sdr-hardware)
-        * [DSP, SIMD & Decoding Options](#dsp-simd--decoding-options)
-        * [Recommended Minimum Configuration (RTL-SDR on x86_64)](#recommended-minimum-configuration-rtl-sdr-on-x86_64)
-      * [Building with qmake](#building-with-qmake)
+        * [CMake Build Options](#cmake-build-options)
+            * [Supported SDR Hardware](#supported-sdr-hardware)
+            * [DSP, SIMD & Decoding Options](#dsp-simd--decoding-options)
+            * [Recommended Minimum Configuration (RTL-SDR on x86_64)](#recommended-minimum-configuration-rtl-sdr-on-x86_64)
+        * [Building with qmake](#building-with-qmake)
     * [RTL-SDR driver installation](#rtl-sdr-driver-installation)
     * [Installing USRP UHD](#installing-usrp-uhd)
     * [Installing AirSpy](#installing-airspy)
-  * [Licences](#licences)
+* [Licences](#licences)
     * [OpenStreetMap](#openstreetmap)
     * [Journaline](#journaline)
 <!-- TOC -->
@@ -96,10 +96,10 @@ The tool buttons in the main window are labeled with short texts (move over them
 | CIR  | Show the [Channel Impulse Response](#the-prs-correlation-window-of-a-whole-dab-frame-cir) of a whole DAB frame | AAC   | Save the audio frames (AAC or MP2) to a file                                                          |
 | TII  | Show the detailed [TII list](#tii-list-window-which-shows-received-transmitter-details) (needs the receiver coordinates in the configuration) | WAV   | Save the audio output as uncompressed PCM file           |
 | MAP  | Show the [map](#map-view-of-received-transmitters) of the received transmitters                         | DYL   | Save the dynamic label text to a file                                                                       |
-| SIG  | Show the [spectrum, constellation and other DAB signal views](#scope-spectrum-correlation-statistic-window) | EPG   | Open the programme guide (see [EPG](#epg-service-and-programme-information)), enabled if EPG data are available |
+| SIG  | Show the [spectrum, constellation and other DAB signal views](#scope-spectrum-correlation-statistic-window) | EPG   | Open the programme guide (see [EPG](#epg-electronic-programme-guide)), enabled if EPG data are available |
 | SDR  | Show the control widget of the [SDR device](#some-of-the-device-windows)                                | JOUR  | Open the [Journaline](#journaline-window) window, enabled if Journaline data are received                   |
 
-The **EL** button opens the [Ensemble List](#ensemble-list) to scan live channels or sample files.
+The **EL** button opens the [Ensemble List](#ensemble-list) to scan live channels or sample/ETI files.
 
 Buttons whose function is not usable in the current state (e.g. no running channel, a scan in progress or ETI file playback) are disabled.
 
@@ -125,6 +125,8 @@ With the toggle button **A/Q** you can switch between audio level and SNR/MER ba
 #### File player in the main window
 
 ![](res/for_readme/mainwidget_fileplayer.png)
+
+(an ETI file is played here, so some buttons are disabled)
 
 When a recorded IQ sample file (RAW, WAV/SDR or XML) or an ETI file (see [ETI file playback](#eti-file-playback)) is played, a file player bar is shown in the main window
 (it is hidden in device mode). It shows:
@@ -183,11 +185,11 @@ Shows the spectrum scope, IQ constellation, impulse response/correlation and car
 
 Journaline is supported as a separate data service and also when it is transmitted within the X-PAD of an audio service (signaled via FIG 0/13).
 
-### EPG window (Service and Programme Information)
+### EPG window
 
 ![](res/for_readme/epg.png)
 
-Shows the programme guide of the current ensemble, see [EPG](#epg-service-and-programme-information).
+Shows the programme guide of the current ensemble, see [EPG](#epg-electronic-programme-guide).
 
 ### TII-list window which shows received transmitter details
 
@@ -200,7 +202,6 @@ Displays detected Transmitter Identification Information (TII), including main/s
 ![](res/for_readme/map.png)
 
 The map is rendered directly in its own DABstar window (map tiles are loaded from OpenStreetMap and cached locally).
-The former local web server (`http://localhost:8080`) and the need for an external web browser are gone.
 Drag to pan, use the mouse wheel or double-click to zoom, and click a transmitter to show its details.
 
 ### Application update dialog
@@ -391,9 +392,11 @@ Also, the clock on the top of the service list can be used as indicator. Its tim
 can be received.
 
 
-## EPG (Service and Programme Information)
+## EPG (Electronic Programme Guide)
 
-Many ensembles carry an EPG service (SPI, ETSI TS 102 371) with the programme schedules and further information of their services.
+Many ensembles carry an EPG service with the programme schedules and further information of their services.
+In current ETSI standards the EPG is called SPI (Service and Programme Information, ETSI TS 102 818 for the data model and ETSI TS 102 371 for the binary encoding used in DAB).
+DABstar uses the more familiar term "EPG" in its user interface.
 DABstar receives it **in the background**, independent of the selected audio service. So there is no need to select the EPG service itself.
 
 - Enable or disable this with "Receive EPG in background" in the configuration window (a change takes effect with the next channel selection).
