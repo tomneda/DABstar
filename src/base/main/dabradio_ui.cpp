@@ -616,13 +616,9 @@ void DabRadio::_slot_set_static_button_style()
   ui->btnNextService->setFixedSize(QSize(32, 32));
   ui->btnTargetService->setIconSize(QSize(24, 24));
   ui->btnTargetService->setFixedSize(QSize(32, 32));
-  ui->btnTechDetails->setIconSize(QSize(24, 24));
   ui->btnTechDetails->setFixedSize(QSize(32, 32));
-  ui->btnMap->setIconSize(QSize(24, 24));
   ui->btnMap->setFixedSize(QSize(32, 32));
-  ui->btnDeviceWidget->setIconSize(QSize(24, 24));
   ui->btnDeviceWidget->setFixedSize(QSize(32, 32));
-  ui->btnSpectrumScope->setIconSize(QSize(24, 24));
   ui->btnSpectrumScope->setFixedSize(QSize(32, 32));
   ui->configButton->setIconSize(QSize(24, 24));
   ui->configButton->setFixedSize(QSize(32, 32));

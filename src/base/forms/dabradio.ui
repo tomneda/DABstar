@@ -685,15 +685,11 @@
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Start or stop the map web server&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Displays a map showing the locations of detected transmitters.&lt;/p&gt;&lt;p&gt;Listening to default &lt;a href=&quot;http://localhost:8080/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://localhost:8080/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <property name="icon">
-              <iconset resource="../../../resources.qrc">
-               <normaloff>:/res/icons/maps24.png</normaloff>:/res/icons/maps24.png</iconset>
+             <property name="text">
+              <string>MAP</string>
              </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
+             <property name="iconStyleText" stdset="0">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -813,15 +809,11 @@
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide a widget showing details of the currently selected audio service&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <property name="icon">
-              <iconset resource="../../../resources.qrc">
-               <normaloff>:/res/icons/details24.png</normaloff>:/res/icons/details24.png</iconset>
+             <property name="text">
+              <string>INFO</string>
              </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
+             <property name="iconStyleText" stdset="0">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -845,23 +837,14 @@
                <height>32</height>
               </size>
              </property>
-             <property name="font">
-              <font>
-               <family>Cantarell</family>
-              </font>
-             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the spectrum, constellation, and other DAB signal views&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <property name="icon">
-              <iconset resource="../../../resources.qrc">
-               <normaloff>:/res/icons/meas24.png</normaloff>:/res/icons/meas24.png</iconset>
+             <property name="text">
+              <string>SIG</string>
              </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
+             <property name="iconStyleText" stdset="0">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -888,15 +871,11 @@
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Show or hide the control widget of the SDR device&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <property name="icon">
-              <iconset resource="../../../resources.qrc">
-               <normaloff>:/res/icons/tower24.png</normaloff>:/res/icons/tower24.png</iconset>
+             <property name="text">
+              <string>SDR</string>
              </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
+             <property name="iconStyleText" stdset="0">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
