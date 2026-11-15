@@ -116,5 +116,5 @@ private slots:
   void _slot_mot_timer_timeout();
 
 signals:
-  void signal_mot_indicator(bool);   // DabRadio connects: _set_status_info_status(mStatusInfo.MOT, b)
+  void signal_mot_indicator(bool);   // DabRadio connects: _set_status_info_status(mStatusInfo.SLS, b)
 };

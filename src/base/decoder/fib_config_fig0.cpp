@@ -30,6 +30,7 @@ FibConfigFig0::FibConfigFig0()
   Fig0s13_UserApplicationInformationVec.reserve(32);
   Fig0s14_SubChannelOrganizationVec.reserve(32);
   Fig0s17_ProgrammeTypeVec.reserve(32);
+  Fig0s18_AnnouncementSupportVec.reserve(32);
 }
 
 void FibConfigFig0::reset()
@@ -44,6 +45,7 @@ void FibConfigFig0::reset()
   Fig0s13_UserApplicationInformationVec.clear();
   Fig0s14_SubChannelOrganizationVec.clear();
   Fig0s17_ProgrammeTypeVec.clear();
+  Fig0s18_AnnouncementSupportVec.clear();
 }
 
 const FibConfigFig0::SFig0s1_BasicSubChannelOrganization* FibConfigFig0::get_Fig0s1_BasicSubChannelOrganization_of_SubChId(const i32 iSubChId) const
@@ -229,6 +231,18 @@ const FibConfigFig0::SFig0s17_ProgrammeType* FibConfigFig0::get_Fig0s17_Programm
     if (fig0s17.SId == iSId)
     {
       return &fig0s17;
+    }
+  }
+  return nullptr;
+}
+
+const FibConfigFig0::SFig0s18_AnnouncementSupport* FibConfigFig0::get_Fig0s18_AnnouncementSupport_of_SId(const u16 iSId) const
+{
+  for (auto& fig0s18 : Fig0s18_AnnouncementSupportVec)
+  {
+    if (fig0s18.SId == iSId)
+    {
+      return &fig0s18;
     }
   }
   return nullptr;
@@ -533,4 +547,25 @@ void FibConfigFig0::print_Fig0s17_ProgrammeType(SStatistic& ioS, const bool iCol
                       << "SD_Flag" << e.SD_Flag
                       << "IntCode" << e.IntCode;
   } 
+}
+
+void FibConfigFig0::print_Fig0s18_AnnouncementSupport(SStatistic& ioS, const bool iCollectStatisticsOnly) const
+{
+  if (iCollectStatisticsOnly)
+  {
+    for (const auto& e : Fig0s18_AnnouncementSupportVec)
+    {
+      get_statistics(e, ioS);
+    }
+    return;
+  }
+
+  qInfo();
+  qInfo() << "--- Fig0s18_AnnouncementSupport ---  Size" << Fig0s18_AnnouncementSupportVec.size() << " Capacity" << Fig0s18_AnnouncementSupportVec.capacity();
+  for (const auto& e : Fig0s18_AnnouncementSupportVec)
+  {
+    qInfo().noquote() << print_duration_and_get_statistics(e, ioS).toStdString().c_str() // this way the quotes are omitted
+                      << "SId" << hex_str(e.SId)
+                      << "ASuFlags" << hex_str(e.ASuFlags);
+  }
 }

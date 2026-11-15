@@ -806,12 +806,26 @@ bool DabRadio::_create_primary_backend_packet_service(const SPacketData& iPD) co
   return true;
 }
 
-void DabRadio::_update_audio_data_addon(const u32 iSId) const
+void DabRadio::_update_audio_data_addon(const u32 iSId)
 {
   SAudioDataAddOns adao;
   mpDabProcessor->get_fib_decoder()->get_data_for_audio_service_addon(iSId, adao);
   mpTechDataWidget->show_service_data_addon(&adao);
   ui->lblProgType->setText(adao.programType.has_value() ? getProgramType(adao.programType.value()) : "(no info received)");
+
+  constexpr u16 cASuRoadTrafficFlash = 0x0002; // ASu flag b1
+  _set_status_info_status(mStatusInfo.TP, adao.announcementSupportFlags.has_value() && (adao.announcementSupportFlags.value() & cASuRoadTrafficFlash) != 0);
+
+  bool slsSignalled = false;
+  for (const auto& xua : mpDabProcessor->get_fib_decoder()->get_xpad_user_apps_of_audio_service(iSId))
+  {
+    if (xua.UserAppType == cUserAppTypeSlideShow)
+    {
+      slsSignalled = true;
+      break;
+    }
+  }
+  _set_status_info_available(mStatusInfo.SLS, slsSignalled);
 }
 
 void DabRadio::_update_scan_statistics(const QString& iFIdOrCh, const SServiceId& sl)
@@ -866,7 +880,11 @@ void DabRadio::_slot_fib_loaded_state(IFibDecoder::EFibLoadingState iFibLoadingS
 
   if (iFibLoadingState == IFibDecoder::EFibLoadingState::S5_DeferredDataLoaded)
   {
-    qDebug() << "FIB data in state 5 are ignored";
+    qDebug() << "FIB data in state 5 are ignored (except of the audio service add-ons)";
+    if (mCurPrimaryAudioService.SId != 0)
+    {
+      _update_audio_data_addon(mCurPrimaryAudioService.SId); // e.g. FIG 0/17 or FIG 0/18 received later
+    }
     return;
   }
 
@@ -1267,7 +1285,7 @@ void DabRadio::_initialize_epg_mot_handler()
 
   mpEpgMotHandler->slot_init_paths();
 
-  connect(mpEpgMotHandler.get(), &EpgMotHandler::signal_mot_indicator, this, [this](bool b) { _set_status_info_status(mStatusInfo.MOT, b); });
+  connect(mpEpgMotHandler.get(), &EpgMotHandler::signal_mot_indicator, this, [this](bool b) { _set_status_info_status(mStatusInfo.SLS, b); });
 }
 
 void DabRadio::_initialize_epg()
@@ -1275,7 +1293,7 @@ void DabRadio::_initialize_epg()
   qRegisterMetaType<SMotSpiObject>();
 
   mpEpgManager.reset(new EpgManager(this));
-  connect(mpEpgManager.get(), &EpgManager::signal_epg_available, this, [this](const bool iAvailable) { _show_epg_label(iAvailable); });
+  connect(mpEpgManager.get(), &EpgManager::signal_epg_available, this, [this](const bool iAvailable) { _enable_epg_button(iAvailable); });
   connect(mpEpgManager.get(), &EpgManager::signal_epg_changed, this, [this]()
   {
     if (mpEpgViewer != nullptr && mpEpgViewer->isVisible())

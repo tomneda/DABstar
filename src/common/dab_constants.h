@@ -141,6 +141,7 @@ struct SAudioData : SDescriptorType
   SAudioData() { TMId = ETMId::StreamModeAudio; }
 };
 
+constexpr i16 cUserAppTypeSlideShow = 0x002; // ETSI TS 101 756, table 16: MOT Slideshow
 constexpr i16 cUserAppTypeSpi = 0x007; // ETSI TS 101 756, table 16: SPI (Service and Programme Information, formerly EPG)
 constexpr i16 cDSCTyMot = 60;          // ETSI TS 101 756, table 2b: Multimedia Object Transfer (MOT)
 
@@ -156,6 +157,7 @@ struct SAudioDataAddOns // "slower" addons
 {
   std::optional<i16> language = std::nullopt;
   std::optional<i16> programType = std::nullopt;
+  std::optional<u16> announcementSupportFlags = std::nullopt; // FIG 0/18 ASu flags, b0: Alarm, b1: Road Traffic flash, ...
   // i32 fmFrequency = -1;
 };
 

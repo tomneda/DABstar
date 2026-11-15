@@ -219,6 +219,12 @@ public:
     i8  IntCode = -1; // this 5-bit field shall specify the basic Programme Type (PTy) category. This code is chosen from an international table (see clause 8.1.3.2).
   };
 
+  struct SFig0s18_AnnouncementSupport : SFigBase
+  {
+    u16 SId = 0;      // this 16-bit field shall identify the service (see clause 6.3.1).
+    u16 ASuFlags = 0; // this 16-bit field shall specify the type(s) of announcements by which it is possible to interrupt the reception of the service (b0: Alarm, b1: Road Traffic flash, ...).
+  };
+
   std::vector<SFig0s1_BasicSubChannelOrganization> Fig0s1_BasicSubChannelOrganizationVec;
   std::vector<SFig0s2_BasicService_ServiceCompDef> Fig0s2_BasicService_ServiceCompDefVec;
   std::vector<SFig0s3_ServiceComponentPacketMode>  Fig0s3_ServiceComponentPacketModeVec;
@@ -229,6 +235,7 @@ public:
   std::vector<SFig0s13_UserApplicationInformation> Fig0s13_UserApplicationInformationVec;
   std::vector<SFig0s14_SubChannelOrganization>     Fig0s14_SubChannelOrganizationVec;
   std::vector<SFig0s17_ProgrammeType>              Fig0s17_ProgrammeTypeVec;
+  std::vector<SFig0s18_AnnouncementSupport>        Fig0s18_AnnouncementSupportVec;
 
   const SFig0s1_BasicSubChannelOrganization* get_Fig0s1_BasicSubChannelOrganization_of_SubChId(i32 iSubChId) const;
   const SFig0s2_BasicService_ServiceCompDef* get_Fig0s2_BasicService_ServiceCompDef_of_SId_TMId(u32 iSId, u8 iTMId) const;
@@ -246,6 +253,7 @@ public:
   const SFig0s13_UserApplicationInformation* get_Fig0s13_UserApplicationInformation_of_SId_SCIdS(u32 iSId, i32 iSCIdS) const;
   const SFig0s14_SubChannelOrganization* get_Fig0s14_SubChannelOrganization_of_SubChId(i32 iSubChId) const;
   const SFig0s17_ProgrammeType* get_Fig0s17_ProgrammeType_of_SId(u16 iSId) const;
+  const SFig0s18_AnnouncementSupport* get_Fig0s18_AnnouncementSupport_of_SId(u16 iSId) const;
 
   void print_Fig0s1_BasicSubChannelOrganization(SStatistic& ioS, bool iCollectStatisticsOnly) const;
   void print_Fig0s2_BasicService_ServiceCompDef(SStatistic& ioS, bool iCollectStatisticsOnly) const;
@@ -257,6 +265,7 @@ public:
   void print_Fig0s13_UserApplicationInformation(SStatistic& ioS, bool iCollectStatisticsOnly) const;
   void print_Fig0s14_SubChannelOrganization(SStatistic& ioS, bool iCollectStatisticsOnly) const;
   void print_Fig0s17_ProgrammeType(SStatistic& ioS, bool iCollectStatisticsOnly) const;
+  void print_Fig0s18_AnnouncementSupport(SStatistic& ioS, bool iCollectStatisticsOnly) const;
 
   template<typename T> inline QString hex_str(const T iVal) const { return QSL("0x%1").arg(iVal, 0, 16); }
 

@@ -289,6 +289,15 @@ bool FibDecoder::_get_data_for_audio_service_addon(const FibConfigFig0::SFig0s2_
 
   if (pFig0s5 != nullptr)  opADAO->language    = pFig0s5->Language; else opADAO->language    = std::nullopt;
   if (pFig0s17 != nullptr) opADAO->programType = pFig0s17->IntCode; else opADAO->programType = std::nullopt;
+
+  if (const auto* const pFig0s18 = mpFibConfigFig0Curr->get_Fig0s18_AnnouncementSupport_of_SId(SId); pFig0s18 != nullptr)
+  {
+    opADAO->announcementSupportFlags = pFig0s18->ASuFlags;
+  }
+  else
+  {
+    opADAO->announcementSupportFlags = std::nullopt;
+  }
   // opADAO->fmFrequency = itService->second.fmFrequency; // TODO:
 
   return true;
@@ -981,6 +990,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
     SStatistic statFig0s13(ctp);
     SStatistic statFig0s14(ctp);
     SStatistic statFig0s17(ctp);
+    SStatistic statFig0s18(ctp);
     SStatistic statFig1s0(ctp);
     SStatistic statFig1s1(ctp);
     SStatistic statFig1s4(ctp);
@@ -999,6 +1009,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
     mpFibConfigFig0Curr->print_Fig0s13_UserApplicationInformation(statFig0s13, cCollectStatisticsOnly);
     mpFibConfigFig0Curr->print_Fig0s14_SubChannelOrganization(statFig0s14, cCollectStatisticsOnly);
     mpFibConfigFig0Curr->print_Fig0s17_ProgrammeType(statFig0s17, cCollectStatisticsOnly);
+    mpFibConfigFig0Curr->print_Fig0s18_AnnouncementSupport(statFig0s18, cCollectStatisticsOnly);
     mpFibConfigFig1->print_Fig1s0_EnsembleLabel(statFig1s0, cCollectStatisticsOnly);
     mpFibConfigFig1->print_Fig1s1_ProgrammeServiceLabelVec(statFig1s1, cCollectStatisticsOnly);
     mpFibConfigFig1->print_Fig1s4_ServiceComponentLabel(statFig1s4, cCollectStatisticsOnly);
@@ -1020,6 +1031,7 @@ void FibDecoder::_slot_timer_check_state_and_print_FIGs()
       qInfo().noquote() << "Fig0/13:" << print_statistic(statFig0s13);
       qInfo().noquote() << "Fig0/14:" << print_statistic(statFig0s14);
       qInfo().noquote() << "Fig0/17:" << print_statistic(statFig0s17);
+      qInfo().noquote() << "Fig0/18:" << print_statistic(statFig0s18);
       qInfo().noquote() << "Fig1/ 0:" << print_statistic(statFig1s0);
       qInfo().noquote() << "Fig1/ 1:" << print_statistic(statFig1s1);
       qInfo().noquote() << "Fig1/ 4:" << print_statistic(statFig1s4);

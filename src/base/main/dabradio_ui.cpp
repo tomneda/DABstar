@@ -71,6 +71,14 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T>& iElem, T const iValue)
       iElem.pLbl->setText(iValue);
     }
   }
+  else if constexpr (std::is_same_v<T, bool>)
+  {
+    if (iElem.value != iValue)
+    {
+      iElem.value = iValue;
+      _apply_status_info_color(iElem);
+    }
+  }
   else if (iElem.value != iValue)
   {
     iElem.value = iValue;
@@ -103,6 +111,21 @@ void DabRadio::_set_status_info_status(StatusInfoElem<T>& iElem, T const iValue)
   }
 }
 
+void DabRadio::_set_status_info_available(StatusInfoElem<bool>& ioElem, const bool iAvailable) const
+{
+  if (ioElem.available != iAvailable)
+  {
+    ioElem.available = iAvailable;
+    _apply_status_info_color(ioElem);
+  }
+}
+
+void DabRadio::_apply_status_info_color(const StatusInfoElem<bool>& iElem) const
+{
+  const QColor& color = (iElem.available != iElem.value ? iElem.colorOn : iElem.colorOff); // available inverts the activity (router LED style)
+  iElem.pLbl->setStyleSheet("QLabel { color: " + color.name() + " }");
+}
+
 template void DabRadio::_set_status_info_status<bool>(StatusInfoElem<bool>&, bool) const;
 template void DabRadio::_set_status_info_status<u32>(StatusInfoElem<u32>&, u32) const;
 template void DabRadio::_set_status_info_status<i32>(StatusInfoElem<i32>&, i32) const;
@@ -115,8 +138,9 @@ void DabRadio::_reset_status_info(StatusInfo& ioStatusInfo) const
   _set_status_info_status(ioStatusInfo.AudioStandard, (const char*)nullptr);
   _set_status_info_status(ioStatusInfo.OutSampRate, (u32)0);
   _set_status_info_status(ioStatusInfo.Stereo, false);
-  _set_status_info_status(ioStatusInfo.MOT, false);
-  _set_status_info_status(ioStatusInfo.EPG, false);
+  _set_status_info_status(ioStatusInfo.SLS, false);
+  _set_status_info_available(ioStatusInfo.SLS, false);
+  _set_status_info_status(ioStatusInfo.TP, false);
   _set_status_info_status(ioStatusInfo.SBR, false);
   _set_status_info_status(ioStatusInfo.PS, false);
   _set_status_info_status(ioStatusInfo.Announce, false);
@@ -288,8 +312,8 @@ void DabRadio::_initialize_status_info()
   _add_status_label_elem(mStatusInfo.Stereo,        0xf2c629, "Stereo",        "Stereo");
   _add_status_label_elem(mStatusInfo.PS,            0xf2c629, "PS",            "Parametric Stereo");
   _add_status_label_elem(mStatusInfo.SBR,           0xf2c629, "SBR",           "Spectral Band Replication");
-  _add_status_label_elem(mStatusInfo.MOT,           0x7F8CFF, "MOT",           "Multimedia Object Transfer<br>for slide show");
-  _add_status_label_elem(mStatusInfo.EPG,           0xf2c629, "EPG",           "Electronic Program Guide");
+  _add_status_label_elem(mStatusInfo.SLS,           0x7F8CFF, "SLS",           "Slideshow<br>steady: signalled by the service<br>flickering: MOT slideshow data are received");
+  _add_status_label_elem(mStatusInfo.TP,            0xf2c629, "TP",            "Traffic Programme<br>the service supports road traffic announcements");
   _add_status_label_elem(mStatusInfo.Announce,      0xf2c629, "ANN",           "Announcement");
   _add_status_label_elem(mStatusInfo.EWS,           0xFF5040, "EWS",           "Emergency Warning System<br>(ASA in Germany)<br>is available in this ensemble");
 
@@ -445,10 +469,9 @@ void DabRadio::_set_clock_text(const QString& iText /*= QString()*/)
   }
 }
 
-void DabRadio::_show_epg_label(const bool iShowLabel)
+void DabRadio::_enable_epg_button(const bool iEnable) const
 {
-  _set_status_info_status(mStatusInfo.EPG, iShowLabel);
-  ui->btnEpg->setEnabled(iShowLabel);
+  ui->btnEpg->setEnabled(iEnable);
 }
 
 void DabRadio::_adapt_gui_for_device_or_file_play(const bool iPlayingDevice) const

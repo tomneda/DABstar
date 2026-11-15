@@ -172,7 +172,7 @@ void DabRadio::_stop_services(const bool iStopAlsoGlobServices)
 
   mpEpgMotHandler->show_pause_slide();
   _clean_screen(mStatusInfo);
-  _show_epg_label(mpEpgManager->has_data()); // the EPG data of the ensemble are still valid
+  _enable_epg_button(mpEpgManager->has_data()); // the EPG data of the ensemble are still valid
 }
 
 void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)

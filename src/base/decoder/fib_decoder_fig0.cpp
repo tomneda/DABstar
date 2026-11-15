@@ -788,8 +788,9 @@ void FibDecoder::_process_Fig0s18(const u8* const d)
   i16 bitOffset = used * 8;
 
   FibConfigFig0* const localBase = _get_config_ptr(fh.CN_Flag);
+  const i16 endOffset = (fh.Length + 1) * 8; // one byte in "used" is already included in the length
 
-  while (bitOffset <= fh.Length * 8) // one byte in "used" is already included in the length
+  while (bitOffset + 40 <= endOffset) // SId, ASu flags and number of clusters need 5 bytes
   {
     const u16 SId = getBits(d, bitOffset, 16);
     bitOffset += 16;
@@ -797,6 +798,24 @@ void FibDecoder::_process_Fig0s18(const u8* const d)
     bitOffset += 16;
     const u8 nrClusters = getBits(d, bitOffset + 5, 3);
     bitOffset += 8;
+
+    // store the ASu flags per service (SI data, so the CN flag does not refer to the multiplex configuration)
+    if (const auto* const pFig0s18 = mpFibConfigFig0Curr->get_Fig0s18_AnnouncementSupport_of_SId(SId);
+        pFig0s18 == nullptr)
+    {
+      FibConfigFig0::SFig0s18_AnnouncementSupport fig0s18;
+      fig0s18.SId = SId;
+      fig0s18.ASuFlags = asuFlags;
+      fig0s18.set_current_time();
+      mpFibConfigFig0Curr->Fig0s18_AnnouncementSupportVec.emplace_back(fig0s18);
+      _retrigger_timer_data_loaded_slow("Fig0s18");
+    }
+    else
+    {
+      auto* const pFig0s18Mutable = const_cast<FibConfigFig0::SFig0s18_AnnouncementSupport*>(pFig0s18);
+      pFig0s18Mutable->ASuFlags = asuFlags; // the announcement support may change
+      pFig0s18Mutable->set_current_time_2nd_call();
+    }
 
     for (i32 i = 0; i < nrClusters; i++)
     {

@@ -73,7 +73,7 @@ sequenceDiagram
     EM--)DR: signal_epg_changed()
     DR->>EV: slot_update() (only if visible)
     EM--)DR: signal_epg_available(has_data)
-    DR->>BTN: _show_epg_label() → setEnabled + EPG status label
+    DR->>BTN: _enable_epg_button() → setEnabled
 
     Note over FIB,EM: In parallel – time reference (each second)
     FIB--)DR: signal_fib_time_info(SUtcTimeSet)

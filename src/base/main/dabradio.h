@@ -137,14 +137,15 @@ private:
     T value{};
     QColor colorOn;
     QColor colorOff;
+    bool available = false; // only for bool: if available (signalled), the light is steady on and goes off on activity (router LED style)
     QLabel* pLbl = nullptr;
   };
 
   struct StatusInfo
   {
     StatusInfoElem<bool> Stereo;
-    StatusInfoElem<bool> MOT;
-    StatusInfoElem<bool> EPG;
+    StatusInfoElem<bool> SLS;         // available: slideshow signalled in FIG 0/13 (steady on), value: MOT data are received (light goes off if available, else on)
+    StatusInfoElem<bool> TP;          // service supports road traffic announcements (FIG 0/18)
     StatusInfoElem<bool> SBR;
     StatusInfoElem<bool> PS;
     StatusInfoElem<bool> Announce;
@@ -328,6 +329,8 @@ private:
   // UI Display and Status Updates
   template <typename T> void _add_status_label_elem(StatusInfoElem<T>& ioElem, const u32 iColor, const QString& iName, const QString& iToolTip);
   template <typename T> void _set_status_info_status(StatusInfoElem<T>& iElem, const T iValue) const;
+  void _set_status_info_available(StatusInfoElem<bool>& ioElem, bool iAvailable) const;
+  void _apply_status_info_color(const StatusInfoElem<bool>& iElem) const;
   void _clean_screen(StatusInfo& ioStatusInfo) const;
   void _reset_status_info(StatusInfo& ioStatusInfo) const;
   void _display_service_label(const QString& iServiceLabel) const;
@@ -339,7 +342,7 @@ private:
   // UI Controls and Styling
   void _set_favorite_button_style();
   void _set_level_meter_mode(ELevelMeterMode iMode, bool iStoreSetting = true);
-  void _show_epg_label(const bool iShowLabel);
+  void _enable_epg_button(const bool iEnable) const;
   enum class EMapButtonState { Off, On };
   void _set_map_button(EMapButtonState iMapButtonState) const;
   void _set_clock_text(const QString& iText = QString());
@@ -360,7 +363,7 @@ private:
   bool _collect_deferred_data_and_emit_to_ensemble_list(const SChannelDescriptor& iChannelDesc, bool iForceSend) const;
   void _inform_ensemble_list(const SIdentInfoEL& iIdentInfoEL, EInfoReason iInfoReason);
 
-  void _update_audio_data_addon(u32 iSId) const;
+  void _update_audio_data_addon(u32 iSId);
 
   // Utility Functions
   QStringList _get_soft_bit_gen_names() const;
