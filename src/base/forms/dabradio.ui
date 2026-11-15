@@ -1109,7 +1109,7 @@
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open folder where the slides are stored&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only enabled when MOT picture saving is activated (see the configuration window).&lt;/p&gt;&lt;p&gt;If no slide picture is shown yet then the base picture folder is opened.&lt;br/&gt;If a slide picture is shown then the folder where this picture is stored is opened.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open folder where the slides are stored&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only enabled when slide saving is activated (see the configuration window).&lt;/p&gt;&lt;p&gt;If no slide is shown yet then the base slide folder (PIC/) is opened.&lt;br/&gt;If a slide is shown then the folder where this slide is stored is opened.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="icon">
               <iconset resource="../../../resources.qrc">
