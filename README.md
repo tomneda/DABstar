@@ -5,6 +5,7 @@
   * [Table of Content](#table-of-content)
   * [Pictures from DABstar](#pictures-from-dabstar)
     * [Main window](#main-window)
+      * [Buttons in the main window](#buttons-in-the-main-window)
       * [Traffic Light indicators in the main window](#traffic-light-indicators-in-the-main-window)
       * [SNR and MER bar graph in the main window](#snr-and-mer-bar-graph-in-the-main-window)
       * [File player in the main window](#file-player-in-the-main-window)
@@ -14,6 +15,7 @@
     * [Scope Spectrum Correlation Statistic window](#scope-spectrum-correlation-statistic-window)
     * [FIB content window](#fib-content-window)
     * [Journaline window](#journaline-window)
+    * [EPG window (Service and Programme Information)](#epg-window-service-and-programme-information)
     * [TII-list window which shows received transmitter details](#tii-list-window-which-shows-received-transmitter-details)
     * [Map view of received transmitters](#map-view-of-received-transmitters)
     * [Application update dialog](#application-update-dialog)
@@ -36,6 +38,8 @@
     * [Target Button](#target-button)
     * [File end action (Stop / Loop / ANS)](#file-end-action-stop--loop--ans)
     * [Some help for scanning](#some-help-for-scanning)
+  * [EPG (Service and Programme Information)](#epg-service-and-programme-information)
+  * [ETI file playback](#eti-file-playback)
   * [Coherent demodulation](#coherent-demodulation)
   * [Configuration and Data Files](#configuration-and-data-files)
   * [Installing on Linux from current mainline](#installing-on-linux-from-current-mainline)
@@ -46,6 +50,7 @@
         * [Supported SDR Hardware](#supported-sdr-hardware)
         * [DSP, SIMD & Decoding Options](#dsp-simd--decoding-options)
         * [Recommended Minimum Configuration (RTL-SDR on x86_64)](#recommended-minimum-configuration-rtl-sdr-on-x86_64)
+      * [Building with qmake](#building-with-qmake)
     * [RTL-SDR driver installation](#rtl-sdr-driver-installation)
     * [Installing USRP UHD](#installing-usrp-uhd)
     * [Installing AirSpy](#installing-airspy)
@@ -75,10 +80,34 @@ The status bar below the MOT picture shows:
 | Stereo    | Whether stereo mode is active                                                      |
 | PS        | Whether Parametric Stereo mode is active                                           |
 | SBR       | Whether Spectral Band Replication mode is active                                   |
-| MOT       | A Media Object Transfer is currently happening                                     |
-| EPG       | Whether Electronic Program Guide data (SPI) of the ensemble were received          |
+| SLS       | Slideshow: steady if signalled by the service, flickering while MOT slideshow data are received |
+| TP        | Traffic Programme: the service supports road traffic announcements (FIG 0/18)      |
 | ANN       | Whether an announcement is currently being broadcast                               |
 | EWS       | The ensemble participates in the Emergency Warning System (ASA in Germany)         |
+
+#### Buttons in the main window
+
+The tool buttons in the main window are labeled with short texts (move over them to get tooltip information):
+
+| Button | Function                                                                                                         |
+|--------|------------------------------------------------------------------------------------------------------------------|
+| EL     | Show the [Ensemble List](#ensemble-list) to scan live channels or sample files                                   |
+| RAW    | Save the raw input signal (IQ samples) to a file                                                                 |
+| ETI    | Save the ensemble content as ETI file (can be played again, see [ETI file playback](#eti-file-playback))         |
+| AAC    | Save the audio frames (AAC or MP2) to a file                                                                     |
+| WAV    | Save the audio output as uncompressed PCM file                                                                   |
+| DYL    | Save the dynamic label text to a file                                                                            |
+| EPG    | Open the programme guide (see [EPG](#epg-service-and-programme-information)), enabled if EPG data are available  |
+| JOUR   | Open the [Journaline](#journaline-window) window, enabled if Journaline data are received                       |
+| MAP    | Show the [map](#map-view-of-received-transmitters) of the received transmitters                                  |
+| FIB    | Show the [FIB content](#fib-content-window) list                                                                 |
+| TII    | Show the detailed [TII list](#tii-list-window-which-shows-received-transmitter-details) (needs the receiver coordinates in the configuration) |
+| CIR    | Show the [Channel Impulse Response](#the-prs-correlation-window-of-a-whole-dab-frame-cir) of a whole DAB frame  |
+| INFO   | Show the [details of the selected audio service](#audio-service-details-window-of-the-selected-service)          |
+| SIG    | Show the [spectrum, constellation and other DAB signal views](#scope-spectrum-correlation-statistic-window)     |
+| SDR    | Show the control widget of the [SDR device](#some-of-the-device-windows)                                         |
+
+Buttons whose function is not usable in the current state (e.g. no running channel, a scan in progress or ETI file playback) are disabled.
 
 #### Traffic Light indicators in the main window
 
@@ -103,7 +132,7 @@ With the toggle button **A/Q** you can switch between audio level and SNR/MER ba
 
 ![](res/for_readme/mainwidget_fileplayer.png)
 
-When a recorded IQ sample file (RAW, WAV/SDR or XML) is played, a file player bar is shown in the main window
+When a recorded IQ sample file (RAW, WAV/SDR or XML) or an ETI file (see [ETI file playback](#eti-file-playback)) is played, a file player bar is shown in the main window
 (it is hidden in device mode). It shows:
 
 | Element            | Meaning                                                                                       |
@@ -140,6 +169,10 @@ The "Remove 'No signal' files" button helps clean up the list of invalid recordi
 
 (Use tooltips for detailed explanations)
 
+With **Set to Defaults…** all settings (including the SDR device settings and the window positions) are reset to their default values
+and DABstar restarts after a confirmation. The home coordinates, the peak level delay, the TII database file and the scanned service
+and ensemble database entries are kept. The file `fftwf_wisdom.txt` is deleted and generated anew.
+
 ### Scope Spectrum Correlation Statistic window
 
 ![](res/for_readme/scope-spec-corr.png)
@@ -155,6 +188,12 @@ Shows the spectrum scope, IQ constellation, impulse response/correlation and car
 ![](res/for_readme/journaline.png)
 
 Journaline is supported as a separate data service and also when it is transmitted within the X-PAD of an audio service (signaled via FIG 0/13).
+
+### EPG window (Service and Programme Information)
+
+![](res/for_readme/epg.png)
+
+Shows the programme guide of the current ensemble, see [EPG](#epg-service-and-programme-information).
 
 ### TII-list window which shows received transmitter details
 
@@ -349,14 +388,43 @@ Additionally, all slideshow pictures of the services within the files can be cap
 ### Some help for scanning
 
 For a successful reception a good leveling of the device is necessary.
-Click ![](./res/for_readme/device-button.png) to open the device widget (it differs for the different devices).
-The best feedback regarding signal quality can be seen on the **Spectrum Scope** with
-![](./res/for_readme/scope-button.png).
+Click **SDR** to open the device widget (it differs for the different devices).
+The best feedback regarding signal quality can be seen on the **Spectrum Scope** with **SIG**.
 There, many explanations would be necessary for the details. Look at the tooltips for further help there.
 
 Also, the clock on the top of the service list can be used as indicator. Its time is only shown (and the background lights up) if the DAB time information
 can be received.
 
+
+## EPG (Service and Programme Information)
+
+Many ensembles carry an EPG service (SPI, ETSI TS 102 371) with the programme schedules and further information of their services.
+DABstar receives it **in the background**, independent of the selected audio service. So there is no need to select the EPG service itself.
+
+- Enable or disable this with "Receive EPG in background" in the configuration window (a change takes effect with the next channel selection).
+  The EPG is not received while scanning.
+- The **EPG** button in the main window gets enabled as soon as EPG data of the ensemble are available. It flickers while EPG data are received.
+- Click **EPG** to open (or close) the EPG window:
+
+| Area           | Description                                                                                                                         |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| Service list   | The services with programme data (with logos, if transmitted). The currently played service is preselected. Double-click a service to select (play) it. |
+| Day tabs       | Select the day of the shown programmes.                                                                                             |
+| Programme list | Start/stop time, duration and title of each programme. The currently running programme is highlighted, past programmes are dimmed. |
+| Details        | Times, short and long description of the selected programme.                                                                       |
+
+The times are shown in the local time of the ensemble (as the programmes are billed in this time) or in UTC if "Use UTC time" is selected.
+
+Optionally, the received EPG objects can be saved to the `EPG/` folder below the base path for slides/EPG (see the configuration window).
+
+## ETI file playback
+
+Besides IQ sample files, recorded ETI(NI) files (e.g. made with the **ETI** dump button) can be opened like any other file.
+The file type is detected from the file content.
+
+As an ETI file contains the already decoded data of the ensemble (no IQ samples), the windows which need IQ samples are
+not available in this mode: Spectrum Scope (**SIG**), **CIR**, **TII**, the **MAP** and the SNR/MER bar graph. The ETI and RAW dump buttons are disabled, too.
+Windows of these kinds which were open are hidden while an ETI file is played and shown again afterwards.
 
 ## Coherent demodulation
 
@@ -507,6 +575,19 @@ To uninstall DABstar again, do this:
 sudo make uninstall
 ```
 
+#### Building with qmake
+
+Alternatively, DABstar can be built with qmake using `dabstar.pro`. On Windows, it uses the libraries from `../dabstar-libs`.
+On Linux, the libraries are taken from the system via pkg-config (the same packages as for the CMake build).
+The options are selected by the `CONFIG += ...` lines at the top of `dabstar.pro`. On Linux, an option is disabled
+automatically (with a message) if its library or header is not installed. Without FDK-AAC, libfaad is used instead.
+
+```bash
+mkdir build-qmake && cd build-qmake
+qmake6 ../dabstar.pro
+make -j4
+```
+
 ### RTL-SDR driver installation
 
 It is recommended to build the RTL-SDR library from source from the repository of old-dab. See https://github.com/old-dab/rtlsdr.
@@ -564,15 +645,10 @@ Rights of old-dab and other contributors gratefully acknowledged.
 
 As I use some icons, I get them from [FlatIcon](https://www.flaticon.com/). The work of the icon authors is gratefully acknowledged:
 
-| Icon set                                                                     | Author        |
-|------------------------------------------------------------------------------|---------------|
-| [Electromagnetic icons](https://www.flaticon.com/free-icons/electromagnetic) | muh zakaria   |
-| [Radio tower icons](https://www.flaticon.com/free-icons/radio-tower)         | sonnycandra   |
-| [Frequency icons](https://www.flaticon.com/free-icons/frequency)             | DinosoftLabs  |
-| [Spectrum icons](https://www.flaticon.com/free-icons/spectrum)               | JunGSa        |
-| [Spectrum icons](https://www.flaticon.com/free-icons/spectrum)               | Eucalyp       |
-| [Target icons](https://www.flaticon.com/free-icons/target)                   | Pixel perfect |
-| [Folder icons](https://www.flaticon.com/free-icons/folder)                   | gariebaldy    |
+| Icon set                                                   | Author        |
+|------------------------------------------------------------|---------------|
+| [Target icons](https://www.flaticon.com/free-icons/target) | Pixel perfect |
+| [Folder icons](https://www.flaticon.com/free-icons/folder) | gariebaldy    |
 
 ### OpenStreetMap
 
