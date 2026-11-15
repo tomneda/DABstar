@@ -67,27 +67,12 @@ void _calc_adjusted_bg_colors(QColor& oBgBaseColor1, QColor& oBgBaseColor2, cons
   oBgBaseColor2 = QColor(r2, g2, b2);
 }
 
-void _calc_blended_bg_colors(QColor& oBgDisabled1, QColor& oBgDisabled2, const QColor& iBgBaseColor1, const QColor& iBgBaseColor2)
+void _calc_disabled_bg_colors(QColor& oBgDisabled1, QColor& oBgDisabled2)
 {
-  // Disabled: blend the button color 35% toward a dark neutral so the
-  // hue identity is still faintly visible but the button clearly looks inactive.
-  constexpr f32 cBlendFactor = 0.35f;
-  constexpr i32 cBaseGrayValue  = 0x40;
-
-  auto weight_color = [](const i32 iColValue) ->i32
-  {
-    return (i32)(iColValue * cBlendFactor + cBaseGrayValue * (1.0f - cBlendFactor));
-  };
-
-  const i32 rd1 = weight_color(iBgBaseColor1.red());
-  const i32 gd1 = weight_color(iBgBaseColor1.green());
-  const i32 bd1 = weight_color(iBgBaseColor1.blue());
-  const i32 rd2 = weight_color(iBgBaseColor2.red());
-  const i32 gd2 = weight_color(iBgBaseColor2.green());
-  const i32 bd2 = weight_color(iBgBaseColor2.blue());
-
-  oBgDisabled1 = QColor(rd1, gd1, bd1);
-  oBgDisabled2 = QColor(rd2, gd2, bd2);
+  // Disabled: a uniform neutral gray (around the disabled color in globstyle.qss) for all colored buttons,
+  // so the inactive state is clearly visible. The gradient keeps the 3D look of the enabled buttons.
+  oBgDisabled1 = QColor(0x48, 0x4c, 0x54);
+  oBgDisabled2 = QColor(0x32, 0x36, 0x3c);
 }
 }
 
@@ -96,14 +81,14 @@ QString get_bg_style_sheet(const QColor& iBgBaseColor, const QColor& iFgBaseColo
   QColor bgBaseColor1, bgBaseColor2, bgDisabled1, bgDisabled2;
 
   _calc_adjusted_bg_colors(bgBaseColor1, bgBaseColor2, iBgBaseColor, iRefLuminance);
-  _calc_blended_bg_colors(bgDisabled1, bgDisabled2, bgBaseColor1, bgBaseColor2);
+  _calc_disabled_bg_colors(bgDisabled1, bgDisabled2);
 
   const std::string grad    = "qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " + bgBaseColor1.name().toStdString() + ", stop:1 " + bgBaseColor2.name().toStdString() + ")";
   const std::string gradDis = "qlineargradient(x1:1, y1:0, x2:1, y2:1, stop:0 " + bgDisabled1.name().toStdString() + ", stop:1 " + bgDisabled2.name().toStdString() + ")";
 
   std::stringstream ts; // QTextStream did not work well here?!
   ts << "QWidget { background-color: " << grad << "; color: " << iFgBaseColor.name().toStdString() << "; } "
-     << "QWidget:disabled { background-color: " << gradDis << "; color: #707070; } "
+     << "QWidget:disabled { background-color: " << gradDis << "; color: #787878; } "
      << "QToolTip { color: black; background-color: #ffffdc; border: 1px solid black; }"; // add original tooltip color again (works unfortunately only here, not global)
   // qDebug() <<  "*** Style sheet:" << ts.str().c_str();
 
@@ -121,7 +106,7 @@ QString get_combo_style_sheet(const QColor& iBgBaseColor, const QColor& iFgBaseC
   QColor bgBaseColor1, bgBaseColor2, bgDisabled1, bgDisabled2;
 
   _calc_adjusted_bg_colors(bgBaseColor1, bgBaseColor2, iBgBaseColor, iRefLuminance);
-  _calc_blended_bg_colors(bgDisabled1, bgDisabled2, bgBaseColor1, bgBaseColor2);
+  _calc_disabled_bg_colors(bgDisabled1, bgDisabled2);
 
   // Selection highlight: brighten the base color slightly for the item view
   constexpr f32 cSelectionFactor = 1.3f;
@@ -136,7 +121,7 @@ QString get_combo_style_sheet(const QColor& iBgBaseColor, const QColor& iFgBaseC
 
   std::stringstream ts;
   ts << "QComboBox { background-color: " << grad << "; color: " << fg << "; border: 1px solid #555; border-radius: 3px; padding: 1px 4px; } "
-     << "QComboBox:disabled { background-color: " << gradDis << "; color: #707070; } "
+     << "QComboBox:disabled { background-color: " << gradDis << "; color: #787878; } "
      << "QComboBox::drop-down { border: none; background: transparent; } "
      << "QComboBox QAbstractItemView { background-color: #2a2a2a; color: #e0e0e0; "
      <<   "selection-background-color: " << bgSelection.name().toStdString() << "; selection-color: " << fg << "; "
