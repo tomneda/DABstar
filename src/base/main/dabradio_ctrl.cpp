@@ -210,8 +210,6 @@ void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)
   // read their samples in this thread (rtl_tcp) and their stale samples would be decoded afterwards. The settle
   // time is skipped sample-wise in DabProcessor::run() instead.
 
-  _enable_ui_elements_for_safety(!mIsScanning);
-
   mpDabProcessor->start(); // resets also the FIB decoder
 
   if (iSId > 0)
@@ -228,6 +226,8 @@ void DabRadio::_start_channel(const QString& iFIdOrCh, const u32 iSId)
   mpAudioManager->set_channel_running(true);
   mpEpgMotHandler->set_channel_running(true);
   mpTiiManager->set_channel_running(true);
+
+  _enable_ui_elements_for_safety(!mIsScanning);
 }
 
 // Apart from stopping the reader, a lot of administration is to be done.
@@ -275,8 +275,6 @@ void DabRadio::_stop_channel()
   ui->lblCountryName->setText("");
   _cleanup_ui();
 
-  _enable_ui_elements_for_safety(false);  // hide some buttons
-
   mServiceList.clear();
   _clean_screen(mStatusInfo);
   _set_status_info_status(mStatusInfo.EWS, false);
@@ -286,6 +284,8 @@ void DabRadio::_stop_channel()
   mpAudioManager->set_channel_running(false);
   mpEpgMotHandler->set_channel_running(false);
   mpTiiManager->set_channel_running(false);
+
+  _enable_ui_elements_for_safety(false);  // disable some buttons
   qDebug() << "Channel stopped";
 }
 

@@ -209,6 +209,9 @@ void DabRadio::_initialize_ui_elements()
   ui->btnEpg->setEnabled(false);
   ui->btnJournaline->setEnabled(false);
 
+  // no channel (DAB processor) is running yet
+  _enable_ui_elements_for_safety(false);
+
   // ui->cmbDeviceSelect->setStyleSheet(get_combo_style_sheet(0x2E8EA3)); // cyan     — device (matches btnDeviceWidget)
   // ui->cmbTiiList->setStyleSheet(get_combo_style_sheet(0x6868A8));     // slate blue — TII transmitter list
 
@@ -538,12 +541,9 @@ void DabRadio::_adapt_gui_for_eti_mode(const bool iEtiMode)
   mpTiiManager->set_suppress_visibility_store(false);
 
   ui->btnSpectrumScope->setEnabled(!iEtiMode);
-  ui->btnCir->setEnabled(!iEtiMode);
-  ui->btnTii->setEnabled(!iEtiMode);
   ui->btnMap->setEnabled(!iEtiMode && mChannelDesc.tiiFile);
   ui->btnToggleMeterMode->setEnabled(!iEtiMode);
-  ui->btnDumpRaw->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
-  ui->btnDumpEti->setEnabled(!iEtiMode && mIsChannelRunning && !mIsScanning);
+  _enable_dab_processor_dependent_buttons();
 }
 
 void DabRadio::register_journaline_viewer(QWidget* const ipViewerWidget)
@@ -1473,12 +1473,23 @@ void DabRadio::_slot_handle_target_service_button()
 // In those case we are sure not to have an operating dabProcessor, we hide some buttons
 void DabRadio::_enable_ui_elements_for_safety(const bool iEnable) const
 {
-  ui->btnDumpRaw->setEnabled(iEnable && !mIsEtiMode); // there are no samples or soft bits available with ETI input
-  ui->btnDumpEti->setEnabled(iEnable && !mIsEtiMode);
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);
-  ui->btnFib->setEnabled(iEnable);
+  _enable_dab_processor_dependent_buttons();
+}
+
+// These buttons are only usable with a running channel (DAB processor), so their state is derived from the current operating state
+void DabRadio::_enable_dab_processor_dependent_buttons() const
+{
+  const bool isRunning = mIsChannelRunning && mpDabProcessor != nullptr;
+  const bool hasSamples = isRunning && !mIsEtiMode; // there are no samples or soft bits available with ETI input
+
+  ui->btnFib->setEnabled(isRunning && !mIsScanning);
+  ui->btnCir->setEnabled(hasSamples);
+  ui->btnTii->setEnabled(hasSamples);
+  ui->btnDumpRaw->setEnabled(hasSamples && !mIsScanning);
+  ui->btnDumpEti->setEnabled(hasSamples && !mIsScanning);
 }
 
 void DabRadio::_slot_handle_mute_button()

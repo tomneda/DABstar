@@ -349,6 +349,7 @@ private:
   void _set_map_button(EMapButtonState iMapButtonState) const;
   void _set_clock_text(const QString& iText = QString());
   void _enable_ui_elements_for_safety(bool iEnable) const;
+  void _enable_dab_processor_dependent_buttons() const;
   void _adapt_gui_for_device_or_file_play(bool iPlayingDevice) const;
   void _adapt_gui_for_eti_mode(bool iEtiMode);
   void _cleanup_ui() const;

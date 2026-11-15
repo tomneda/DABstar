@@ -1073,10 +1073,10 @@ void DabRadio::_stop_scanning(SChannelDescriptor& ioChannelDesc)
     ui->rbDevicePlayer->setEnabled(true);
     ui->rbFilePlayer->setEnabled(true);
     ui->cmbDeviceSelect->setEnabled(!mIsFileMode);
-    _enable_ui_elements_for_safety(true);
     // ioChannelDesc.set_device_channel(""); // trigger restart of channel after next service list click (TODO: ??)
     mIsScanning.store(false);
     mpAudioManager->set_scanning(false);
+    _enable_ui_elements_for_safety(true);
     mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
   }
 }
