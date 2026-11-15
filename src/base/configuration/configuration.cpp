@@ -56,7 +56,8 @@ Configuration::Configuration(DabRadio* ipRI) :
   setupUi(this);
   setWindowFlag(Qt::Tool, true); // does not generate a task bar icon
 
-  Settings::Config::posAndSize.read_widget_geometry(this, false, true);
+  const i32 updateStatusReserveHeight = cUpdateStatusReserveLines * fontMetrics().lineSpacing();
+  Settings::Config::posAndSize.read_widget_geometry(this, false, true, 0, updateStatusReserveHeight);
 
   // register UI elements to setting manager and provide default setting
   Settings::Config::sbTiiThreshold.register_widget_and_update_ui_from_setting(sbTiiThreshold, 8);

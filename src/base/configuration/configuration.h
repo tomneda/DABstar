@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "glob_data_types.h"
 #include "ui_configuration.h"
 #include <QWidget>
 
@@ -30,6 +31,8 @@ public:
   void save_position_and_config();
 
 private:
+  static constexpr i32 cUpdateStatusReserveLines = 2; // reserved text lines for the (initially hidden) update status label
+
   DabRadio* const mpRadioInterface;
 
 private slots:
