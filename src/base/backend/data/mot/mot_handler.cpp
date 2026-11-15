@@ -123,7 +123,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     next += lengthInd * 8;
   }
 
-  i32 sizeinBits = msc.size() - next - (crcFlag != 0 ? 16 : 0);
+  const i32 sizeInBits = msc.size() - next - (crcFlag != 0 ? 16 : 0);
 
   if (!transportIdFlag)
   {
@@ -131,8 +131,8 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
   }
 
   std::vector<u8> motVector;
-  motVector.resize(sizeinBits / 8);
-  for (i32 i = 0; i < sizeinBits / 8; i++)
+  motVector.resize(sizeInBits / 8);
+  for (i32 i = 0; i < sizeInBits / 8; i++)
   {
     u8 t = 0;
     for (i32 j = 0; j < 8; j++)

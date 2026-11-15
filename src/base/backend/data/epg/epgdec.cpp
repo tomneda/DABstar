@@ -63,7 +63,7 @@ void CEPGDecoder::decode(const std::vector<_BYTE>& vecData,
       QString name_2 = "epg file " + QString::number(cnt);
       cnt++;
       epgFile = fopen(name_2.toUtf8().data(), "w");
-      if (epgFile != 0)
+      if (epgFile != nullptr)
       {
         fprintf(stderr, "filename = %s\n", name_2.toUtf8().data());
         fprintf(epgFile, "%s", test.toLatin1().data());

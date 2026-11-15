@@ -108,8 +108,8 @@ bool check_CRC_bits(const std::span<const std::byte>& iBits)
 
 bool check_CRC_bits(const std::span<const u8>& iBits)
 {
-  const u8* const iIn = iBits.data();
-  const i32 iSize = (i32)iBits.size();
+  const u8* const in = iBits.data();
+  const i32 size = (i32)iBits.size();
   static const u8 crcPolynome[] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 };  // MSB .. LSB
   i32 f;
   u8 b[16];
@@ -117,11 +117,11 @@ bool check_CRC_bits(const std::span<const u8>& iBits)
 
   memset(b, 1, 16);
 
-  for (int i = 0; i < iSize; i++)
+  for (int i = 0; i < size; i++)
   {
-    const u8 invBit = (i >= iSize - 16 ? 1 : 0);
+    const u8 invBit = (i >= size - 16 ? 1 : 0);
 
-    if ((b[0] ^ (iIn[i] ^ invBit)) == 1)
+    if ((b[0] ^ (in[i] ^ invBit)) == 1)
     {
       for (f = 0; f < 15; f++)
       {
