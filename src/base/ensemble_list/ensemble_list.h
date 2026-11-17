@@ -46,7 +46,7 @@ class EnsembleList : public QObject
   Q_OBJECT
 
 public:
-  EnsembleList(const QString& iDbFileName);
+  EnsembleList(const DabDatabase& iDabDatabase);
   ~EnsembleList() override;
 
   enum class EListMode { Invalid, PlayFromDevice, PlayFromFiles };
@@ -123,6 +123,7 @@ signals:
   void signal_start_stop_scan(bool oIsScanning);
   void signal_file_or_channel_to_play(const SIdentInfoEL& oIdentInfo); // starts playing (also while scan), provide a file or channel name, called with slot_select_FId_or_Ch or by a click in the table
   void signal_delete_unused_fid_or_ch(QStringList oFIds);
+  void signal_entries_deleted(); // the services of deleted entries are deleted automatically, too
   void signal_show_current_fid_or_ch_only(bool oShow);
 };
 

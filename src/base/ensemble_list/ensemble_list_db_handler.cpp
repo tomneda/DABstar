@@ -85,9 +85,9 @@ bool CustomItemDelegate2::editorEvent(QEvent* event, QAbstractItemModel* model, 
 }
 
 
-EnsembleListDbHandler::EnsembleListDbHandler(const QString& iDbFileName, QTableView* const ipSL) :
+EnsembleListDbHandler::EnsembleListDbHandler(const DabDatabase& iDabDatabase, QTableView* const ipSL) :
   mpTableView(ipSL),
-  mEnsembleListDb(iDbFileName)
+  mEnsembleListDb(iDabDatabase)
 {
   mpTableView->setItemDelegate(&mCustomItemDelegate);
   mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
@@ -98,15 +98,7 @@ EnsembleListDbHandler::EnsembleListDbHandler(const QString& iDbFileName, QTableV
   mProxyModel.setSortCaseSensitivity(Qt::CaseInsensitive);
   mpTableView->setModel(&mProxyModel);
 
-  mEnsembleListDb.open_db(); // program will exit if table could not be opened
-
-  mEnsembleListDb.set_data_mode(EnsembleListDB::EDataMode::Device);
-  //mServiceDB.delete_table();
-  mEnsembleListDb.create_table();
-
   mEnsembleListDb.set_data_mode(EnsembleListDB::EDataMode::Files);
-  //mServiceDB.delete_table();
-  mEnsembleListDb.create_table();
 
   mpTableView->horizontalHeader()->setSortIndicatorShown(true);
 
@@ -190,7 +182,7 @@ void EnsembleListDbHandler::delete_table()
 
 void EnsembleListDbHandler::create_new_table()
 {
-  mEnsembleListDb.create_table();
+  // the table itself is always existing (see DabDatabase), only the view is renewed
   _fill_table_view_from_db();
 }
 

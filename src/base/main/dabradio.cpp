@@ -67,7 +67,7 @@
 // Q_LOGGING_CATEGORY(sLogDabRadio, "DabRadio", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogDabRadio, "DabRadio", QtInfoMsg)
 
-DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFileName, const QString& iEnsembleListDbFileName, const i32 iDataPort, QWidget* iParent)
+DabRadio::DabRadio(QSettings* const ipSettings, const DabDatabase& iDabDatabase, const i32 iDataPort, QWidget* iParent)
   : QWidget(iParent)
   , ui(new Ui_DabRadio)
   , mpSpectrumBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cf32>::EId::SpectrumBuffer).get())
@@ -113,9 +113,9 @@ DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFil
   mWindowBaseHeight = height();
   Settings::Main::cmbFileEndAction.register_widget_and_update_ui_from_setting(ui->cmbFileEndAction, "Loop");
 
-  mpServiceListHandler.reset(new ServiceListHandler(iServiceListDbFileName, ui->tblServiceList));
+  mpServiceListHandler.reset(new ServiceListHandler(iDabDatabase, ui->tblServiceList));
   mpTechDataWidget.reset(new TechData(this, mpTechDataBuffer));
-  mpEnsembleList.reset(new EnsembleList(iEnsembleListDbFileName));
+  mpEnsembleList.reset(new EnsembleList(iDabDatabase));
   mpMotSlideProgress.reset(new MotSlideProgress(ui->gapProgBarMot));
 
   qDebug("Using Qt version: " QT_VERSION_STR);
@@ -147,7 +147,7 @@ DabRadio::DabRadio(QSettings* const ipSettings, const QString& iServiceListDbFil
   Settings::Config::cmbSoftBitGen.register_widget_and_update_ui_from_setting(mpConfig->cmbSoftBitGen, "Differential, Optimal 3");
   _slot_update_coherent_traffic_light(mpConfig->cmbSoftBitGen->currentIndex());
   connect(mpConfig->cmbSoftBitGen, qOverload<i32>(&QComboBox::currentIndexChanged), this, &DabRadio::_slot_update_coherent_traffic_light);
-  mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
+  mpServiceListHandler->reload_from_db();
 
 #ifdef DATA_STREAMER
   dataStreamer = new tcpServer(iDataPort);
@@ -888,6 +888,7 @@ void DabRadio::_check_for_itu_code()
     // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.ITU_Code).arg(itu.Country);
     mChannelDesc.deferredData.countryName = QSL("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
     ui->lblCountryName->setText(itu.Country);
+    mpServiceListHandler->set_ecc(mChannelDesc.get_fId_or_ch(), mChannelDesc.ecc_byte); // the favorites are related to ECC and SId
     // qDebug() << "Ch/FId" << mChannelDesc.get_fId_or_ch() << Qt::hex << Qt::showbase << "with EId" << mChannelDesc.Eid <<  "has ECC byte"  << mChannelDesc.ecc_byte << "with country name" << mChannelDesc.deferredData.countryName.value();
   }
 }
@@ -1077,7 +1078,7 @@ void DabRadio::_stop_scanning(SChannelDescriptor& ioChannelDesc)
     mIsScanning.store(false);
     mpAudioManager->set_scanning(false);
     _enable_ui_elements_for_safety(true);
-    mpServiceListHandler->restore_favorites(); // try to restore former favorites from a backup table
+    mpServiceListHandler->reload_from_db(); // the favorites are kept in an own table and are shown again after the scan
   }
 }
 

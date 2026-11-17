@@ -12,9 +12,9 @@
  */
 
 #include "ensemble_list_db.h"
+#include "dab_database.h"
 #include "glob_enums.h"
 #include "qt_compat.h"
-#include <QFile>
 #include <QTableView>
 #include <QtSql/QSql>
 #include <QtSql/QSqlQuery>
@@ -22,12 +22,10 @@
 #include <QtSql/QSqlQueryModel>
 #include <QVariant>
 #include <QtDebug>
-#include <QCoreApplication>
 #include <QDir>
-#include <utility>
 
-static const QString sTabDeviceEnsList = QSL("TabDeviceEnsList");
-static const QString sTabFileEnsList   = QSL("TabFileEnsList");
+static const QString& sTabEnsList = DbNames::cTabEnsemble;
+static const QString& sTeMode     = DbNames::cColMode;
 
 static const QString sTeFIdOrCh             = QSL("FIdOrCh");
 static const QString sTeFilePath            = QSL("FilePath");
@@ -48,74 +46,25 @@ static const QString sTeNomFreq             = QSL("NomFreq");
 static const QString sTeDateUtc             = QSL("Date");
 static const QString sTeLastPlayedSId       = QSL("LastPlayedSId");
 
-EnsembleListDB::EnsembleListDB(QString iDbFileName) :
-  mDbFileName(std::move(iDbFileName)) // clang-tidy wants it so...
+EnsembleListDB::EnsembleListDB(const DabDatabase& iDabDatabase) :
+  mDB(iDabDatabase.get_db())
 {
-}
-
-EnsembleListDB::~EnsembleListDB()
-{
-  mDB.close();
-}
-
-void EnsembleListDB::open_db()
-{
-  mDB = QSqlDatabase::addDatabase("QSQLITE", "EnsembleList");
-
-  if (!_open_db())
-  {
-    qCritical() << "Error: Unable to establish a database connection: %s. Try deleting database and repeat..." << _error_str();
-    _delete_db_file(); // emergency delete, hoping next start will work with new database
-
-    if (!_open_db())
-    {
-      qCritical() << "Error: Unable to establish a database connection: " << _error_str();
-      QCoreApplication::exit(1);
-    }
-  }
-  // the code will exit if table could not be opened (qFatal does this)
-}
-
-void EnsembleListDB::create_table()
-{
-  const QString queryStr = "CREATE TABLE IF NOT EXISTS " + _cur_tab_name() + " ("
-                           "Id                        INTEGER PRIMARY KEY,"
-                           + sTeFIdOrCh           + " TEXT NOT NULL,"
-                           // only for files
-                           + sTeFilePath          + " TEXT,"
-                           + sTeFileName          + " TEXT,"
-                           + sTeScanLevel         + " INTEGER DEFAULT 0,"
-                           + sTeFileLengthMB      + " REAL DEFAULT 0,"
-                           // common for files and device
-                           + sTeEnsembleName      + " TEXT,"
-                           + sTeEnsembleId        + " TEXT,"
-                           + sTeItuCode           + " TEXT,"
-                           + sTeDateUtc           + " TEXT,"
-                           + sTeLastPlayedSId     + " TEXT,"
-                           + sTeDscTyAppTy        + " TEXT,"
-                           + sTeAudioDataRates    + " TEXT,"
-                           + sTeNumDabDabPlus     + " TEXT,"
-                           + sTeErrorProtection   + " TEXT,"
-                           + sTeNomFreq           + " INTEGER DEFAULT 0,"
-                           + sTeSNR               + " REAL DEFAULT 0,"
-                           + sTeMER               + " REAL DEFAULT 0,"
-                           + sTeBasebandOffset    + " REAL DEFAULT 0,"
-                           "UNIQUE(" + sTeFIdOrCh + ") ON CONFLICT REPLACE"
-                           ");";
-
-  _exec_simple_query(queryStr);
 }
 
 void EnsembleListDB::delete_table()
 {
-  _exec_simple_query("DROP TABLE IF EXISTS " + _cur_tab_name() + ";");
+  // the services of these entries are deleted automatically (ON DELETE CASCADE)
+  QSqlQuery queryDel(mDB);
+  queryDel.prepare("DELETE FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode");
+  queryDel.bindValue(":mode", _cur_mode());
+  (void)_exec(queryDel, "delete entries");
 }
 
 bool EnsembleListDB::is_table_existing(const EDataMode iDataMode) const
 {
   assert(iDataMode != EDataMode::Invalid);
-  const QString& tabName = (iDataMode == EDataMode::Device ? sTabDeviceEnsList : sTabFileEnsList);
-  return mDB.tables().contains(tabName);
+  (void)iDataMode; // the table is common for all data modes
+  return mDB.tables().contains(sTabEnsList);
 }
 
 bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, const EDbDataType iDataType) const
@@ -126,19 +75,39 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, cons
   switch (iDataType)
   {
   case EDbDataType::InsertKeyAndS0WsData:
-    queryAdd.prepare("INSERT INTO " + _cur_tab_name() + " (" +
+    // an existing entry is reset to the given data (like a REPLACE), but keeps its Id so that its services are kept
+    queryAdd.prepare("INSERT INTO " + sTabEnsList + " (" +
+                     sTeMode + "," +
                      sTeFIdOrCh + "," +
                      sTeFilePath + "," +
                      sTeFileName + "," +
                      sTeScanLevel + "," +
                      sTeFileLengthMB +
                      ") VALUES ("
+                     ":mode, "
                      ":fidorch, "
                      ":filepath, "
                      ":filename, "
                      ":scanlevel, "
                      ":len"
-                     ")");
+                     ") ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + ") DO UPDATE SET " +
+                     sTeFilePath         + " = excluded." + sTeFilePath + ", " +
+                     sTeFileName         + " = excluded." + sTeFileName + ", " +
+                     sTeScanLevel        + " = excluded." + sTeScanLevel + ", " +
+                     sTeFileLengthMB     + " = excluded." + sTeFileLengthMB + ", " +
+                     sTeEnsembleName     + " = NULL, " +
+                     sTeEnsembleId       + " = NULL, " +
+                     sTeItuCode          + " = NULL, " +
+                     sTeDateUtc          + " = NULL, " +
+                     sTeLastPlayedSId    + " = NULL, " +
+                     sTeDscTyAppTy       + " = NULL, " +
+                     sTeAudioDataRates   + " = NULL, " +
+                     sTeNumDabDabPlus    + " = NULL, " +
+                     sTeErrorProtection  + " = NULL, " +
+                     sTeNomFreq          + " = 0, " +
+                     sTeSNR              + " = 0, " +
+                     sTeMER              + " = 0, " +
+                     sTeBasebandOffset   + " = 0");
     
     queryAdd.bindValue(":fidorch", iEntryData.key.fIdOrCh);
     queryAdd.bindValue(":filepath", iEntryData.S0Ws.filePath);
@@ -149,23 +118,23 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, cons
     break;
 
   case EDbDataType::UpdateSL1Failed:
-    queryAdd.prepare("UPDATE " + _cur_tab_name() + " SET " +
+    queryAdd.prepare("UPDATE " + sTabEnsList + " SET " +
                      sTeScanLevel + " = :scanlevel " +
-                     "WHERE " + sTeFIdOrCh + " = :fidorch");
+                     "WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
   
     queryAdd.bindValue(":fidorch", iEntryData.key.fIdOrCh);
     queryAdd.bindValue(":scanlevel", (int)EScanLevel::SL1_ScanFailed);
     break;
 
   case EDbDataType::UpdateSL2FibData:
-    queryAdd.prepare("UPDATE " + _cur_tab_name() + " SET " +
+    queryAdd.prepare("UPDATE " + sTabEnsList + " SET " +
                      sTeErrorProtection  + " = :errprot, " +
                      sTeNumDabDabPlus    + " = :dabdabplus, " +
                      sTeDscTyAppTy       + " = :dscTyAppTy, " +
                      sTeAudioDataRates   + " = :datarates, " +
                      sTeScanLevel        + " = :scanlevel, " +
                      sTeLastPlayedSId    + " = :lastplayedsid " +
-                     "WHERE " + sTeFIdOrCh + " = :fidorch");
+                     "WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
 
     queryAdd.bindValue(":fidorch", iEntryData.key.fIdOrCh);
     queryAdd.bindValue(":errprot", iEntryData.S1Fib.errorProtection);
@@ -177,7 +146,7 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, cons
     break;
 
   case EDbDataType::UpdateSL3MedRunData:
-    queryAdd.prepare("UPDATE " + _cur_tab_name() + " SET " +
+    queryAdd.prepare("UPDATE " + sTabEnsList + " SET " +
                       sTeEnsembleName   + " = :ensname, " +
                       sTeEnsembleId     + " = :ensid, " +
                       sTeItuCode        + " = :itucode, " +
@@ -187,7 +156,7 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, cons
                       sTeBasebandOffset + " = :offset, " +
                       sTeNomFreq        + " = :freq, " +
                       sTeScanLevel      + " = :scanlevel " +
-                      "WHERE " + sTeFIdOrCh + " = :fidorch");
+                      "WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
 
     queryAdd.bindValue(":fidorch", iEntryData.key.fIdOrCh);
     queryAdd.bindValue(":scanlevel", (int)EScanLevel::SL3_MedRun);
@@ -202,23 +171,18 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, cons
     break;
 
   case EDbDataType::UpdateLastPlayedSId:
-    queryAdd.prepare("UPDATE " + _cur_tab_name() + " SET " +
+    queryAdd.prepare("UPDATE " + sTabEnsList + " SET " +
                      sTeLastPlayedSId + " = :lastplayedsid " +
-                     "WHERE " + sTeFIdOrCh + " = :fidorch");
+                     "WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
   
     queryAdd.bindValue(":fidorch", iEntryData.key.fIdOrCh);
     queryAdd.bindValue(":lastplayedsid", iEntryData.S0Ws.sIdPlayed);
     break;
   }
 
-  if (!queryAdd.exec())
-  {
-    const QString dbErr = _error_str();
-    qCritical() << "Error: Unable insert/update entry: " << dbErr;
-    return false;
-  }
+  queryAdd.bindValue(":mode", _cur_mode());
 
-  return true;
+  return _exec(queryAdd, "insert/update entry");
 }
 
 EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString& iFIdOrCh) const
@@ -229,7 +193,8 @@ EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString& iFIdOrCh) 
                 sTeFilePath         + "," +
                 sTeFileName         + "," +
                 sTeLastPlayedSId    +
-                " FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :fidorch");
+                " FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
+  query.bindValue(":mode", _cur_mode());
   query.bindValue(":fidorch", iFIdOrCh);
 
   SDbEntryData entryData{};
@@ -248,7 +213,8 @@ EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString& iFIdOrCh) 
 bool EnsembleListDB::is_entry_existing(const QString& iFIdOrCh) const
 {
   QSqlQuery query(mDB);
-  query.prepare("SELECT " + sTeFIdOrCh + " FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :fidorch");
+  query.prepare("SELECT " + sTeFIdOrCh + " FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
+  query.bindValue(":mode", _cur_mode());
   query.bindValue(":fidorch", iFIdOrCh);
 
   return query.exec() && query.next();
@@ -257,38 +223,27 @@ bool EnsembleListDB::is_entry_existing(const QString& iFIdOrCh) const
 bool EnsembleListDB::delete_entry(const QString& iFIdOrCh) const
 {
   QSqlQuery queryDel(mDB);
-  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :fidorch");
+  queryDel.prepare("DELETE FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
+  queryDel.bindValue(":mode", _cur_mode());
   queryDel.bindValue(":fidorch", iFIdOrCh);
 
-  if (!queryDel.exec())
-  {
-    const QString dbErr = _error_str();
-    qCritical() << "Error: Unable delete entry: " << dbErr;
-    return false;
-  }
-
-  return true;
+  return _exec(queryDel, "delete entry");
 }
 
 bool EnsembleListDB::delete_invalid_entries() const
 {
   QSqlQuery queryDel(mDB);
-  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeScanLevel + " = " + QString::number((int)EScanLevel::SL1_ScanFailed));
+  queryDel.prepare("DELETE FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + sTeScanLevel + " = " + QString::number((int)EScanLevel::SL1_ScanFailed));
+  queryDel.bindValue(":mode", _cur_mode());
 
-  if (!queryDel.exec())
-  {
-    const QString dbErr = _error_str();
-    qCritical() << "Error: Unable delete entry: " << dbErr;
-    return false;
-  }
-
-  return true;
+  return _exec(queryDel, "delete invalid entries");
 }
 
 i32 EnsembleListDB::get_nr_unscanned_entries() const
 {
   QSqlQuery query(mDB);
-  query.prepare("SELECT COUNT(*) FROM " + _cur_tab_name() + " WHERE " + sTeEnsembleId + " IS NULL OR " + sTeEnsembleId + " = ''");
+  query.prepare("SELECT COUNT(*) FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND (" + sTeEnsembleId + " IS NULL OR " + sTeEnsembleId + " = '')");
+  query.bindValue(":mode", _cur_mode());
   return (query.exec() && query.next() ? query.value(0).toInt() : -1);
 }
 
@@ -343,10 +298,11 @@ QAbstractItemModel* EnsembleListDB::create_model()
   const QString scanLevelFilter = scanLevelConditions.isEmpty() ? "1=0" : "(" + scanLevelConditions.join(" OR ") + ")";
 
   QSqlQuery query(mDB);
-  QString queryStr = "SELECT " + cols.join(",") + " FROM " + _cur_tab_name() + " WHERE " + scanLevelFilter;
+  const QString queryStr = "SELECT " + cols.join(",") + " FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + scanLevelFilter;
   query.prepare(queryStr);
+  query.bindValue(":mode", _cur_mode());
 
-  if (query.exec())
+  if (_exec(query, "SELECT query"))
   {
     model->setQuery(std::move(query));
 
@@ -357,11 +313,6 @@ QAbstractItemModel* EnsembleListDB::create_model()
       model->fetchMore();
     }
   }
-  else
-  {
-    const QString dbErr = _error_str();
-    qCritical() << "Error: Invalid SELECT query: " << dbErr;
-  }
 
   return model;
 }
@@ -370,7 +321,8 @@ QString EnsembleListDB::get_full_path(const QString& iFId) const
 {
   assert(mDataMode == EDataMode::Files);
   QSqlQuery query(mDB);
-  query.prepare("SELECT " + sTeFilePath + ", " + sTeFileName + " FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :fidorch");
+  query.prepare("SELECT " + sTeFilePath + ", " + sTeFileName + " FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
+  query.bindValue(":mode", _cur_mode());
   query.bindValue(":fidorch", iFId);
 
   if (query.exec() && query.next())
@@ -394,49 +346,21 @@ void EnsembleListDB::set_data_filter(const SDataFilter& iDataFilter)
   mDataFilter = iDataFilter;
 }
 
-bool EnsembleListDB::_open_db()
+bool EnsembleListDB::_exec(QSqlQuery& ioQuery, const char* const iWhat) const
 {
-  mDB.setDatabaseName(mDbFileName);
-  return mDB.open();
-}
-
-void EnsembleListDB::_delete_db_file()
-{
-  qCritical("Failure in database -> delete database -> try to restart and scan services again!");
-
-  if (_open_db())
+  if (!ioQuery.exec())
   {
-    mDB.close();
+    qCritical() << "Error: Unable to" << iWhat << ":" << ioQuery.lastError().text();
+    return false;
   }
 
-  if (QFile::exists(mDbFileName))
-  {
-    QFile::remove(mDbFileName);
-  }
+  return true;
 }
 
-QString EnsembleListDB::_error_str() const
-{
-  return mDB.lastError().text(); // make a copy of the string as the DB object could be invalid when using it
-}
-
-void EnsembleListDB::_exec_simple_query(const QString& iQuery)
-{
-  QSqlQuery query(mDB);
-
-  if (!query.exec(iQuery))
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Failed to execute '" << iQuery << "': " << dbErr;
-    QCoreApplication::exit(1);
-  }
-}
-
-const QString& EnsembleListDB::_cur_tab_name() const
+i32 EnsembleListDB::_cur_mode() const
 {
   assert(mDataMode != EDataMode::Invalid);
-  return (mDataMode == EDataMode::Device ? sTabDeviceEnsList : sTabFileEnsList);
+  return (i32)(mDataMode == EDataMode::Device ? DabDatabase::EMode::Device : DabDatabase::EMode::File);
 }
 
 void EnsembleListDB::set_data_mode(EnsembleListDB::EDataMode iDataMode)

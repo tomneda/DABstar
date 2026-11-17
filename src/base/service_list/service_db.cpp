@@ -12,8 +12,8 @@
  */
 
 #include "service_db.h"
+#include "dab_database.h"
 #include "qt_compat.h"
-#include <QFile>
 #include <QTableView>
 #include <QtSql/QSql>
 #include <QtSql/QSqlQuery>
@@ -21,18 +21,20 @@
 #include <QtSql/QSqlQueryModel>
 #include <QVariant>
 #include <QtDebug>
-#include <QCoreApplication>
-#include <utility>
 
-static const QString sTabDeviceList = QSL("TabDeviceList");
-static const QString sTabFilesList  = QSL("TabFilesList");
-// static const QString sTabTempServList   = QSL("TabTempServList");
-static const QString sTabFavList     = QSL("TabFavList");
+using namespace DbNames;
 
 static const QString sTeServiceLabel = QSL("Service");
 static const QString sTeFIdOrCh      = QSL("Channel");
 static const QString sTeServiceId    = QSL("SId");
 static const QString sTeIsFav        = QSL("IsFav");
+
+// ensemble entry of the current data mode with the given channel/FId
+static const QString sSelEnsembleId = "SELECT " + cColId + " FROM " + cTabEnsemble + " WHERE " + cColMode + " = :mode AND " + cColFIdOrCh + " = :channel";
+
+// a favorite matches if SId is equal and ECC is equal or one of the ECCs is not known (0), "e" is the ensemble table, "s" the service table
+static const QString sIsFavExpr = "EXISTS(SELECT 1 FROM " + cTabFavorite + " f WHERE f." + cColSId + " = s." + cColSId +
+                                  " AND (f." + cColEcc + " = e." + cColEcc + " OR f." + cColEcc + " = 0 OR e." + cColEcc + " = 0))";
 
 #if 0
 class CustomSqlQueryModel : public QSqlQueryModel
@@ -57,143 +59,89 @@ public:
 };
 #endif
 
-ServiceDB::ServiceDB(QString iDbFileName) :
-  mDbFileName(std::move(iDbFileName)) // clang-tidy wants it so...
+ServiceDB::ServiceDB(const DabDatabase& iDabDatabase) :
+  mDB(iDabDatabase.get_db())
 {
-}
-
-ServiceDB::~ServiceDB()
-{
-  mDB.close();
-}
-
-void ServiceDB::open_db()
-{
-  mDB = QSqlDatabase::addDatabase("QSQLITE", "ServiceList");
-
-  if (!_open_db())
-  {
-    qCritical() << "Error: Unable to establish a database connection: %s. Try deleting database and repeat..." << _error_str();
-    _delete_db_file(); // emergency delete, hoping next start will work with new database
-
-    if (!_open_db())
-    {
-      qCritical() << "Error: Unable to establish a database connection: " << _error_str();
-      QCoreApplication::exit(1);
-    }
-  }
-  // the code will exit if table could not be opened (qFatal does this)
-}
-
-void ServiceDB::create_table()
-{
-  const QString queryStr1 = "CREATE TABLE IF NOT EXISTS " + _cur_tab_name() + " ("
-                            "Id                   INTEGER PRIMARY KEY,"
-                            + sTeFIdOrCh      + " TEXT NOT NULL,"
-                            + sTeServiceId    + " INTEGER DEFAULT 0,"
-                            + sTeServiceLabel + " TEXT NOT NULL,"
-                            + sTeIsFav + " INTEGER DEFAULT 0,"
-                            "UNIQUE(" + sTeFIdOrCh + "," + sTeServiceId + ") ON CONFLICT IGNORE"
-                            ");";
-
-  const QString queryStr2 = "CREATE TABLE IF NOT EXISTS " + sTabFavList + " ("
-                            "Id                 INTEGER PRIMARY KEY,"
-                            + sTeFIdOrCh    + " TEXT NOT NULL,"
-                            + sTeServiceId  + " INTEGER DEFAULT 0,"
-                            "UNIQUE(" + sTeFIdOrCh + "," + sTeServiceId + ") ON CONFLICT IGNORE"
-                            ");";
-
-  _exec_simple_query(queryStr1);
-  _exec_simple_query(queryStr2);
 }
 
 void ServiceDB::delete_table(const bool iDeleteFavorites)
 {
-  _exec_simple_query("DROP TABLE IF EXISTS " + _cur_tab_name() + ";");
+  QSqlQuery queryDel(mDB);
+  queryDel.prepare("DELETE FROM " + cTabService + " WHERE " + cColEnsRef + " IN (SELECT " + cColId + " FROM " + cTabEnsemble + " WHERE " + cColMode + " = :mode)");
+  queryDel.bindValue(":mode", _cur_mode());
+  (void)_exec(queryDel, "delete services");
 
   if (iDeleteFavorites)
   {
-    _exec_simple_query("DROP TABLE IF EXISTS " + sTabFavList + ";");
+    QSqlQuery queryDelFav(mDB);
+    queryDelFav.prepare("DELETE FROM " + cTabFavorite);
+    (void)_exec(queryDelFav, "delete favorites");
   }
 }
 
-
-
 bool ServiceDB::add_entry(const QString& iChannel, const QString& iServiceLabel, const u32 iSId)
 {
+  // the ensemble entry should already exist via the ensemble list, but get sure that the service can be stored
+  QSqlQuery queryEns(mDB);
+  queryEns.prepare("INSERT INTO " + cTabEnsemble + " (" + cColMode + ", " + cColFIdOrCh + ") VALUES (:mode, :channel) "
+                   "ON CONFLICT(" + cColMode + ", " + cColFIdOrCh + ") DO NOTHING");
+  queryEns.bindValue(":mode", _cur_mode());
+  queryEns.bindValue(":channel", iChannel);
+
+  if (!_exec(queryEns, "insert ensemble entry"))
+  {
+    return false;
+  }
+
   // add new entry or update service label on conflict
   QSqlQuery queryAdd(mDB);
-  queryAdd.prepare("INSERT INTO " + _cur_tab_name() + " (" + sTeFIdOrCh + ", " + sTeServiceLabel + ", " + sTeServiceId + ") "
-                   "VALUES (:channel, :service, :serviceId) "
-                   "ON CONFLICT(" + sTeFIdOrCh + ", " + sTeServiceId + ") "
-                   "DO UPDATE SET " + sTeServiceLabel + " = excluded." + sTeServiceLabel);
+  queryAdd.prepare("INSERT INTO " + cTabService + " (" + cColEnsRef + ", " + cColService + ", " + cColSId + ") "
+                   "VALUES ((" + sSelEnsembleId + "), :service, :serviceId) "
+                   "ON CONFLICT(" + cColEnsRef + ", " + cColSId + ") "
+                   "DO UPDATE SET " + cColService + " = excluded." + cColService);
+  queryAdd.bindValue(":mode", _cur_mode());
   queryAdd.bindValue(":channel", iChannel);
   queryAdd.bindValue(":service", iServiceLabel);
   queryAdd.bindValue(":serviceId", iSId);
 
-  if (!queryAdd.exec())
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Unable insert entry: " << dbErr;
-    QCoreApplication::exit(1);
-  }
-
-  return true;
+  return _exec(queryAdd, "insert service entry");
 }
 
 bool ServiceDB::delete_entry(const QString& iChannel, const u32 iSId)
 {
   QSqlQuery queryDel(mDB);
-  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
+  queryDel.prepare("DELETE FROM " + cTabService + " WHERE " + cColEnsRef + " IN (" + sSelEnsembleId + ") AND " + cColSId + " = :serviceId");
+  queryDel.bindValue(":mode", _cur_mode());
   queryDel.bindValue(":channel", iChannel);
   queryDel.bindValue(":serviceId", iSId);
 
-  if (!queryDel.exec())
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Unable delete entry: " << dbErr;
-    QCoreApplication::exit(1);
-  }
-
-  return (queryDel.numRowsAffected() > 0);
+  return _exec(queryDel, "delete service entry") && queryDel.numRowsAffected() > 0;
 }
 
 bool ServiceDB::delete_channel(const QString& iChannel)
 {
   QSqlQuery queryDel(mDB);
-  queryDel.prepare("DELETE FROM " + _cur_tab_name() + " WHERE " + sTeFIdOrCh + " = :channel");
+  queryDel.prepare("DELETE FROM " + cTabService + " WHERE " + cColEnsRef + " IN (" + sSelEnsembleId + ")");
+  queryDel.bindValue(":mode", _cur_mode());
   queryDel.bindValue(":channel", iChannel);
 
-  if (!queryDel.exec())
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Unable delete channel entries: " << dbErr;
-    QCoreApplication::exit(1);
-  }
-
-  return (queryDel.numRowsAffected() > 0);
+  return _exec(queryDel, "delete channel entries") && queryDel.numRowsAffected() > 0;
 }
 
 QList<QString> ServiceDB::get_list_of_channels() const
 {
   QList<QString> channelList;
   QSqlQuery query(mDB);
+  query.prepare("SELECT DISTINCT e." + cColFIdOrCh + " FROM " + cTabEnsemble + " e JOIN " + cTabService + " s ON s." + cColEnsRef + " = e." + cColId +
+                " WHERE e." + cColMode + " = :mode");
+  query.bindValue(":mode", _cur_mode());
 
-  if (query.exec("SELECT DISTINCT " + sTeFIdOrCh + " FROM " + _cur_tab_name()))
+  if (_exec(query, "SELECT DISTINCT query"))
   {
     while (query.next())
     {
       channelList.append(query.value(0).toString());
     }
-  }
-  else
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    // do not delete database here, it could be a simple empty table or similar...
-    qCritical() << "Error: SELECT DISTINCT query: " << dbErr;
   }
 
   return channelList;
@@ -234,18 +182,28 @@ QAbstractItemModel* ServiceDB::create_model(const QString& iFilterToFIdOrCh)
   default: /*should never happen*/ ;
   }
 
-  QSqlQuery query(mDB);
+  // the inner query provides the columns IsFav, Service, Channel and SId of the current data mode
+  QString innerQuery = "SELECT " + sIsFavExpr + " AS " + sTeIsFav + ", s." + cColService + " AS " + sTeServiceLabel +
+                       ", e." + cColFIdOrCh + " AS " + sTeFIdOrCh + ", s." + cColSId + " AS " + sTeServiceId +
+                       " FROM " + cTabService + " s JOIN " + cTabEnsemble + " e ON e." + cColId + " = s." + cColEnsRef +
+                       " WHERE e." + cColMode + " = :mode";
 
-  QString whereClause;
   if (!iFilterToFIdOrCh.isEmpty())
   {
-    whereClause = " WHERE " + sTeFIdOrCh + " = '" + iFilterToFIdOrCh + "'";
+    innerQuery += " AND e." + cColFIdOrCh + " = :channel";
   }
 
+  QSqlQuery query(mDB);
   query.prepare("SELECT " + colNameIsFav + "," + colNameService + "," + colNameChannel + "," + colNameServiceId +
-                " FROM " + _cur_tab_name() + whereClause + " ORDER BY " + sortName);
+                " FROM (" + innerQuery + ") ORDER BY " + sortName);
+  query.bindValue(":mode", _cur_mode());
 
-  if (query.exec())
+  if (!iFilterToFIdOrCh.isEmpty())
+  {
+    query.bindValue(":channel", iFilterToFIdOrCh);
+  }
+
+  if (_exec(query, "SELECT query"))
   {
     model->setQuery(std::move(query));
 
@@ -255,13 +213,6 @@ QAbstractItemModel* ServiceDB::create_model(const QString& iFilterToFIdOrCh)
     {
       model->fetchMore();
     }
-  }
-  else
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Invalid SELECT query: " << dbErr;
-    QCoreApplication::exit(1);
   }
 
   return model;
@@ -292,120 +243,86 @@ bool ServiceDB::is_sort_desc() const
 
 void ServiceDB::set_favorite(const QString& iChannel, const u32 iSId, const bool iIsFavorite) const
 {
-  // if (mDataMode == EDataMode::Temporary)
-  // {
-  //   return;
-  // }
+  const u8 ecc = _get_ecc(iChannel); // 0 if not known (yet)
+  QSqlQuery query(mDB);
 
-  _set_favorite(iChannel, iSId, iIsFavorite, true);
-}
-
-void ServiceDB::retrieve_favorites_from_backup_table()
-{
-  // if (mDataMode == EDataMode::Temporary)
-  // {
-  //   return;
-  // }
-
-  QSqlQuery favQuery(mDB);
-
-  if (favQuery.exec("SELECT " + sTeFIdOrCh + "," + sTeServiceId + " FROM " + sTabFavList))
+  if (iIsFavorite)
   {
-    while (favQuery.next())
-    {
-      // found entries are wanted favorites
-      const QString channel = favQuery.value(sTeFIdOrCh).toString();
-      const u32 SId = favQuery.value(sTeServiceId).toUInt();
-      _set_favorite(channel, SId, true, false);
-    }
+    query.prepare("INSERT OR IGNORE INTO " + cTabFavorite + " (" + cColEcc + "," + cColSId + ") VALUES (:ecc, :serviceId)");
+    query.bindValue(":ecc", ecc);
   }
   else
   {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Retrieve query with table '" << sTabFavList << "': " << dbErr;
-    QCoreApplication::exit(1);
+    // delete all entries which would match this service (see sIsFavExpr)
+    query.prepare("DELETE FROM " + cTabFavorite + " WHERE " + cColSId + " = :serviceId AND (" + cColEcc + " = :ecc1 OR " + cColEcc + " = 0 OR :ecc2 = 0)");
+    query.bindValue(":ecc1", ecc);
+    query.bindValue(":ecc2", ecc);
   }
+
+  query.bindValue(":serviceId", iSId);
+  (void)_exec(query, "update favorite");
 }
 
-void ServiceDB::_set_favorite(const QString& iChannel, const u32 iSId, const bool iIsFavorite, const bool iStoreInFavTable /*= true*/) const
+bool ServiceDB::set_ecc(const QString& iChannel, const u8 iEcc)
 {
-  QSqlQuery updateQuery(mDB);
-  updateQuery.prepare("UPDATE " + _cur_tab_name() + " SET " + sTeIsFav + " = :isFav WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
-  updateQuery.bindValue(":channel", iChannel);
-  updateQuery.bindValue(":serviceId", iSId);
-  updateQuery.bindValue(":isFav", (iIsFavorite ? 1 : 0));
+  QSqlQuery queryEcc(mDB);
+  queryEcc.prepare("UPDATE " + cTabEnsemble + " SET " + cColEcc + " = :ecc1 WHERE " + cColMode + " = :mode AND " + cColFIdOrCh + " = :channel AND " + cColEcc + " <> :ecc2");
+  queryEcc.bindValue(":ecc1", iEcc);
+  queryEcc.bindValue(":ecc2", iEcc);
+  queryEcc.bindValue(":mode", _cur_mode());
+  queryEcc.bindValue(":channel", iChannel);
 
-  if (!updateQuery.exec())
+  if (!_exec(queryEcc, "update ECC") || queryEcc.numRowsAffected() <= 0)
   {
-    qCritical() << "Error: Updating favorite: " << _error_str();
+    return false;
   }
 
-  if (iStoreInFavTable)
+  if (iEcc != 0)
   {
-    QSqlQuery addQuery(mDB);
+    // favorites stored while the ECC was not known get the ECC now, remaining duplicates (entry with ECC exists already) are deleted
+    const QString sIdsOfChannel = "SELECT " + cColSId + " FROM " + cTabService + " WHERE " + cColEnsRef + " IN (" + sSelEnsembleId + ")";
 
-    if (iIsFavorite)
-    {
-      addQuery.prepare("INSERT OR IGNORE INTO " + sTabFavList + " (" + sTeFIdOrCh + "," + sTeServiceId + ") VALUES (:channel, :serviceId)");
-    }
-    else
-    {
-      addQuery.prepare("DELETE FROM " + sTabFavList + " WHERE " + sTeFIdOrCh + " = :channel AND " + sTeServiceId + " = :serviceId");
-    }
+    QSqlQuery queryUpd(mDB);
+    queryUpd.prepare("UPDATE OR IGNORE " + cTabFavorite + " SET " + cColEcc + " = :ecc WHERE " + cColEcc + " = 0 AND " + cColSId + " IN (" + sIdsOfChannel + ")");
+    queryUpd.bindValue(":ecc", iEcc);
+    queryUpd.bindValue(":mode", _cur_mode());
+    queryUpd.bindValue(":channel", iChannel);
+    (void)_exec(queryUpd, "update favorite ECC");
 
-    addQuery.bindValue(":channel", iChannel);
-    addQuery.bindValue(":serviceId", iSId);
-
-    if (!addQuery.exec())
-    {
-      qCritical() << "Error: Unable insert favorite table entry: " << _error_str();
-    }
-  }
-}
-
-bool ServiceDB::_open_db()
-{
-  mDB.setDatabaseName(mDbFileName);
-  return mDB.open();
-}
-
-void ServiceDB::_delete_db_file()
-{
-  qCritical("Failure in database -> delete database -> try to restart and scan services again!");
-
-  if (_open_db())
-  {
-    mDB.close();
+    QSqlQuery queryDel(mDB);
+    queryDel.prepare("DELETE FROM " + cTabFavorite + " WHERE " + cColEcc + " = 0 AND " + cColSId + " IN (" + sIdsOfChannel + ")");
+    queryDel.bindValue(":mode", _cur_mode());
+    queryDel.bindValue(":channel", iChannel);
+    (void)_exec(queryDel, "delete favorite duplicates");
   }
 
-  if (QFile::exists(mDbFileName))
-  {
-    QFile::remove(mDbFileName);
-  }
+  return true;
 }
 
-QString ServiceDB::_error_str() const
-{
-  return mDB.lastError().text(); // make a copy of the string as the DB object could be invalid when using it
-}
-
-void ServiceDB::_exec_simple_query(const QString& iQuery)
+u8 ServiceDB::_get_ecc(const QString& iChannel) const
 {
   QSqlQuery query(mDB);
+  query.prepare("SELECT " + cColEcc + " FROM " + cTabEnsemble + " WHERE " + cColMode + " = :mode AND " + cColFIdOrCh + " = :channel");
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":channel", iChannel);
 
-  if (!query.exec(iQuery))
-  {
-    const QString dbErr = _error_str(); // next command could destroy this information
-    _delete_db_file();
-    qCritical() << "Error: Failed to execute '" << iQuery << "': " << dbErr;
-    QCoreApplication::exit(1);
-  }
+  return (_exec(query, "get ECC") && query.next() ? (u8)query.value(0).toUInt() : 0);
 }
 
-const QString& ServiceDB::_cur_tab_name() const
+bool ServiceDB::_exec(QSqlQuery& ioQuery, const char* const iWhat) const
 {
-  return (mDataMode == EDataMode::DevicePlayer ? sTabDeviceList : sTabFilesList);
+  if (!ioQuery.exec())
+  {
+    qCritical() << "Error: Unable to" << iWhat << ":" << ioQuery.lastError().text();
+    return false;
+  }
+
+  return true;
+}
+
+i32 ServiceDB::_cur_mode() const
+{
+  return (i32)(mDataMode == EDataMode::DevicePlayer ? DabDatabase::EMode::Device : DabDatabase::EMode::File);
 }
 
 void ServiceDB::set_data_mode(const ServiceDB::EDataMode iDataMode)

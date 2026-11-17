@@ -19,6 +19,8 @@
 
 #include "glob_enums.h"
 
+class DabDatabase;
+class QSqlQuery;
 class QTableView;
 class QAbstractItemModel;
 
@@ -26,8 +28,8 @@ class EnsembleListDB : public QObject
 {
   Q_OBJECT
 public:
-  explicit EnsembleListDB(const QString iDbFileName); // copy is intended
-  ~EnsembleListDB();
+  explicit EnsembleListDB(const DabDatabase& iDabDatabase);
+  ~EnsembleListDB() override = default;
 
   enum class EDataMode
   {
@@ -112,9 +114,7 @@ public:
 
   void set_data_mode(EDataMode iDataMode);
   EDataMode get_data_mode() const { return mDataMode; }
-  void open_db();
-  void create_table();
-  void delete_table();
+  void delete_table(); // deletes all entries of the current data mode (and their services)
   [[nodiscard]] bool is_table_existing(EDataMode iDataMode) const;
   bool insert_or_update_entry(const SDbEntryData& iEntryData, EDbDataType iDataType) const;
   bool delete_entry(const QString& iFIdOrCh) const;
@@ -128,13 +128,9 @@ public:
 
 private:
   QSqlDatabase mDB;
-  QString mDbFileName;
   EDataMode mDataMode = EDataMode::Invalid;
   SDataFilter mDataFilter{};
 
-  [[nodiscard]] QString _error_str() const;
-  void _delete_db_file();
-  bool _open_db();
-  void _exec_simple_query(const QString& iQuery);
-  [[nodiscard]] const QString& _cur_tab_name() const;
+  [[nodiscard]] i32 _cur_mode() const;
+  bool _exec(QSqlQuery& ioQuery, const char* iWhat) const;
 };

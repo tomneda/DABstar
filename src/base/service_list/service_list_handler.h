@@ -49,7 +49,7 @@ class ServiceListHandler : public QObject
 {
   Q_OBJECT
 public:
-  ServiceListHandler(const QString& iDbFileName, QTableView* const ipSL);
+  ServiceListHandler(const DabDatabase& iDabDatabase, QTableView* const ipSL);
   ~ServiceListHandler() override = default;
 
   using EDataMode = ServiceDB::EDataMode;
@@ -60,6 +60,7 @@ public:
   void set_sort_to_FId_Or_Ch(bool iShowOnlyCurrentFIdOrCh);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
+  void set_ecc(const QString& iChannel, u8 iEcc); // ECC of the ensemble, needed for the favorites
   void add_entry(const QString& iChannel, const QString& iServiceLabel, u32 iSId);
   void delete_not_existing_SId_at_channel(const QString& iChannel, const TSIdList& iSIdList);
   void delete_not_existing_channel(const TChannelList& iChList);
@@ -68,7 +69,7 @@ public:
   void set_selector(const QString& iChannel, u32 iSId);
   void set_selector_channel_only(const QString& iChannel);
   void set_favorite_state(const bool iIsFavorite);
-  void restore_favorites();
+  void reload_from_db(); // e.g. after a scan or after deleting ensemble list entries (their services are deleted, too)
   void jump_entries(i32 iSteps); // typ -1/+1, with wrap around
   TSIdList get_list_of_SId_in_channel(const QString& iChannel) const;
 

@@ -69,6 +69,7 @@ class TechData;
 class MapViewer;
 class IndicatorButton;
 class EnsembleList;
+class DabDatabase;
 class ItuTables;
 class AudioManager;
 class AudioPipeline;
@@ -102,7 +103,7 @@ class DabRadio : public QWidget
 {
 Q_OBJECT
 public:
-  DabRadio(QSettings* ipSettings, const QString& iServiceListDbFileName, const QString& iEnsembleListDbFileName, i32 iDataPort, QWidget* iParent);
+  DabRadio(QSettings* ipSettings, const DabDatabase& iDabDatabase, i32 iDataPort, QWidget* iParent);
   ~DabRadio() override;
 
   static constexpr i32 cExitCodeSetToDefaults = 0x5E7D; // application exit code to request a reset of all settings and a restart

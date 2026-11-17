@@ -52,7 +52,7 @@ class EnsembleListDbHandler : public QObject
 {
   Q_OBJECT
 public:
-  EnsembleListDbHandler(const QString& iDbFileName, QTableView* const ipSL);
+  EnsembleListDbHandler(const DabDatabase& iDabDatabase, QTableView* const ipSL);
   ~EnsembleListDbHandler() override = default;
 
   using EDataMode = EnsembleListDB::EDataMode;

@@ -110,9 +110,9 @@ bool CustomItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, c
 }
 
 
-ServiceListHandler::ServiceListHandler(const QString& iDbFileName, QTableView* const ipSL) :
+ServiceListHandler::ServiceListHandler(const DabDatabase& iDabDatabase, QTableView* const ipSL) :
   mpTableView(ipSL),
-  mServiceDB(iDbFileName)
+  mServiceDB(iDabDatabase)
 {
   mpTableView->setItemDelegate(&mCustomItemDelegate);
   mpTableView->setSelectionMode(QAbstractItemView::NoSelection);
@@ -120,19 +120,7 @@ ServiceListHandler::ServiceListHandler(const QString& iDbFileName, QTableView* c
   mpTableView->verticalHeader()->setDefaultSectionSize(0); // Use minimum possible size (seems work so)
   mpTableView->setFocusPolicy(Qt::NoFocus);
 
-  mServiceDB.open_db(); // program will exit if table could not be opened
-
-  // mServiceDB.set_data_mode(ServiceDB::EDataMode::Temporary);
-  // //mServiceDB.delete_table();
-  // mServiceDB.create_table();
-
-  mServiceDB.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
-  //mServiceDB.delete_table();
-  mServiceDB.create_table();
-
   mServiceDB.set_data_mode(ServiceDB::EDataMode::FilePlayer);
-  //mServiceDB.delete_table();
-  mServiceDB.create_table();
 
   if (const auto sortColIdx = static_cast<ServiceDB::EColIdx>(Settings::ServiceList::varSortCol.read().toUInt());
       sortColIdx < ServiceDB::CI_MAX)
@@ -253,8 +241,17 @@ void ServiceListHandler::delete_table(const bool iDeleteFavorites)
 
 void ServiceListHandler::create_new_table()
 {
-  mServiceDB.create_table();
+  // the table itself is always existing (see DabDatabase), only the view is renewed
   _fill_table_view_from_db();
+}
+
+void ServiceListHandler::set_ecc(const QString& iChannel, const u8 iEcc)
+{
+  if (mServiceDB.set_ecc(iChannel, iEcc)) // true if the ECC has changed, the favorite states could have changed
+  {
+    _fill_table_view_from_db();
+    _jump_to_list_entry_and_emit_fav_status();
+  }
 }
 
 void ServiceListHandler::set_selector(const QString& iChannel, const u32 iSId)
@@ -292,9 +289,8 @@ void ServiceListHandler::set_favorite_state(const bool iIsFavorite)
   _jump_to_list_entry_and_emit_fav_status();
 }
 
-void ServiceListHandler::restore_favorites()
+void ServiceListHandler::reload_from_db()
 {
-  mServiceDB.retrieve_favorites_from_backup_table();
   _fill_table_view_from_db();
   _jump_to_list_entry_and_emit_fav_status();
 }

@@ -20,3 +20,13 @@ add_executable(pos_and_size_test pos_and_size_test.cpp ${PROJECT_SOURCE_DIR}/src
 target_include_directories(pos_and_size_test PRIVATE ${PROJECT_SOURCE_DIR}/src/common)
 target_link_libraries(pos_and_size_test PRIVATE Qt6::Widgets)
 add_test(NAME pos_and_size_test COMMAND pos_and_size_test)
+
+add_executable(list_database_test list_database_test.cpp
+        ${PROJECT_SOURCE_DIR}/src/base/database/dab_database.cpp
+        ${PROJECT_SOURCE_DIR}/src/base/service_list/service_db.cpp
+        ${PROJECT_SOURCE_DIR}/src/base/ensemble_list/ensemble_list_db.cpp)
+target_include_directories(list_database_test PRIVATE ${PROJECT_SOURCE_DIR}/src/base/database ${PROJECT_SOURCE_DIR}/src/base/service_list
+        ${PROJECT_SOURCE_DIR}/src/base/ensemble_list ${PROJECT_SOURCE_DIR}/src/base/main ${PROJECT_SOURCE_DIR}/src/common)
+target_link_libraries(list_database_test PRIVATE Qt6::Widgets Qt6::Sql)
+add_test(NAME list_database_test COMMAND list_database_test)
+set_tests_properties(list_database_test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

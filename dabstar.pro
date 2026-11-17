@@ -154,6 +154,7 @@ INCLUDEPATH += \
     src/base/scopes \
     src/base/server_thread \
     src/base/service_list \
+    src/base/database \
     src/base/spectrum_viewer \
     src/base/support \
     src/base/support/tii_library \
@@ -273,6 +274,7 @@ HEADERS += \
     src/base/scopes/iqdisplay.h \
     src/base/scopes/level_meter.h \
     src/base/scopes/plot_widget.h \
+    src/base/database/dab_database.h \
     src/base/service_list/service_db.h \
     src/base/service_list/service_list_handler.h \
     src/base/spectrum_viewer/cir_viewer.h \
@@ -408,6 +410,7 @@ SOURCES += \
     src/base/scopes/iqdisplay.cpp \
     src/base/scopes/level_meter.cpp \
     src/base/scopes/plot_widget.cpp \
+    src/base/database/dab_database.cpp \
     src/base/service_list/service_db.cpp \
     src/base/service_list/service_list_handler.cpp \
     src/base/spectrum_viewer/cir_viewer.cpp \

@@ -15,6 +15,8 @@
 #include "glob_data_types.h"
 #include <QtSql/QSqlDatabase>
 
+class DabDatabase;
+class QSqlQuery;
 class QTableView;
 class QAbstractItemModel;
 
@@ -22,8 +24,8 @@ class ServiceDB : public QObject
 {
   Q_OBJECT
 public:
-  explicit ServiceDB(const QString iDbFileName); // copy is intended
-  ~ServiceDB();
+  explicit ServiceDB(const DabDatabase& iDabDatabase);
+  ~ServiceDB() override = default;
 
   enum class EDataMode
   {
@@ -50,31 +52,25 @@ public:
   };
 
   void set_data_mode(EDataMode iDataMode);
-  void open_db();
-  void create_table();
-  void delete_table(const bool iDeleteFavorites);
+  void delete_table(const bool iDeleteFavorites); // deletes all services of the current data mode
+  bool set_ecc(const QString& iChannel, u8 iEcc); // returns true if the ECC has changed
   bool add_entry(const QString& iChannel, const QString& iServiceLabel, u32 iSId);
   bool delete_entry(const QString& iChannel, u32 iSId);
   bool delete_channel(const QString& iChannel);
   void sort_column(EColIdx iColIdx, ESortDir iSortDir);
 
   void set_favorite(const QString& iChannel, u32 iSId, bool iIsFavorite) const;
-  void retrieve_favorites_from_backup_table();
   [[nodiscard]] QList<QString> get_list_of_channels() const;
   [[nodiscard]] bool is_sort_desc() const;
   QAbstractItemModel* create_model(const QString& iFilterToFIdOrCh);
 
 private:
   QSqlDatabase mDB;
-  QString mDbFileName;
   EColIdx mSortColIdx = CI_Service;
   bool mSortDesc = false;
   EDataMode mDataMode = EDataMode::DevicePlayer;
 
-  [[nodiscard]] QString _error_str() const;
-  void _delete_db_file();
-  bool _open_db();
-  void _exec_simple_query(const QString& iQuery);
-  void _set_favorite(const QString& iChannel, u32 iSId, bool iIsFavorite, bool iStoreInFavTable) const;
-  [[nodiscard]] const QString& _cur_tab_name() const;
+  [[nodiscard]] i32 _cur_mode() const;
+  [[nodiscard]] u8 _get_ecc(const QString& iChannel) const;
+  bool _exec(QSqlQuery& ioQuery, const char* iWhat) const;
 };

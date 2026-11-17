@@ -32,6 +32,7 @@
  */
 #include "setting_helper.h"
 #include "dabradio.h"
+#include "dab_database.h"
 #include "git_hash.h"
 #include "qt_compat.h"
 #include <QApplication>
@@ -91,7 +92,7 @@ i32 main(i32 argc, char** argv)
   qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
   qRegisterMetaType<OfdmDecoder::SLcdData>("OfdmDecoder::SLcdData");
 
-  const QString dBVersionNr = QSL("04"); // to ensure same database version for service list and ensemble list
+  const QString dBVersionNr = QSL("%1").arg(DabDatabase::cSchemaVersion, 2, 10, QChar('0'));
 
   const QString configPath = QDir::homePath() + QSL("/.config/" APP_NAME "/");
   if (!QDir().mkpath(configPath))
@@ -102,8 +103,10 @@ i32 main(i32 argc, char** argv)
 
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  QSL("settings02.ini"));
   const QString initFileName03 = QDir::toNativeSeparators(configPath +  QSL("settings03.ini"));
-  const QString dbServiceListFileName = QDir::toNativeSeparators(configPath + QSL("servicelist%1.db").arg(dBVersionNr));
-  const QString dbEnsembleListFileName = QDir::toNativeSeparators(configPath + QSL("ensemblelist%1.db").arg(dBVersionNr));
+  const QString dbFileName = QDir::toNativeSeparators(configPath + QSL("dabstar%1.db").arg(dBVersionNr));
+  // former separate database files (version 04), their content is taken over into a new database
+  const QString dbFormerServiceListFileName = QDir::toNativeSeparators(configPath + QSL("servicelist04.db"));
+  const QString dbFormerEnsembleListFileName = QDir::toNativeSeparators(configPath + QSL("ensemblelist04.db"));
   const QString fftwWisdomFileName = QDir::toNativeSeparators(configPath + QSL("fftwf_wisdom.txt"));
 
   // Default values
@@ -189,7 +192,17 @@ i32 main(i32 argc, char** argv)
 
   import_fftw_wisdom(fftwWisdomFileName); // must happen before any FFTW plan is created
 
-  auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dbServiceListFileName, dbEnsembleListFileName, dataPort, nullptr));
+  DabDatabase dabDatabase(dbFileName); // must live longer than radioInterface
+
+  if (!dabDatabase.open_db())
+  {
+    qCritical() << "Could not open database:" << dbFileName;
+    return 1;
+  }
+
+  (void)dabDatabase.import_former_db_files(dbFormerServiceListFileName, dbFormerEnsembleListFileName);
+
+  auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dabDatabase, dataPort, nullptr));
   radioInterface->show();
 
   const i32 exitCode = QApplication::exec();
@@ -199,7 +212,7 @@ i32 main(i32 argc, char** argv)
   if (exitCode == DabRadio::cExitCodeSetToDefaults)
   {
     // keep the home coordinates and the (calibrated) peak level delay,
-    // the TII database and the service and ensemble databases are separate files and are not touched
+    // the TII database and the list database (ensembles, services, favorites) are separate files and are not touched
     Settings::reset_to_defaults({ Settings::Config::varLatitude.get_key(), Settings::Config::varLongitude.get_key(), Settings::Config::sbPeakLevelDelay.get_key() });
 
     // the FFTW wisdom is not exported but deleted, so it is generated anew

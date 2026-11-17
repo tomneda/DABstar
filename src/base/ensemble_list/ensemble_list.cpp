@@ -30,7 +30,7 @@
 constexpr f32 cRefLuminance = 0.40f;
 
 
-EnsembleList::EnsembleList(const QString& iDbFileName)
+EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   : ui(new Ui_ensembleList)
   , mBandHandler("", &Settings::Storage::instance())
 {
@@ -58,7 +58,7 @@ EnsembleList::EnsembleList(const QString& iDbFileName)
   ui->cbShowELValidSignals->setStyleSheet(get_bg_style_sheet(cBgColorUnselected, fg, cRefLuminance));
   ui->cbShowELNoSignals->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg, cRefLuminance));
 
-  mpDbHandler.reset(new EnsembleListDbHandler(iDbFileName, ui->tblEnsembleList));
+  mpDbHandler.reset(new EnsembleListDbHandler(iDabDatabase, ui->tblEnsembleList));
   mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Device);
   mListMode = EListMode::PlayFromDevice;
 
@@ -569,6 +569,7 @@ void EnsembleList::_slot_handle_reset_data_base_button()
   mpDbHandler->delete_table();
   mpDbHandler->create_new_table();
   emit signal_delete_unused_fid_or_ch(QStringList()); // clear all entries in the service list, too
+  emit signal_entries_deleted();
   _log_to_result_display(ELogType::INFONEUT, "Database cleared");
 
   if (mListMode == EListMode::PlayFromDevice)
@@ -580,6 +581,7 @@ void EnsembleList::_slot_handle_reset_data_base_button()
 void EnsembleList::_slot_handle_remove_invalid_entries_button()
 {
   (void)mpDbHandler->delete_invalid_entries();
+  emit signal_entries_deleted();
 }
 
 void EnsembleList::_slot_handle_path_with_files_to_add_button()

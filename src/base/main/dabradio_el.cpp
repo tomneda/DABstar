@@ -16,6 +16,7 @@ void DabRadio::_initialize_ensemble_list()
   connect(mpEnsembleList.get(), &EnsembleList::signal_file_or_channel_to_play, this, &DabRadio::_slot_file_or_channel_to_play);
   connect(mpEnsembleList.get(), &EnsembleList::signal_start_stop_scan, this, &DabRadio::_slot_start_stop_scan);
   connect(mpEnsembleList.get(), &EnsembleList::signal_delete_unused_fid_or_ch, this, [this](const QStringList& iUsedChOrFIdList) {mpServiceListHandler->delete_not_existing_channel(iUsedChOrFIdList); });
+  connect(mpEnsembleList.get(), &EnsembleList::signal_entries_deleted, this, [this]() { mpServiceListHandler->reload_from_db(); });
   connect(mpEnsembleList.get(), &EnsembleList::signal_show_current_fid_or_ch_only, this, &DabRadio::_slot_show_current_fid_or_ch_only);
   connect(this, &DabRadio::signal_fib_data_status, mpEnsembleList.get(), &EnsembleList::slot_decoded_data_status);
   connect(this, &DabRadio::signal_fid_or_ch_selected, mpEnsembleList.get(), &EnsembleList::slot_select_fid_or_ch);

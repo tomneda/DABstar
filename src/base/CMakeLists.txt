@@ -217,6 +217,7 @@ set(${baseLibName}_HDRS
         spectrum_viewer/spectrum_scope.h
         spectrum_viewer/waterfall_scope.h
         spectrum_viewer/correlation_viewer.h
+        database/dab_database.h
         service_list/service_list_handler.h
         service_list/service_db.h
         configuration/configuration.h
@@ -327,6 +328,7 @@ set(${baseLibName}_SRCS
         spectrum_viewer/waterfall_scope.cpp
         spectrum_viewer/correlation_viewer.cpp
         spectrum_viewer/cir_viewer.cpp
+        database/dab_database.cpp
         service_list/service_list_handler.cpp
         service_list/service_db.cpp
         configuration/configuration.cpp
@@ -376,6 +378,7 @@ target_include_directories(${baseLibName}
         spectrum_viewer
         eti_handler
         service_list
+        database
         configuration
         ensemble_list
         update
