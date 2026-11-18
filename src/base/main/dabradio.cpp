@@ -888,7 +888,7 @@ void DabRadio::_check_for_itu_code()
     // mChannelDesc.deferredData.countryName = QString("%1(%2)").arg(itu.ITU_Code).arg(itu.Country);
     mChannelDesc.deferredData.countryName = QSL("%1(%2/%3)").arg(itu.ITU_Code).arg(mChannelDesc.ecc_byte, 2, 16, QChar('0')).arg(countryId, 1, 16, QChar('0'));
     ui->lblCountryName->setText(itu.Country);
-    mpServiceListHandler->set_ecc(mChannelDesc.get_fId_or_ch(), mChannelDesc.ecc_byte); // the favorites are related to ECC and SId
+    mpServiceListHandler->set_ecc(mChannelDesc.get_fId_or_ch(), mChannelDesc.ecc_byte); // store the ECC in the ensemble entry (for later use, e.g. EPG)
     // qDebug() << "Ch/FId" << mChannelDesc.get_fId_or_ch() << Qt::hex << Qt::showbase << "with EId" << mChannelDesc.Eid <<  "has ECC byte"  << mChannelDesc.ecc_byte << "with country name" << mChannelDesc.deferredData.countryName.value();
   }
 }

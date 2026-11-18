@@ -52,7 +52,7 @@ public:
   };
 
   void set_data_mode(EDataMode iDataMode);
-  void delete_table(const bool iDeleteFavorites); // deletes all services of the current data mode
+  void delete_table(const bool iDeleteFavorites); // deletes all services (and optionally favorites) of the current data mode
   bool set_ecc(const QString& iChannel, u8 iEcc); // returns true if the ECC has changed
   bool add_entry(const QString& iChannel, const QString& iServiceLabel, u32 iSId);
   bool delete_entry(const QString& iChannel, u32 iSId);
@@ -71,6 +71,5 @@ private:
   EDataMode mDataMode = EDataMode::DevicePlayer;
 
   [[nodiscard]] i32 _cur_mode() const;
-  [[nodiscard]] u8 _get_ecc(const QString& iChannel) const;
   bool _exec(QSqlQuery& ioQuery, const char* iWhat) const;
 };

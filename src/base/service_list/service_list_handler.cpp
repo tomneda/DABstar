@@ -247,10 +247,9 @@ void ServiceListHandler::create_new_table()
 
 void ServiceListHandler::set_ecc(const QString& iChannel, const u8 iEcc)
 {
-  if (mServiceDB.set_ecc(iChannel, iEcc)) // true if the ECC has changed, the favorite states could have changed
+  if (mServiceDB.set_ecc(iChannel, iEcc)) // true if the ECC has changed
   {
-    _fill_table_view_from_db();
-    _jump_to_list_entry_and_emit_fav_status();
+    qCDebug(sLogServiceListHandler) << "Stored ECC" << iEcc << "for channel" << iChannel;
   }
 }
 

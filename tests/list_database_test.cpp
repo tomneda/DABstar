@@ -85,32 +85,25 @@ bool test_relations_and_favorites(const QString& iDbFileName)
   ok &= check("add file service", srvDb.add_entry("a1b2c3d4", "Radio A", 0x1101));
   ok &= check("file channel list", srvDb.get_list_of_channels() == QList<QString>{ "a1b2c3d4" });
 
-  // favorites are global with ECC + SId
+  // favorites are related to mode, channel/FId and SId
   srvDb.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
-  ok &= check("set ECC 5C", srvDb.set_ecc("5C", 0xE0));
-  ok &= check("set ECC 5C again no change", !srvDb.set_ecc("5C", 0xE0));
-  ok &= check("set ECC 11D", srvDb.set_ecc("11D", 0xE0));
   srvDb.set_favorite("5C", 0x1101, true);
   ok &= check("fav at 5C", get_fav_state(srvDb, "5C", 0x1101) == 1);
-  ok &= check("fav also at 11D", get_fav_state(srvDb, "11D", 0x1101) == 1);
+  ok &= check("no fav at 11D with same SId", get_fav_state(srvDb, "11D", 0x1101) == 0);
   ok &= check("other service no fav", get_fav_state(srvDb, "5C", 0x1102) == 0);
-  srvDb.set_data_mode(ServiceDB::EDataMode::FilePlayer);
-  ok &= check("fav in file mode with unknown ECC", get_fav_state(srvDb, "a1b2c3d4", 0x1101) == 1);
-  ok &= check("set file ECC other country", srvDb.set_ecc("a1b2c3d4", 0xE1));
-  ok &= check("no fav in file mode with other ECC", get_fav_state(srvDb, "a1b2c3d4", 0x1101) == 0);
-  srvDb.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
-  srvDb.set_favorite("11D", 0x1101, false);
+  srvDb.set_favorite("11D", 0x1101, true);
+  srvDb.set_favorite("5C", 0x1101, false);
   ok &= check("fav removed at 5C", get_fav_state(srvDb, "5C", 0x1101) == 0);
+  ok &= check("fav kept at 11D", get_fav_state(srvDb, "11D", 0x1101) == 1);
+  srvDb.set_data_mode(ServiceDB::EDataMode::FilePlayer);
+  ok &= check("no fav in file mode with same SId", get_fav_state(srvDb, "a1b2c3d4", 0x1101) == 0);
+  srvDb.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
 
-  // favorite with unknown ECC gets the ECC later
+  // the ECC is stored in the ensemble entry
+  ok &= check("set ECC 5C", srvDb.set_ecc("5C", 0xE0));
+  ok &= check("set ECC 5C again no change", !srvDb.set_ecc("5C", 0xE0));
+  ok &= check("ECC stored", count_rows(db, "SELECT Ecc FROM Ensemble WHERE Mode = 0 AND FIdOrCh = '5C'") == 0xE0);
   ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
-  ok &= check("insert 12A", ensDb.insert_or_update_entry(make_entry("12A"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
-  ok &= check("add service 12A", srvDb.add_entry("12A", "Radio C", 0x1103));
-  srvDb.set_favorite("12A", 0x1103, true);
-  ok &= check("fav stored with ECC 0", count_rows(db, "SELECT COUNT(*) FROM Favorite WHERE Ecc = 0 AND SId = 4355") == 1);
-  ok &= check("set ECC 12A", srvDb.set_ecc("12A", 0xE0));
-  ok &= check("fav upgraded to ECC", count_rows(db, "SELECT COUNT(*) FROM Favorite WHERE Ecc = 224 AND SId = 4355") == 1);
-  ok &= check("no fav with ECC 0 left", count_rows(db, "SELECT COUNT(*) FROM Favorite WHERE Ecc = 0") == 0);
 
   // re-init of an ensemble entry keeps its services
   ok &= check("re-init 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
@@ -118,7 +111,7 @@ bool test_relations_and_favorites(const QString& iDbFileName)
 
   // deleting an ensemble entry deletes its services (cascade), but keeps the favorites
   ok &= check("delete 5C", ensDb.delete_entry("5C"));
-  ok &= check("services of 5C deleted", count_rows(db, "SELECT COUNT(*) FROM Service") == 3);
+  ok &= check("services of 5C deleted", count_rows(db, "SELECT COUNT(*) FROM Service") == 2);
   ensDb.delete_table();
   ok &= check("device services deleted", count_rows(db, "SELECT COUNT(*) FROM Service") == 1);
   ok &= check("file entry kept", count_rows(db, "SELECT COUNT(*) FROM Ensemble WHERE Mode = 1") == 1);

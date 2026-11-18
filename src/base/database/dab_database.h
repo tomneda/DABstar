@@ -21,7 +21,7 @@
 // Tables:
 //   Ensemble: one entry per channel (device mode) or per file (file mode), the mode is given in column "Mode"
 //   Service:  services of an ensemble entry, deleted automatically (ON DELETE CASCADE) with the ensemble entry
-//   Favorite: favorites, valid globally with the key ECC + SId (ECC = 0 means "not known yet" and matches all ECCs)
+//   Favorite: favorites with the key mode + channel/FId + SId, independent of the other tables to survive a rescan
 namespace DbNames
 {
 inline const QString cTabEnsemble = QSL("Ensemble");

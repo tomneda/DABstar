@@ -32,9 +32,9 @@ static const QString sTeIsFav        = QSL("IsFav");
 // ensemble entry of the current data mode with the given channel/FId
 static const QString sSelEnsembleId = "SELECT " + cColId + " FROM " + cTabEnsemble + " WHERE " + cColMode + " = :mode AND " + cColFIdOrCh + " = :channel";
 
-// a favorite matches if SId is equal and ECC is equal or one of the ECCs is not known (0), "e" is the ensemble table, "s" the service table
-static const QString sIsFavExpr = "EXISTS(SELECT 1 FROM " + cTabFavorite + " f WHERE f." + cColSId + " = s." + cColSId +
-                                  " AND (f." + cColEcc + " = e." + cColEcc + " OR f." + cColEcc + " = 0 OR e." + cColEcc + " = 0))";
+// a favorite matches with the same mode, channel/FId and SId, "e" is the ensemble table, "s" the service table
+static const QString sIsFavExpr = "EXISTS(SELECT 1 FROM " + cTabFavorite + " f WHERE f." + cColMode + " = e." + cColMode +
+                                  " AND f." + cColFIdOrCh + " = e." + cColFIdOrCh + " AND f." + cColSId + " = s." + cColSId + ")";
 
 #if 0
 class CustomSqlQueryModel : public QSqlQueryModel
@@ -74,7 +74,8 @@ void ServiceDB::delete_table(const bool iDeleteFavorites)
   if (iDeleteFavorites)
   {
     QSqlQuery queryDelFav(mDB);
-    queryDelFav.prepare("DELETE FROM " + cTabFavorite);
+    queryDelFav.prepare("DELETE FROM " + cTabFavorite + " WHERE " + cColMode + " = :mode");
+    queryDelFav.bindValue(":mode", _cur_mode());
     (void)_exec(queryDelFav, "delete favorites");
   }
 }
@@ -243,22 +244,19 @@ bool ServiceDB::is_sort_desc() const
 
 void ServiceDB::set_favorite(const QString& iChannel, const u32 iSId, const bool iIsFavorite) const
 {
-  const u8 ecc = _get_ecc(iChannel); // 0 if not known (yet)
   QSqlQuery query(mDB);
 
   if (iIsFavorite)
   {
-    query.prepare("INSERT OR IGNORE INTO " + cTabFavorite + " (" + cColEcc + "," + cColSId + ") VALUES (:ecc, :serviceId)");
-    query.bindValue(":ecc", ecc);
+    query.prepare("INSERT OR IGNORE INTO " + cTabFavorite + " (" + cColMode + "," + cColFIdOrCh + "," + cColSId + ") VALUES (:mode, :channel, :serviceId)");
   }
   else
   {
-    // delete all entries which would match this service (see sIsFavExpr)
-    query.prepare("DELETE FROM " + cTabFavorite + " WHERE " + cColSId + " = :serviceId AND (" + cColEcc + " = :ecc1 OR " + cColEcc + " = 0 OR :ecc2 = 0)");
-    query.bindValue(":ecc1", ecc);
-    query.bindValue(":ecc2", ecc);
+    query.prepare("DELETE FROM " + cTabFavorite + " WHERE " + cColMode + " = :mode AND " + cColFIdOrCh + " = :channel AND " + cColSId + " = :serviceId");
   }
 
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":channel", iChannel);
   query.bindValue(":serviceId", iSId);
   (void)_exec(query, "update favorite");
 }
@@ -272,41 +270,7 @@ bool ServiceDB::set_ecc(const QString& iChannel, const u8 iEcc)
   queryEcc.bindValue(":mode", _cur_mode());
   queryEcc.bindValue(":channel", iChannel);
 
-  if (!_exec(queryEcc, "update ECC") || queryEcc.numRowsAffected() <= 0)
-  {
-    return false;
-  }
-
-  if (iEcc != 0)
-  {
-    // favorites stored while the ECC was not known get the ECC now, remaining duplicates (entry with ECC exists already) are deleted
-    const QString sIdsOfChannel = "SELECT " + cColSId + " FROM " + cTabService + " WHERE " + cColEnsRef + " IN (" + sSelEnsembleId + ")";
-
-    QSqlQuery queryUpd(mDB);
-    queryUpd.prepare("UPDATE OR IGNORE " + cTabFavorite + " SET " + cColEcc + " = :ecc WHERE " + cColEcc + " = 0 AND " + cColSId + " IN (" + sIdsOfChannel + ")");
-    queryUpd.bindValue(":ecc", iEcc);
-    queryUpd.bindValue(":mode", _cur_mode());
-    queryUpd.bindValue(":channel", iChannel);
-    (void)_exec(queryUpd, "update favorite ECC");
-
-    QSqlQuery queryDel(mDB);
-    queryDel.prepare("DELETE FROM " + cTabFavorite + " WHERE " + cColEcc + " = 0 AND " + cColSId + " IN (" + sIdsOfChannel + ")");
-    queryDel.bindValue(":mode", _cur_mode());
-    queryDel.bindValue(":channel", iChannel);
-    (void)_exec(queryDel, "delete favorite duplicates");
-  }
-
-  return true;
-}
-
-u8 ServiceDB::_get_ecc(const QString& iChannel) const
-{
-  QSqlQuery query(mDB);
-  query.prepare("SELECT " + cColEcc + " FROM " + cTabEnsemble + " WHERE " + cColMode + " = :mode AND " + cColFIdOrCh + " = :channel");
-  query.bindValue(":mode", _cur_mode());
-  query.bindValue(":channel", iChannel);
-
-  return (_exec(query, "get ECC") && query.next() ? (u8)query.value(0).toUInt() : 0);
+  return _exec(queryEcc, "update ECC") && queryEcc.numRowsAffected() > 0;
 }
 
 bool ServiceDB::_exec(QSqlQuery& ioQuery, const char* const iWhat) const

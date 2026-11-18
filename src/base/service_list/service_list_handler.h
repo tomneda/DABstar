@@ -60,7 +60,7 @@ public:
   void set_sort_to_FId_Or_Ch(bool iShowOnlyCurrentFIdOrCh);
   void delete_table(const bool iDeleteFavorites);
   void create_new_table();
-  void set_ecc(const QString& iChannel, u8 iEcc); // ECC of the ensemble, needed for the favorites
+  void set_ecc(const QString& iChannel, u8 iEcc); // ECC of the ensemble, stored in the ensemble entry (not shown in the service list)
   void add_entry(const QString& iChannel, const QString& iServiceLabel, u32 iSId);
   void delete_not_existing_SId_at_channel(const QString& iChannel, const TSIdList& iSIdList);
   void delete_not_existing_channel(const TChannelList& iChList);

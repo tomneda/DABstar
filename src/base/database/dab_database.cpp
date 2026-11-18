@@ -201,9 +201,10 @@ bool DabDatabase::_create_schema_v1()
 
   // no foreign key here, the favorites should survive a rescan or a deletion of the ensemble list
   const QString queryFav = "CREATE TABLE IF NOT EXISTS " + cTabFavorite + " ("
-                           + cColEcc + " INTEGER NOT NULL,"
-                           + cColSId + " INTEGER NOT NULL,"
-                           "PRIMARY KEY(" + cColEcc + "," + cColSId + ")"
+                           + cColMode    + " INTEGER NOT NULL,"
+                           + cColFIdOrCh + " TEXT NOT NULL,"
+                           + cColSId     + " INTEGER NOT NULL,"
+                           "PRIMARY KEY(" + cColMode + "," + cColFIdOrCh + "," + cColSId + ")"
                            ");";
 
   return _exec(queryEns) &&
