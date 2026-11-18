@@ -450,8 +450,8 @@ Vielen Dank an die Entwickler von welle.io für diese großartige Arbeit!
 DABstar speichert seine Konfiguration und Datenbanken im Verzeichnis `~/.config/dabstar`:
 
 - `settings03.ini`: Programmkonfiguration, Fensterlayouts, SDR-Einstellungen, Koordinaten und Farbschemata.
-- `servicelist04.db`: SQLite-Datenbank mit den durchsuchten Diensten, Multiplex-Informationen und Favoriten.
-- `ensemblelist04.db`: SQLite-Datenbank mit den Kanal- und Dateisuchlauf-Einträgen der Ensemble-Liste.
+- `dabstar06.db`: SQLite-Datenbank mit der Ensemble-Liste (Kanal- und Dateisuchlauf-Einträge), den durchsuchten Diensten und den Favoriten.
+  Die früheren Dateien `servicelist04.db` und `ensemblelist04.db` werden nicht mehr verwendet und können gelöscht werden.
 - `fftwf_wisdom.txt`: FFTW-Wisdom-Datei. Sie speichert die Ergebnisse der FFT-Planung (FFTW_MEASURE), sodass das (langsame) Ausmessen nur einmal erfolgt.
   Daher dauert der allererste Start von DABstar (oder der erste Start nach einem FFTW-Update) etwas länger.
 

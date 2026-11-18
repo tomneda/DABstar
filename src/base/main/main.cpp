@@ -92,8 +92,6 @@ i32 main(i32 argc, char** argv)
   qRegisterMetaType<QVector<i32>>("QVector<i32>");  // windows needs that...
   qRegisterMetaType<OfdmDecoder::SLcdData>("OfdmDecoder::SLcdData");
 
-  const QString dBVersionNr = QSL("%1").arg(DabDatabase::cSchemaVersion, 2, 10, QChar('0'));
-
   const QString configPath = QDir::homePath() + QSL("/.config/" APP_NAME "/");
   if (!QDir().mkpath(configPath))
   {
@@ -103,10 +101,7 @@ i32 main(i32 argc, char** argv)
 
   const QString initFileName02 = QDir::toNativeSeparators(configPath +  QSL("settings02.ini"));
   const QString initFileName03 = QDir::toNativeSeparators(configPath +  QSL("settings03.ini"));
-  const QString dbFileName = QDir::toNativeSeparators(configPath + QSL("dabstar%1.db").arg(dBVersionNr));
-  // former separate database files (version 04), their content is taken over into a new database
-  const QString dbFormerServiceListFileName = QDir::toNativeSeparators(configPath + QSL("servicelist04.db"));
-  const QString dbFormerEnsembleListFileName = QDir::toNativeSeparators(configPath + QSL("ensemblelist04.db"));
+  const QString dbFileName = QDir::toNativeSeparators(configPath + QSL("dabstar06.db"));
   const QString fftwWisdomFileName = QDir::toNativeSeparators(configPath + QSL("fftwf_wisdom.txt"));
 
   // Default values
@@ -199,8 +194,6 @@ i32 main(i32 argc, char** argv)
     qCritical() << "Could not open database:" << dbFileName;
     return 1;
   }
-
-  (void)dabDatabase.import_former_db_files(dbFormerServiceListFileName, dbFormerEnsembleListFileName);
 
   auto radioInterface(std::make_unique<DabRadio>(dabSettings03.get(), dabDatabase, dataPort, nullptr));
   radioInterface->show();

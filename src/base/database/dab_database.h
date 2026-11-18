@@ -46,7 +46,7 @@ public:
     File   = 1
   };
 
-  static constexpr i32 cSchemaVersion = 5;
+  static constexpr i32 cSchemaVersion = 6;
 
   explicit DabDatabase(QString iDbFileName); // copy is intended
   ~DabDatabase();
@@ -56,28 +56,15 @@ public:
   // opens the database and creates the tables if not existing, returns false if the database could not be used
   bool open_db();
 
-  // takes over the content of the former separate database files (version 04) if this database was newly created
-  // with open_db(), not existing files are ignored, the former files are not changed or deleted
-  bool import_former_db_files(const QString& iServiceListDbFileName, const QString& iEnsembleListDbFileName);
-
   [[nodiscard]] const QSqlDatabase& get_db() const { return mDB; }
-  [[nodiscard]] bool is_newly_created() const { return mIsNewlyCreated; }
-
-  [[nodiscard]] static u8 get_ecc_from_itu_code(const QString& iItuCode); // ItuCode like "DE(e0/d)", returns 0 if not given
 
 private:
   QSqlDatabase mDB;
   QString mDbFileName;
   QString mConnectionName;
-  bool mIsNewlyCreated = false;
 
   bool _open_and_create_schema();
   bool _create_schema();
   bool _exec(const QString& iQuery);
   void _delete_db_file();
-  [[nodiscard]] bool _is_table_existing(const QString& iSchema, const QString& iTabName) const;
-  bool _import_ensembles(const QString& iOldTab, EMode iMode);
-  bool _import_services(const QString& iOldTab, EMode iMode);
-  bool _import_favorites();
-  bool _set_ecc_from_itu_code();
 };

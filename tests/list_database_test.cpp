@@ -50,54 +50,11 @@ EnsembleListDB::SDbEntryData make_entry(const QString& iFIdOrCh)
   return ed;
 }
 
-// creates database files like the former version 04
-bool create_former_db_files(const QString& iSrvFileName, const QString& iEnsFileName)
-{
-  bool ok = true;
-  {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "OldEns");
-    db.setDatabaseName(iEnsFileName);
-    ok &= db.open();
-    QSqlQuery q(db);
-    for (const char* const tab : { "TabDeviceEnsList", "TabFileEnsList" })
-    {
-      ok &= q.exec(QSL("CREATE TABLE %1 (Id INTEGER PRIMARY KEY, FIdOrCh TEXT NOT NULL, FilePath TEXT, FileName TEXT, ScanLevel INTEGER DEFAULT 0,"
-                       "FileLengthMB REAL DEFAULT 0, EnsembleName TEXT, EnsembleId TEXT, ItuCode TEXT, Date TEXT, LastPlayedSId TEXT,"
-                       "DscTyAppTy TEXT, AudioDataRates TEXT, NumDabDabPlus TEXT, ErrorProtection TEXT, NomFreq INTEGER DEFAULT 0,"
-                       "SNR REAL DEFAULT 0, MER REAL DEFAULT 0, BaseBandOffset REAL DEFAULT 0, UNIQUE(FIdOrCh) ON CONFLICT REPLACE)").arg(tab));
-    }
-    ok &= q.exec("INSERT INTO TabDeviceEnsList (FIdOrCh, ScanLevel, EnsembleName, ItuCode) VALUES ('5C', 3, 'DR Deutschland', 'DE(e0/d)')");
-    ok &= q.exec("INSERT INTO TabDeviceEnsList (FIdOrCh, ScanLevel) VALUES ('11D', 0)");
-    ok &= q.exec("INSERT INTO TabFileEnsList (FIdOrCh, FilePath, FileName, ScanLevel) VALUES ('a1b2c3d4', '/tmp', 'rec.sdr', 2)");
-    db.close();
-  }
-  QSqlDatabase::removeDatabase("OldEns");
-  {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "OldSrv");
-    db.setDatabaseName(iSrvFileName);
-    ok &= db.open();
-    QSqlQuery q(db);
-    for (const char* const tab : { "TabDeviceList", "TabFilesList" })
-    {
-      ok &= q.exec(QSL("CREATE TABLE %1 (Id INTEGER PRIMARY KEY, Channel TEXT NOT NULL, SId INTEGER DEFAULT 0, Service TEXT NOT NULL,"
-                       "IsFav INTEGER DEFAULT 0, UNIQUE(Channel, SId) ON CONFLICT IGNORE)").arg(tab));
-    }
-    ok &= q.exec("CREATE TABLE TabFavList (Id INTEGER PRIMARY KEY, Channel TEXT NOT NULL, SId INTEGER DEFAULT 0, UNIQUE(Channel, SId) ON CONFLICT IGNORE)");
-    ok &= q.exec("INSERT INTO TabDeviceList (Channel, SId, Service) VALUES ('5C', 4353, 'Radio A'), ('5C', 4354, 'Radio B'), ('9Z', 4355, 'Orphan')");
-    ok &= q.exec("INSERT INTO TabFilesList (Channel, SId, Service) VALUES ('a1b2c3d4', 4353, 'Radio A')");
-    ok &= q.exec("INSERT INTO TabFavList (Channel, SId) VALUES ('5C', 4354)");
-    db.close();
-  }
-  QSqlDatabase::removeDatabase("OldSrv");
-  return ok;
-}
-
 bool test_relations_and_favorites(const QString& iDbFileName)
 {
   bool ok = true;
   DabDatabase dabDb(iDbFileName);
   ok &= check("open new database", dabDb.open_db());
-  ok &= check("new database detected", dabDb.is_newly_created());
 
   EnsembleListDB ensDb(dabDb);
   ServiceDB srvDb(dabDb);
@@ -169,31 +126,6 @@ bool test_relations_and_favorites(const QString& iDbFileName)
   return ok;
 }
 
-bool test_import(const QString& iDir)
-{
-  bool ok = true;
-  const QString srvFile = iDir + "/servicelist04.db";
-  const QString ensFile = iDir + "/ensemblelist04.db";
-  ok &= check("create former files", create_former_db_files(srvFile, ensFile));
-
-  DabDatabase dabDb(iDir + "/dabstar05.db");
-  ok &= check("open import database", dabDb.open_db());
-  ok &= check("import", dabDb.import_former_db_files(srvFile, ensFile));
-  const QSqlDatabase& db = dabDb.get_db();
-
-  ok &= check("ensembles imported", count_rows(db, "SELECT COUNT(*) FROM Ensemble") == 3);
-  ok &= check("ECC from ITU code", count_rows(db, "SELECT Ecc FROM Ensemble WHERE FIdOrCh = '5C'") == 0xE0);
-  ok &= check("file entry imported", count_rows(db, "SELECT COUNT(*) FROM Ensemble WHERE Mode = 1 AND FileName = 'rec.sdr'") == 1);
-  ok &= check("services imported without orphan", count_rows(db, "SELECT COUNT(*) FROM Service") == 3);
-  ok &= check("favorite imported with ECC", count_rows(db, "SELECT COUNT(*) FROM Favorite WHERE Ecc = 224 AND SId = 4354") == 1);
-
-  ServiceDB srvDb(dabDb);
-  srvDb.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
-  ok &= check("imported favorite shown", get_fav_state(srvDb, "5C", 4354) == 1);
-  ok &= check("ECC parse invalid", DabDatabase::get_ecc_from_itu_code("") == 0);
-
-  return ok;
-}
 } // namespace
 
 int main(int argc, char** argv)
@@ -209,7 +141,6 @@ int main(int argc, char** argv)
 
   bool ok = true;
   ok &= test_relations_and_favorites(tempDir.filePath("relations.db"));
-  ok &= test_import(tempDir.path());
 
   if (!ok)
   {
