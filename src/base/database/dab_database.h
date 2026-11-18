@@ -46,25 +46,49 @@ public:
     File   = 1
   };
 
-  static constexpr i32 cSchemaVersion = 6;
+  enum class EOpenResult
+  {
+    Ok,
+    NewerSchemaVersion, // the database was created by a newer DABstar version, it is not touched
+    Failed              // the database could not be used (e.g. locked by another instance), it is not touched
+  };
+
+  // Schema version stored in "PRAGMA user_version". Increase it with each schema change and add a migration step
+  // in _migrate(). The file name of the database is independent of this version.
+  static constexpr i32 cSchemaVersion = 1;
+  static constexpr i32 cBusyTimeoutMs = 2000;
 
   explicit DabDatabase(QString iDbFileName); // copy is intended
   ~DabDatabase();
   DabDatabase(const DabDatabase&) = delete;
   DabDatabase& operator=(const DabDatabase&) = delete;
 
-  // opens the database and creates the tables if not existing, returns false if the database could not be used
-  bool open_db();
+  // opens the database and creates or migrates the tables, only a corrupted database file is deleted and created anew
+  EOpenResult open_db();
 
   [[nodiscard]] const QSqlDatabase& get_db() const { return mDB; }
+  [[nodiscard]] QString get_last_error() const { return mLastError; }
 
 private:
+  enum class EResult
+  {
+    Ok,
+    Corrupt,
+    NewerSchemaVersion,
+    Failed
+  };
+
   QSqlDatabase mDB;
   QString mDbFileName;
   QString mConnectionName;
+  QString mLastError;
+  bool mLastErrorIsCorrupt = false;
 
-  bool _open_and_create_schema();
-  bool _create_schema();
+  EResult _open_and_migrate();
+  [[nodiscard]] EResult _check_integrity();
+  bool _migrate(i32 iFromVersion);
+  bool _create_schema_v1();
   bool _exec(const QString& iQuery);
+  bool _exec(QSqlQuery& ioQuery, const QString& iQueryStr);
   void _delete_db_file();
 };

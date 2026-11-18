@@ -189,9 +189,18 @@ i32 main(i32 argc, char** argv)
 
   DabDatabase dabDatabase(dbFileName); // must live longer than radioInterface
 
-  if (!dabDatabase.open_db())
+  switch (dabDatabase.open_db())
   {
-    qCritical() << "Could not open database:" << dbFileName;
+  case DabDatabase::EOpenResult::Ok:
+    break;
+  case DabDatabase::EOpenResult::NewerSchemaVersion:
+    QMessageBox::critical(nullptr, QSL("Error"), QSL("The database\n%1\nwas created by a newer version of %2 and cannot be used with this version.\n\n"
+                                                     "Please use the newer version or delete the database (the ensemble list, the service list "
+                                                     "and the favorites will be lost).").arg(dbFileName, QSL(PRJ_NAME)));
+    return 1;
+  case DabDatabase::EOpenResult::Failed:
+    QMessageBox::critical(nullptr, QSL("Error"), QSL("The database\n%1\ncould not be opened:\n%2\n\n"
+                                                     "Is %3 already running?").arg(dbFileName, dabDatabase.get_last_error(), QSL(PRJ_NAME)));
     return 1;
   }
 

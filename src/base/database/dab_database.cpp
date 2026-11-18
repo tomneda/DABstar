@@ -36,52 +36,133 @@ DabDatabase::~DabDatabase()
   }
 }
 
-bool DabDatabase::open_db()
+DabDatabase::EOpenResult DabDatabase::open_db()
 {
   mDB = QSqlDatabase::addDatabase("QSQLITE", mConnectionName);
   mDB.setDatabaseName(mDbFileName);
+  mDB.setConnectOptions(QSL("QSQLITE_BUSY_TIMEOUT=%1").arg(cBusyTimeoutMs)); // wait if another instance accesses the database
 
-  if (!_open_and_create_schema())
+  EResult result = _open_and_migrate();
+
+  if (result == EResult::Corrupt)
   {
-    qCritical() << "Error: Unable to use database" << mDbFileName << ":" << mDB.lastError().text() << "-> delete database and try again...";
-    _delete_db_file(); // emergency delete, hoping it works with a new database
-
-    if (!_open_and_create_schema())
-    {
-      qCritical() << "Error: Unable to use database" << mDbFileName << ":" << mDB.lastError().text();
-      return false;
-    }
+    // only a really corrupted database is deleted, the content (e.g. the favorites) would be lost otherwise
+    qCritical() << "Error: Database" << mDbFileName << "is corrupted:" << mLastError << "-> delete database and create it anew";
+    _delete_db_file();
+    result = _open_and_migrate();
   }
 
-  return true;
+  switch (result)
+  {
+  case EResult::Ok:
+    return EOpenResult::Ok;
+  case EResult::NewerSchemaVersion:
+    qCritical() << "Error: Database" << mDbFileName << "has a newer schema version than supported" << cSchemaVersion;
+    mDB.close();
+    return EOpenResult::NewerSchemaVersion;
+  default:
+    qCritical() << "Error: Unable to use database" << mDbFileName << ":" << mLastError;
+    mDB.close();
+    return EOpenResult::Failed;
+  }
 }
 
-bool DabDatabase::_open_and_create_schema()
+DabDatabase::EResult DabDatabase::_open_and_migrate()
 {
+  mLastError.clear();
+  mLastErrorIsCorrupt = false;
+
   if (!mDB.open())
   {
-    return false;
+    mLastError = mDB.lastError().text();
+    return EResult::Failed;
+  }
+
+  if (const EResult result = _check_integrity();
+      result != EResult::Ok)
+  {
+    return result;
   }
 
   QSqlQuery query(mDB);
 
-  if (!query.exec("PRAGMA user_version") || !query.next())
+  if (!_exec(query, QSL("PRAGMA user_version")) || !query.next())
   {
-    return false;
+    return (mLastErrorIsCorrupt ? EResult::Corrupt : EResult::Failed);
   }
 
   const i32 userVersion = query.value(0).toInt();
+  query.finish();
 
   if (userVersion > cSchemaVersion)
   {
-    qCritical() << "Database" << mDbFileName << "has a newer schema version" << userVersion << "than supported" << cSchemaVersion;
+    return EResult::NewerSchemaVersion;
+  }
+
+  if (!_exec(QSL("PRAGMA foreign_keys = ON"))) // must be set for each connection and outside a transaction
+  {
+    return EResult::Failed;
+  }
+
+  if (userVersion == cSchemaVersion)
+  {
+    return EResult::Ok; // nothing to do, so nothing is written
+  }
+
+  // create or migrate the schema within one transaction, so a failed migration leaves the database unchanged
+  if (!mDB.transaction())
+  {
+    mLastError = mDB.lastError().text();
+    return EResult::Failed;
+  }
+
+  if (!_migrate(userVersion) || !mDB.commit())
+  {
+    if (mLastError.isEmpty())
+    {
+      mLastError = mDB.lastError().text();
+    }
+    mDB.rollback();
+    return EResult::Failed;
+  }
+
+  qInfo() << "Database" << mDbFileName << "migrated from schema version" << userVersion << "to" << cSchemaVersion;
+  return EResult::Ok;
+}
+
+DabDatabase::EResult DabDatabase::_check_integrity()
+{
+  QSqlQuery query(mDB);
+
+  if (!_exec(query, QSL("PRAGMA quick_check")))
+  {
+    return (mLastErrorIsCorrupt ? EResult::Corrupt : EResult::Failed); // e.g. SQLITE_BUSY must not delete the database
+  }
+
+  if (!query.next() || query.value(0).toString() != QSL("ok"))
+  {
+    mLastError = QSL("quick_check failed: ") + query.value(0).toString();
+    return EResult::Corrupt;
+  }
+
+  return EResult::Ok;
+}
+
+bool DabDatabase::_migrate(const i32 iFromVersion)
+{
+  // iFromVersion == 0 is a new (empty) database
+  if (iFromVersion < 1 && !_create_schema_v1())
+  {
     return false;
   }
 
-  return _exec("PRAGMA foreign_keys = ON") && _create_schema();
+  // add further steps here, e.g.:
+  // if (iFromVersion < 2 && !_exec("ALTER TABLE ...")) return false;
+
+  return _exec(QSL("PRAGMA user_version = %1").arg(cSchemaVersion));
 }
 
-bool DabDatabase::_create_schema()
+bool DabDatabase::_create_schema_v1()
 {
   const QString queryEns = "CREATE TABLE IF NOT EXISTS " + cTabEnsemble + " ("
                            + cColId     + " INTEGER PRIMARY KEY,"
@@ -127,17 +208,24 @@ bool DabDatabase::_create_schema()
 
   return _exec(queryEns) &&
          _exec(querySrv) &&
-         _exec(queryFav) &&
-         _exec(QSL("PRAGMA user_version = %1").arg(cSchemaVersion));
+         _exec(queryFav);
 }
 
 bool DabDatabase::_exec(const QString& iQuery)
 {
   QSqlQuery query(mDB);
+  return _exec(query, iQuery);
+}
 
-  if (!query.exec(iQuery))
+bool DabDatabase::_exec(QSqlQuery& ioQuery, const QString& iQueryStr)
+{
+  if (!ioQuery.exec(iQueryStr))
   {
-    qCritical() << "Error: Failed to execute '" << iQuery << "':" << query.lastError().text();
+    const QSqlError error = ioQuery.lastError();
+    const i32 primaryCode = error.nativeErrorCode().toInt() & 0xFF; // SQLite result code, the lower byte is the primary code
+    mLastErrorIsCorrupt = (primaryCode == 11 /*SQLITE_CORRUPT*/ || primaryCode == 26 /*SQLITE_NOTADB*/);
+    mLastError = error.text();
+    qCritical() << "Error: Failed to execute '" << iQueryStr << "':" << mLastError;
     return false;
   }
 
@@ -148,8 +236,13 @@ void DabDatabase::_delete_db_file()
 {
   mDB.close();
 
-  if (QFile::exists(mDbFileName))
+  // also delete the journal files, they belong to the corrupted database
+  for (const QString& suffix : { QString(), QSL("-journal"), QSL("-wal"), QSL("-shm") })
   {
-    QFile::remove(mDbFileName);
+    if (const QString fileName = mDbFileName + suffix;
+        QFile::exists(fileName))
+    {
+      QFile::remove(fileName);
+    }
   }
 }

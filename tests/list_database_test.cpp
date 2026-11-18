@@ -4,6 +4,7 @@
 
 #include <QAbstractItemModel>
 #include <QApplication>
+#include <QFile>
 #include <QTemporaryDir>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
@@ -54,7 +55,7 @@ bool test_relations_and_favorites(const QString& iDbFileName)
 {
   bool ok = true;
   DabDatabase dabDb(iDbFileName);
-  ok &= check("open new database", dabDb.open_db());
+  ok &= check("open new database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
 
   EnsembleListDB ensDb(dabDb);
   ServiceDB srvDb(dabDb);
@@ -126,6 +127,91 @@ bool test_relations_and_favorites(const QString& iDbFileName)
   return ok;
 }
 
+// executes a query via an own connection (like another program or DABstar instance), returns the first value
+QVariant exec_raw(const QString& iDbFileName, const QString& iQuery)
+{
+  QVariant value;
+  {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "Raw");
+    db.setDatabaseName(iDbFileName);
+    if (db.open())
+    {
+      QSqlQuery query(db);
+      if (query.exec(iQuery) && query.next())
+      {
+        value = query.value(0);
+      }
+    }
+    db.close();
+  }
+  QSqlDatabase::removeDatabase("Raw");
+  return value;
+}
+
+bool test_open_handling(const QString& iDir)
+{
+  bool ok = true;
+  const QString dbFileName = iDir + "/open.db";
+
+  // new database gets the current schema version
+  {
+    DabDatabase dabDb(dbFileName);
+    ok &= check("open fresh", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+    ServiceDB srvDb(dabDb);
+    srvDb.set_favorite("5C", 0x1101, true);
+  }
+  ok &= check("schema version set", exec_raw(dbFileName, "PRAGMA user_version").toInt() == DabDatabase::cSchemaVersion);
+
+  // reopen keeps the content
+  {
+    DabDatabase dabDb(dbFileName);
+    ok &= check("reopen", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+  }
+  ok &= check("favorite kept after reopen", exec_raw(dbFileName, "SELECT COUNT(*) FROM Favorite").toInt() == 1);
+
+  // a database of a newer DABstar version must not be touched
+  (void)exec_raw(dbFileName, "PRAGMA user_version = 99");
+  {
+    DabDatabase dabDb(dbFileName);
+    ok &= check("newer version detected", dabDb.open_db() == DabDatabase::EOpenResult::NewerSchemaVersion);
+  }
+  ok &= check("newer version not deleted", exec_raw(dbFileName, "SELECT COUNT(*) FROM Favorite").toInt() == 1);
+  ok &= check("newer version unchanged", exec_raw(dbFileName, "PRAGMA user_version").toInt() == 99);
+  (void)exec_raw(dbFileName, QSL("PRAGMA user_version = %1").arg(DabDatabase::cSchemaVersion));
+
+  // a database locked by another instance must not be deleted
+  {
+    QSqlDatabase lockDb = QSqlDatabase::addDatabase("QSQLITE", "Lock");
+    lockDb.setDatabaseName(dbFileName);
+    ok &= check("lock open", lockDb.open());
+    QSqlQuery lockQuery(lockDb);
+    ok &= check("lock exclusive", lockQuery.exec("BEGIN EXCLUSIVE"));
+    {
+      DabDatabase dabDb(dbFileName);
+      ok &= check("locked database fails", dabDb.open_db() == DabDatabase::EOpenResult::Failed);
+    }
+    ok &= check("unlock", lockQuery.exec("ROLLBACK"));
+    lockQuery.finish();
+    lockDb.close();
+  }
+  QSqlDatabase::removeDatabase("Lock");
+  ok &= check("locked database not deleted", exec_raw(dbFileName, "SELECT COUNT(*) FROM Favorite").toInt() == 1);
+
+  // a corrupted database is created anew
+  const QString corruptFileName = iDir + "/corrupt.db";
+  {
+    QFile file(corruptFileName);
+    ok &= check("write corrupt file", file.open(QIODevice::WriteOnly) && file.write(QByteArray(8192, 'x')) == 8192);
+  }
+  {
+    DabDatabase dabDb(corruptFileName);
+    ok &= check("corrupt database recreated", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+  }
+  ok &= check("recreated database usable", exec_raw(corruptFileName, "SELECT COUNT(*) FROM Favorite").toInt() == 0);
+  ok &= check("recreated schema version", exec_raw(corruptFileName, "PRAGMA user_version").toInt() == DabDatabase::cSchemaVersion);
+
+  return ok;
+}
 } // namespace
 
 int main(int argc, char** argv)
@@ -141,6 +227,7 @@ int main(int argc, char** argv)
 
   bool ok = true;
   ok &= test_relations_and_favorites(tempDir.filePath("relations.db"));
+  ok &= test_open_handling(tempDir.path());
 
   if (!ok)
   {
