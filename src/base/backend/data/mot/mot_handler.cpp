@@ -94,11 +94,6 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     return;
   }
 
-  if (mIsSpi)
-  {
-    _signal_activity();
-  }
-
   if (extensionFlag)
   {
     next += 16;
@@ -177,6 +172,11 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     MotObject* const h = getHandle(transportId);
     if (h != nullptr)
     {
+      // logos and service information alone never enable the EPG button, so their receiving is not shown on it
+      if (mIsSpi && h->is_spi_programme_information())
+      {
+        _signal_activity();
+      }
       h->add_body_segment(segment, segmentNumber, lastFlag, transportId);
     }
   }
@@ -215,7 +215,7 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
   }
 }
 
-// Shows the receiving of SPI (EPG) data on the EPG button (called within the backend thread)
+// Shows the receiving of SPI (EPG) programme information on the EPG button (called within the backend thread)
 void MotHandler::_signal_activity()
 {
   const auto now = std::chrono::steady_clock::now();

@@ -36,6 +36,7 @@
 #include "dabradio.h"
 #include "bit_extractors.h"
 #include "qt_compat.h"
+#include "spi_types.h"
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtDebugMsg)
@@ -381,6 +382,18 @@ int MotObject::get_header_size() const
     return 0;
   }
   return mHeaderCore.headerSize;
+}
+
+bool MotObject::is_spi_programme_information() const
+{
+  if (!mHeaderCore.initialized)
+  {
+    return false;
+  }
+
+  // only these objects provide the programmes shown in the EPG viewer (ETSI TS 102 371, table 12)
+  const MOTContentType contentType = mHeaderCore.get_content_type();
+  return getContentBaseType(contentType) == MOTBaseTypeApplication && getContentSubType(contentType) == (u8)Spi::EContentSubType::ProgrammeInformation;
 }
 
 void MotObject::reset()
