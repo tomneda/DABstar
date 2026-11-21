@@ -114,7 +114,7 @@
       <item>
        <widget class="QPushButton" name="btnResetDataBase">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clear the current database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The channel list and the file list databases are stored separately.&lt;/p&gt;&lt;p&gt;Use this if you experience inconsistencies in the data (which should not normally occur).&lt;/p&gt;&lt;p&gt;Note: a large file list may take a long time to rescan afterwards.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clear the scanned entries of the current mode&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Only the entries of the currently used mode (device or file list) are deleted. The other mode is not affected.&lt;/p&gt;&lt;p&gt;Favorites and notes are kept. They are restored automatically once the entries are back in the list: right away for the channel list, after a rescan for the file list.&lt;/p&gt;&lt;p&gt;Use this if you experience inconsistencies in the data (which should not normally occur).&lt;/p&gt;&lt;p&gt;Note: a large file list may take a long time to rescan afterwards.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Reset database</string>
