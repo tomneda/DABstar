@@ -238,14 +238,7 @@ void IndicatorButton::_paint_icon_style_text()
   if (mSubText.isEmpty())
   {
     const bool isShortText = (text().size() <= 2); // e.g. "EL"
-    if (isShortText)
-    {
-      _draw_fitted_text(painter, text(), 20, 23.0f, 26.0f);
-    }
-    else
-    {
-      _draw_fitted_text(painter, text(), cIconTextPixelSize, 22.0f, 26.0f, mIconTextScaleRef);
-    }
+    _draw_fitted_text(painter, text(), isShortText ? 20 : cIconTextPixelSize, isShortText ? 23.0f : 22.0f, 26.0f, mIconTextScaleRef);
   }
   else
   {

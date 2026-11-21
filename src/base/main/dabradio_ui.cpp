@@ -206,11 +206,11 @@ void DabRadio::_initialize_ui_elements()
   _set_dump_button_emphasized(ui->btnDumpRaw, false, cRawDumpColor);
   _set_dump_button_emphasized(ui->btnDumpEti, false, cEtiDumpColor);
 
-  // show the same letter size on all text buttons of the 2x7 button grid with the same number of letters
-  const std::array<IndicatorButton*, 14> gridTextButtons{ui->btnDumpRaw, ui->btnDumpEti, ui->btnDumpFrame, ui->btnDumpAudio, ui->btnDlText,
+  // show the same letter size on all text buttons (of the 2x7 button grid and the ensemble list button) with the same number of letters
+  const std::array<IndicatorButton*, 15> iconTextButtons{ui->btnDumpRaw, ui->btnDumpEti, ui->btnDumpFrame, ui->btnDumpAudio, ui->btnDlText,
                                                          ui->btnEpg, ui->btnJournaline, ui->btnMap, ui->btnFib, ui->btnTii, ui->btnCir,
-                                                         ui->btnTechDetails, ui->btnSpectrumScope, ui->btnDeviceWidget};
-  IndicatorButton::set_common_icon_text_scale(std::span(gridTextButtons));
+                                                         ui->btnTechDetails, ui->btnSpectrumScope, ui->btnDeviceWidget, ui->btnEnsembleList};
+  IndicatorButton::set_common_icon_text_scale(std::span(iconTextButtons));
 
   // EPG and JOUR are only enabled if the according data is received
   ui->btnEpg->setEnabled(false);
