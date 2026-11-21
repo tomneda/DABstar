@@ -33,6 +33,7 @@
  */
 #include "mot_dir.h"
 #include "mot_object.h"
+#include "bit_extractors.h"
 #include <QLoggingCategory>
 #include <algorithm>
 
@@ -118,6 +119,11 @@ void MotDirectory::_add_segment(const std::span<const u8>& iSegment, const i32 i
     mNumDirSegments = iSegmentNumber + 1;
   }
 
+  if (mIsSpi)
+  {
+    _parse_received_prefix();
+  }
+
   // we are "complete" if all segments are "in" (the number of segments is known by the directory size or the last segment)
   const i32 numSegments = (mNumDirSegments >= 0 ? std::min(mNumDirSegments, (i32)mSegmentReceived.size()) : (i32)mSegmentReceived.size());
 
@@ -130,6 +136,70 @@ void MotDirectory::_add_segment(const std::span<const u8>& iSegment, const i32 i
   }
 
   _analyse_the_directory();
+}
+
+Spi::EContentKind MotDirectory::get_content_kind(const u16 iTransportId) const
+{
+  if (mIsAnalysed)
+  {
+    const MotObject* const pMotObject = getHandle(iTransportId);
+    return (pMotObject != nullptr ? pMotObject->get_spi_content_kind() : Spi::EContentKind::None);
+  }
+
+  const auto it = mEarlyKinds.find(iTransportId);
+  return (it != mEarlyKinds.end() ? it->second : Spi::EContentKind::None);
+}
+
+// Parses the entries of the directory as far as its leading segments are received without a gap. Only the transportId and
+// the content type of the header core are needed (ETSI EN 301 234, 7.2.1), so the kind of an object is known before the
+// complete directory is received (which could take a further carousel period if a segment is lost).
+void MotDirectory::_parse_received_prefix()
+{
+  if (mEarlyParseDone)
+  {
+    return;
+  }
+
+  usize numLeadingSegments = 0;
+  while (numLeadingSegments < mSegmentReceived.size() && mSegmentReceived[numLeadingSegments])
+  {
+    ++numLeadingSegments;
+  }
+  const usize prefixLen = std::min(numLeadingSegments * (usize)mDirSegmentSize, mDirData.size());
+
+  if (mEarlyParsePos == 0)
+  {
+    if (prefixLen < 13)
+    {
+      return;
+    }
+    mEarlyParsePos = 13 + ((mDirData[11] << 8) | mDirData[12]); // skip the directory extension
+  }
+
+  constexpr usize cHeaderCoreSize = 7;
+
+  while (mEarlyNumParsed < mNumObjects && mEarlyParsePos + 2 + cHeaderCoreSize <= prefixLen)
+  {
+    const u8* const pEntry = mDirData.data() + mEarlyParsePos;
+    const u16 transportId = (pEntry[0] << 8) | pEntry[1];
+    const u8* const pHeaderCore = pEntry + 2;
+    const usize headerSize   = extract_bits_from_byte_stream(pHeaderCore, 55-27, 13); // b27..b15
+    const i32 contentType    = (i32)extract_bits_from_byte_stream(pHeaderCore, 55-14,  6); // b14..b9
+    const i32 contentSubType = (i32)extract_bits_from_byte_stream(pHeaderCore, 55- 8,  9); // b8..b0
+
+    if (transportId == 0 || headerSize < cHeaderCoreSize) // dummy or corrupt entry
+    {
+      mEarlyParseDone = true;
+      return;
+    }
+
+    const auto motContentType = static_cast<MOTContentType>(((contentType << 8) & MOTCTBaseTypeMask) | (contentSubType & MOTCTSubTypeMask));
+    mEarlyKinds[transportId] = MotObject::content_type_to_spi_kind(motContentType);
+    mEarlyParsePos += 2 + headerSize;
+    ++mEarlyNumParsed;
+  }
+
+  mEarlyParseDone = (mEarlyNumParsed >= mNumObjects);
 }
 
 // This is the tough one, we collected the bits, and now we need to extract the MotObjects from it
@@ -168,5 +238,8 @@ void MotDirectory::_analyse_the_directory()
     mMotComponents.push_back({ transportId, std::move(pMotObject) });
   }
 
-  qCDebug(sLogMotDir) << "MOT directory" << mTransportId << "analysed with" << mMotComponents.size() << "objects";
+  mEarlyKinds.clear(); // the kinds are now given by the MOT objects
+
+  const auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - mCreationTime).count();
+  qCDebug(sLogMotDir) << "MOT directory" << mTransportId << "analysed with" << mMotComponents.size() << "objects," << durationMs << "ms after its first segment";
 }

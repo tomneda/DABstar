@@ -58,6 +58,7 @@ public:
   int get_header_size() const;
   [[nodiscard]] bool has_header() const { return mHeaderCore.initialized; }
   [[nodiscard]] Spi::EContentKind get_spi_content_kind() const; // kind of the object within an SPI service, None if the header is not known yet
+  [[nodiscard]] static Spi::EContentKind content_type_to_spi_kind(MOTContentType iContentType); // kind of an object with this content type within an SPI service
   void reset();
 
 private:

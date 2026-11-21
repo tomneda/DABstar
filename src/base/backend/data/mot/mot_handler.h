@@ -63,6 +63,7 @@ private:
   DabRadio* const mpRadioInterface;
   const bool mIsSpi;
   std::array<std::chrono::steady_clock::time_point, Spi::cNumContentKinds> mLastActivityTimes{}; // per SPI content kind
+  const std::chrono::steady_clock::time_point mCreationTime = std::chrono::steady_clock::now(); // for the debug log of the reception time
   int mOrderNumber = 0;
   std::array<SMotTable, 15> mMotTable; // TODO: are 55 or 15 the better number?
 

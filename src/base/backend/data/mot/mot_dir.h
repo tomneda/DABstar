@@ -34,6 +34,9 @@
 #pragma once
 
 #include "glob_data_types.h"
+#include "spi_types.h"
+#include <chrono>
+#include <map>
 #include <memory>
 #include <span>
 #include <vector>
@@ -51,6 +54,7 @@ public:
   MotObject* getHandle(u16 iTransportId) const;
   void directorySegment(u16 iTransportId, const std::span<const u8>& iSegment, i16 iSegmentNumber, bool iLastSegment);
   u16 get_transportId() const { return mTransportId; }
+  [[nodiscard]] Spi::EContentKind get_content_kind(u16 iTransportId) const; // SPI kind of a listed object, known before the directory is complete
 
 private:
   static constexpr i32 cDirSizeMax = 4 * 1024 * 1024; // protection against corrupt data, SPI allows only 8 kByte
@@ -71,7 +75,14 @@ private:
   i32 mNumObjects = 0;
   bool mIsAnalysed = false;
   std::vector<SMotComponent> mMotComponents;
+  // the kinds of the objects are taken from the already received leading part of the directory (for the SPI indicators)
+  std::map<u16, Spi::EContentKind> mEarlyKinds; // transportId -> kind
+  usize mEarlyParsePos = 0;                     // position of the next directory entry to parse, 0 = not started yet
+  i32 mEarlyNumParsed = 0;
+  bool mEarlyParseDone = false;
+  const std::chrono::steady_clock::time_point mCreationTime = std::chrono::steady_clock::now();
 
   void _add_segment(const std::span<const u8>& iSegment, i32 iSegmentNumber, bool iLastSegment);
+  void _parse_received_prefix();
   void _analyse_the_directory();
 };

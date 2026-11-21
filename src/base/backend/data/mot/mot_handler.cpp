@@ -35,6 +35,9 @@
 #include "dabradio.h"
 #include "bit_extractors.h"
 #include "crc.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(sLogMotHandler, "MotHandler", QtWarningMsg)
 
 MotHandler::MotHandler(DabRadio* const ipRadio, const bool iIsSpi)
   : mpRadioInterface(ipRadio)
@@ -170,16 +173,20 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     // Body segments without a known header (data group type 3) or directory entry are dropped. The header is
     // not known yet or the directory is not completely received, the segments are repeated in the carousel.
     MotObject* const h = getHandle(transportId);
+
+    if (mIsSpi)
+    {
+      // the kind of an object listed in a not yet complete directory could be known already
+      const Spi::EContentKind kind = (h != nullptr ? h->get_spi_content_kind()
+                                                   : (mpDirectory != nullptr ? mpDirectory->get_content_kind(transportId) : Spi::EContentKind::None));
+      if (kind != Spi::EContentKind::None)
+      {
+        _signal_activity(kind);
+      }
+    }
+
     if (h != nullptr)
     {
-      if (mIsSpi)
-      {
-        if (const Spi::EContentKind kind = h->get_spi_content_kind();
-            kind != Spi::EContentKind::None)
-        {
-          _signal_activity(kind);
-        }
-      }
       h->add_body_segment(segment, segmentNumber, lastFlag, transportId);
     }
   }
@@ -201,6 +208,11 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
         delete mpDirectory;
       }
 
+      if (mIsSpi)
+      {
+        const auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - mCreationTime).count();
+        qCDebug(sLogMotHandler) << "First segment of SPI MOT directory" << transportId << "received" << durationMs << "ms after the start of the service";
+      }
       mpDirectory = new MotDirectory(mpRadioInterface, transportId, segment, lastFlag, mIsSpi);
     }
     else

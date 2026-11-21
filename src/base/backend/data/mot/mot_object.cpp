@@ -390,14 +390,17 @@ Spi::EContentKind MotObject::get_spi_content_kind() const
     return Spi::EContentKind::None;
   }
 
-  const MOTContentType contentType = mHeaderCore.get_content_type();
+  return content_type_to_spi_kind(mHeaderCore.get_content_type());
+}
 
-  switch (getContentBaseType(contentType))
+Spi::EContentKind MotObject::content_type_to_spi_kind(const MOTContentType iContentType)
+{
+  switch (getContentBaseType(iContentType))
   {
   case MOTBaseTypeImage: return Spi::EContentKind::Logo; // images of an SPI service are logos
   case MOTBaseTypeApplication:
     // ETSI TS 102 371, table 12
-    switch (getContentSubType(contentType))
+    switch (getContentSubType(iContentType))
     {
     case (u8)Spi::EContentSubType::ServiceInformation:   return Spi::EContentKind::ServiceInformation;
     case (u8)Spi::EContentSubType::ProgrammeInformation:
