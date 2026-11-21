@@ -17,6 +17,7 @@
 #include "band_handler.h"
 #include "glob_enums.h"
 #include <QFrame>
+#include <QTimer>
 
 class Ui_ensembleList;
 class EnsembleListDbHandler;
@@ -68,6 +69,7 @@ private:
   static constexpr u32 cBgColorBtnResetDataBase = 0xC50F09;
 
   static constexpr i64 cMinFileSize = 4LL * 1024LL * 1024LL;
+  static constexpr i32 cNoteSaveDelayMs = 500;
 
   Ui_ensembleList* const ui;
   QFrame mFrame;
@@ -84,6 +86,10 @@ private:
   EnsembleListDB::SDataFilter mDataFilter{};
   QString mFIdOrChClickOnList; // FId/channel clicked without known SId, waits for the first SId to replay (not empty if active)
   bool mIsDeviceAvailable = false;
+  QString mUserDataFIdOrCh; // FId/channel of the entry whose favorite state and note are shown (empty if none)
+  bool mCurFavState = false;
+  bool mNoteChanged = false; // the note was edited but not stored yet
+  QTimer mNoteSaveTimer;
 
   enum class ELogType { WARN, ERROR2, INFONEUT, INFOACK, INFONACK }; // ERROR is not working on Windows -> renamed to ERROR2
   void _log_to_result_display(ELogType iLogType, const QString& iMessage, i32 iAddIndent = 0) const;
@@ -103,6 +109,8 @@ private:
   void _update_remove_invalid_files_button_state() const;
   void _update_scan_button_state() const;
   void _stop_scan_process();
+  void _flush_note();
+  void _set_favorite_button_style() const;
 
 public slots:
   void slot_select_fid_or_ch(const QString& iFIdOrCh, u32 iSId);   // trigger this will sent signal_file_or_channel_to_play back to DabRadio
@@ -119,6 +127,9 @@ private slots:
   void _slot_handle_search_text_changed(const QString& iText);
   void _slot_handle_show_current_fid_or_ch_only(int iState);
   void _slot_handle_table_click(const QModelIndex& index);
+  void _slot_handle_favorite_button();
+  void _slot_handle_note_changed();
+  void _slot_current_entry_changed(const QString& iFIdOrCh);
 
 signals:
   void signal_start_stop_scan(bool oIsScanning);

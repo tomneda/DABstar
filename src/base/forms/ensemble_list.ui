@@ -13,9 +13,54 @@
   <property name="windowTitle">
    <string>Ensemble List</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="3,0,0,0,1">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="3,0,0,0,0,1">
    <item>
     <widget class="QTableView" name="tblEnsembleList"/>
+   </item>
+   <item>
+    <widget class="QWidget" name="containerUserData" native="true">
+     <layout class="QHBoxLayout" name="horLayoutUserData">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="btnToggleFavorite">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Toggle the current ensemble entry as a favourite&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The favourite state is shown in the first column of the list.&lt;/p&gt;&lt;p&gt;The favourites and notes are stored separately and are kept when the database is reset or the entries are rescanned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblNote">
+        <property name="text">
+         <string>Note:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="ledNote">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Personal note for the current ensemble entry&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The note is saved automatically. The list shows only the beginning of the note, the search field also finds the rest of it.&lt;/p&gt;&lt;p&gt;The favourites and notes are stored separately and are kept when the database is reset or the entries are rescanned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="placeholderText">
+         <string>Personal note for the current entry…</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QProgressBar" name="progressBar">
@@ -120,7 +165,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Search in list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows only entries containing the entered text in any column (case-insensitive).&lt;/p&gt;&lt;p&gt;This search works additionally to the filters on the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Search in list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows only entries containing the entered text in any column (case-insensitive), including the full text of the notes.&lt;/p&gt;&lt;p&gt;This search works additionally to the filters on the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="placeholderText">
            <string>Search...</string>

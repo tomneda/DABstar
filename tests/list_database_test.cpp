@@ -10,6 +10,7 @@
 #include <QtSql/QSqlQuery>
 #include <cstdio>
 #include <memory>
+#include <utility>
 
 namespace
 {
@@ -120,6 +121,69 @@ bool test_relations_and_favorites(const QString& iDbFileName)
   return ok;
 }
 
+// returns the favorite state and note of the given entry in the ensemble list model, isFav is -1 if the entry is not in the list
+std::pair<i32, QString> get_ens_user_data(EnsembleListDB& ioEnsDb, const QString& iFIdOrCh)
+{
+  const std::unique_ptr<QAbstractItemModel> model(ioEnsDb.create_model());
+  const bool isDevice = (ioEnsDb.get_data_mode() == EnsembleListDB::EDataMode::Device);
+  const i32 keyCol = (isDevice ? EnsembleListDB::CI_CH : EnsembleListDB::CI_FId);
+  const i32 noteCol = (isDevice ? EnsembleListDB::CI_CNote : EnsembleListDB::CI_FNote);
+
+  for (i32 rowIdx = 0; rowIdx < model->rowCount(); ++rowIdx)
+  {
+    if (model->data(model->index(rowIdx, keyCol)).toString() == iFIdOrCh)
+    {
+      return { model->data(model->index(rowIdx, EnsembleListDB::CI_Fav)).toInt(), model->data(model->index(rowIdx, noteCol)).toString() };
+    }
+  }
+  return { -1, QString() };
+}
+
+bool test_ensemble_user_data(const QString& iDbFileName)
+{
+  bool ok = true;
+  DabDatabase dabDb(iDbFileName);
+  ok &= check("open user data database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+
+  EnsembleListDB ensDb(dabDb);
+  const QSqlDatabase& db = dabDb.get_db();
+
+  ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+  ok &= check("insert 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("insert 11D", ensDb.insert_or_update_entry(make_entry("11D"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("no user data initially", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString()));
+
+  ok &= check("set fav 5C", ensDb.set_favorite("5C", true));
+  ok &= check("set note 5C", ensDb.set_note("5C", "Good reception on the balcony"));
+  ok &= check("model shows fav and note", get_ens_user_data(ensDb, "5C") == std::make_pair(1, QString("Good reception on the balcony")));
+  ok &= check("other entry without user data", get_ens_user_data(ensDb, "11D") == std::make_pair(0, QString()));
+  const EnsembleListDB::SUserData ud = ensDb.get_user_data("5C");
+  ok &= check("get user data", ud.isFav && ud.note == "Good reception on the balcony");
+
+  // file mode is separated
+  ensDb.set_data_mode(EnsembleListDB::EDataMode::Files);
+  ok &= check("insert file 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("file mode without user data", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString()));
+  ok &= check("file mode get user data empty", !ensDb.get_user_data("5C").isFav);
+  ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+
+  // the user data survives re-init, deleting and resetting of the ensemble list
+  ok &= check("re-init 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("user data kept after re-init", get_ens_user_data(ensDb, "5C").first == 1);
+  ensDb.delete_table();
+  ok &= check("user data kept after delete", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 1);
+  ok &= check("re-add 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("user data shown again", get_ens_user_data(ensDb, "5C") == std::make_pair(1, QString("Good reception on the balcony")));
+
+  // clearing fav and note removes the row
+  ok &= check("clear fav 5C", ensDb.set_favorite("5C", false));
+  ok &= check("row kept with note", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 1);
+  ok &= check("clear note 5C", ensDb.set_note("5C", QString()));
+  ok &= check("empty row removed", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 0);
+
+  return ok;
+}
+
 // executes a query via an own connection (like another program or DABstar instance), returns the first value
 QVariant exec_raw(const QString& iDbFileName, const QString& iQuery)
 {
@@ -205,6 +269,32 @@ bool test_open_handling(const QString& iDir)
 
   return ok;
 }
+
+bool test_migration_v1(const QString& iDbFileName)
+{
+  bool ok = true;
+
+  // create a database and reduce it to schema version 1 (without the user data table)
+  {
+    DabDatabase dabDb(iDbFileName);
+    ok &= check("open for migration", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+    ServiceDB srvDb(dabDb);
+    srvDb.set_favorite("5C", 0x1101, true);
+    QSqlQuery query(dabDb.get_db());
+    ok &= check("drop user data table", query.exec("DROP TABLE EnsembleUserData"));
+    ok &= check("set version 1", query.exec("PRAGMA user_version = 1"));
+  }
+
+  {
+    DabDatabase dabDb(iDbFileName);
+    ok &= check("open v1 database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+    ok &= check("user data table created", dabDb.get_db().tables().contains("EnsembleUserData"));
+    ok &= check("favorite kept after migration", count_rows(dabDb.get_db(), "SELECT COUNT(*) FROM Favorite") == 1);
+  }
+  ok &= check("migrated schema version", exec_raw(iDbFileName, "PRAGMA user_version").toInt() == DabDatabase::cSchemaVersion);
+
+  return ok;
+}
 } // namespace
 
 int main(int argc, char** argv)
@@ -221,6 +311,8 @@ int main(int argc, char** argv)
   bool ok = true;
   ok &= test_relations_and_favorites(tempDir.filePath("relations.db"));
   ok &= test_open_handling(tempDir.path());
+  ok &= test_ensemble_user_data(tempDir.filePath("userdata.db"));
+  ok &= test_migration_v1(tempDir.filePath("migration.db"));
 
   if (!ok)
   {

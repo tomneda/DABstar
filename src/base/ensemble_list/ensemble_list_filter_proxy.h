@@ -15,11 +15,14 @@
 #include "glob_data_types.h"
 #include <QSortFilterProxyModel>
 
-// Proxy model which additionally filters rows by a free search text (case-insensitive) over all columns except an ignored one
+// Proxy model which additionally filters rows by a free search text (case-insensitive) over all columns except the ignored ones.
+// A (possibly long) note column is shown shortened, the search and the sorting consider the full text.
 class EnsembleListFilterProxy final : public QSortFilterProxyModel
 {
 public:
   using QSortFilterProxyModel::QSortFilterProxyModel;
+
+  static constexpr i32 cNoteMaxDisplayChars = 20;
 
   void set_search_text(const QString& iText)
   {
@@ -33,18 +36,45 @@ public:
     _end_rows_filter_change();
   }
 
-  void set_ignored_column(const i32 iCol)
+  void set_ignored_columns(const QList<i32>& iCols)
   {
-    if (iCol == mIgnoredCol)
+    if (iCols == mIgnoredCols)
     {
       return;
     }
     _begin_rows_filter_change();
-    mIgnoredCol = iCol;
+    mIgnoredCols = iCols;
     _end_rows_filter_change();
   }
 
+  void set_note_column(const i32 iCol)
+  {
+    mNoteCol = iCol;
+  }
+
   [[nodiscard]] const QString& get_search_text() const { return mSearchText; }
+
+  [[nodiscard]] QVariant data(const QModelIndex& iIndex, const int iRole = Qt::DisplayRole) const override
+  {
+    if (iIndex.column() == mNoteCol && (iRole == Qt::DisplayRole || iRole == Qt::ToolTipRole))
+    {
+      const QString note = QSortFilterProxyModel::data(iIndex, Qt::DisplayRole).toString();
+
+      if (iRole == Qt::ToolTipRole)
+      {
+        return (note.isEmpty() ? QVariant() : QVariant(note));
+      }
+
+      if (note.size() > cNoteMaxDisplayChars)
+      {
+        return QString(note.left(cNoteMaxDisplayChars) + "...");
+      }
+
+      return note;
+    }
+
+    return QSortFilterProxyModel::data(iIndex, iRole);
+  }
 
 protected:
   bool filterAcceptsRow(const int iSrcRow, const QModelIndex& iSrcParent) const override
@@ -59,7 +89,7 @@ protected:
 
     for (i32 col = 0; col < colCnt; ++col)
     {
-      if (col == mIgnoredCol)
+      if (mIgnoredCols.contains(col))
       {
         continue;
       }
@@ -75,7 +105,8 @@ protected:
 
 private:
   QString mSearchText;
-  i32 mIgnoredCol = -1;
+  QList<i32> mIgnoredCols;
+  i32 mNoteCol = -1;
 
   void _begin_rows_filter_change()
   {

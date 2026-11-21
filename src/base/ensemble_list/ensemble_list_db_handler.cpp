@@ -49,6 +49,18 @@ void CustomItemDelegate2::paint(QPainter* painter, const QStyleOptionViewItem& o
 
   painter->fillRect(option.rect, bgColor); // background color
 
+  if (index.column() == EnsembleListDB::CI_Fav)
+  {
+    const QPixmap& curPM = (index.data(Qt::DisplayRole).toBool() ? mStarFilledPixmap : mStarEmptyPixmap);
+
+    // Calculate the position to center the pixmap within the item rectangle
+    const i32 x = option.rect.x() + (option.rect.width()  - 16) / 2; // 16 = width of icon
+    const i32 y = option.rect.y() + (option.rect.height() - 16) / 2; // 16 = height of icon
+
+    painter->drawPixmap(x, y, curPM);
+    return;
+  }
+
   QStyleOptionViewItem opt = option;
   if (isLiveFile) // paint the currently played file in bold gold
   {
@@ -67,7 +79,14 @@ QSize CustomItemDelegate2::sizeHint(const QStyleOptionViewItem& option, const QM
   QStyleOptionViewItem opt = option;
   opt.font.setBold(true);
   opt.fontMetrics = QFontMetrics(opt.font);
-  return QStyledItemDelegate::sizeHint(opt, index);
+  QSize size = QStyledItemDelegate::sizeHint(opt, index);
+
+  if (index.column() == EnsembleListDB::CI_Fav)
+  {
+    size.setWidth(16 + 8); // star icon with some margin, the text ("0" or "1") is not shown
+  }
+
+  return size;
 }
 
 bool CustomItemDelegate2::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -171,11 +190,27 @@ void EnsembleListDbHandler::_hide_columns() const
   mpTableView->hideColumn(_get_scan_level_col_idx()); // hide service level column
 }
 
+i32 EnsembleListDbHandler::_get_note_col_idx() const
+{
+  return (mEnsembleListDb.get_data_mode() == EnsembleListDB::EDataMode::Device ? EnsembleListDB::CI_CNote : EnsembleListDB::CI_FNote);
+}
+
+void EnsembleListDbHandler::_set_current_fid_or_ch(const QString& iFIdOrCh)
+{
+  const bool changed = (mFIdOrChLast != iFIdOrCh);
+  mFIdOrChLast = iFIdOrCh;
+  mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
+
+  if (changed)
+  {
+    emit signal_current_entry_changed(mFIdOrChLast);
+  }
+}
+
 void EnsembleListDbHandler::delete_table()
 {
   // avoid coloring list while scan
-  mFIdOrChLast.clear();
-  mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
+  _set_current_fid_or_ch(QString());
 
   mEnsembleListDb.delete_table();
 }
@@ -193,8 +228,7 @@ bool EnsembleListDbHandler::is_table_existing(const EDataMode iDataMode) const
 
 i32 EnsembleListDbHandler::set_selector(const QString& iFIdOrCh)
 {
-  mFIdOrChLast = iFIdOrCh;
-  mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
+  _set_current_fid_or_ch(iFIdOrCh);
 
   return _jump_to_list_entry(); // return row index of mFIdOrChLast
 }
@@ -216,7 +250,9 @@ void EnsembleListDbHandler::_fill_table_view_from_db()
   }
 
   _hide_columns(); // hide service level column
-  mProxyModel.set_ignored_column(_get_scan_level_col_idx()); // the hidden column should not be considered by the search text
+  // the hidden scan level column and the favorite column (shown as star) should not be considered by the search text
+  mProxyModel.set_ignored_columns({ _get_scan_level_col_idx(), EnsembleListDB::CI_Fav });
+  mProxyModel.set_note_column(_get_note_col_idx());
 
   QHeaderView* const header = mpTableView->horizontalHeader();
   header->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -269,8 +305,7 @@ i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, co
 
     if (iSkipOffset != 0) // only trigger new status to the radio frontend if it was changed by a skip
     {
-      mFIdOrChLast = mProxyModel.data(mProxyModel.index(rowIdxFound, _get_fid_or_ch_col_idx())).toString();
-      mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
+      _set_current_fid_or_ch(mProxyModel.data(mProxyModel.index(rowIdxFound, _get_fid_or_ch_col_idx())).toString());
 
       emit signal_selection_changed(mFIdOrChLast);
     }
@@ -289,8 +324,7 @@ i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, co
 
 void EnsembleListDbHandler::_slot_selection_changed(const QString& iFIdOrCh)
 {
-  mFIdOrChLast = iFIdOrCh;
-  mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
+  _set_current_fid_or_ch(iFIdOrCh);
   mpTableView->update();
 
   emit signal_selection_changed(iFIdOrCh);
@@ -319,6 +353,8 @@ void EnsembleListDbHandler::_slot_header_clicked(i32 iIndex)
 
 void EnsembleListDbHandler::set_data_mode(EDataMode iDataMode)
 {
+  // the current entry belongs to the old data mode, clear it before switching (so pending user data is still stored in the old mode)
+  _set_current_fid_or_ch(QString());
   mCustomItemDelegate.set_current_scan_level(iDataMode == EDataMode::Device ? EnsembleListDB::CI_CSL : EnsembleListDB::CI_FSL);
   mEnsembleListDb.set_data_mode(iDataMode);
   _fill_table_view_from_db();
@@ -356,5 +392,34 @@ void EnsembleListDbHandler::set_sorting_to_FId_or_Ch(const bool iRestoreSorting)
   Settings::EnsembleList::varSortCol.write(sortColIdx);
   Settings::EnsembleList::varSortDesc.write(sortOrder == Qt::DescendingOrder ? 1 : 0);
 
+  _jump_to_list_entry();
+}
+
+EnsembleListDB::SUserData EnsembleListDbHandler::get_user_data(const QString& iFIdOrCh) const
+{
+  return mEnsembleListDb.get_user_data(iFIdOrCh);
+}
+
+void EnsembleListDbHandler::set_favorite(const QString& iFIdOrCh, const bool iIsFav)
+{
+  if (iFIdOrCh.isEmpty())
+  {
+    return;
+  }
+
+  (void)mEnsembleListDb.set_favorite(iFIdOrCh, iIsFav);
+  _fill_table_view_from_db();
+  _jump_to_list_entry();
+}
+
+void EnsembleListDbHandler::set_note(const QString& iFIdOrCh, const QString& iNote)
+{
+  if (iFIdOrCh.isEmpty())
+  {
+    return;
+  }
+
+  (void)mEnsembleListDb.set_note(iFIdOrCh, iNote);
+  _fill_table_view_from_db();
   _jump_to_list_entry();
 }

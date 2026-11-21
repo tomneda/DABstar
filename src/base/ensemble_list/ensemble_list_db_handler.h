@@ -40,6 +40,8 @@ protected:
   bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
+  const QPixmap mStarEmptyPixmap{":res/icons/starempty16.png"};   // draw a empty star icon for favorites
+  const QPixmap mStarFilledPixmap{":res/icons/starfilled16.png"}; // draw a filled star icon for favorites
   QString mCurFIdOrCh;
   i32 mCurFIdOrChColIdx = 0;
   i32 mCurScanLevelIdx = 0;
@@ -74,6 +76,9 @@ public:
   void set_data_filter(const EnsembleListDB::SDataFilter& iDataFilter);
   void set_search_text(const QString& iText);
   void set_sorting_to_FId_or_Ch(bool iRestoreSorting);
+  [[nodiscard]] EnsembleListDB::SUserData get_user_data(const QString& iFIdOrCh) const;
+  void set_favorite(const QString& iFIdOrCh, bool iIsFav);
+  void set_note(const QString& iFIdOrCh, const QString& iNote);
 
 private:
   QTableView* const mpTableView;
@@ -89,7 +94,9 @@ private:
   i32 _jump_to_list_entry(i32 iSkipOffset = 0, bool iCenterContent = false); // returns row index
   i32 _get_fid_or_ch_col_idx() const;
   i32 _get_scan_level_col_idx() const;
+  i32 _get_note_col_idx() const;
   void _hide_columns() const;
+  void _set_current_fid_or_ch(const QString& iFIdOrCh);
 
 private slots:
   void _slot_selection_changed(const QString& iFIdOrCh);
@@ -97,4 +104,5 @@ private slots:
 
 signals:
   void signal_selection_changed(const QString& oFId);
+  void signal_current_entry_changed(const QString& oFIdOrCh); // the highlighted (current) entry has changed, empty if none
 };

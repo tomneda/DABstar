@@ -15,10 +15,12 @@ bool check(const char* const iName, const bool iCondition)
   return iCondition;
 }
 
-void add_row(QStandardItemModel& ioModel, const QString& iCh, const QString& iSL, const QString& iName, const QString& iEId)
+void add_row(QStandardItemModel& ioModel, const QString& iCh, const QString& iSL, const QString& iName, const QString& iEId, const QString& iNote)
 {
-  ioModel.appendRow({ new QStandardItem(iCh), new QStandardItem(iSL), new QStandardItem(iName), new QStandardItem(iEId) });
+  ioModel.appendRow({ new QStandardItem(iCh), new QStandardItem(iSL), new QStandardItem(iName), new QStandardItem(iEId), new QStandardItem(iNote) });
 }
+
+constexpr i32 cNoteCol = 4;
 } // namespace
 
 int main(int argc, char** argv)
@@ -26,13 +28,14 @@ int main(int argc, char** argv)
   QCoreApplication app(argc, argv);
 
   QStandardItemModel model;
-  add_row(model, "5C", "2", "DR Deutschland", "10BC");
-  add_row(model, "11D", "3", "Bayern Süd", "1D01");
-  add_row(model, "12A", "0", "", "");
+  add_row(model, "5C", "2", "DR Deutschland", "10BC", "Good reception with roof antenna only");
+  add_row(model, "11D", "3", "Bayern Süd", "1D01", "");
+  add_row(model, "12A", "0", "", "", "short note");
 
   EnsembleListFilterProxy proxy;
   proxy.setSourceModel(&model);
-  proxy.set_ignored_column(1); // the scan level column
+  proxy.set_ignored_columns({ 1 }); // the scan level column
+  proxy.set_note_column(cNoteCol);
   bool ok = true;
 
   ok &= check("empty search shows all rows", proxy.rowCount() == 3);
@@ -60,8 +63,22 @@ int main(int argc, char** argv)
   ok &= check("cleared search shows all rows", proxy.rowCount() == 3);
 
   proxy.set_search_text("0");
-  proxy.set_ignored_column(-1);
+  proxy.set_ignored_columns({});
   ok &= check("changing ignored column refilters", proxy.rowCount() == 3);
+
+  proxy.set_ignored_columns({ 1, 3 });
+  ok &= check("multiple ignored columns", proxy.rowCount() == 0); // "0" is only in the SL and EId columns
+
+  proxy.set_search_text("");
+  proxy.sort(0); // 11D, 12A, 5C
+  ok &= check("long note is shortened", proxy.data(proxy.index(2, cNoteCol)).toString() == "Good reception with ...");
+  ok &= check("tooltip shows full note", proxy.data(proxy.index(2, cNoteCol), Qt::ToolTipRole).toString() == "Good reception with roof antenna only");
+  ok &= check("short note is not shortened", proxy.data(proxy.index(1, cNoteCol)).toString() == "short note");
+  ok &= check("empty note has no tooltip", !proxy.data(proxy.index(0, cNoteCol), Qt::ToolTipRole).isValid());
+  ok &= check("other columns unchanged", proxy.data(proxy.index(2, 2)).toString() == "DR Deutschland");
+
+  proxy.set_search_text("antenna");
+  ok &= check("search finds text beyond the shortened note", proxy.rowCount() == 1 && proxy.data(proxy.index(0, 0)).toString() == "5C");
 
   if (!ok)
   {

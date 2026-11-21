@@ -22,11 +22,14 @@
 //   Ensemble: one entry per channel (device mode) or per file (file mode), the mode is given in column "Mode"
 //   Service:  services of an ensemble entry, deleted automatically (ON DELETE CASCADE) with the ensemble entry
 //   Favorite: favorites with the key mode + channel/FId + SId, independent of the other tables to survive a rescan
+//   EnsembleUserData: favorite state and user note of an ensemble entry with the key mode + channel/FId,
+//                     independent of the other tables to survive a rescan or a reset of the ensemble list
 namespace DbNames
 {
-inline const QString cTabEnsemble = QSL("Ensemble");
-inline const QString cTabService  = QSL("Service");
-inline const QString cTabFavorite = QSL("Favorite");
+inline const QString cTabEnsemble    = QSL("Ensemble");
+inline const QString cTabService     = QSL("Service");
+inline const QString cTabFavorite    = QSL("Favorite");
+inline const QString cTabEnsUserData = QSL("EnsembleUserData");
 
 inline const QString cColId        = QSL("Id");
 inline const QString cColMode      = QSL("Mode");
@@ -35,6 +38,8 @@ inline const QString cColEcc       = QSL("Ecc");
 inline const QString cColEnsRef    = QSL("EnsembleRef");
 inline const QString cColSId       = QSL("SId");
 inline const QString cColService   = QSL("Service");
+inline const QString cColIsFav     = QSL("IsFav");
+inline const QString cColNote      = QSL("Note");
 } // namespace DbNames
 
 class DabDatabase
@@ -55,7 +60,7 @@ public:
 
   // Schema version stored in "PRAGMA user_version". Increase it with each schema change and add a migration step
   // in _migrate(). The file name of the database is independent of this version.
-  static constexpr i32 cSchemaVersion = 1;
+  static constexpr i32 cSchemaVersion = 2;
   static constexpr i32 cBusyTimeoutMs = 2000;
 
   explicit DabDatabase(QString iDbFileName); // copy is intended
@@ -88,6 +93,7 @@ private:
   [[nodiscard]] EResult _check_integrity();
   bool _migrate(i32 iFromVersion);
   bool _create_schema_v1();
+  bool _create_schema_v2();
   bool _exec(const QString& iQuery);
   bool _exec(QSqlQuery& ioQuery, const QString& iQueryStr);
   void _delete_db_file();

@@ -87,6 +87,17 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   connect(ui->cbShowELNoSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->ledSearchInList, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_search_text_changed);
   connect(ui->btnClearSearchInList, &QToolButton::clicked, ui->ledSearchInList, &QLineEdit::clear);
+  connect(ui->btnToggleFavorite, &QPushButton::clicked, this, &EnsembleList::_slot_handle_favorite_button);
+  connect(ui->ledNote, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_note_changed);
+  connect(ui->ledNote, &QLineEdit::editingFinished, this, &EnsembleList::_flush_note);
+  connect(&mNoteSaveTimer, &QTimer::timeout, this, &EnsembleList::_flush_note);
+  connect(mpDbHandler.get(), &EnsembleListDbHandler::signal_current_entry_changed, this, &EnsembleList::_slot_current_entry_changed);
+
+  mNoteSaveTimer.setSingleShot(true);
+  mNoteSaveTimer.setInterval(cNoteSaveDelayMs);
+  ui->btnToggleFavorite->setStyleSheet(get_bg_style_sheet(0x6464FF, fg));
+  _set_favorite_button_style();
+  ui->containerUserData->setEnabled(false); // until an entry is selected
 
   Settings::EnsembleList::cbShowELNoSignals.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignals, 2);
   Settings::EnsembleList::cbShowELNewEntries.register_widget_and_update_ui_from_setting(ui->cbShowELNewEntries, 2);
@@ -117,6 +128,7 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
 
 EnsembleList::~EnsembleList()
 {
+  _flush_note();
   mBandHandler.saveSettings();
   mBandHandler.hide();
 
@@ -303,6 +315,7 @@ void EnsembleList::_setup_ui_regarding_scan_mode(bool iScanMode) const
 {
   // iScanMode is also true with a single click on the ensemble list until the scan is finished
   ui->containerFilePath->setEnabled(!iScanMode);
+  ui->containerUserData->setEnabled(!iScanMode && !mUserDataFIdOrCh.isEmpty());
   ui->btnResetDataBase->setEnabled(!iScanMode);
   ui->tblEnsembleList->setEnabled(!iScanMode);
 }
@@ -817,4 +830,61 @@ void EnsembleList::_slot_handle_table_click(const QModelIndex& index)
   QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
   _signal_fid_or_ch_from_table_index(index.row());
+}
+
+void EnsembleList::_set_favorite_button_style() const
+{
+  ui->btnToggleFavorite->setIcon(QIcon(mCurFavState ? ":res/icons/starfilled24.png" : ":res/icons/starempty24.png"));
+  ui->btnToggleFavorite->setIconSize(QSize(24, 24));
+  ui->btnToggleFavorite->setFixedSize(QSize(32, 32));
+}
+
+void EnsembleList::_flush_note()
+{
+  mNoteSaveTimer.stop();
+
+  if (!mNoteChanged)
+  {
+    return;
+  }
+
+  mNoteChanged = false;
+  mpDbHandler->set_note(mUserDataFIdOrCh, ui->ledNote->text()); // store always to the entry the note was edited for
+}
+
+void EnsembleList::_slot_handle_note_changed()
+{
+  mNoteChanged = true;
+  mNoteSaveTimer.start(); // restarts the timer, so the note is stored after typing stops
+}
+
+void EnsembleList::_slot_handle_favorite_button()
+{
+  if (mUserDataFIdOrCh.isEmpty())
+  {
+    return;
+  }
+
+  _flush_note();
+  mCurFavState = !mCurFavState;
+  _set_favorite_button_style();
+  mpDbHandler->set_favorite(mUserDataFIdOrCh, mCurFavState);
+}
+
+void EnsembleList::_slot_current_entry_changed(const QString& iFIdOrCh)
+{
+  _flush_note(); // store a pending note to the previous entry
+
+  mUserDataFIdOrCh = iFIdOrCh;
+  const EnsembleListDB::SUserData userData = (iFIdOrCh.isEmpty() ? EnsembleListDB::SUserData() : mpDbHandler->get_user_data(iFIdOrCh));
+
+  {
+    const QSignalBlocker blocker(ui->ledNote); // a programmatic change is no user edit
+    ui->ledNote->setText(userData.note);
+    ui->ledNote->setCursorPosition(0);
+  }
+
+  mCurFavState = userData.isFav;
+  _set_favorite_button_style();
+  ui->containerUserData->setEnabled(!mIsScanning && !iFIdOrCh.isEmpty());
 }

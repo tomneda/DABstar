@@ -47,10 +47,13 @@ public:
     UpdateLastPlayedSId
   };
 
-  static constexpr i32 CI_FId = 1; // column index of FId in file mode
-  static constexpr i32 CI_CH  = 0; // column index of channel name in device mode
-  static constexpr i32 CI_FSL = 3; // column index of scan level in file mode
-  static constexpr i32 CI_CSL = 1; // column index of scan level in device mode
+  static constexpr i32 CI_Fav   = 0; // column index of the favorite state (both modes)
+  static constexpr i32 CI_FId   = 2; // column index of FId in file mode
+  static constexpr i32 CI_CH    = 1; // column index of channel name in device mode
+  static constexpr i32 CI_FSL   = 4; // column index of scan level in file mode
+  static constexpr i32 CI_CSL   = 2; // column index of scan level in device mode
+  static constexpr i32 CI_FNote = 6; // column index of the user note in file mode
+  static constexpr i32 CI_CNote = 4; // column index of the user note in device mode
 
   struct SDataFilter
   {
@@ -112,6 +115,13 @@ public:
     } S3LongRun;
   };
 
+  // user data of an entry, stored in an own table which is kept with deleting entries
+  struct SUserData
+  {
+    bool isFav = false;
+    QString note;
+  };
+
   void set_data_mode(EDataMode iDataMode);
   EDataMode get_data_mode() const { return mDataMode; }
   void delete_table(); // deletes all entries of the current data mode (and their services)
@@ -125,6 +135,9 @@ public:
   void set_data_filter(const SDataFilter& iDataFilter);
   QAbstractItemModel* create_model();
   [[nodiscard]] QString get_full_path(const QString& iFId) const;
+  [[nodiscard]] SUserData get_user_data(const QString& iFIdOrCh) const;
+  bool set_favorite(const QString& iFIdOrCh, bool iIsFav) const;
+  bool set_note(const QString& iFIdOrCh, const QString& iNote) const;
 
 private:
   QSqlDatabase mDB;
@@ -133,4 +146,5 @@ private:
 
   [[nodiscard]] i32 _cur_mode() const;
   bool _exec(QSqlQuery& ioQuery, const char* iWhat) const;
+  bool _delete_empty_user_data(const QString& iFIdOrCh) const;
 };

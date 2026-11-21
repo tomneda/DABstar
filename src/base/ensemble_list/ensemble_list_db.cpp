@@ -46,6 +46,17 @@ static const QString sTeNomFreq             = QSL("NomFreq");
 static const QString sTeDateUtc             = QSL("Date");
 static const QString sTeLastPlayedSId       = QSL("LastPlayedSId");
 
+static const QString& sTabUserData = DbNames::cTabEnsUserData;
+static const QString& sTuIsFav     = DbNames::cColIsFav;
+static const QString& sTuNote      = DbNames::cColNote;
+
+// selects the given column of the user data of the current ensemble entry (used as correlated subquery)
+static QString sel_user_data_col(const QString& iCol)
+{
+  return "(SELECT u." + iCol + " FROM " + sTabUserData + " u WHERE u." + sTeMode + " = " + sTabEnsList + "." + sTeMode +
+         " AND u." + sTeFIdOrCh + " = " + sTabEnsList + "." + sTeFIdOrCh + ")";
+}
+
 EnsembleListDB::EnsembleListDB(const DabDatabase& iDabDatabase) :
   mDB(iDabDatabase.get_db())
 {
@@ -252,6 +263,7 @@ QAbstractItemModel* EnsembleListDB::create_model()
   auto* const model = new QSqlQueryModel(this);
 
   QStringList cols;
+  cols << "COALESCE(" + sel_user_data_col(sTuIsFav) + ", 0) AS 'Fav'"; // see CI_Fav
   if (mDataMode == EDataMode::Files)
   {
     cols << sTeFileName        + " AS 'FileName'";
@@ -264,6 +276,7 @@ QAbstractItemModel* EnsembleListDB::create_model()
   }
   cols << sTeScanLevel         + " AS 'SL'"; // see CI_CSL and CI_FSL
   cols << sTeEnsembleName      + " AS 'Ensemble\nName'";
+  cols << "COALESCE(" + sel_user_data_col(sTuNote) + ", '') AS 'Note'"; // see CI_CNote and CI_FNote
   cols << sTeEnsembleId        + " AS 'EId'";
   cols << sTeItuCode           + " AS 'ITU\nCode'";
   cols << sTeLastPlayedSId     + " AS 'Played\nSId'";
@@ -339,6 +352,60 @@ QString EnsembleListDB::get_full_path(const QString& iFId) const
   }
 
   return {};
+}
+
+EnsembleListDB::SUserData EnsembleListDB::get_user_data(const QString& iFIdOrCh) const
+{
+  QSqlQuery query(mDB);
+  query.prepare("SELECT " + sTuIsFav + ", " + sTuNote + " FROM " + sTabUserData + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iFIdOrCh);
+
+  SUserData userData;
+
+  if (query.exec() && query.next())
+  {
+    userData.isFav = query.value(0).toBool();
+    userData.note = query.value(1).toString();
+  }
+
+  return userData;
+}
+
+bool EnsembleListDB::set_favorite(const QString& iFIdOrCh, const bool iIsFav) const
+{
+  QSqlQuery query(mDB);
+  query.prepare("INSERT INTO " + sTabUserData + " (" + sTeMode + "," + sTeFIdOrCh + "," + sTuIsFav + ") VALUES (:mode, :fidorch, :isfav) "
+                "ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + ") DO UPDATE SET " + sTuIsFav + " = excluded." + sTuIsFav);
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iFIdOrCh);
+  query.bindValue(":isfav", iIsFav ? 1 : 0);
+
+  return _exec(query, "update ensemble favorite") && _delete_empty_user_data(iFIdOrCh);
+}
+
+bool EnsembleListDB::set_note(const QString& iFIdOrCh, const QString& iNote) const
+{
+  QSqlQuery query(mDB);
+  query.prepare("INSERT INTO " + sTabUserData + " (" + sTeMode + "," + sTeFIdOrCh + "," + sTuNote + ") VALUES (:mode, :fidorch, :note) "
+                "ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + ") DO UPDATE SET " + sTuNote + " = excluded." + sTuNote);
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iFIdOrCh);
+  query.bindValue(":note", iNote.isNull() ? QString("") : iNote); // NOT NULL column
+
+  return _exec(query, "update ensemble note") && _delete_empty_user_data(iFIdOrCh);
+}
+
+bool EnsembleListDB::_delete_empty_user_data(const QString& iFIdOrCh) const
+{
+  // do not keep entries without content
+  QSqlQuery query(mDB);
+  query.prepare("DELETE FROM " + sTabUserData + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch AND " +
+                sTuIsFav + " = 0 AND " + sTuNote + " = ''");
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iFIdOrCh);
+
+  return _exec(query, "delete empty user data");
 }
 
 void EnsembleListDB::set_data_filter(const SDataFilter& iDataFilter)

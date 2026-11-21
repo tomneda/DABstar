@@ -156,8 +156,13 @@ bool DabDatabase::_migrate(const i32 iFromVersion)
     return false;
   }
 
+  if (iFromVersion < 2 && !_create_schema_v2())
+  {
+    return false;
+  }
+
   // add further steps here, e.g.:
-  // if (iFromVersion < 2 && !_exec("ALTER TABLE ...")) return false;
+  // if (iFromVersion < 3 && !_exec("ALTER TABLE ...")) return false;
 
   return _exec(QSL("PRAGMA user_version = %1").arg(cSchemaVersion));
 }
@@ -210,6 +215,20 @@ bool DabDatabase::_create_schema_v1()
   return _exec(queryEns) &&
          _exec(querySrv) &&
          _exec(queryFav);
+}
+
+bool DabDatabase::_create_schema_v2()
+{
+  // no foreign key here, the user data should survive a rescan or a deletion of the ensemble list
+  const QString queryUserData = "CREATE TABLE IF NOT EXISTS " + cTabEnsUserData + " ("
+                                + cColMode    + " INTEGER NOT NULL,"
+                                + cColFIdOrCh + " TEXT NOT NULL,"
+                                + cColIsFav   + " INTEGER NOT NULL DEFAULT 0,"
+                                + cColNote    + " TEXT NOT NULL DEFAULT '',"
+                                "PRIMARY KEY(" + cColMode + "," + cColFIdOrCh + ")"
+                                ");";
+
+  return _exec(queryUserData);
 }
 
 bool DabDatabase::_exec(const QString& iQuery)
