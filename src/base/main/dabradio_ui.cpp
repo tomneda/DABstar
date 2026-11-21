@@ -28,6 +28,7 @@
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QProxyStyle>
+#include <array>
 
 template<typename T>
 void DabRadio::_add_status_label_elem(StatusInfoElem<T>& ioElem, const u32 iColor, const QString& iName, const QString& iToolTip)
@@ -204,6 +205,12 @@ void DabRadio::_initialize_ui_elements()
   ui->btnFilePlayPause->setStyleSheet(get_bg_style_sheet(0x3C9C64));   // jade     — file play/pause
   _set_dump_button_emphasized(ui->btnDumpRaw, false, cRawDumpColor);
   _set_dump_button_emphasized(ui->btnDumpEti, false, cEtiDumpColor);
+
+  // show the same letter size on all text buttons of the 2x7 button grid
+  const std::array<IndicatorButton*, 14> gridTextButtons{ui->btnDumpRaw, ui->btnDumpEti, ui->btnDumpFrame, ui->btnDumpAudio, ui->btnDlText,
+                                                         ui->btnEpg, ui->btnJournaline, ui->btnMap, ui->btnFib, ui->btnTii, ui->btnCir,
+                                                         ui->btnTechDetails, ui->btnSpectrumScope, ui->btnDeviceWidget};
+  IndicatorButton::set_common_icon_text_scale(std::span(gridTextButtons));
 
   // EPG and JOUR are only enabled if the according data is received
   ui->btnEpg->setEnabled(false);

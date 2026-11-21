@@ -16,6 +16,7 @@
 #include "glob_data_types.h"
 #include <QPushButton>
 #include <QColor>
+#include <span>
 
 class QPainter;
 class QTimer;
@@ -56,6 +57,10 @@ public:
   void set_icon_style_text(bool iIconStyleText);
   [[nodiscard]] bool is_icon_style_text() const { return mIconStyleText; }
 
+  // Use one common horizontal text scale for all given buttons (derived from the widest text) instead of fitting each
+  // text individually to the button width. So all buttons of the group show the same letter size.
+  static void set_common_icon_text_scale(const std::span<IndicatorButton* const>& iButtons);
+
   void set_sub_text(const QString& iSubText);
   [[nodiscard]] const QString& get_sub_text() const { return mSubText; }
 
@@ -84,11 +89,13 @@ private:
   f32 mIndicatorMarginTop = 3.0f;
   bool mIconStyleText = false;
   QString mSubText;
+  QString mIconTextScaleRef; // if not empty, the horizontal text scale is derived from this text (see set_common_icon_text_scale())
   bool mActivityIndicatorActive = false;
   QColor mActivityIndicatorColor{0xFF, 0x80, 0x00}; // Orange LED
   QTimer* mpActivityTimer = nullptr;
 
   void _paint_icon_style_text();
   void _paint_indicator(QPainter& iPainter, f32 iPosX, const QColor& iColor) const;
-  void _draw_fitted_text(QPainter& iPainter, const QString& iText, i32 iPixelSize, f32 iBaseline, f32 iWidth) const;
+  [[nodiscard]] QFont _get_icon_text_font(i32 iPixelSize) const;
+  void _draw_fitted_text(QPainter& iPainter, const QString& iText, i32 iPixelSize, f32 iBaseline, f32 iWidth, const QString& iScaleRef = {}) const;
 };

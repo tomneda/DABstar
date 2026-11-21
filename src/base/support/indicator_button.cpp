@@ -19,6 +19,9 @@
 #include <QStyleOptionButton>
 #include <QStylePainter>
 #include <QTimer>
+#include <algorithm>
+
+static constexpr i32 cIconTextPixelSize = 16; // pixel size of the (not short) icon style text on a 32x32 button
 
 IndicatorButton::IndicatorButton(QWidget* parent)
   : QPushButton(parent)
@@ -145,20 +148,55 @@ void IndicatorButton::set_activity_indicator_color(const QColor& iColor)
   }
 }
 
-void IndicatorButton::_draw_fitted_text(QPainter& iPainter, const QString& iText, const i32 iPixelSize, const f32 iBaseline, const f32 iWidth) const
+void IndicatorButton::set_common_icon_text_scale(const std::span<IndicatorButton* const>& iButtons)
+{
+  // find the widest text, this determines the common horizontal scale
+  QString widestText;
+  f32 widestWidth = 0.0f;
+
+  for (const IndicatorButton* const pButton : iButtons)
+  {
+    const QString text = pButton->text();
+    const f32 textWidth = (f32)QFontMetricsF(pButton->_get_icon_text_font(cIconTextPixelSize)).horizontalAdvance(text);
+
+    if (textWidth > widestWidth)
+    {
+      widestWidth = textWidth;
+      widestText = text;
+    }
+  }
+
+  for (IndicatorButton* const pButton : iButtons)
+  {
+    pButton->mIconTextScaleRef = widestText;
+    pButton->update();
+  }
+}
+
+QFont IndicatorButton::_get_icon_text_font(const i32 iPixelSize) const
 {
   QFont font = this->font();
   font.setPixelSize(iPixelSize);
   font.setBold(true);
-  const f32 textWidth = (f32)QFontMetricsF(font).horizontalAdvance(iText);
+  return font;
+}
+
+void IndicatorButton::_draw_fitted_text(QPainter& iPainter, const QString& iText, const i32 iPixelSize, const f32 iBaseline, const f32 iWidth,
+                                        const QString& iScaleRef /*= {}*/) const
+{
+  const QFont font = _get_icon_text_font(iPixelSize);
+  const QFontMetricsF fontMetrics(font);
+  const f32 textWidth = (f32)fontMetrics.horizontalAdvance(iText);
 
   if (textWidth <= 0.0f)
   {
     return;
   }
 
-  // like 'textLength' with 'lengthAdjust="spacingAndGlyphs"' in SVG: the text is scaled horizontally to the given width
-  const f32 scaleX = iWidth / textWidth;
+  // like 'textLength' with 'lengthAdjust="spacingAndGlyphs"' in SVG: the text is scaled horizontally to the given width,
+  // with a given reference text the scale is taken from this text (the text itself must still fit into the width)
+  const f32 fitWidth = std::max(textWidth, iScaleRef.isEmpty() ? 0.0f : (f32)fontMetrics.horizontalAdvance(iScaleRef));
+  const f32 scaleX = iWidth / fitWidth;
 
   iPainter.save();
   iPainter.setFont(font);
@@ -183,7 +221,14 @@ void IndicatorButton::_paint_icon_style_text()
   if (mSubText.isEmpty())
   {
     const bool isShortText = (text().size() <= 2); // e.g. "EL"
-    _draw_fitted_text(painter, text(), isShortText ? 20 : 16, isShortText ? 23.0f : 22.0f, 26.0f);
+    if (isShortText)
+    {
+      _draw_fitted_text(painter, text(), 20, 23.0f, 26.0f);
+    }
+    else
+    {
+      _draw_fitted_text(painter, text(), cIconTextPixelSize, 22.0f, 26.0f, mIconTextScaleRef);
+    }
   }
   else
   {
