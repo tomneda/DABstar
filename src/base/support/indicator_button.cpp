@@ -20,6 +20,8 @@
 #include <QStylePainter>
 #include <QTimer>
 #include <algorithm>
+#include <cmath>
+#include <map>
 
 static constexpr i32 cIconTextPixelSize = 16; // pixel size of the (not short) icon style text on a 32x32 button
 
@@ -150,14 +152,14 @@ void IndicatorButton::set_activity_indicator_color(const QColor& iColor)
 
 void IndicatorButton::set_common_icon_text_scale(const std::span<IndicatorButton* const>& iButtons)
 {
-  // find the widest text, this determines the common horizontal scale
-  QString widestText;
-  f32 widestWidth = 0.0f;
+  // find the widest text for each text length (number of letters), this determines the common horizontal scale of this length
+  std::map<i32, std::pair<f32, QString>> widestTextPerLength; // text length -> (width, text)
 
   for (const IndicatorButton* const pButton : iButtons)
   {
     const QString text = pButton->text();
     const f32 textWidth = (f32)QFontMetricsF(pButton->_get_icon_text_font(cIconTextPixelSize)).horizontalAdvance(text);
+    auto& [widestWidth, widestText] = widestTextPerLength[(i32)text.size()];
 
     if (textWidth > widestWidth)
     {
@@ -168,7 +170,7 @@ void IndicatorButton::set_common_icon_text_scale(const std::span<IndicatorButton
 
   for (IndicatorButton* const pButton : iButtons)
   {
-    pButton->mIconTextScaleRef = widestText;
+    pButton->mIconTextScaleRef = widestTextPerLength[(i32)pButton->text().size()].second;
     pButton->update();
   }
 }
@@ -198,11 +200,26 @@ void IndicatorButton::_draw_fitted_text(QPainter& iPainter, const QString& iText
   const f32 fitWidth = std::max(textWidth, iScaleRef.isEmpty() ? 0.0f : (f32)fontMetrics.horizontalAdvance(iScaleRef));
   const f32 scaleX = iWidth / fitWidth;
 
+  // Each character is painted separately with its left edge snapped to a whole pixel. Otherwise the same letter
+  // (e.g. an "I" with a stem of ~1.5 pixels) would be antialiased differently, depending on its sub-pixel position
+  // within the text, and would look thinner or thicker on different buttons.
+  const f32 posX0 = (f32)width() / 2.0f - textWidth * scaleX / 2.0f;
+
   iPainter.save();
   iPainter.setFont(font);
-  iPainter.translate(width() / 2.0, iBaseline);
-  iPainter.scale(scaleX, 1.0);
-  iPainter.drawText(QPointF(-textWidth / 2.0, 0.0), iText);
+
+  for (i32 charIdx = 0; charIdx < iText.size(); ++charIdx)
+  {
+    const f32 charOffset = (f32)fontMetrics.horizontalAdvance(iText.left(charIdx)); // includes kerning to the previous characters
+    const f32 posX = std::round(posX0 + charOffset * scaleX);
+
+    iPainter.save();
+    iPainter.translate(posX, iBaseline);
+    iPainter.scale(scaleX, 1.0);
+    iPainter.drawText(QPointF(0.0, 0.0), iText.mid(charIdx, 1));
+    iPainter.restore();
+  }
+
   iPainter.restore();
 }
 

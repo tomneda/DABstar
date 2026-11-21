@@ -57,8 +57,9 @@ public:
   void set_icon_style_text(bool iIconStyleText);
   [[nodiscard]] bool is_icon_style_text() const { return mIconStyleText; }
 
-  // Use one common horizontal text scale for all given buttons (derived from the widest text) instead of fitting each
-  // text individually to the button width. So all buttons of the group show the same letter size.
+  // Use one common horizontal text scale for all given buttons with the same text length (derived from the widest text
+  // of this length) instead of fitting each text individually to the button width. So all buttons of the group with the
+  // same number of letters show the same letter size.
   static void set_common_icon_text_scale(const std::span<IndicatorButton* const>& iButtons);
 
   void set_sub_text(const QString& iSubText);

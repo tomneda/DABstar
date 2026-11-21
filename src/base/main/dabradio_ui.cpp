@@ -206,7 +206,7 @@ void DabRadio::_initialize_ui_elements()
   _set_dump_button_emphasized(ui->btnDumpRaw, false, cRawDumpColor);
   _set_dump_button_emphasized(ui->btnDumpEti, false, cEtiDumpColor);
 
-  // show the same letter size on all text buttons of the 2x7 button grid
+  // show the same letter size on all text buttons of the 2x7 button grid with the same number of letters
   const std::array<IndicatorButton*, 14> gridTextButtons{ui->btnDumpRaw, ui->btnDumpEti, ui->btnDumpFrame, ui->btnDumpAudio, ui->btnDlText,
                                                          ui->btnEpg, ui->btnJournaline, ui->btnMap, ui->btnFib, ui->btnTii, ui->btnCir,
                                                          ui->btnTechDetails, ui->btnSpectrumScope, ui->btnDeviceWidget};
