@@ -84,6 +84,8 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   connect(ui->cbShowELNewEntries, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELValidSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELNoSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
+  connect(ui->ledSearchInList, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_search_text_changed);
+  connect(ui->btnClearSearchInList, &QToolButton::clicked, ui->ledSearchInList, &QLineEdit::clear);
 
   Settings::EnsembleList::cbShowELNoSignals.register_widget_and_update_ui_from_setting(ui->cbShowELNoSignals, 2);
   Settings::EnsembleList::cbShowELNewEntries.register_widget_and_update_ui_from_setting(ui->cbShowELNewEntries, 2);
@@ -91,6 +93,7 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   Settings::EnsembleList::spMinFileSizeMB.register_widget_and_update_ui_from_setting(ui->spMinFileSizeMB, 100);
 
   _slot_handle_ensemble_list_filter();
+  _slot_handle_search_text_changed(ui->ledSearchInList->text());
 
   if (_get_nr_rows_in_table() == 0) // init device database if not existing
   {
@@ -358,10 +361,23 @@ void EnsembleList::slot_select_fid_or_ch(const QString& iFIdOrCh, const u32 iSId
     }
   };
 
-  // If rowIdx is < 0 then maybe the current filter inhibits showing this row, so open the filter step by step
-  consider_filter(ui->cbShowELValidSignals);
-  consider_filter(ui->cbShowELNewEntries);
-  consider_filter(ui->cbShowELNoSignals);
+  auto consider_filters = [&]()
+  {
+    // If rowIdx is < 0 then maybe the current filter inhibits showing this row, so open the filter step by step
+    consider_filter(ui->cbShowELValidSignals);
+    consider_filter(ui->cbShowELNewEntries);
+    consider_filter(ui->cbShowELNoSignals);
+  };
+
+  consider_filters();
+
+  // still not found? Maybe the search text inhibits showing this row, so clear it and retry
+  if (rowIdx < 0 && !ui->ledSearchInList->text().isEmpty())
+  {
+    ui->ledSearchInList->clear(); // this calls immediately the search text update
+    rowIdx = mpDbHandler->set_selector(iFIdOrCh);
+    consider_filters();
+  }
 
   if (rowIdx >= 0)
   {
@@ -681,6 +697,12 @@ void EnsembleList::_slot_handle_ensemble_list_filter(const int /*iState*/)
   mpDbHandler->set_data_filter(mDataFilter);
 
   _update_remove_invalid_files_button_state();
+}
+
+void EnsembleList::_slot_handle_search_text_changed(const QString& iText)
+{
+  mpDbHandler->set_search_text(iText);
+  ui->btnClearSearchInList->setEnabled(!iText.isEmpty());
 }
 
 void EnsembleList::_slot_handle_show_current_fid_or_ch_only(const int iState)

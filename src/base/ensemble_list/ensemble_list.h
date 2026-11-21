@@ -116,6 +116,7 @@ private slots:
   void _slot_handle_add_files_in_path();
   void _slot_handle_add_single_file();
   void _slot_handle_ensemble_list_filter(int iState = 0);
+  void _slot_handle_search_text_changed(const QString& iText);
   void _slot_handle_show_current_fid_or_ch_only(int iState);
   void _slot_handle_table_click(const QModelIndex& index);
 

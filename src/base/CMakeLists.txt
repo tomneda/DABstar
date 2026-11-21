@@ -224,6 +224,7 @@ set(${baseLibName}_HDRS
         ensemble_list/ensemble_list.h
         ensemble_list/ensemble_list_db.h
         ensemble_list/ensemble_list_db_handler.h
+        ensemble_list/ensemble_list_filter_proxy.h
         update/updatechecker.h
         update/updatedialog.h
 )

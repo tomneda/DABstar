@@ -30,3 +30,8 @@ target_include_directories(list_database_test PRIVATE ${PROJECT_SOURCE_DIR}/src/
 target_link_libraries(list_database_test PRIVATE Qt6::Widgets Qt6::Sql)
 add_test(NAME list_database_test COMMAND list_database_test)
 set_tests_properties(list_database_test PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+add_executable(ensemble_list_filter_proxy_test ensemble_list_filter_proxy_test.cpp)
+target_include_directories(ensemble_list_filter_proxy_test PRIVATE ${PROJECT_SOURCE_DIR}/src/base/ensemble_list ${PROJECT_SOURCE_DIR}/src/common)
+target_link_libraries(ensemble_list_filter_proxy_test PRIVATE Qt6::Widgets)
+add_test(NAME ensemble_list_filter_proxy_test COMMAND ensemble_list_filter_proxy_test)

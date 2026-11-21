@@ -16,7 +16,7 @@
 #include "ensemble_list_db.h"
 #include <QObject>
 #include <QStyledItemDelegate>
-#include <QSortFilterProxyModel>
+#include "ensemble_list_filter_proxy.h"
 
 class QTableView;
 class QSettings;
@@ -72,11 +72,12 @@ public:
   [[nodiscard]] QString get_full_path(const QString& iFId) const;
   void jump_entries(i32 iSteps); // typ -1/+1, with wrap around
   void set_data_filter(const EnsembleListDB::SDataFilter& iDataFilter);
+  void set_search_text(const QString& iText);
   void set_sorting_to_FId_or_Ch(bool iRestoreSorting);
 
 private:
   QTableView* const mpTableView;
-  QSortFilterProxyModel mProxyModel;
+  EnsembleListFilterProxy mProxyModel;
   EnsembleListDB mEnsembleListDb;
   CustomItemDelegate2 mCustomItemDelegate;
   QString mFIdOrChLast;

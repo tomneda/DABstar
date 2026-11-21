@@ -216,6 +216,7 @@ void EnsembleListDbHandler::_fill_table_view_from_db()
   }
 
   _hide_columns(); // hide service level column
+  mProxyModel.set_ignored_column(_get_scan_level_col_idx()); // the hidden column should not be considered by the search text
 
   QHeaderView* const header = mpTableView->horizontalHeader();
   header->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -231,6 +232,12 @@ void EnsembleListDbHandler::set_data_filter(const EnsembleListDB::SDataFilter& i
 {
   mEnsembleListDb.set_data_filter(iDataFilter);
   _fill_table_view_from_db();
+}
+
+void EnsembleListDbHandler::set_search_text(const QString& iText)
+{
+  mProxyModel.set_search_text(iText);
+  _jump_to_list_entry();
 }
 
 i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)

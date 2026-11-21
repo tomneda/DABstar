@@ -246,6 +246,7 @@ HEADERS += \
     src/base/ensemble_list/ensemble_list.h \
     src/base/ensemble_list/ensemble_list_db.h \
     src/base/ensemble_list/ensemble_list_db_handler.h \
+    src/base/ensemble_list/ensemble_list_filter_proxy.h \
     src/base/eti_handler/eti_generator.h \
     src/base/main/audio_manager.h \
     src/base/main/bit_extractors.h \

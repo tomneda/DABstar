@@ -1,0 +1,73 @@
+#include "ensemble_list_filter_proxy.h"
+
+#include <QCoreApplication>
+#include <QStandardItemModel>
+#include <cstdio>
+
+namespace
+{
+bool check(const char* const iName, const bool iCondition)
+{
+  if (!iCondition)
+  {
+    std::fprintf(stderr, "FAILED: %s\n", iName);
+  }
+  return iCondition;
+}
+
+void add_row(QStandardItemModel& ioModel, const QString& iCh, const QString& iSL, const QString& iName, const QString& iEId)
+{
+  ioModel.appendRow({ new QStandardItem(iCh), new QStandardItem(iSL), new QStandardItem(iName), new QStandardItem(iEId) });
+}
+} // namespace
+
+int main(int argc, char** argv)
+{
+  QCoreApplication app(argc, argv);
+
+  QStandardItemModel model;
+  add_row(model, "5C", "2", "DR Deutschland", "10BC");
+  add_row(model, "11D", "3", "Bayern Süd", "1D01");
+  add_row(model, "12A", "0", "", "");
+
+  EnsembleListFilterProxy proxy;
+  proxy.setSourceModel(&model);
+  proxy.set_ignored_column(1); // the scan level column
+  bool ok = true;
+
+  ok &= check("empty search shows all rows", proxy.rowCount() == 3);
+
+  proxy.set_search_text("deutsch");
+  ok &= check("case-insensitive match in name column", proxy.rowCount() == 1);
+  ok &= check("matched row is 5C", proxy.data(proxy.index(0, 0)).toString() == "5C");
+
+  proxy.set_search_text("1d");
+  ok &= check("match in channel and EId columns", proxy.rowCount() == 1 && proxy.data(proxy.index(0, 0)).toString() == "11D");
+
+  proxy.set_search_text("1");
+  ok &= check("substring matches multiple columns", proxy.rowCount() == 3);
+
+  proxy.set_search_text("0");
+  ok &= check("ignored column is not searched", proxy.rowCount() == 2); // row 12A has "0" only in the ignored column
+
+  proxy.set_search_text("  süd ");
+  ok &= check("search text is trimmed", proxy.rowCount() == 1);
+
+  proxy.set_search_text("xyz");
+  ok &= check("no match shows no rows", proxy.rowCount() == 0);
+
+  proxy.set_search_text("");
+  ok &= check("cleared search shows all rows", proxy.rowCount() == 3);
+
+  proxy.set_search_text("0");
+  proxy.set_ignored_column(-1);
+  ok &= check("changing ignored column refilters", proxy.rowCount() == 3);
+
+  if (!ok)
+  {
+    return 1;
+  }
+
+  std::printf("ensemble_list_filter_proxy_test passed\n");
+  return 0;
+}
