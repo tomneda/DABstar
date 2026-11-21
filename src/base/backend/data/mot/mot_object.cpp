@@ -36,7 +36,6 @@
 #include "dabradio.h"
 #include "bit_extractors.h"
 #include "qt_compat.h"
-#include "spi_types.h"
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogMotObject, "MotObject", QtDebugMsg)
@@ -384,16 +383,29 @@ int MotObject::get_header_size() const
   return mHeaderCore.headerSize;
 }
 
-bool MotObject::is_spi_programme_information() const
+Spi::EContentKind MotObject::get_spi_content_kind() const
 {
   if (!mHeaderCore.initialized)
   {
-    return false;
+    return Spi::EContentKind::None;
   }
 
-  // only these objects provide the programmes shown in the EPG viewer (ETSI TS 102 371, table 12)
   const MOTContentType contentType = mHeaderCore.get_content_type();
-  return getContentBaseType(contentType) == MOTBaseTypeApplication && getContentSubType(contentType) == (u8)Spi::EContentSubType::ProgrammeInformation;
+
+  switch (getContentBaseType(contentType))
+  {
+  case MOTBaseTypeImage: return Spi::EContentKind::Logo; // images of an SPI service are logos
+  case MOTBaseTypeApplication:
+    // ETSI TS 102 371, table 12
+    switch (getContentSubType(contentType))
+    {
+    case (u8)Spi::EContentSubType::ServiceInformation:   return Spi::EContentKind::ServiceInformation;
+    case (u8)Spi::EContentSubType::ProgrammeInformation:
+    case (u8)Spi::EContentSubType::GroupInformation:     return Spi::EContentKind::ProgrammeInformation;
+    default: return Spi::EContentKind::None;
+    }
+  default: return Spi::EContentKind::None;
+  }
 }
 
 void MotObject::reset()

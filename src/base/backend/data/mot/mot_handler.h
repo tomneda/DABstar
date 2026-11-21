@@ -32,6 +32,8 @@
 
 #include "dab_constants.h"
 #include "virtual_datahandler.h"
+#include "spi_types.h"
+#include <array>
 #include <chrono>
 #include <vector>
 
@@ -60,11 +62,11 @@ private:
 
   DabRadio* const mpRadioInterface;
   const bool mIsSpi;
-  std::chrono::steady_clock::time_point mLastActivityTime{};
+  std::array<std::chrono::steady_clock::time_point, Spi::cNumContentKinds> mLastActivityTimes{}; // per SPI content kind
   int mOrderNumber = 0;
   std::array<SMotTable, 15> mMotTable; // TODO: are 55 or 15 the better number?
 
-  void _signal_activity();
+  void _signal_activity(Spi::EContentKind iKind);
   void setHandle(MotObject*, u16);
   MotObject* getHandle(u16) const;
 };

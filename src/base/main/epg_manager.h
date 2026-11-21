@@ -46,6 +46,8 @@ public:
   void set_current_time(const QDateTime& iUtc, i32 iLtoMinutes);      // time and local time offset of the ensemble (from FIC)
 
   [[nodiscard]] bool has_data() const { return !mProgrammes.empty(); }
+  [[nodiscard]] bool has_service_information() const { return !mServices.empty(); }
+  [[nodiscard]] bool has_logos() const { return !mLogos.empty(); }
   [[nodiscard]] std::vector<u32> get_service_ids() const; // services with programme data, sorted by label
   [[nodiscard]] QString get_service_label(u32 iSId) const;
   [[nodiscard]] const SService* get_service(u32 iSId) const;

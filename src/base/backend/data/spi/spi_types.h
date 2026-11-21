@@ -30,6 +30,16 @@ enum class EContentSubType : i32
   GroupInformation     = 2
 };
 
+// Kind of a MOT object received in an SPI service, used for the receiving indicators (the values are used as index)
+enum class EContentKind : u8
+{
+  ProgrammeInformation = 0, // programme and group information
+  ServiceInformation   = 1,
+  Logo                 = 2,
+  None                 = 3
+};
+constexpr usize cNumContentKinds = 3; // without None
+
 // ETSI TS 102 371, 4.7.6.1: bearerURI in the dab: domain
 struct SBearer
 {

@@ -172,10 +172,13 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
     MotObject* const h = getHandle(transportId);
     if (h != nullptr)
     {
-      // logos and service information alone never enable the EPG button, so their receiving is not shown on it
-      if (mIsSpi && h->is_spi_programme_information())
+      if (mIsSpi)
       {
-        _signal_activity();
+        if (const Spi::EContentKind kind = h->get_spi_content_kind();
+            kind != Spi::EContentKind::None)
+        {
+          _signal_activity(kind);
+        }
       }
       h->add_body_segment(segment, segmentNumber, lastFlag, transportId);
     }
@@ -215,19 +218,20 @@ void MotHandler::add_MSC_data_group(const std::vector<u8>& msc)
   }
 }
 
-// Shows the receiving of SPI (EPG) programme information on the EPG button (called within the backend thread)
-void MotHandler::_signal_activity()
+// Shows the receiving of SPI (EPG) data in the status bar, separated by the kind of data (called within the backend thread)
+void MotHandler::_signal_activity(const Spi::EContentKind iKind)
 {
   const auto now = std::chrono::steady_clock::now();
+  auto& lastActivityTime = mLastActivityTimes[(usize)iKind];
 
-  if (now - mLastActivityTime < cActivityMinInterval)
+  if (now - lastActivityTime < cActivityMinInterval)
   {
     return;
   }
 
-  mLastActivityTime = now;
+  lastActivityTime = now;
   DabRadio* const pRadio = mpRadioInterface;
-  QMetaObject::invokeMethod(pRadio, [pRadio]() { pRadio->slot_spi_data_received(); }, Qt::QueuedConnection);
+  QMetaObject::invokeMethod(pRadio, [pRadio, iKind]() { pRadio->slot_spi_data_received(iKind); }, Qt::QueuedConnection);
 }
 
 MotObject* MotHandler::getHandle(u16 transportId) const

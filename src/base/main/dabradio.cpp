@@ -1426,6 +1426,11 @@ void DabRadio::_initialize_epg()
   });
   connect(mpEpgManager.get(), &EpgManager::signal_epg_changed, this, [this]()
   {
+    auto& spiData = mStatusInfo.SpiData;
+    _set_status_info_available(spiData[(usize)Spi::EContentKind::ProgrammeInformation], mpEpgManager->has_data());
+    _set_status_info_available(spiData[(usize)Spi::EContentKind::ServiceInformation], mpEpgManager->has_service_information());
+    _set_status_info_available(spiData[(usize)Spi::EContentKind::Logo], mpEpgManager->has_logos());
+
     if (mpEpgViewer != nullptr && mpEpgViewer->isVisible())
     {
       mpEpgViewer->slot_update();

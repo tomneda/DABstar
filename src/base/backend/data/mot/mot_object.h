@@ -34,6 +34,7 @@
 #include "dab_constants.h"
 #include "mot_content_types.h"
 #include "mot_spi_object.h"
+#include "spi_types.h"
 #include <QObject>
 #include <QLabel>
 #include <QByteArray>
@@ -56,7 +57,7 @@ public:
   void add_body_segment(const std::span<const u8>& iBodySegment, i16 iSegmentNumber, bool iLastFlag, i32 iTransportId);
   int get_header_size() const;
   [[nodiscard]] bool has_header() const { return mHeaderCore.initialized; }
-  [[nodiscard]] bool is_spi_programme_information() const; // object carries SPI programme information (the EPG schedules)
+  [[nodiscard]] Spi::EContentKind get_spi_content_kind() const; // kind of the object within an SPI service, None if the header is not known yet
   void reset();
 
 private:

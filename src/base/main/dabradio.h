@@ -41,6 +41,7 @@
 #include "device_selector_if.h"
 #include "epg_mot_handler.h"
 #include "mot_spi_object.h"
+#include "spi_types.h"
 #include "tii_manager.h"
 #include "ensemble_list.h"
 #include "dab_channel_desc.h"
@@ -48,6 +49,7 @@
 #ifdef  DATA_STREAMER
   #include "tcp_server.h"
 #endif
+#include <array>
 #include <memory>
 #include <QStringList>
 #include <QVector>
@@ -142,7 +144,7 @@ private:
   static constexpr i32 cScanningTimeoutMs    = 6000; // max. waiting time for signal and FIB audio data while scanning
   static constexpr i32 cClockResetTimeoutMs  = 5000;
   static constexpr i32 cJournalineActivityMs = 300;  // shown time of the data receiving indicator on the JOUR button
-  static constexpr i32 cEpgActivityMs        = 300;  // shown time of the data receiving indicator on the EPG button
+  static constexpr i32 cSpiActivityMs        = 100;  // shown time of the SPI data receiving indicators in the status bar (like SLS)
 
   inline static bool sIsTerminating = false;
 
@@ -168,6 +170,7 @@ private:
     StatusInfoElem<bool> PS;
     StatusInfoElem<bool> Announce;
     StatusInfoElem<bool> EWS;         // ensemble related, so it is only reset on channel stop
+    std::array<StatusInfoElem<bool>, Spi::cNumContentKinds> SpiData; // index Spi::EContentKind, ensemble related; available: data decoded, value: data are received
     StatusInfoElem<i32>  InpBitRate;  // tricky: bit rates must be of type i32
     StatusInfoElem<u32>  OutSampRate; // tricky: sample rates must be of type u32
     StatusInfoElem<const char*> ProtLevel;
@@ -247,6 +250,7 @@ private:
   QTimer mScanSecurityTimer;
   QTimer mClockResetTimer;
   QTimer mEnsListRetriggerTimer; // if some data still missing (e.g., DateTime and EnsembleName to give more time)
+  std::array<QTimer, Spi::cNumContentKinds> mSpiActivityTimers; // index Spi::EContentKind, switch off the SPI receiving indicators
 
   // Booleans
   bool mIsFileMode = false;
@@ -351,6 +355,7 @@ private:
   void _apply_status_info_color(const StatusInfoElem<bool>& iElem) const;
   void _clean_screen(StatusInfo& ioStatusInfo) const;
   void _reset_status_info(StatusInfo& ioStatusInfo) const;
+  void _reset_spi_status_info();
   void _display_service_label(const QString& iServiceLabel) const;
   void _write_warning_message(const QString& iMsg) const;
   static TrafficLight::EStage _fic_to_traffic_light_stage(i32 iSuccessPercent);
@@ -448,7 +453,7 @@ public slots:
   void slot_pad_mot_progress(i32 iPercent) const;
   void slot_handle_mot_object(const QByteArray& iResult, const QString& iObjectName, i32 iContentType, bool iDirElement) const;
   void slot_handle_spi_object(const SMotSpiObject& iObject) const;
-  void slot_spi_data_received() const;
+  void slot_spi_data_received(Spi::EContentKind iKind);
   void slot_trigger_mot_indicator() const;
 
   // Data Services

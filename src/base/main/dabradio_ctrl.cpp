@@ -278,6 +278,7 @@ void DabRadio::_stop_channel()
   mServiceList.clear();
   _clean_screen(mStatusInfo);
   _set_status_info_status(mStatusInfo.EWS, false);
+  _reset_spi_status_info();
   mpTiiManager->clear_tii_list_and_label();
 
   mIsChannelRunning.store(false);

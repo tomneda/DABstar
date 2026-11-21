@@ -327,10 +327,35 @@ void DabRadio::_initialize_status_info()
   _add_status_label_elem(mStatusInfo.Announce,      0xf2c629, "ANN",           "Announcement");
   _add_status_label_elem(mStatusInfo.EWS,           0xFF5040, "EWS",           "Emergency Warning System<br>(ASA in Germany)<br>is available in this ensemble");
 
+  // SPI (EPG) data of the ensemble, the color of the EPG button
+  auto& spiData = mStatusInfo.SpiData;
+  _add_status_label_elem(spiData[(usize)Spi::EContentKind::ProgrammeInformation], 0xB89028, "EPG",  "Electronic Programme Guide of the ensemble<br>steady: programme information received<br>flickering: programme information is received");
+  _add_status_label_elem(spiData[(usize)Spi::EContentKind::ServiceInformation],   0xB89028, "SI",   "Service Information of the ensemble (SPI)<br>steady: service information received<br>flickering: service information is received");
+  _add_status_label_elem(spiData[(usize)Spi::EContentKind::Logo],                 0xB89028, "LOGO", "Station logos of the ensemble (SPI)<br>steady: logos received<br>flickering: logos are received");
+
   ui->layoutStatus->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
+
+  for (usize idx = 0; idx < Spi::cNumContentKinds; ++idx)
+  {
+    QTimer& timer = mSpiActivityTimers[idx];
+    timer.setInterval(cSpiActivityMs);
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, this, [this, idx]() { _set_status_info_status(mStatusInfo.SpiData[idx], false); });
+  }
 
   _reset_status_info(mStatusInfo);
   _set_status_info_status(mStatusInfo.EWS, false);
+  _reset_spi_status_info();
+}
+
+void DabRadio::_reset_spi_status_info()
+{
+  for (usize idx = 0; idx < Spi::cNumContentKinds; ++idx)
+  {
+    mSpiActivityTimers[idx].stop();
+    _set_status_info_status(mStatusInfo.SpiData[idx], false);
+    _set_status_info_available(mStatusInfo.SpiData[idx], false);
+  }
 }
 
 void DabRadio::_initialize_dynamic_label() const
@@ -583,15 +608,22 @@ void DabRadio::set_journaline_data_received(const QWidget* const ipViewerWidget)
   }
 }
 
-// Called (queued) by the MOT handler of an SPI (EPG) service when data were received
-void DabRadio::slot_spi_data_received() const
+// Called (queued) by the MOT handler of an SPI (EPG) service when data of the given kind were received
+void DabRadio::slot_spi_data_received(const Spi::EContentKind iKind)
 {
-  if (!mIsChannelRunning)
+  if (!mIsChannelRunning || iKind == Spi::EContentKind::None)
   {
     return;
   }
 
-  ui->btnEpg->trigger_activity_indicator(cEpgActivityMs); // shown also if the button is not enabled yet (no programme data complete)
+  const usize idx = (usize)iKind;
+  QTimer& timer = mSpiActivityTimers[idx];
+
+  if (!timer.isActive())
+  {
+    _set_status_info_status(mStatusInfo.SpiData[idx], true);
+  }
+  timer.start();
 }
 
 void DabRadio::_slot_handle_journaline_button() const
