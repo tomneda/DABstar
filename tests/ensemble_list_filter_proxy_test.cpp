@@ -31,6 +31,7 @@ int main(int argc, char** argv)
   add_row(model, "5C", "2", "DR Deutschland", "10BC", "Good reception with roof antenna only");
   add_row(model, "11D", "3", "Bayern Süd", "1D01", "");
   add_row(model, "12A", "0", "", "", "short note");
+  model.setHorizontalHeaderLabels({ "Ch", "SL", "Ensemble\nName", "EId", "Note" });
 
   EnsembleListFilterProxy proxy;
   proxy.setSourceModel(&model);
@@ -79,6 +80,26 @@ int main(int argc, char** argv)
 
   proxy.set_search_text("antenna");
   ok &= check("search finds text beyond the shortened note", proxy.rowCount() == 1 && proxy.data(proxy.index(0, 0)).toString() == "5C");
+  proxy.set_search_text("");
+
+  // the sort direction is shown as arrow in the header label of the sorted column
+  i32 headerChangedCnt = 0;
+  QObject::connect(&proxy, &QAbstractItemModel::headerDataChanged, [&headerChangedCnt]() { ++headerChangedCnt; });
+  auto header = [&proxy](const i32 iCol) { return proxy.headerData(iCol, Qt::Horizontal).toString(); };
+
+  proxy.sort(2, Qt::AscendingOrder);
+  ok &= check("ascending arrow at sorted column", header(2) == "Ensemble\nName↓");
+  ok &= check("no arrow at other columns", header(0) == "Ch" && header(4) == "Note");
+  ok &= check("header change signaled on sort", headerChangedCnt == 1);
+
+  proxy.sort(2, Qt::DescendingOrder);
+  ok &= check("descending arrow at sorted column", header(2) == "Ensemble\nName↑");
+
+  proxy.sort(0, Qt::AscendingOrder);
+  ok &= check("arrow moved to new sorted column", header(0) == "Ch↓" && header(2) == "Ensemble\nName");
+  ok &= check("header change signaled on each sort", headerChangedCnt == 3);
+  const i32 srcRow = proxy.mapToSource(proxy.index(0, 0)).row();
+  ok &= check("vertical header unchanged", proxy.headerData(0, Qt::Vertical) == model.headerData(srcRow, Qt::Vertical));
 
   if (!ok)
   {

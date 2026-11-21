@@ -76,6 +76,31 @@ public:
     return QSortFilterProxyModel::data(iIndex, iRole);
   }
 
+  // The sort direction is shown as an arrow behind the header label of the sorted column (like in the service list).
+  // The header sort indicator of Qt is not used as it reserves its width in each column, which makes all columns much wider.
+  [[nodiscard]] QVariant headerData(const int iSection, const Qt::Orientation iOrientation, const int iRole = Qt::DisplayRole) const override
+  {
+    QVariant value = QSortFilterProxyModel::headerData(iSection, iOrientation, iRole);
+
+    if (iOrientation == Qt::Horizontal && iRole == Qt::DisplayRole && iSection == sortColumn())
+    {
+      return QString(value.toString() + (sortOrder() == Qt::DescendingOrder ? "↑" : "↓"));
+    }
+
+    return value;
+  }
+
+  void sort(const int iColumn, const Qt::SortOrder iOrder = Qt::AscendingOrder) override
+  {
+    QSortFilterProxyModel::sort(iColumn, iOrder);
+
+    if (const i32 colCnt = columnCount();
+        colCnt > 0)
+    {
+      emit headerDataChanged(Qt::Horizontal, 0, colCnt - 1); // the sort arrow has moved
+    }
+  }
+
 protected:
   bool filterAcceptsRow(const int iSrcRow, const QModelIndex& iSrcParent) const override
   {

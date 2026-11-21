@@ -23,6 +23,8 @@
 // Q_LOGGING_CATEGORY(sLogFilePlayerDbHandler, "FilePlayerDbHandler", QtDebugMsg)
 Q_LOGGING_CATEGORY(sLogFilePlayerDbHandler, "FilePlayerDbHandler", QtWarningMsg)
 
+constexpr i32 cMinSectionSize = 16 + 4; // star icon (16 px) of the Fav column with a small margin
+
 void CustomItemDelegate2::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   const QAbstractItemModel* pModel = index.model();
@@ -119,7 +121,11 @@ EnsembleListDbHandler::EnsembleListDbHandler(const DabDatabase& iDabDatabase, QT
 
   mEnsembleListDb.set_data_mode(EnsembleListDB::EDataMode::Files);
 
-  mpTableView->horizontalHeader()->setSortIndicatorShown(true);
+  // The sort indicator of the header is not used, the proxy model shows the sort direction as an arrow in the header label.
+  // Qt would reserve the indicator width (about the header height) in each column, which makes all columns much wider.
+  mpTableView->horizontalHeader()->setSortIndicatorShown(false);
+  // the default minimum section size (style dependent, about 38 px) is much wider than needed for e.g. the Fav or Ch column
+  mpTableView->horizontalHeader()->setMinimumSectionSize(cMinSectionSize);
 
   _fill_table_view_from_db();
 
@@ -128,7 +134,6 @@ EnsembleListDbHandler::EnsembleListDbHandler(const DabDatabase& iDabDatabase, QT
   const bool savedSortDesc = Settings::EnsembleList::varSortDesc.read().toBool();
   const auto savedSortOrder = savedSortDesc ? Qt::DescendingOrder : Qt::AscendingOrder;
   mProxyModel.sort(savedSortCol, savedSortOrder);
-  mpTableView->horizontalHeader()->setSortIndicator(savedSortCol, savedSortOrder);
 
   connect(mpTableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &EnsembleListDbHandler::_slot_header_clicked);
   connect(&mCustomItemDelegate, &CustomItemDelegate2::signal_selection_changed, this, &EnsembleListDbHandler::_slot_selection_changed);
@@ -342,7 +347,6 @@ void EnsembleListDbHandler::_slot_header_clicked(i32 iIndex)
   }
 
   mProxyModel.sort(iIndex, newSortOrder);
-  mpTableView->horizontalHeader()->setSortIndicator(iIndex, newSortOrder);
 
   Settings::EnsembleList::varSortCol.write(iIndex);
   Settings::EnsembleList::varSortDesc.write(newSortOrder == Qt::DescendingOrder ? 1 : 0);
@@ -387,7 +391,6 @@ void EnsembleListDbHandler::set_sorting_to_FId_or_Ch(const bool iRestoreSorting)
   }
 
   mProxyModel.sort(sortColIdx, sortOrder);
-  mpTableView->horizontalHeader()->setSortIndicator(sortColIdx, sortOrder);
 
   Settings::EnsembleList::varSortCol.write(sortColIdx);
   Settings::EnsembleList::varSortDesc.write(sortOrder == Qt::DescendingOrder ? 1 : 0);
