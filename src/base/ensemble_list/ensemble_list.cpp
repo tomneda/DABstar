@@ -88,7 +88,7 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   connect(ui->cbShowELNoSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->ledSearchInList, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_search_text_changed);
   connect(ui->btnToggleFavorite, &QPushButton::clicked, this, &EnsembleList::_slot_handle_favorite_button);
-  connect(ui->ledNote, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_note_changed);
+  connect(ui->ledNote, &QLineEdit::textEdited, this, &EnsembleList::_slot_handle_note_changed); // only user edits (also the clear button), not setText()
   connect(ui->ledNote, &QLineEdit::editingFinished, this, &EnsembleList::_flush_note);
   connect(&mNoteSaveTimer, &QTimer::timeout, this, &EnsembleList::_flush_note);
   connect(mpDbHandler.get(), &EnsembleListDbHandler::signal_current_entry_changed, this, &EnsembleList::_slot_current_entry_changed);
@@ -877,11 +877,8 @@ void EnsembleList::_slot_current_entry_changed(const QString& iFIdOrCh)
   mUserDataFIdOrCh = iFIdOrCh;
   const EnsembleListDB::SUserData userData = (iFIdOrCh.isEmpty() ? EnsembleListDB::SUserData() : mpDbHandler->get_user_data(iFIdOrCh));
 
-  {
-    const QSignalBlocker blocker(ui->ledNote); // a programmatic change is no user edit
-    ui->ledNote->setText(userData.note);
-    ui->ledNote->setCursorPosition(0);
-  }
+  ui->ledNote->setText(userData.note); // no QSignalBlocker here, it would suppress the update of the clear button visibility
+  ui->ledNote->setCursorPosition(0);
 
   mCurFavState = userData.isFav;
   _set_favorite_button_style();
