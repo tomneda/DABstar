@@ -184,6 +184,55 @@ bool test_ensemble_user_data(const QString& iDbFileName)
   return ok;
 }
 
+bool is_counts(const EnsembleListDB::SEntryCounts& iCounts, const i32 iTotal, const i32 iNotScanned, const i32 iNoSignal, const i32 iValid)
+{
+  return iCounts.total == iTotal && iCounts.notScanned == iNotScanned && iCounts.noSignal == iNoSignal && iCounts.valid == iValid;
+}
+
+bool test_ensemble_entry_counts(const QString& iDbFileName)
+{
+  bool ok = true;
+  DabDatabase dabDb(iDbFileName);
+  ok &= check("open entry counts database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+
+  EnsembleListDB ensDb(dabDb);
+
+  ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+  ok &= check("empty counts", is_counts(ensDb.get_entry_counts(), 0, 0, 0, 0));
+
+  ok &= check("insert 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("insert 11D", ensDb.insert_or_update_entry(make_entry("11D"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("insert 12C", ensDb.insert_or_update_entry(make_entry("12C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("5C failed", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::UpdateSL1Failed));
+  ok &= check("11D fib data", ensDb.insert_or_update_entry(make_entry("11D"), EnsembleListDB::EDbDataType::UpdateSL2FibData));
+  ok &= check("device counts", is_counts(ensDb.get_entry_counts(), 3, 1, 1, 1));
+
+  ok &= check("11D med run data", ensDb.insert_or_update_entry(make_entry("11D"), EnsembleListDB::EDbDataType::UpdateSL3MedRunData));
+  ok &= check("med run data counts as valid", is_counts(ensDb.get_entry_counts(), 3, 1, 1, 1));
+
+  // the data filter has no influence on the counts
+  EnsembleListDB::SDataFilter filter;
+  filter.showNotScannedEntries = false;
+  filter.showNoSignalEntries = false;
+  ensDb.set_data_filter(filter);
+  ok &= check("counts independent of filter", is_counts(ensDb.get_entry_counts(), 3, 1, 1, 1));
+  ensDb.set_data_filter(EnsembleListDB::SDataFilter{});
+
+  // file mode is counted separately
+  ensDb.set_data_mode(EnsembleListDB::EDataMode::Files);
+  ok &= check("file mode empty", is_counts(ensDb.get_entry_counts(), 0, 0, 0, 0));
+  ok &= check("insert file", ensDb.insert_or_update_entry(make_entry("a1b2c3d4"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+  ok &= check("file mode counts", is_counts(ensDb.get_entry_counts(), 1, 1, 0, 0));
+
+  ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+  ok &= check("delete invalid", ensDb.delete_invalid_entries());
+  ok &= check("counts after delete invalid", is_counts(ensDb.get_entry_counts(), 2, 1, 0, 1));
+  ensDb.delete_table();
+  ok &= check("counts after delete table", is_counts(ensDb.get_entry_counts(), 0, 0, 0, 0));
+
+  return ok;
+}
+
 // executes a query via an own connection (like another program or DABstar instance), returns the first value
 QVariant exec_raw(const QString& iDbFileName, const QString& iQuery)
 {
@@ -312,6 +361,7 @@ int main(int argc, char** argv)
   ok &= test_relations_and_favorites(tempDir.filePath("relations.db"));
   ok &= test_open_handling(tempDir.path());
   ok &= test_ensemble_user_data(tempDir.filePath("userdata.db"));
+  ok &= test_ensemble_entry_counts(tempDir.filePath("entrycounts.db"));
   ok &= test_migration_v1(tempDir.filePath("migration.db"));
 
   if (!ok)

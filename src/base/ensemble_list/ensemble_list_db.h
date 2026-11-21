@@ -122,6 +122,15 @@ public:
     QString note;
   };
 
+  // number of entries of the current data mode (independent of the data filter)
+  struct SEntryCounts
+  {
+    i32 total = 0;
+    i32 notScanned = 0;
+    i32 noSignal = 0;
+    i32 valid = 0;
+  };
+
   void set_data_mode(EDataMode iDataMode);
   EDataMode get_data_mode() const { return mDataMode; }
   void delete_table(); // deletes all entries of the current data mode (and their services)
@@ -130,6 +139,7 @@ public:
   bool delete_entry(const QString& iFIdOrCh) const;
   bool delete_invalid_entries() const;
   [[nodiscard]] i32 get_nr_unscanned_entries() const; // get number of entries with EId not given yet
+  [[nodiscard]] SEntryCounts get_entry_counts() const;
   [[nodiscard]] SDbEntryData get_entry(const QString& iFIdOrCh) const;
   bool is_entry_existing(const QString& iFIdOrCh) const;
   void set_data_filter(const SDataFilter& iDataFilter);

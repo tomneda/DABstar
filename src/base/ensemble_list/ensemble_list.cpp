@@ -60,6 +60,7 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   ui->cbShowELNoSignals->setStyleSheet(get_bg_style_sheet(cBgColorFailed, fg, cRefLuminance));
 
   mpDbHandler.reset(new EnsembleListDbHandler(iDabDatabase, ui->tblEnsembleList));
+  connect(mpDbHandler.get(), &EnsembleListDbHandler::signal_entry_stats_changed, this, &EnsembleList::_slot_entry_stats_changed);
   mpDbHandler->set_data_mode(EnsembleListDbHandler::EDataMode::Device);
   mListMode = EListMode::PlayFromDevice;
 
@@ -885,4 +886,10 @@ void EnsembleList::_slot_current_entry_changed(const QString& iFIdOrCh)
   mCurFavState = userData.isFav;
   _set_favorite_button_style();
   ui->containerUserData->setEnabled(!mIsScanning && !iFIdOrCh.isEmpty());
+}
+
+void EnsembleList::_slot_entry_stats_changed(const i32 iNrShown, const EnsembleListDB::SEntryCounts& iCounts)
+{
+  ui->lblEntryStats->setText(QSL("Shown: %1 / %2 | New: %3 | Valid: %4 | No signal: %5") // same order like the filter check boxes
+                             .arg(iNrShown).arg(iCounts.total).arg(iCounts.notScanned).arg(iCounts.valid).arg(iCounts.noSignal));
 }

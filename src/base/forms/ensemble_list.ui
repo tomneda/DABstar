@@ -18,49 +18,70 @@
     <widget class="QTableView" name="tblEnsembleList"/>
    </item>
    <item>
-    <widget class="QWidget" name="containerUserData" native="true">
-     <layout class="QHBoxLayout" name="horLayoutUserData">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="btnToggleFavorite">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Toggle the current ensemble entry as a favourite&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The favourite state is shown in the first column of the list.&lt;/p&gt;&lt;p&gt;The favourites and notes are stored separately and are kept when the database is reset or the entries are rescanned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <layout class="QHBoxLayout" name="horLayoutUserDataAndStats">
+     <item>
+      <widget class="QWidget" name="containerUserData" native="true">
+       <layout class="QHBoxLayout" name="horLayoutUserData">
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="lblNote">
-        <property name="text">
-         <string>Note:</string>
+        <property name="topMargin">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="ledNote">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Personal note for the current ensemble entry&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The note is saved automatically. The list shows only the beginning of the note, the search field also finds the rest of it.&lt;/p&gt;&lt;p&gt;The favourites and notes are stored separately and are kept when the database is reset or the entries are rescanned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <property name="rightMargin">
+         <number>0</number>
         </property>
-        <property name="placeholderText">
-         <string>Personal note for the current entry…</string>
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+        <item>
+         <widget class="QPushButton" name="btnToggleFavorite">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Toggle the current ensemble entry as a favourite&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The favourite state is shown in the first column of the list.&lt;/p&gt;&lt;p&gt;The favourites and notes are stored separately and are kept when the database is reset or the entries are rescanned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblNote">
+          <property name="text">
+           <string>Note:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="ledNote">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Personal note for the current ensemble entry&lt;/span&gt;&lt;/p&gt;&lt;p&gt;The note is saved automatically. The list shows only the beginning of the note, the search field also finds the rest of it.&lt;/p&gt;&lt;p&gt;The favourites and notes are stored separately and are kept when the database is reset or the entries are rescanned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="placeholderText">
+           <string>Personal note for the current entry…</string>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="lineEntryStats">
+       <property name="styleSheet">
+        <string notr="true">background-color: #333333;</string>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Orientation::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblEntryStats">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Statistics of the ensemble list entries&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&amp;quot;Shown&amp;quot; is the number of entries currently shown in the list (considering the filters and the search text) compared to the number of all entries.&lt;/p&gt;&lt;p&gt;&amp;quot;New&amp;quot;, &amp;quot;Valid&amp;quot; and &amp;quot;No signal&amp;quot; count all entries of the current list (channels or files) regardless of the filters.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QProgressBar" name="progressBar">

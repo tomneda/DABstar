@@ -262,6 +262,13 @@ void EnsembleListDbHandler::_fill_table_view_from_db()
   QHeaderView* const header = mpTableView->horizontalHeader();
   header->setSectionResizeMode(QHeaderView::ResizeToContents);
   header->setStretchLastSection(true);
+
+  _emit_entry_stats();
+}
+
+void EnsembleListDbHandler::_emit_entry_stats()
+{
+  emit signal_entry_stats_changed(mProxyModel.rowCount(), mEnsembleListDb.get_entry_counts());
 }
 
 void EnsembleListDbHandler::jump_entries(i32 iSteps)
@@ -279,6 +286,7 @@ void EnsembleListDbHandler::set_search_text(const QString& iText)
 {
   mProxyModel.set_search_text(iText);
   _jump_to_list_entry();
+  _emit_entry_stats();
 }
 
 i32 EnsembleListDbHandler::_jump_to_list_entry(const i32 iSkipOffset /*= 0*/, const bool iCenterContent /*= false*/)

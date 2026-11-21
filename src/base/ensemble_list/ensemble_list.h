@@ -130,6 +130,7 @@ private slots:
   void _slot_handle_favorite_button();
   void _slot_handle_note_changed();
   void _slot_current_entry_changed(const QString& iFIdOrCh);
+  void _slot_entry_stats_changed(i32 iNrShown, const EnsembleListDB::SEntryCounts& iCounts);
 
 signals:
   void signal_start_stop_scan(bool oIsScanning);

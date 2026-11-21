@@ -97,6 +97,7 @@ private:
   i32 _get_note_col_idx() const;
   void _hide_columns() const;
   void _set_current_fid_or_ch(const QString& iFIdOrCh);
+  void _emit_entry_stats();
 
 private slots:
   void _slot_selection_changed(const QString& iFIdOrCh);
@@ -105,4 +106,5 @@ private slots:
 signals:
   void signal_selection_changed(const QString& oFId);
   void signal_current_entry_changed(const QString& oFIdOrCh); // the highlighted (current) entry has changed, empty if none
+  void signal_entry_stats_changed(i32 oNrShown, const EnsembleListDB::SEntryCounts& oCounts); // number of shown entries and counts of all entries
 };

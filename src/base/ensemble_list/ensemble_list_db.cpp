@@ -258,6 +258,29 @@ i32 EnsembleListDB::get_nr_unscanned_entries() const
   return (query.exec() && query.next() ? query.value(0).toInt() : -1);
 }
 
+EnsembleListDB::SEntryCounts EnsembleListDB::get_entry_counts() const
+{
+  QSqlQuery query(mDB);
+  query.prepare("SELECT COUNT(*), " +
+                QSL("COALESCE(SUM(%1 = %2), 0), ").arg(sTeScanLevel).arg((int)EScanLevel::SL0_Init) +
+                QSL("COALESCE(SUM(%1 = %2), 0), ").arg(sTeScanLevel).arg((int)EScanLevel::SL1_ScanFailed) +
+                QSL("COALESCE(SUM(%1 >= %2), 0)").arg(sTeScanLevel).arg((int)EScanLevel::SL2_FibData) +
+                " FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode");
+  query.bindValue(":mode", _cur_mode());
+
+  SEntryCounts counts;
+
+  if (_exec(query, "count entries") && query.next())
+  {
+    counts.total      = query.value(0).toInt();
+    counts.notScanned = query.value(1).toInt();
+    counts.noSignal   = query.value(2).toInt();
+    counts.valid      = query.value(3).toInt();
+  }
+
+  return counts;
+}
+
 QAbstractItemModel* EnsembleListDB::create_model()
 {
   auto* const model = new QSqlQueryModel(this);
