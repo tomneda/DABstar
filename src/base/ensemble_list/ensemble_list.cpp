@@ -315,7 +315,7 @@ void EnsembleList::_setup_ui_regarding_scan_mode(bool iScanMode) const
 {
   // iScanMode is also true with a single click on the ensemble list until the scan is finished
   ui->containerFilePath->setEnabled(!iScanMode);
-  ui->containerUserData->setEnabled(!iScanMode && !mUserDataFIdOrCh.isEmpty());
+  ui->containerUserData->setEnabled(!iScanMode && mUserDataKey.is_valid());
   ui->btnResetDataBase->setEnabled(!iScanMode);
   ui->tblEnsembleList->setEnabled(!iScanMode);
 }
@@ -848,7 +848,7 @@ void EnsembleList::_flush_note()
   }
 
   mNoteChanged = false;
-  mpDbHandler->set_note(mUserDataFIdOrCh, ui->ledNote->text()); // store always to the entry the note was edited for
+  mpDbHandler->set_note(mUserDataKey, ui->ledNote->text()); // store always to the entry the note was edited for
 }
 
 void EnsembleList::_slot_handle_note_changed()
@@ -859,7 +859,7 @@ void EnsembleList::_slot_handle_note_changed()
 
 void EnsembleList::_slot_handle_favorite_button()
 {
-  if (mUserDataFIdOrCh.isEmpty())
+  if (!mUserDataKey.is_valid())
   {
     return;
   }
@@ -867,22 +867,22 @@ void EnsembleList::_slot_handle_favorite_button()
   _flush_note();
   mCurFavState = !mCurFavState;
   _set_favorite_button_style();
-  mpDbHandler->set_favorite(mUserDataFIdOrCh, mCurFavState);
+  mpDbHandler->set_favorite(mUserDataKey, mCurFavState);
 }
 
-void EnsembleList::_slot_current_entry_changed(const QString& iFIdOrCh)
+void EnsembleList::_slot_current_entry_changed(const EnsembleListDB::SUserDataKey& iKey)
 {
-  _flush_note(); // store a pending note to the previous entry
+  _flush_note(); // store a pending note to the previous entry (or previous ensemble on this channel)
 
-  mUserDataFIdOrCh = iFIdOrCh;
-  const EnsembleListDB::SUserData userData = (iFIdOrCh.isEmpty() ? EnsembleListDB::SUserData() : mpDbHandler->get_user_data(iFIdOrCh));
+  mUserDataKey = iKey;
+  const EnsembleListDB::SUserData userData = mpDbHandler->get_user_data(iKey); // empty if the key is invalid
 
   ui->ledNote->setText(userData.note); // no QSignalBlocker here, it would suppress the update of the clear button visibility
   ui->ledNote->setCursorPosition(0);
 
   mCurFavState = userData.isFav;
   _set_favorite_button_style();
-  ui->containerUserData->setEnabled(!mIsScanning && !iFIdOrCh.isEmpty());
+  ui->containerUserData->setEnabled(!mIsScanning && iKey.is_valid());
 }
 
 void EnsembleList::_slot_entry_stats_changed(const i32 iNrShown, const EnsembleListDB::SEntryCounts& iCounts)

@@ -86,7 +86,7 @@ private:
   EnsembleListDB::SDataFilter mDataFilter{};
   QString mFIdOrChClickOnList; // FId/channel clicked without known SId, waits for the first SId to replay (not empty if active)
   bool mIsDeviceAvailable = false;
-  QString mUserDataFIdOrCh; // FId/channel of the entry whose favorite state and note are shown (empty if none)
+  EnsembleListDB::SUserDataKey mUserDataKey; // key of the entry whose favorite state and note are shown (invalid if none)
   bool mCurFavState = false;
   bool mNoteChanged = false; // the note was edited but not stored yet
   QTimer mNoteSaveTimer;
@@ -129,7 +129,7 @@ private slots:
   void _slot_handle_table_click(const QModelIndex& index);
   void _slot_handle_favorite_button();
   void _slot_handle_note_changed();
-  void _slot_current_entry_changed(const QString& iFIdOrCh);
+  void _slot_current_entry_changed(const EnsembleListDB::SUserDataKey& iKey);
   void _slot_entry_stats_changed(i32 iNrShown, const EnsembleListDB::SEntryCounts& iCounts);
 
 signals:

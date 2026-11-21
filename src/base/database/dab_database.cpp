@@ -166,8 +166,13 @@ bool DabDatabase::_migrate(const i32 iFromVersion)
     return false;
   }
 
+  if (iFromVersion < 3 && !_migrate_to_schema_v3())
+  {
+    return false;
+  }
+
   // add further steps here, e.g.:
-  // if (iFromVersion < 3 && !_exec("ALTER TABLE ...")) return false;
+  // if (iFromVersion < 4 && !_exec("ALTER TABLE ...")) return false;
 
   return _exec(QSL("PRAGMA user_version = %1").arg(cSchemaVersion));
 }
@@ -234,6 +239,36 @@ bool DabDatabase::_create_schema_v2()
                                 ");";
 
   return _exec(queryUserData);
+}
+
+bool DabDatabase::_migrate_to_schema_v3()
+{
+  // the EId becomes part of the primary key of the user data, SQLite cannot change a primary key -> copy the table
+  const QString tabNew = cTabEnsUserData + QSL("New");
+  const QString modeDevice = QString::number((i32)EMode::Device);
+
+  const QString queryCreate = "CREATE TABLE " + tabNew + " ("
+                              + cColMode    + " INTEGER NOT NULL,"
+                              + cColFIdOrCh + " TEXT NOT NULL,"
+                              + cColEnsId   + " TEXT NOT NULL DEFAULT '',"
+                              + cColIsFav   + " INTEGER NOT NULL DEFAULT 0,"
+                              + cColNote    + " TEXT NOT NULL DEFAULT '',"
+                              "PRIMARY KEY(" + cColMode + "," + cColFIdOrCh + "," + cColEnsId + ")"
+                              ");";
+
+  // in device mode the user data gets the EId of the ensemble currently stored for this channel, if the EId is
+  // not known yet, it is kept empty and the EId is taken over with the next scan of this channel (see EnsembleListDB)
+  const QString queryCopy = "INSERT INTO " + tabNew + " (" + cColMode + "," + cColFIdOrCh + "," + cColEnsId + "," + cColIsFav + "," + cColNote + ") "
+                            "SELECT u." + cColMode + ", u." + cColFIdOrCh + ", "
+                            "CASE WHEN u." + cColMode + " = " + modeDevice + " THEN COALESCE("
+                            "(SELECT e." + cColEnsId + " FROM " + cTabEnsemble + " e WHERE e." + cColMode + " = u." + cColMode +
+                            " AND e." + cColFIdOrCh + " = u." + cColFIdOrCh + "), '') ELSE '' END, "
+                            "u." + cColIsFav + ", u." + cColNote + " FROM " + cTabEnsUserData + " u;";
+
+  return _exec(queryCreate) &&
+         _exec(queryCopy) &&
+         _exec("DROP TABLE " + cTabEnsUserData) &&
+         _exec("ALTER TABLE " + tabNew + " RENAME TO " + cTabEnsUserData);
 }
 
 bool DabDatabase::_exec(const QString& iQuery)

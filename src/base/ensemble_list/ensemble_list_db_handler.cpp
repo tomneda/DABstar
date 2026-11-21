@@ -202,13 +202,20 @@ i32 EnsembleListDbHandler::_get_note_col_idx() const
 
 void EnsembleListDbHandler::_set_current_fid_or_ch(const QString& iFIdOrCh)
 {
-  const bool changed = (mFIdOrChLast != iFIdOrCh);
   mFIdOrChLast = iFIdOrCh;
   mCustomItemDelegate.set_current_fid_or_ch(mFIdOrChLast, _get_fid_or_ch_col_idx());
+  _update_user_data_key();
+}
 
-  if (changed)
+void EnsembleListDbHandler::_update_user_data_key()
+{
+  // the key changes also with the EId of the current entry (e.g. another ensemble received on this channel)
+  const EnsembleListDB::SUserDataKey key = mEnsembleListDb.get_user_data_key(mFIdOrChLast);
+
+  if (key != mUserDataKeyLast)
   {
-    emit signal_current_entry_changed(mFIdOrChLast);
+    mUserDataKeyLast = key; // set before emitting, the receiver may store user data which refills the table view
+    emit signal_current_entry_changed(mUserDataKeyLast);
   }
 }
 
@@ -264,6 +271,7 @@ void EnsembleListDbHandler::_fill_table_view_from_db()
   header->setStretchLastSection(true);
 
   _emit_entry_stats();
+  _update_user_data_key(); // the EId of the current entry may have changed with the new database content
 }
 
 void EnsembleListDbHandler::_emit_entry_stats()
@@ -406,31 +414,31 @@ void EnsembleListDbHandler::set_sorting_to_FId_or_Ch(const bool iRestoreSorting)
   _jump_to_list_entry();
 }
 
-EnsembleListDB::SUserData EnsembleListDbHandler::get_user_data(const QString& iFIdOrCh) const
+EnsembleListDB::SUserData EnsembleListDbHandler::get_user_data(const EnsembleListDB::SUserDataKey& iKey) const
 {
-  return mEnsembleListDb.get_user_data(iFIdOrCh);
+  return mEnsembleListDb.get_user_data(iKey);
 }
 
-void EnsembleListDbHandler::set_favorite(const QString& iFIdOrCh, const bool iIsFav)
+void EnsembleListDbHandler::set_favorite(const EnsembleListDB::SUserDataKey& iKey, const bool iIsFav)
 {
-  if (iFIdOrCh.isEmpty())
+  if (!iKey.is_valid())
   {
     return;
   }
 
-  (void)mEnsembleListDb.set_favorite(iFIdOrCh, iIsFav);
+  (void)mEnsembleListDb.set_favorite(iKey, iIsFav);
   _fill_table_view_from_db();
   _jump_to_list_entry();
 }
 
-void EnsembleListDbHandler::set_note(const QString& iFIdOrCh, const QString& iNote)
+void EnsembleListDbHandler::set_note(const EnsembleListDB::SUserDataKey& iKey, const QString& iNote)
 {
-  if (iFIdOrCh.isEmpty())
+  if (!iKey.is_valid())
   {
     return;
   }
 
-  (void)mEnsembleListDb.set_note(iFIdOrCh, iNote);
+  (void)mEnsembleListDb.set_note(iKey, iNote);
   _fill_table_view_from_db();
   _jump_to_list_entry();
 }

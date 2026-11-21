@@ -32,7 +32,7 @@ static const QString sTeFilePath            = QSL("FilePath");
 static const QString sTeFileName            = QSL("FileName");
 static const QString sTeScanLevel           = QSL("ScanLevel");
 static const QString sTeEnsembleName        = QSL("EnsembleName");
-static const QString sTeEnsembleId          = QSL("EnsembleId");
+static const QString& sTeEnsembleId         = DbNames::cColEnsId;
 static const QString sTeItuCode             = QSL("ItuCode");
 static const QString sTeNumDabDabPlus       = QSL("NumDabDabPlus");
 static const QString sTeDscTyAppTy          = QSL("DscTyAppTy");
@@ -49,12 +49,24 @@ static const QString sTeLastPlayedSId       = QSL("LastPlayedSId");
 static const QString& sTabUserData = DbNames::cTabEnsUserData;
 static const QString& sTuIsFav     = DbNames::cColIsFav;
 static const QString& sTuNote      = DbNames::cColNote;
+static const QString& sTuEnsId     = DbNames::cColEnsId;
 
-// selects the given column of the user data of the current ensemble entry (used as correlated subquery)
+static const QString sModeDevice = QString::number((i32)DabDatabase::EMode::Device);
+
+// selects the given column of the user data of the current ensemble entry (used as correlated subquery),
+// in device mode an entry without EId (not scanned yet) has no user data, in file mode the EId of the user data is empty
 static QString sel_user_data_col(const QString& iCol)
 {
   return "(SELECT u." + iCol + " FROM " + sTabUserData + " u WHERE u." + sTeMode + " = " + sTabEnsList + "." + sTeMode +
-         " AND u." + sTeFIdOrCh + " = " + sTabEnsList + "." + sTeFIdOrCh + ")";
+         " AND u." + sTeFIdOrCh + " = " + sTabEnsList + "." + sTeFIdOrCh +
+         " AND u." + sTuEnsId + " = (CASE WHEN " + sTabEnsList + "." + sTeMode + " = " + sModeDevice +
+         " THEN NULLIF(" + sTabEnsList + "." + sTeEnsembleId + ", '') ELSE '' END))";
+}
+
+// the user data columns are NOT NULL, a null QString would be bound as NULL
+static QString not_null(const QString& iStr)
+{
+  return (iStr.isNull() ? QString("") : iStr);
 }
 
 EnsembleListDB::EnsembleListDB(const DabDatabase& iDabDatabase) :
@@ -193,7 +205,17 @@ bool EnsembleListDB::insert_or_update_entry(const SDbEntryData& iEntryData, cons
 
   queryAdd.bindValue(":mode", _cur_mode());
 
-  return _exec(queryAdd, "insert/update entry");
+  if (!_exec(queryAdd, "insert/update entry"))
+  {
+    return false;
+  }
+
+  if (iDataType == EDbDataType::UpdateSL3MedRunData && mDataMode == EDataMode::Device)
+  {
+    return _take_over_user_data_without_eid(iEntryData.key.fIdOrCh, iEntryData.S2MedRun.ensembleId);
+  }
+
+  return true;
 }
 
 EnsembleListDB::SDbEntryData EnsembleListDB::get_entry(const QString& iFIdOrCh) const
@@ -377,14 +399,50 @@ QString EnsembleListDB::get_full_path(const QString& iFId) const
   return {};
 }
 
-EnsembleListDB::SUserData EnsembleListDB::get_user_data(const QString& iFIdOrCh) const
+EnsembleListDB::SUserDataKey EnsembleListDB::get_user_data_key(const QString& iFIdOrCh) const
 {
+  if (iFIdOrCh.isEmpty())
+  {
+    return {};
+  }
+
+  if (mDataMode != EDataMode::Device)
+  {
+    return { iFIdOrCh, QString("") }; // the FId is unique, no EId needed
+  }
+
   QSqlQuery query(mDB);
-  query.prepare("SELECT " + sTuIsFav + ", " + sTuNote + " FROM " + sTabUserData + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
+  query.prepare("SELECT " + sTeEnsembleId + " FROM " + sTabEnsList + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch");
   query.bindValue(":mode", _cur_mode());
   query.bindValue(":fidorch", iFIdOrCh);
 
+  if (query.exec() && query.next())
+  {
+    if (const QString eId = query.value(0).toString();
+        !eId.isEmpty())
+    {
+      return { iFIdOrCh, eId };
+    }
+  }
+
+  return {}; // no ensemble received on this channel yet, so the user data cannot be assigned
+}
+
+EnsembleListDB::SUserData EnsembleListDB::get_user_data(const SUserDataKey& iKey) const
+{
   SUserData userData;
+
+  if (!iKey.is_valid())
+  {
+    return userData;
+  }
+
+  QSqlQuery query(mDB);
+  query.prepare("SELECT " + sTuIsFav + ", " + sTuNote + " FROM " + sTabUserData +
+                " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch AND " + sTuEnsId + " = :ensid");
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iKey.fIdOrCh);
+  query.bindValue(":ensid", not_null(iKey.eId));
 
   if (query.exec() && query.next())
   {
@@ -395,40 +453,72 @@ EnsembleListDB::SUserData EnsembleListDB::get_user_data(const QString& iFIdOrCh)
   return userData;
 }
 
-bool EnsembleListDB::set_favorite(const QString& iFIdOrCh, const bool iIsFav) const
+bool EnsembleListDB::set_favorite(const SUserDataKey& iKey, const bool iIsFav) const
 {
+  if (!iKey.is_valid())
+  {
+    return false;
+  }
+
   QSqlQuery query(mDB);
-  query.prepare("INSERT INTO " + sTabUserData + " (" + sTeMode + "," + sTeFIdOrCh + "," + sTuIsFav + ") VALUES (:mode, :fidorch, :isfav) "
-                "ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + ") DO UPDATE SET " + sTuIsFav + " = excluded." + sTuIsFav);
+  query.prepare("INSERT INTO " + sTabUserData + " (" + sTeMode + "," + sTeFIdOrCh + "," + sTuEnsId + "," + sTuIsFav + ") VALUES (:mode, :fidorch, :ensid, :isfav) "
+                "ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + "," + sTuEnsId + ") DO UPDATE SET " + sTuIsFav + " = excluded." + sTuIsFav);
   query.bindValue(":mode", _cur_mode());
-  query.bindValue(":fidorch", iFIdOrCh);
+  query.bindValue(":fidorch", iKey.fIdOrCh);
+  query.bindValue(":ensid", not_null(iKey.eId));
   query.bindValue(":isfav", iIsFav ? 1 : 0);
 
-  return _exec(query, "update ensemble favorite") && _delete_empty_user_data(iFIdOrCh);
+  return _exec(query, "update ensemble favorite") && _delete_empty_user_data(iKey);
 }
 
-bool EnsembleListDB::set_note(const QString& iFIdOrCh, const QString& iNote) const
+bool EnsembleListDB::set_note(const SUserDataKey& iKey, const QString& iNote) const
 {
-  QSqlQuery query(mDB);
-  query.prepare("INSERT INTO " + sTabUserData + " (" + sTeMode + "," + sTeFIdOrCh + "," + sTuNote + ") VALUES (:mode, :fidorch, :note) "
-                "ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + ") DO UPDATE SET " + sTuNote + " = excluded." + sTuNote);
-  query.bindValue(":mode", _cur_mode());
-  query.bindValue(":fidorch", iFIdOrCh);
-  query.bindValue(":note", iNote.isNull() ? QString("") : iNote); // NOT NULL column
+  if (!iKey.is_valid())
+  {
+    return false;
+  }
 
-  return _exec(query, "update ensemble note") && _delete_empty_user_data(iFIdOrCh);
+  QSqlQuery query(mDB);
+  query.prepare("INSERT INTO " + sTabUserData + " (" + sTeMode + "," + sTeFIdOrCh + "," + sTuEnsId + "," + sTuNote + ") VALUES (:mode, :fidorch, :ensid, :note) "
+                "ON CONFLICT(" + sTeMode + "," + sTeFIdOrCh + "," + sTuEnsId + ") DO UPDATE SET " + sTuNote + " = excluded." + sTuNote);
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iKey.fIdOrCh);
+  query.bindValue(":ensid", not_null(iKey.eId));
+  query.bindValue(":note", not_null(iNote));
+
+  return _exec(query, "update ensemble note") && _delete_empty_user_data(iKey);
 }
 
-bool EnsembleListDB::_delete_empty_user_data(const QString& iFIdOrCh) const
+bool EnsembleListDB::_delete_empty_user_data(const SUserDataKey& iKey) const
 {
   // do not keep entries without content
   QSqlQuery query(mDB);
-  query.prepare("DELETE FROM " + sTabUserData + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch AND " +
+  query.prepare("DELETE FROM " + sTabUserData + " WHERE " + sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch AND " + sTuEnsId + " = :ensid AND " +
                 sTuIsFav + " = 0 AND " + sTuNote + " = ''");
   query.bindValue(":mode", _cur_mode());
-  query.bindValue(":fidorch", iFIdOrCh);
+  query.bindValue(":fidorch", iKey.fIdOrCh);
+  query.bindValue(":ensid", not_null(iKey.eId));
 
   return _exec(query, "delete empty user data");
+}
+
+bool EnsembleListDB::_take_over_user_data_without_eid(const QString& iCh, const QString& iEId) const
+{
+  // Device mode user data migrated from a schema without EId has an empty EId if the channel was not scanned at that time.
+  // It is assigned to the first ensemble received on this channel. Existing user data of this ensemble is not overwritten.
+  if (iEId.isEmpty())
+  {
+    return true;
+  }
+
+  QSqlQuery query(mDB);
+  query.prepare("UPDATE OR IGNORE " + sTabUserData + " SET " + sTuEnsId + " = :ensid WHERE " +
+                sTeMode + " = :mode AND " + sTeFIdOrCh + " = :fidorch AND " + sTuEnsId + " = ''");
+  query.bindValue(":mode", _cur_mode());
+  query.bindValue(":fidorch", iCh);
+  query.bindValue(":ensid", iEId);
+
+  return _exec(query, "take over user data without EId");
 }
 
 void EnsembleListDB::set_data_filter(const SDataFilter& iDataFilter)

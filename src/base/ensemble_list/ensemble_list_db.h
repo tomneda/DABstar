@@ -115,6 +115,17 @@ public:
     } S3LongRun;
   };
 
+  // key of the user data of an entry: in device mode channel + EId of the received ensemble (so the data does not
+  // appear at another ensemble on the same channel), in file mode FId only (eId is empty)
+  struct SUserDataKey
+  {
+    QString fIdOrCh; // empty if no user data can be assigned (no entry or EId not known yet in device mode)
+    QString eId;
+
+    [[nodiscard]] bool is_valid() const { return !fIdOrCh.isEmpty(); }
+    bool operator==(const SUserDataKey&) const = default;
+  };
+
   // user data of an entry, stored in an own table which is kept with deleting entries
   struct SUserData
   {
@@ -145,9 +156,10 @@ public:
   void set_data_filter(const SDataFilter& iDataFilter);
   QAbstractItemModel* create_model();
   [[nodiscard]] QString get_full_path(const QString& iFId) const;
-  [[nodiscard]] SUserData get_user_data(const QString& iFIdOrCh) const;
-  bool set_favorite(const QString& iFIdOrCh, bool iIsFav) const;
-  bool set_note(const QString& iFIdOrCh, const QString& iNote) const;
+  [[nodiscard]] SUserDataKey get_user_data_key(const QString& iFIdOrCh) const; // invalid key if no user data can be assigned
+  [[nodiscard]] SUserData get_user_data(const SUserDataKey& iKey) const;
+  bool set_favorite(const SUserDataKey& iKey, bool iIsFav) const;
+  bool set_note(const SUserDataKey& iKey, const QString& iNote) const;
 
 private:
   QSqlDatabase mDB;
@@ -156,5 +168,6 @@ private:
 
   [[nodiscard]] i32 _cur_mode() const;
   bool _exec(QSqlQuery& ioQuery, const char* iWhat) const;
-  bool _delete_empty_user_data(const QString& iFIdOrCh) const;
+  bool _delete_empty_user_data(const SUserDataKey& iKey) const;
+  bool _take_over_user_data_without_eid(const QString& iCh, const QString& iEId) const;
 };

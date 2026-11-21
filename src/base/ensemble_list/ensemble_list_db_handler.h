@@ -76,9 +76,9 @@ public:
   void set_data_filter(const EnsembleListDB::SDataFilter& iDataFilter);
   void set_search_text(const QString& iText);
   void set_sorting_to_FId_or_Ch(bool iRestoreSorting);
-  [[nodiscard]] EnsembleListDB::SUserData get_user_data(const QString& iFIdOrCh) const;
-  void set_favorite(const QString& iFIdOrCh, bool iIsFav);
-  void set_note(const QString& iFIdOrCh, const QString& iNote);
+  [[nodiscard]] EnsembleListDB::SUserData get_user_data(const EnsembleListDB::SUserDataKey& iKey) const;
+  void set_favorite(const EnsembleListDB::SUserDataKey& iKey, bool iIsFav);
+  void set_note(const EnsembleListDB::SUserDataKey& iKey, const QString& iNote);
 
 private:
   QTableView* const mpTableView;
@@ -86,6 +86,7 @@ private:
   EnsembleListDB mEnsembleListDb;
   CustomItemDelegate2 mCustomItemDelegate;
   QString mFIdOrChLast;
+  EnsembleListDB::SUserDataKey mUserDataKeyLast; // user data key of mFIdOrChLast
   bool mHideUnusedEntries = false;
   i32 mOldSortCol = -1;
   Qt::SortOrder mOldSortOrder = Qt::AscendingOrder;
@@ -97,6 +98,7 @@ private:
   i32 _get_note_col_idx() const;
   void _hide_columns() const;
   void _set_current_fid_or_ch(const QString& iFIdOrCh);
+  void _update_user_data_key();
   void _emit_entry_stats();
 
 private slots:
@@ -105,6 +107,6 @@ private slots:
 
 signals:
   void signal_selection_changed(const QString& oFId);
-  void signal_current_entry_changed(const QString& oFIdOrCh); // the highlighted (current) entry has changed, empty if none
+  void signal_current_entry_changed(const EnsembleListDB::SUserDataKey& oKey); // the user data key of the highlighted (current) entry has changed (also its EId), invalid if none
   void signal_entry_stats_changed(i32 oNrShown, const EnsembleListDB::SEntryCounts& oCounts); // number of shown entries and counts of all entries
 };

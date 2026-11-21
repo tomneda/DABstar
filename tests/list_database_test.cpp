@@ -139,6 +139,14 @@ std::pair<i32, QString> get_ens_user_data(EnsembleListDB& ioEnsDb, const QString
   return { -1, QString() };
 }
 
+// stores the given EId to the entry like a scan does (SL3), an empty EId is stored like a not decodable ensemble
+bool set_eid(EnsembleListDB& ioEnsDb, const QString& iFIdOrCh, const QString& iEId)
+{
+  EnsembleListDB::SDbEntryData ed = make_entry(iFIdOrCh);
+  ed.S2MedRun.ensembleId = iEId;
+  return ioEnsDb.insert_or_update_entry(ed, EnsembleListDB::EDbDataType::UpdateSL3MedRunData);
+}
+
 bool test_ensemble_user_data(const QString& iDbFileName)
 {
   bool ok = true;
@@ -147,39 +155,80 @@ bool test_ensemble_user_data(const QString& iDbFileName)
 
   EnsembleListDB ensDb(dabDb);
   const QSqlDatabase& db = dabDb.get_db();
+  const QString note = "Good reception on the balcony";
 
   ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
   ok &= check("insert 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
   ok &= check("insert 11D", ensDb.insert_or_update_entry(make_entry("11D"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
   ok &= check("no user data initially", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString()));
 
-  ok &= check("set fav 5C", ensDb.set_favorite("5C", true));
-  ok &= check("set note 5C", ensDb.set_note("5C", "Good reception on the balcony"));
-  ok &= check("model shows fav and note", get_ens_user_data(ensDb, "5C") == std::make_pair(1, QString("Good reception on the balcony")));
-  ok &= check("other entry without user data", get_ens_user_data(ensDb, "11D") == std::make_pair(0, QString()));
-  const EnsembleListDB::SUserData ud = ensDb.get_user_data("5C");
-  ok &= check("get user data", ud.isFav && ud.note == "Good reception on the balcony");
+  // without a received ensemble (EId) no user data can be assigned in device mode
+  ok &= check("no key without EId", !ensDb.get_user_data_key("5C").is_valid());
+  ok &= check("no key for empty channel", !ensDb.get_user_data_key("").is_valid());
+  ok &= check("no key for unknown channel", !ensDb.get_user_data_key("13F").is_valid());
+  ok &= check("set fav without EId fails", !ensDb.set_favorite(ensDb.get_user_data_key("5C"), true));
+  ok &= check("set note without EId fails", !ensDb.set_note(ensDb.get_user_data_key("5C"), note));
+  ok &= check("no user data stored without EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 0);
 
-  // file mode is separated
+  ok &= check("scan 5C", set_eid(ensDb, "5C", "10c1"));
+  ok &= check("scan 11D", set_eid(ensDb, "11D", "10d2"));
+  const EnsembleListDB::SUserDataKey key5C = ensDb.get_user_data_key("5C");
+  ok &= check("key with EId", key5C.is_valid() && key5C.fIdOrCh == "5C" && key5C.eId == "10c1");
+
+  ok &= check("set fav 5C", ensDb.set_favorite(key5C, true));
+  ok &= check("set note 5C", ensDb.set_note(key5C, note));
+  ok &= check("model shows fav and note", get_ens_user_data(ensDb, "5C") == std::make_pair(1, note));
+  ok &= check("other entry without user data", get_ens_user_data(ensDb, "11D") == std::make_pair(0, QString()));
+  const EnsembleListDB::SUserData ud = ensDb.get_user_data(key5C);
+  ok &= check("get user data", ud.isFav && ud.note == note);
+  ok &= check("user data stored with EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData WHERE Mode = 0 AND FIdOrCh = '5C' AND EnsembleId = '10c1'") == 1);
+
+  // file mode is separated and needs no EId
   ensDb.set_data_mode(EnsembleListDB::EDataMode::Files);
   ok &= check("insert file 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
   ok &= check("file mode without user data", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString()));
-  ok &= check("file mode get user data empty", !ensDb.get_user_data("5C").isFav);
+  const EnsembleListDB::SUserDataKey keyFile = ensDb.get_user_data_key("5C");
+  ok &= check("file key without EId", keyFile.is_valid() && keyFile.eId.isEmpty());
+  ok &= check("file mode get user data empty", !ensDb.get_user_data(keyFile).isFav);
+  ok &= check("set file note", ensDb.set_note(keyFile, "file note"));
+  ok &= check("file note shown", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString("file note")));
+  ok &= check("file scan keeps note", set_eid(ensDb, "5C", "10c1") && ensDb.get_user_data_key("5C") == keyFile);
+  ok &= check("file note shown after scan", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString("file note")));
+  ok &= check("clear file note", ensDb.set_note(keyFile, QString()));
   ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+  ok &= check("device data not changed by file mode", get_ens_user_data(ensDb, "5C") == std::make_pair(1, note));
 
-  // the user data survives re-init, deleting and resetting of the ensemble list
+  // the user data survives re-init, deleting and resetting of the ensemble list, it is shown again with the same EId
   ok &= check("re-init 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
-  ok &= check("user data kept after re-init", get_ens_user_data(ensDb, "5C").first == 1);
+  ok &= check("user data hidden after re-init", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString()));
+  ok &= check("user data kept after re-init", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 1);
+  ok &= check("rescan 5C", set_eid(ensDb, "5C", "10c1"));
+  ok &= check("user data shown after rescan", get_ens_user_data(ensDb, "5C") == std::make_pair(1, note));
   ensDb.delete_table();
   ok &= check("user data kept after delete", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 1);
   ok &= check("re-add 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
-  ok &= check("user data shown again", get_ens_user_data(ensDb, "5C") == std::make_pair(1, QString("Good reception on the balcony")));
+  ok &= check("re-add scan 5C", set_eid(ensDb, "5C", "10c1"));
+  ok &= check("user data shown again", get_ens_user_data(ensDb, "5C") == std::make_pair(1, note));
+
+  // another ensemble on the same channel (e.g. after moving) does not show the user data of the previous ensemble
+  ok &= check("other ensemble on 5C", set_eid(ensDb, "5C", "e3a1"));
+  ok &= check("other ensemble without user data", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString()));
+  const EnsembleListDB::SUserDataKey key5COther = ensDb.get_user_data_key("5C");
+  ok &= check("other ensemble key", key5COther.eId == "e3a1" && !(key5COther == key5C));
+  ok &= check("other ensemble get user data empty", ensDb.get_user_data(key5COther).note.isEmpty());
+  ok &= check("set note other ensemble", ensDb.set_note(key5COther, "other note"));
+  ok &= check("other ensemble note shown", get_ens_user_data(ensDb, "5C") == std::make_pair(0, QString("other note")));
+  ok &= check("both user data kept", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 2);
+  ok &= check("back to first ensemble", set_eid(ensDb, "5C", "10c1"));
+  ok &= check("first ensemble user data shown again", get_ens_user_data(ensDb, "5C") == std::make_pair(1, note));
+  ok &= check("other ensemble data still stored", ensDb.get_user_data(key5COther).note == "other note");
 
   // clearing fav and note removes the row
-  ok &= check("clear fav 5C", ensDb.set_favorite("5C", false));
-  ok &= check("row kept with note", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 1);
-  ok &= check("clear note 5C", ensDb.set_note("5C", QString()));
-  ok &= check("empty row removed", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 0);
+  ok &= check("clear fav 5C", ensDb.set_favorite(key5C, false));
+  ok &= check("row kept with note", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 2);
+  ok &= check("clear note 5C", ensDb.set_note(key5C, QString()));
+  ok &= check("clear note other ensemble", ensDb.set_note(key5COther, QString()));
+  ok &= check("empty rows removed", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 0);
 
   return ok;
 }
@@ -345,6 +394,61 @@ bool test_migration_v1(const QString& iDbFileName)
   return ok;
 }
 
+bool test_migration_v2(const QString& iDbFileName)
+{
+  bool ok = true;
+
+  // create a database and reduce the user data table to schema version 2 (without EId)
+  {
+    DabDatabase dabDb(iDbFileName);
+    ok &= check("open for migration v2", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+    EnsembleListDB ensDb(dabDb);
+    ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+    ok &= check("v2 insert 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+    ok &= check("v2 insert 11D", ensDb.insert_or_update_entry(make_entry("11D"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+    ok &= check("v2 scan 5C", set_eid(ensDb, "5C", "10c1"));
+    ensDb.set_data_mode(EnsembleListDB::EDataMode::Files);
+    ok &= check("v2 insert file", ensDb.insert_or_update_entry(make_entry("a1b2c3d4"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+    ok &= check("v2 scan file", set_eid(ensDb, "a1b2c3d4", "10c1"));
+
+    QSqlQuery query(dabDb.get_db());
+    ok &= check("drop user data table v3", query.exec("DROP TABLE EnsembleUserData"));
+    ok &= check("create user data table v2", query.exec("CREATE TABLE EnsembleUserData (Mode INTEGER NOT NULL, FIdOrCh TEXT NOT NULL, "
+                                                        "IsFav INTEGER NOT NULL DEFAULT 0, Note TEXT NOT NULL DEFAULT '', PRIMARY KEY(Mode, FIdOrCh))"));
+    ok &= check("insert v2 user data", query.exec("INSERT INTO EnsembleUserData (Mode, FIdOrCh, IsFav, Note) VALUES "
+                                                  "(0, '5C', 1, 'scanned'), (0, '11D', 0, 'not scanned'), (0, '13F', 1, ''), (1, 'a1b2c3d4', 1, 'file')"));
+    ok &= check("set version 2", query.exec("PRAGMA user_version = 2"));
+  }
+
+  {
+    DabDatabase dabDb(iDbFileName);
+    ok &= check("open v2 database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+    const QSqlDatabase& db = dabDb.get_db();
+    ok &= check("v2 all rows migrated", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData") == 4);
+    ok &= check("v2 scanned channel gets EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData WHERE Mode = 0 AND FIdOrCh = '5C' AND EnsembleId = '10c1'") == 1);
+    ok &= check("v2 unscanned channel without EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData WHERE Mode = 0 AND FIdOrCh = '11D' AND EnsembleId = ''") == 1);
+    ok &= check("v2 unknown channel without EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData WHERE Mode = 0 AND FIdOrCh = '13F' AND EnsembleId = ''") == 1);
+    ok &= check("v2 file without EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData WHERE Mode = 1 AND EnsembleId = ''") == 1);
+
+    EnsembleListDB ensDb(dabDb);
+    ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+    ok &= check("v2 scanned shown", get_ens_user_data(ensDb, "5C") == std::make_pair(1, QString("scanned")));
+    ok &= check("v2 unscanned hidden", get_ens_user_data(ensDb, "11D") == std::make_pair(0, QString()));
+
+    // the first scan of the channel takes over the user data without EId
+    ok &= check("v2 scan 11D", set_eid(ensDb, "11D", "10d2"));
+    ok &= check("v2 unscanned taken over", get_ens_user_data(ensDb, "11D") == std::make_pair(0, QString("not scanned")));
+    ok &= check("v2 taken over with EId", count_rows(db, "SELECT COUNT(*) FROM EnsembleUserData WHERE FIdOrCh = '11D' AND EnsembleId = '10d2'") == 1);
+    ok &= check("v2 other ensemble no take over", set_eid(ensDb, "11D", "e3a1") && get_ens_user_data(ensDb, "11D") == std::make_pair(0, QString()));
+
+    ensDb.set_data_mode(EnsembleListDB::EDataMode::Files);
+    ok &= check("v2 file shown", get_ens_user_data(ensDb, "a1b2c3d4") == std::make_pair(1, QString("file")));
+  }
+  ok &= check("v2 migrated schema version", exec_raw(iDbFileName, "PRAGMA user_version").toInt() == DabDatabase::cSchemaVersion);
+
+  return ok;
+}
+
 bool test_delete_db_file(const QString& iDbFileName)
 {
   bool ok = true;
@@ -361,7 +465,8 @@ bool test_delete_db_file(const QString& iDbFileName)
       ok &= check("delete-file insert 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
       ok &= check("delete-file add service 5C", srvDb.add_entry("5C", "Radio A", 0x1101));
       srvDb.set_favorite("5C", 0x1101, true);
-      ok &= check("delete-file set note 5C", ensDb.set_note("5C", "note"));
+      ok &= check("delete-file scan 5C", set_eid(ensDb, "5C", "10c1"));
+      ok &= check("delete-file set note 5C", ensDb.set_note(ensDb.get_user_data_key("5C"), "note"));
     }
 
     ok &= check("database file exists", QFile::exists(iDbFileName));
@@ -398,6 +503,7 @@ int main(int argc, char** argv)
   ok &= test_ensemble_user_data(tempDir.filePath("userdata.db"));
   ok &= test_ensemble_entry_counts(tempDir.filePath("entrycounts.db"));
   ok &= test_migration_v1(tempDir.filePath("migration.db"));
+  ok &= test_migration_v2(tempDir.filePath("migration_v2.db"));
   ok &= test_delete_db_file(tempDir.filePath("deletefile.db"));
 
   if (!ok)
