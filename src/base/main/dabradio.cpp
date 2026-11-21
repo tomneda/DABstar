@@ -1637,5 +1637,6 @@ void DabRadio::_initialize_signal_slot_connections()
   assert(mpServiceListHandler != nullptr);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_selection_changed, this, &DabRadio::_slot_service_changed);
   connect(mpServiceListHandler.get(), &ServiceListHandler::signal_favorite_status, this, &DabRadio::_slot_favorite_changed);
+  connect(ui->ledSearchInServiceList, &QLineEdit::textChanged, mpServiceListHandler.get(), &ServiceListHandler::set_search_text);
 }
 

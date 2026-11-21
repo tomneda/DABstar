@@ -18,6 +18,7 @@
 #include <QTableView>
 #include <QPainter>
 #include <QHeaderView>
+#include <QTimer>
 #include <QLoggingCategory>
 
 // Q_LOGGING_CATEGORY(sLogServiceListHandler, "ServiceListHandler", QtDebugMsg)
@@ -121,6 +122,10 @@ ServiceListHandler::ServiceListHandler(const DabDatabase& iDabDatabase, QTableVi
   mpTableView->setFocusPolicy(Qt::NoFocus);
 
   mServiceDB.set_data_mode(ServiceDB::EDataMode::FilePlayer);
+
+  // only the service column should be considered by the search text
+  mProxyModel.set_ignored_columns({ ServiceDB::CI_Fav, ServiceDB::CI_Channel, ServiceDB::CI_SId });
+  mpTableView->setModel(&mProxyModel);
 
   if (const auto sortColIdx = static_cast<ServiceDB::EColIdx>(Settings::ServiceList::varSortCol.read().toUInt());
       sortColIdx < ServiceDB::CI_MAX)
@@ -296,13 +301,13 @@ void ServiceListHandler::reload_from_db()
 
 void ServiceListHandler::_fill_table_view_from_db()
 {
-  QAbstractItemModel* const oldModel = mpTableView->model();
+  QAbstractItemModel* const oldModel = mProxyModel.sourceModel();
 
-  mpTableView->setModel(mServiceDB.create_model((mShowOnlyCurrentFIdOrCh ? mChannelLast : QString())));
+  mProxyModel.setSourceModel(mServiceDB.create_model((mShowOnlyCurrentFIdOrCh ? mChannelLast : QString())));
 
   if (oldModel != nullptr)
   {
-    oldModel->deleteLater(); // setModel() does not take the ownership, so delete old pointer here
+    oldModel->deleteLater(); // setSourceModel() does not take the ownership, so delete old pointer here
   }
   
   if constexpr (!cShowSIdInServiceList)
@@ -322,6 +327,18 @@ void ServiceListHandler::jump_entries(i32 iSteps)
   _jump_to_list_entry_and_emit_fav_status(iSteps, true);
 }
 
+void ServiceListHandler::set_search_text(const QString& iText)
+{
+  mProxyModel.set_search_text(iText);
+  _jump_to_list_entry_and_emit_fav_status();
+
+  if (mProxyModel.get_search_text().isEmpty())
+  {
+    // the view updates its layout of the again shown rows delayed, so center the current service afterwards (like the target service button)
+    QTimer::singleShot(0, this, [this]() { jump_entries(0); });
+  }
+}
+
 ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(const QString& iChannel) const
 {
   TSIdList sl;
@@ -331,7 +348,7 @@ ServiceListHandler::TSIdList ServiceListHandler::get_list_of_SId_in_channel(cons
     return sl;
   }
 
-  const QAbstractItemModel* const pModel = mpTableView->model();
+  const QAbstractItemModel* const pModel = mProxyModel.sourceModel(); // consider also the entries hidden by the search text
   assert(pModel != nullptr);
 
   for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
@@ -381,26 +398,29 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
   }
   else
   {
-    for (i32 rowIdx = 0; rowIdx < pModel->rowCount(); ++rowIdx)
-    {
-      QModelIndex modIdxChannel = pModel->index(rowIdx, ServiceDB::CI_Channel);
-      QModelIndex modIdxServiceId = pModel->index(rowIdx, ServiceDB::CI_SId);
+    rowIdxFound = _find_current_service_row(pModel);
+    const i32 maxRows = pModel->rowCount();
 
-      if (pModel->data(modIdxServiceId).toUInt() == mServiceIdLast &&
-          pModel->data(modIdxChannel).toString() == mChannelLast)
+    if (rowIdxFound >= 0)
+    {
+      rowIdxFound += iSkipOffset;
+      while (rowIdxFound < 0)
       {
-        rowIdxFound = rowIdx;
-        break;
+        rowIdxFound += maxRows;
       }
+      while (rowIdxFound >= maxRows)
+      {
+        rowIdxFound -= maxRows;
+      }
+    }
+    else if (iSkipOffset != 0 && maxRows > 0)
+    {
+      // the current service is hidden by the search text, so step into the shown entries (first or last one)
+      rowIdxFound = (iSkipOffset > 0 ? 0 : maxRows - 1);
     }
 
     if (rowIdxFound >= 0)
     {
-      const i32 maxRows = pModel->rowCount();
-      rowIdxFound += iSkipOffset;
-      while (rowIdxFound < 0) rowIdxFound += maxRows;
-      while (rowIdxFound >= maxRows) rowIdxFound -= maxRows;
-
       if (iSkipOffset != 0) // only trigger new status to the radio frontend if it was changed by a skip
       {
         mChannelLast = pModel->data(pModel->index(rowIdxFound, ServiceDB::CI_Channel)).toString();
@@ -418,7 +438,38 @@ void ServiceListHandler::_jump_to_list_entry_and_emit_fav_status(const i32 iSkip
 
       emit signal_favorite_status(isFav);
     }
+    else
+    {
+      // the current service may be hidden by the search text, so take the favorite state from the unfiltered list
+      const QAbstractItemModel* const pSrcModel = mProxyModel.sourceModel();
+
+      if (const i32 srcRowIdx = _find_current_service_row(pSrcModel);
+          srcRowIdx >= 0)
+      {
+        emit signal_favorite_status(pSrcModel->data(pSrcModel->index(srcRowIdx, ServiceDB::CI_Fav)).toBool());
+      }
+      mpTableView->update();
+    }
   }
+}
+
+i32 ServiceListHandler::_find_current_service_row(const QAbstractItemModel* const ipModel) const
+{
+  if (ipModel == nullptr)
+  {
+    return -1;
+  }
+
+  for (i32 rowIdx = 0; rowIdx < ipModel->rowCount(); ++rowIdx)
+  {
+    if (ipModel->data(ipModel->index(rowIdx, ServiceDB::CI_SId)).toUInt() == mServiceIdLast &&
+        ipModel->data(ipModel->index(rowIdx, ServiceDB::CI_Channel)).toString() == mChannelLast)
+    {
+      return rowIdx;
+    }
+  }
+
+  return -1;
 }
 
 void ServiceListHandler::_slot_selection_changed_with_fav(const QString& iChannel, const QString& iServiceLabel, const u32 iSId, const bool iIsFav)

@@ -14,6 +14,7 @@
 
 #include "glob_data_types.h"
 #include "service_db.h"
+#include "ensemble_list/ensemble_list_filter_proxy.h"
 #include <QObject>
 #include <QStyledItemDelegate>
 
@@ -71,11 +72,13 @@ public:
   void set_favorite_state(const bool iIsFavorite);
   void reload_from_db(); // e.g. after a scan or after deleting ensemble list entries (their services are deleted, too)
   void jump_entries(i32 iSteps); // typ -1/+1, with wrap around
+  void set_search_text(const QString& iText); // shows only services containing the text in the service name or channel
   TSIdList get_list_of_SId_in_channel(const QString& iChannel) const;
 
 private:
   QTableView* const mpTableView;
   ServiceDB mServiceDB;
+  EnsembleListFilterProxy mProxyModel; // used here only for the search text filter, the sorting is done by the database query
   CustomItemDelegate mCustomItemDelegate;
   QString mChannelLast;
   u32 mServiceIdLast = 0;
@@ -83,6 +86,7 @@ private:
 
   void _fill_table_view_from_db();
   void _jump_to_list_entry_and_emit_fav_status(const i32 iSkipOffset = 0, const bool iCenterContent = false);
+  [[nodiscard]] i32 _find_current_service_row(const QAbstractItemModel* ipModel) const; // returns -1 if not found
   void _sort_and_update_service_list(i32 iIndex, ServiceDB::ESortDir iSortDir);
 
 private slots:

@@ -152,17 +152,23 @@
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer_6">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
+          <widget class="QLineEdit" name="ledSearchInServiceList">
+           <property name="minimumSize">
             <size>
-             <width>15</width>
+             <width>80</width>
              <height>0</height>
             </size>
            </property>
-          </spacer>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Search in service list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows only services containing the entered text in the service name (case-insensitive).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="clearButtonEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="placeholderText">
+            <string>Search...</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="btnPrevService">

@@ -1479,6 +1479,7 @@ void DabRadio::_enable_ui_elements_for_safety(const bool iEnable) const
   ui->btnToggleFavorite->setEnabled(iEnable);
   ui->btnPrevService->setEnabled(iEnable);
   ui->btnNextService->setEnabled(iEnable);
+  ui->ledSearchInServiceList->setEnabled(iEnable);
   _enable_dab_processor_dependent_buttons();
 }
 

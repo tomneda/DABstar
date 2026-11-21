@@ -101,6 +101,33 @@ int main(int argc, char** argv)
   const i32 srcRow = proxy.mapToSource(proxy.index(0, 0)).row();
   ok &= check("vertical header unchanged", proxy.headerData(0, Qt::Vertical) == model.headerData(srcRow, Qt::Vertical));
 
+  // usage in the service list: columns Fav, Service, Ch, SId; the sorting is done by the database, the proxy only filters
+  QStandardItemModel serviceModel;
+  serviceModel.appendRow({ new QStandardItem("1"), new QStandardItem("Bayern 3"), new QStandardItem("11D"), new QStandardItem("4011") });
+  serviceModel.appendRow({ new QStandardItem("0"), new QStandardItem("Ö1"), new QStandardItem("5C"), new QStandardItem("6201") });
+  serviceModel.appendRow({ new QStandardItem("0"), new QStandardItem("Antenne Bayern"), new QStandardItem("12A"), new QStandardItem("D210") });
+  serviceModel.setHorizontalHeaderLabels({ "Fav↓", "Service", "Ch", "SId" });
+
+  EnsembleListFilterProxy serviceProxy;
+  serviceProxy.setSourceModel(&serviceModel);
+  serviceProxy.set_ignored_columns({ 0, 2, 3 }); // the favorite, channel and SId columns
+  auto service = [&serviceProxy](const i32 iRow) { return serviceProxy.data(serviceProxy.index(iRow, 1)).toString(); };
+
+  serviceProxy.set_search_text("bayern");
+  ok &= check("service: source order is kept", serviceProxy.rowCount() == 2 && service(0) == "Bayern 3" && service(1) == "Antenne Bayern");
+
+  serviceProxy.set_search_text("ö");
+  ok &= check("service: case-insensitive umlaut match", serviceProxy.rowCount() == 1 && service(0) == "Ö1");
+
+  serviceProxy.set_search_text("5c");
+  ok &= check("service: channel column is not searched", serviceProxy.rowCount() == 0);
+
+  serviceProxy.set_search_text("0");
+  ok &= check("service: favorite, channel and SId columns are not searched", serviceProxy.rowCount() == 0);
+
+  serviceProxy.set_search_text("");
+  ok &= check("service: header without sort arrow change", serviceProxy.headerData(0, Qt::Horizontal).toString() == "Fav↓");
+
   if (!ok)
   {
     return 1;
