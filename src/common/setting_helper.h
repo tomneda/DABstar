@@ -96,6 +96,15 @@ private:
 // removes all entries from the setting storage (so the default values are used afterwards), only the entries with the keys in iKeepKeys are retained
 void reset_to_defaults(const std::vector<QString>& iKeepKeys);
 
+// returns true if the key stores a window position, a window size or a splitter state
+[[nodiscard]] bool is_window_geometry_key(const QString& iKey);
+
+// returns all keys of the setting storage which store a window position, a window size or a splitter state
+[[nodiscard]] std::vector<QString> get_window_geometry_keys();
+
+// removes the given entries from the setting storage (so the default values are used afterwards)
+void remove_keys(const std::vector<QString>& iKeys);
+
 // here all the declarations of the ini file objects are done via macro filters
 #define FILTER_DECLARATIONS
 #include "setting_helper.cnf.h"

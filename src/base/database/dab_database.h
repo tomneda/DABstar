@@ -71,6 +71,9 @@ public:
   // opens the database and creates or migrates the tables, only a corrupted database file is deleted and created anew
   EOpenResult open_db();
 
+  // closes the database and deletes the database file (with its journal files), it is created anew with the next open_db()
+  bool delete_db_file();
+
   [[nodiscard]] const QSqlDatabase& get_db() const { return mDB; }
   [[nodiscard]] QString get_last_error() const { return mLastError; }
 
@@ -96,5 +99,5 @@ private:
   bool _create_schema_v2();
   bool _exec(const QString& iQuery);
   bool _exec(QSqlQuery& ioQuery, const QString& iQueryStr);
-  void _delete_db_file();
+  bool _delete_db_file();
 };

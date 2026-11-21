@@ -344,6 +344,41 @@ bool test_migration_v1(const QString& iDbFileName)
 
   return ok;
 }
+
+bool test_delete_db_file(const QString& iDbFileName)
+{
+  bool ok = true;
+
+  {
+    DabDatabase dabDb(iDbFileName);
+    ok &= check("open delete-file database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+
+    {
+      EnsembleListDB ensDb(dabDb);
+      ServiceDB srvDb(dabDb);
+      ensDb.set_data_mode(EnsembleListDB::EDataMode::Device);
+      srvDb.set_data_mode(ServiceDB::EDataMode::DevicePlayer);
+      ok &= check("delete-file insert 5C", ensDb.insert_or_update_entry(make_entry("5C"), EnsembleListDB::EDbDataType::InsertKeyAndS0WsData));
+      ok &= check("delete-file add service 5C", srvDb.add_entry("5C", "Radio A", 0x1101));
+      srvDb.set_favorite("5C", 0x1101, true);
+      ok &= check("delete-file set note 5C", ensDb.set_note("5C", "note"));
+    }
+
+    ok &= check("database file exists", QFile::exists(iDbFileName));
+    ok &= check("delete database file", dabDb.delete_db_file());
+    ok &= check("database file deleted", !QFile::exists(iDbFileName));
+  }
+
+  // the next start creates an empty database anew
+  DabDatabase dabDb(iDbFileName);
+  ok &= check("reopen deleted database", dabDb.open_db() == DabDatabase::EOpenResult::Ok);
+  ok &= check("no ensembles after delete", count_rows(dabDb.get_db(), "SELECT COUNT(*) FROM Ensemble") == 0);
+  ok &= check("no favorites after delete", count_rows(dabDb.get_db(), "SELECT COUNT(*) FROM Favorite") == 0);
+  ok &= check("no user data after delete", count_rows(dabDb.get_db(), "SELECT COUNT(*) FROM EnsembleUserData") == 0);
+  ok &= check("schema version after delete", count_rows(dabDb.get_db(), "PRAGMA user_version") == DabDatabase::cSchemaVersion);
+
+  return ok;
+}
 } // namespace
 
 int main(int argc, char** argv)
@@ -363,6 +398,7 @@ int main(int argc, char** argv)
   ok &= test_ensemble_user_data(tempDir.filePath("userdata.db"));
   ok &= test_ensemble_entry_counts(tempDir.filePath("entrycounts.db"));
   ok &= test_migration_v1(tempDir.filePath("migration.db"));
+  ok &= test_delete_db_file(tempDir.filePath("deletefile.db"));
 
   if (!ok)
   {

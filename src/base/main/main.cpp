@@ -208,22 +208,62 @@ i32 main(i32 argc, char** argv)
   radioInterface->show();
 
   const i32 exitCode = QApplication::exec();
+  const SSetToDefaultsOptions setToDefaultsOptions = radioInterface->get_set_to_defaults_options();
 
   radioInterface.reset(); // all components have written their last settings after that
 
   if (exitCode == DabRadio::cExitCodeSetToDefaults)
   {
-    // keep the home coordinates and the (calibrated) peak level delay,
-    // the TII database and the list database (ensembles, services, favorites) are separate files and are not touched
-    Settings::reset_to_defaults({ Settings::Config::varLatitude.get_key(), Settings::Config::varLongitude.get_key(), Settings::Config::sbPeakLevelDelay.get_key() });
+    const std::vector<QString> homeLocationKeys = { Settings::Config::varLatitude.get_key(), Settings::Config::varLongitude.get_key() };
+    const std::vector<QString> windowGeometryKeys = Settings::get_window_geometry_keys();
 
-    // the FFTW wisdom is not exported but deleted, so it is generated anew
-    if (QFile::exists(fftwWisdomFileName) && !QFile::remove(fftwWisdomFileName))
+    if (setToDefaultsOptions.resetSettings)
     {
-      qWarning() << "Could not delete FFTW wisdom file:" << fftwWisdomFileName;
+      // keep the (calibrated) peak level delay and, if not selected for reset, the home coordinates and the window geometries,
+      // the TII database is a separate file and is not touched
+      std::vector<QString> keepKeys = { Settings::Config::sbPeakLevelDelay.get_key() };
+      if (!setToDefaultsOptions.resetHomeLocation)
+      {
+        keepKeys.insert(keepKeys.end(), homeLocationKeys.begin(), homeLocationKeys.end());
+      }
+      if (!setToDefaultsOptions.resetWindowGeometry)
+      {
+        keepKeys.insert(keepKeys.end(), windowGeometryKeys.begin(), windowGeometryKeys.end());
+      }
+      Settings::reset_to_defaults(keepKeys);
+    }
+    else
+    {
+      if (setToDefaultsOptions.resetHomeLocation)
+      {
+        Settings::remove_keys(homeLocationKeys);
+      }
+      if (setToDefaultsOptions.resetWindowGeometry)
+      {
+        Settings::remove_keys(windowGeometryKeys);
+      }
     }
 
-    qInfo() << "All settings are set to their defaults, restarting" << PRJ_NAME;
+    if (setToDefaultsOptions.deleteFftwWisdom)
+    {
+      // the FFTW wisdom is not exported but deleted, so it is generated anew
+      if (QFile::exists(fftwWisdomFileName) && !QFile::remove(fftwWisdomFileName))
+      {
+        qWarning() << "Could not delete FFTW wisdom file:" << fftwWisdomFileName;
+      }
+    }
+    else
+    {
+      export_fftw_wisdom(fftwWisdomFileName);
+    }
+
+    // all users of the database are gone with radioInterface, so the file can be deleted, it is created anew with the restart
+    if (setToDefaultsOptions.deleteDatabase && !dabDatabase.delete_db_file())
+    {
+      qWarning() << "Could not delete the database:" << dabDatabase.get_last_error();
+    }
+
+    qInfo() << "Selected settings are set to their defaults, restarting" << PRJ_NAME;
 
     // within an AppImage the application file path points to a temporary mount point, so restart the AppImage itself
     const QString appImagePath = qEnvironmentVariable("APPIMAGE");

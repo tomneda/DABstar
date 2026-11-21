@@ -48,7 +48,7 @@ DabDatabase::EOpenResult DabDatabase::open_db()
   {
     // only a really corrupted database is deleted, the content (e.g. the favorites) would be lost otherwise
     qCritical() << "Error: Database" << mDbFileName << "is corrupted:" << mLastError << "-> delete database and create it anew";
-    _delete_db_file();
+    (void)_delete_db_file();
     result = _open_and_migrate();
   }
 
@@ -65,6 +65,11 @@ DabDatabase::EOpenResult DabDatabase::open_db()
     mDB.close();
     return EOpenResult::Failed;
   }
+}
+
+bool DabDatabase::delete_db_file()
+{
+  return _delete_db_file();
 }
 
 DabDatabase::EResult DabDatabase::_open_and_migrate()
@@ -252,17 +257,20 @@ bool DabDatabase::_exec(QSqlQuery& ioQuery, const QString& iQueryStr)
   return true;
 }
 
-void DabDatabase::_delete_db_file()
+bool DabDatabase::_delete_db_file()
 {
   mDB.close();
 
-  // also delete the journal files, they belong to the corrupted database
+  // also delete the journal files, they belong to the database
+  bool ok = true;
   for (const QString& suffix : { QString(), QSL("-journal"), QSL("-wal"), QSL("-shm") })
   {
     if (const QString fileName = mDbFileName + suffix;
-        QFile::exists(fileName))
+        QFile::exists(fileName) && !QFile::remove(fileName))
     {
-      QFile::remove(fileName);
+      mLastError = QSL("Could not delete file ") + fileName;
+      ok = false;
     }
   }
+  return ok;
 }

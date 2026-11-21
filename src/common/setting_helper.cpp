@@ -274,6 +274,51 @@ void reset_to_defaults(const std::vector<QString>& iKeepKeys)
   settings.sync();
 }
 
+bool is_window_geometry_key(const QString& iKey)
+{
+  const QString name = iKey.section('/', -1); // the key name without the category
+
+  // PosAndSize entries ("posAndSize-x", "posAndSizeChMode-w", ...) and older device handler entries ("position-x", "position-y")
+  static const QStringList geometrySuffixes = { QSL("-x"), QSL("-y"), QSL("-w"), QSL("-h") };
+  for (const QString& suffix : geometrySuffixes)
+  {
+    if (name.endsWith(suffix) && (name.startsWith(QSL("posAndSize")) || name.startsWith(QSL("position"))))
+    {
+      return true;
+    }
+  }
+
+  return name.startsWith(QSL("varSplitterState"));
+}
+
+std::vector<QString> get_window_geometry_keys()
+{
+  std::vector<QString> keys;
+  const QStringList allKeys = Storage::instance().allKeys();
+
+  for (const QString& key : allKeys)
+  {
+    if (is_window_geometry_key(key))
+    {
+      keys.emplace_back(key);
+    }
+  }
+
+  return keys;
+}
+
+void remove_keys(const std::vector<QString>& iKeys)
+{
+  QSettings& settings = Storage::instance();
+
+  for (const QString& key : iKeys)
+  {
+    settings.remove(key);
+  }
+
+  settings.sync();
+}
+
 PosAndSize::PosAndSize(const QString& iCat)
 : mKey(iCat + "/posAndSize")
 {}

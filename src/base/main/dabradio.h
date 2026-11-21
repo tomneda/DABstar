@@ -99,6 +99,16 @@ struct STheTime
   i32 second; // == -1: no seconds known
 };
 
+// selected actions of the "Set Defaults..." dialog, they are executed in main() after the shutdown before the restart
+struct SSetToDefaultsOptions
+{
+  bool resetWindowGeometry = false;
+  bool resetHomeLocation = false;
+  bool deleteFftwWisdom = true;
+  bool resetSettings = true;
+  bool deleteDatabase = false;
+};
+
 class DabRadio : public QWidget
 {
 Q_OBJECT
@@ -107,6 +117,8 @@ public:
   ~DabRadio() override;
 
   static constexpr i32 cExitCodeSetToDefaults = 0x5E7D; // application exit code to request a reset of all settings and a restart
+
+  [[nodiscard]] const SSetToDefaultsOptions& get_set_to_defaults_options() const { return mSetToDefaultsOptions; }
 
   [[nodiscard]] static bool is_terminating() { return sIsTerminating || (qApp != nullptr && qApp->closingDown()); }
 
@@ -133,6 +145,9 @@ private:
   static constexpr i32 cEpgActivityMs        = 300;  // shown time of the data receiving indicator on the EPG button
 
   inline static bool sIsTerminating = false;
+
+  SSetToDefaultsOptions mSetToDefaultsOptions; // selected in the "Set Defaults..." dialog
+  const QString mDbFileName; // only for information in the "Set Defaults..." dialog
 
   template<typename T>
   struct StatusInfoElem

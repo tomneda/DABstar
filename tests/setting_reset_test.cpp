@@ -56,6 +56,40 @@ int main(int argc, char** argv)
   ok &= check("file contains only kept entries", fileSettings.allKeys().size() == 3);
   ok &= check("file latitude kept", fileSettings.value(Settings::Config::varLatitude.get_key()).toString() == "48.112");
 
+  // window geometry keys
+  ok &= check("pos key is geometry", Settings::is_window_geometry_key("Main/posAndSize-x"));
+  ok &= check("named pos key is geometry", Settings::is_window_geometry_key("EnsembleList/posAndSizeChMode-h"));
+  ok &= check("device position key is geometry", Settings::is_window_geometry_key("hackrfSettings/position-y"));
+  ok &= check("splitter key is geometry", Settings::is_window_geometry_key(Settings::EpgViewer::varSplitterStateH.get_key()));
+  ok &= check("visibility key is no geometry", !Settings::is_window_geometry_key(Settings::SpectrumViewer::varUiVisible.get_key()));
+  ok &= check("latitude key is no geometry", !Settings::is_window_geometry_key(Settings::Config::varLatitude.get_key()));
+  ok &= check("device gain key is no geometry", !Settings::is_window_geometry_key("hackrfSettings/hack_lnaGain"));
+
+  // reset all settings but keep the window geometries
+  settings.clear();
+  settings.setValue("Main/posAndSize-x", 10);
+  settings.setValue("Main/posAndSize-w", 800);
+  settings.setValue("airspySettings/position-x", 100);
+  Settings::MapViewer::varSplitterState.write(QByteArray("state"));
+  Settings::Main::varSdrDevice.write("rtlsdr");
+  Settings::Config::varLatitude.write("48.112");
+
+  const std::vector<QString> geometryKeys = Settings::get_window_geometry_keys();
+  ok &= check("four geometry keys found", geometryKeys.size() == 4);
+
+  Settings::reset_to_defaults(geometryKeys);
+  ok &= check("geometry kept after reset", settings.value("Main/posAndSize-w").toInt() == 800);
+  ok &= check("splitter kept after reset", Settings::MapViewer::varSplitterState.read().toByteArray() == "state");
+  ok &= check("sdr device removed with kept geometry", !settings.contains(Settings::Main::varSdrDevice.get_key()));
+  ok &= check("latitude removed with kept geometry", !settings.contains(Settings::Config::varLatitude.get_key()));
+
+  // remove only the window geometries
+  Settings::Main::varSdrDevice.write("rtlsdr");
+  Settings::remove_keys(Settings::get_window_geometry_keys());
+  ok &= check("no geometry keys left", Settings::get_window_geometry_keys().empty());
+  ok &= check("other key kept on geometry removal", settings.value(Settings::Main::varSdrDevice.get_key()).toString() == "rtlsdr");
+  ok &= check("only other key left", settings.allKeys().size() == 1);
+
   if (!ok)
   {
     std::fprintf(stderr, "setting_reset_test FAILED\n");

@@ -53,10 +53,18 @@
 #include "mot_content_types.h"
 #include "window_visibility_watcher.h"
 #include "gui_helpers.h"
+#include "dab_database.h"
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QCheckBox>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <array>
+#include <algorithm>
 
 #if defined(_WIN32)
   #include <windows.h>
@@ -69,6 +77,7 @@ Q_LOGGING_CATEGORY(sLogDabRadio, "DabRadio", QtInfoMsg)
 
 DabRadio::DabRadio(QSettings* const ipSettings, const DabDatabase& iDabDatabase, const i32 iDataPort, QWidget* iParent)
   : QWidget(iParent)
+  , mDbFileName(QDir::toNativeSeparators(iDabDatabase.get_db().databaseName()))
   , ui(new Ui_DabRadio)
   , mpSpectrumBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cf32>::EId::SpectrumBuffer).get())
   , mpIqBuffer(sRingBufferFactoryCmplx.get_ringbuffer(RingBufferFactory<cf32>::EId::IqBuffer).get())
@@ -419,28 +428,97 @@ void DabRadio::_slot_handle_reset_button()
 void DabRadio::_slot_handle_set_to_defaults_button()
 {
   const QFileInfo settingsFileInfo(Settings::Storage::instance().fileName());
+  const SSetToDefaultsOptions defaultOptions;
 
-  QMessageBox msgBox(QMessageBox::Warning, PRJ_NAME,
-    "<p><b>Set all settings to their default values?</b></p>"
-    "<p>This also includes the SDR device settings and the window positions.</p>"
-    "<p>The home coordinates, the peak level delay, the TII database file and the scanned service and ensemble database entries are kept.</p>"
-    "<p>This settings file will be reset (make a backup copy by hand if you may want to restore it):<br>"
-    "<b>" + QDir::toNativeSeparators(settingsFileInfo.absoluteFilePath()).toHtmlEscaped() + "</b></p>"
-    "<p>The file <b>fftwf_wisdom.txt</b> in the same folder will be deleted and generated anew.</p>"
-    "<p>" PRJ_NAME " will restart afterwards.</p>"
-    "<p>Are you really sure?</p>",
-    QMessageBox::No | QMessageBox::Yes, mpConfig.get());
-  msgBox.setTextFormat(Qt::RichText);
-  msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse); // allow copying the file path
-  msgBox.setDefaultButton(QMessageBox::No);
-  const i32 resultButton = msgBox.exec();
+  QDialog dialog(mpConfig.get());
+  dialog.setWindowTitle(PRJ_NAME " - Set Defaults");
 
-  if (resultButton != QMessageBox::Yes)
+  auto* const pLayout = new QVBoxLayout(&dialog);
+
+  auto* const pHeader = new QLabel("<p><b>Select what should be reset:</b></p>", &dialog);
+  pHeader->setTextFormat(Qt::RichText);
+  pLayout->addWidget(pHeader);
+
+  // adds a check box with an indented explanation below it
+  const auto add_check_box = [&dialog, pLayout](const QString& iText, const QString& iHint, const bool iChecked) -> QCheckBox*
+  {
+    auto* const pCheckBox = new QCheckBox(iText, &dialog);
+    pCheckBox->setChecked(iChecked);
+    pLayout->addWidget(pCheckBox);
+
+    auto* const pHint = new QLabel(iHint, &dialog);
+    pHint->setTextFormat(Qt::RichText);
+    pHint->setWordWrap(true);
+    pHint->setTextInteractionFlags(Qt::TextSelectableByMouse); // allow copying the file path
+    pHint->setContentsMargins(24, 0, 0, 8);
+    pLayout->addWidget(pHint);
+    return pCheckBox;
+  };
+
+  QCheckBox* const pCbWindowGeometry = add_check_box("Reset window sizes and positions",
+    "All windows are placed with their default sizes and positions.",
+    defaultOptions.resetWindowGeometry);
+
+  QCheckBox* const pCbHomeLocation = add_check_box("Reset home location position",
+    "The home coordinates (latitude and longitude) are cleared.",
+    defaultOptions.resetHomeLocation);
+
+  QCheckBox* const pCbFftwWisdom = add_check_box("Delete the FFTW wisdom file",
+    "The file <b>fftwf_wisdom.txt</b> is deleted and generated anew, so the next start takes a bit longer.",
+    defaultOptions.deleteFftwWisdom);
+
+  QCheckBox* const pCbSettings = add_check_box("Set default settings (except peak level and home location)",
+    "All settings are set to their default values, this also includes the SDR device settings. "
+    "The peak level delay and the home location are kept. "
+    "The TII database file is not touched.<br>"
+    "This settings file will be reset (make a backup copy by hand if you may want to restore it):<br>"
+    "<b>" + QDir::toNativeSeparators(settingsFileInfo.absoluteFilePath()).toHtmlEscaped() + "</b>",
+    defaultOptions.resetSettings);
+
+  QCheckBox* const pCbDatabase = add_check_box("Delete ensemble/service database (including favorites)",
+    "The database file <b>" + mDbFileName.toHtmlEscaped() + "</b> is deleted and created anew, so all ensemble and service entries, "
+    "the favorites and the notes of the device <b>and</b> the file mode are lost.<br>"
+    "In contrast, <i>Reset database</i> in the Ensemble List only clears the scanned entries of the currently "
+    "used mode (device or file) and keeps the favorites and notes.",
+    defaultOptions.deleteDatabase);
+
+  auto* const pFooter = new QLabel("<p>" PRJ_NAME " will restart afterwards.</p>", &dialog);
+  pFooter->setTextFormat(Qt::RichText);
+  pLayout->addWidget(pFooter);
+
+  auto* const pButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+  QPushButton* const pBtnOk = pButtonBox->button(QDialogButtonBox::Ok);
+  pBtnOk->setText("Reset and restart");
+  pBtnOk->setAutoDefault(false);
+  pButtonBox->button(QDialogButtonBox::Cancel)->setDefault(true);
+  pLayout->addWidget(pButtonBox);
+  connect(pButtonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+  connect(pButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+  // the OK button is only usable if at least one action is selected
+  const std::array<QCheckBox*, 5> checkBoxes = { pCbWindowGeometry, pCbHomeLocation, pCbFftwWisdom, pCbSettings, pCbDatabase };
+  const auto update_ok_button = [pBtnOk, checkBoxes]()
+  {
+    pBtnOk->setEnabled(std::any_of(checkBoxes.begin(), checkBoxes.end(), [](const QCheckBox* const ipCb) { return ipCb->isChecked(); }));
+  };
+  for (QCheckBox* const pCb : checkBoxes)
+  {
+    connect(pCb, &QCheckBox::toggled, &dialog, update_ok_button);
+  }
+  update_ok_button();
+
+  if (dialog.exec() != QDialog::Accepted)
   {
     return;
   }
 
-  // the settings are cleared in main() after all components have written their last settings on shutdown
+  mSetToDefaultsOptions.resetWindowGeometry = pCbWindowGeometry->isChecked();
+  mSetToDefaultsOptions.resetHomeLocation = pCbHomeLocation->isChecked();
+  mSetToDefaultsOptions.deleteFftwWisdom = pCbFftwWisdom->isChecked();
+  mSetToDefaultsOptions.resetSettings = pCbSettings->isChecked();
+  mSetToDefaultsOptions.deleteDatabase = pCbDatabase->isChecked();
+
+  // the selected actions are done in main() after all components have written their last settings on shutdown
   _slot_terminate_process();
   QApplication::exit(cExitCodeSetToDefaults);
 }
