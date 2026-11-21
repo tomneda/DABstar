@@ -20,6 +20,7 @@
 #include "gui_helpers.h"
 #include "window_visibility_watcher.h"
 #include "qt_compat.h"
+#include "openfiledialog.h"
 #include <QDir>
 #include <QDirIterator>
 #include <QCryptographicHash>
@@ -91,6 +92,14 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   Settings::EnsembleList::cbShowELNewEntries.register_widget_and_update_ui_from_setting(ui->cbShowELNewEntries, 2);
   Settings::EnsembleList::cbShowELValidSignals.register_widget_and_update_ui_from_setting(ui->cbShowELValidSignals, 2);
   Settings::EnsembleList::spMinFileSizeMB.register_widget_and_update_ui_from_setting(ui->spMinFileSizeMB, 100);
+  Settings::EnsembleList::spMinFileSizeEtiMB.register_widget_and_update_ui_from_setting(ui->spMinFileSizeEtiMB, 10);
+
+  // the size hint of the spin boxes contains quite some unused space, the minimum size hint fits the text (prefix, max. value, suffix) well
+  for (QSpinBox* const pSpinBox : { ui->spMinFileSizeMB, ui->spMinFileSizeEtiMB })
+  {
+    pSpinBox->ensurePolished();
+    pSpinBox->setFixedWidth(pSpinBox->minimumSizeHint().width());
+  }
 
   _slot_handle_ensemble_list_filter();
   _slot_handle_search_text_changed(ui->ledSearchInList->text());
@@ -298,15 +307,26 @@ void EnsembleList::_setup_ui_regarding_scan_mode(bool iScanMode) const
   ui->tblEnsembleList->setEnabled(!iScanMode);
 }
 
-QString EnsembleList::_add_file_to_file_scan_list(const QString& iFileName, const i64 iMinFileSize) const
+QString EnsembleList::_add_file_to_file_scan_list(const QString& iFileName, const i64 iMinFileSizeSample, const i64 iMinFileSizeEti) const
 {
   ui->cbShowELNewEntries->setCheckState(Qt::CheckState::Checked);
 
   const QFileInfo fileInfo(iFileName);
+  const i64 fileSize = fileInfo.size();
 
-  if (fileInfo.size() < iMinFileSize) // The file size should be at least 4 MB
+  // The file size should be at least 4 MB. ETI files have a much lower data rate than sample files, so they have their own minimum file size.
+  // The file type is only checked if the size is between both limits.
+  bool isTooSmall = (fileSize < std::min(iMinFileSizeSample, iMinFileSizeEti));
+
+  if (!isTooSmall && fileSize < std::max(iMinFileSizeSample, iMinFileSizeEti))
   {
-    _log_to_result_display(ELogType::WARN, "File " + fileInfo.fileName() + " skipped as too small with " + QString::number(fileInfo.size() / (1024.0 * 1024.0), 'f', 3) + " MB");
+    const bool isEti = (OpenFileDialog::get_file_type(iFileName) == OpenFileDialog::EFileType::ETI_NI);
+    isTooSmall = (fileSize < (isEti ? iMinFileSizeEti : iMinFileSizeSample));
+  }
+
+  if (isTooSmall || fileSize < cMinFileSize)
+  {
+    _log_to_result_display(ELogType::WARN, "File " + fileInfo.fileName() + " skipped as too small with " + QString::number(fileSize / (1024.0 * 1024.0), 'f', 3) + " MB");
     return {};
   }
 
@@ -627,8 +647,8 @@ void EnsembleList::_slot_handle_add_files_in_path()
 
   QDirIterator it(startPath, QDir::Files, QDirIterator::Subdirectories);
 
-  i64 minFileSize = ui->spMinFileSizeMB->value() * 1024 * 1024;
-  if (minFileSize < cMinFileSize) minFileSize = cMinFileSize;
+  const i64 minFileSizeSample = std::max((i64)ui->spMinFileSizeMB->value() * 1024 * 1024, cMinFileSize);
+  const i64 minFileSizeEti = std::max((i64)ui->spMinFileSizeEtiMB->value() * 1024 * 1024, cMinFileSize);
   i32 fileCount = 0;
 
   _log_to_result_display(ELogType::INFOACK, QSL("Adding files to list (may take a while) ..."));
@@ -636,7 +656,7 @@ void EnsembleList::_slot_handle_add_files_in_path()
   while (it.hasNext())
   {
     const QString filePath = it.next();
-    (void)_add_file_to_file_scan_list(filePath, minFileSize);
+    (void)_add_file_to_file_scan_list(filePath, minFileSizeSample, minFileSizeEti);
     constexpr i32 cMaxFileCount = 10000; // plausibility check to not throttle the system
     if (fileCount++ > cMaxFileCount)
     {
@@ -656,7 +676,7 @@ void EnsembleList::_slot_handle_add_single_file()
 
   if (!selectedFileName.isEmpty())
   {
-    const QString fid = _add_file_to_file_scan_list(selectedFileName, cMinFileSize);
+    const QString fid = _add_file_to_file_scan_list(selectedFileName, cMinFileSize, cMinFileSize);
 
     // start the new file immediately
     if (!fid.isEmpty())

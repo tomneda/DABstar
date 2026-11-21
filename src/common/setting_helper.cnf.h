@@ -187,6 +187,7 @@ CATEGORY_BEGIN(EnsembleList)
   DEFINE_WIDGET(EnsembleList, cbShowELNewEntries)
   DEFINE_WIDGET(EnsembleList, cbShowELValidSignals)
   DEFINE_WIDGET(EnsembleList, spMinFileSizeMB);
+  DEFINE_WIDGET(EnsembleList, spMinFileSizeEtiMB);
   DEFINE_VARIANT(EnsembleList, varShowSLCurChOnlyChMode, false)
   DEFINE_VARIANT(EnsembleList, varShowSLCurChOnlyFMode, true)
   DEFINE_VARIANT(EnsembleList, varUiVisible, true)

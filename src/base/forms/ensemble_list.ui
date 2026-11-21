@@ -281,7 +281,7 @@
       <item>
        <widget class="QPushButton" name="btnAddFilesInPath">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add the files from the given base folder (left) to the ensemble list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Add all files from the selected base folder to the ensemble list.&lt;/p&gt;&lt;p&gt;Only files of at least 4 MB are accepted. Use the spin box on the right to set a higher minimum file size to exclude files that are too short to be useful.&lt;/p&gt;&lt;p&gt;Files are added with the state &amp;quot;Not scanned&amp;quot; (greenish entries). You can repeat this with a different folder to add more files.&lt;/p&gt;&lt;p&gt;Invalid sample files are permitted; they will eventually be marked as &amp;quot;No signal&amp;quot;. File types are detected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add the files from the given base folder (left) to the ensemble list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Add all files from the selected base folder to the ensemble list.&lt;/p&gt;&lt;p&gt;Only files of at least 4 MB are accepted. Use the spin boxes on the right to set a higher minimum file size for sample data files and for ETI files to exclude files that are too short to be useful.&lt;/p&gt;&lt;p&gt;Files are added with the state &amp;quot;Not scanned&amp;quot; (greenish entries). You can repeat this with a different folder to add more files.&lt;/p&gt;&lt;p&gt;Invalid sample files are permitted; they will eventually be marked as &amp;quot;No signal&amp;quot;. File types are detected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Add files in folder to list</string>
@@ -291,7 +291,13 @@
       <item>
        <widget class="QSpinBox" name="spMinFileSizeMB">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Minimum file size in MB&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files smaller than 4 MB are always ignored.&lt;/p&gt;&lt;p&gt;Increase this value to exclude files with too short a playback duration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Minimum file size in MB for sample data files&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files smaller than 4 MB are always ignored.&lt;/p&gt;&lt;p&gt;Increase this value to exclude files with too short a playback duration.&lt;/p&gt;&lt;p&gt;This value does not apply to ETI files, see the spin box on the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="suffix">
+         <string> MB</string>
+        </property>
+        <property name="prefix">
+         <string>Sample: </string>
         </property>
         <property name="minimum">
          <number>4</number>
@@ -304,6 +310,31 @@
         </property>
         <property name="value">
          <number>100</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spMinFileSizeEtiMB">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Minimum file size in MB for ETI files&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Files smaller than 4 MB are always ignored.&lt;/p&gt;&lt;p&gt;ETI files have a much lower data rate than sample data files (about 15 MB per minute), so they have their own minimum file size.&lt;/p&gt;&lt;p&gt;Increase this value to exclude files with too short a playback duration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="suffix">
+         <string> MB</string>
+        </property>
+        <property name="prefix">
+         <string>ETI: </string>
+        </property>
+        <property name="minimum">
+         <number>4</number>
+        </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+        <property name="stepType">
+         <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
+        </property>
+        <property name="value">
+         <number>10</number>
         </property>
        </widget>
       </item>

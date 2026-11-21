@@ -91,7 +91,7 @@ private:
   void _write_pos_and_size();
   void _setup_ui_regarding_list_mode() const;
   void _setup_ui_regarding_scan_mode(bool iScanMode) const;
-  QString _add_file_to_file_scan_list(const QString& iFileName, i64 iMinFileSize) const;
+  QString _add_file_to_file_scan_list(const QString& iFileName, i64 iMinFileSizeSample, i64 iMinFileSizeEti) const;
   void _signal_fid_or_ch_from_table_index(i32 iRowIdx, u32 iSId = 0);
   void _add_channel_entries_to_db() const;
   QString _get_fid_or_ch_from_table_index(i32 iRowIdx) const;

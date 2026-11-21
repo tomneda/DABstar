@@ -59,7 +59,7 @@ public:
 
   enum class EFileType { UNDEF, UFF_XML, SDR_WAV, RAW_IQ, ETI_NI }; // do not use "RAW" as it seems to be used as macro
   QString open_sample_data_file_dialog_for_reading() const;
-  EFileType get_file_type(const QString& iFileName) const;
+  static EFileType get_file_type(const QString& iFileName);
 
 private:
   QSettings* const mpSettings;

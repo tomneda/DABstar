@@ -234,7 +234,7 @@ QString OpenFileDialog::open_sample_data_file_dialog_for_reading() const
   return fileName;
 }
 
-OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString& iFileName) const
+OpenFileDialog::EFileType OpenFileDialog::get_file_type(const QString& iFileName)
 {
   EFileType fileType = EFileType::UNDEF;
 
