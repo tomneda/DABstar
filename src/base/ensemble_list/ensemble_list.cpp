@@ -86,7 +86,6 @@ EnsembleList::EnsembleList(const DabDatabase& iDabDatabase)
   connect(ui->cbShowELValidSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->cbShowELNoSignals, &QCheckBox::stateChangedSubst, this, &EnsembleList::_slot_handle_ensemble_list_filter, Qt::DirectConnection);
   connect(ui->ledSearchInList, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_search_text_changed);
-  connect(ui->btnClearSearchInList, &QToolButton::clicked, ui->ledSearchInList, &QLineEdit::clear);
   connect(ui->btnToggleFavorite, &QPushButton::clicked, this, &EnsembleList::_slot_handle_favorite_button);
   connect(ui->ledNote, &QLineEdit::textChanged, this, &EnsembleList::_slot_handle_note_changed);
   connect(ui->ledNote, &QLineEdit::editingFinished, this, &EnsembleList::_flush_note);
@@ -735,7 +734,6 @@ void EnsembleList::_slot_handle_ensemble_list_filter(const int /*iState*/)
 void EnsembleList::_slot_handle_search_text_changed(const QString& iText)
 {
   mpDbHandler->set_search_text(iText);
-  ui->btnClearSearchInList->setEnabled(!iText.isEmpty());
 }
 
 void EnsembleList::_slot_handle_show_current_fid_or_ch_only(const int iState)
