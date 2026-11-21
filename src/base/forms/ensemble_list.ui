@@ -89,39 +89,58 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLineEdit" name="ledSearchInList">
-        <property name="minimumSize">
-         <size>
-          <width>120</width>
-          <height>0</height>
-         </size>
+       <layout class="QHBoxLayout" name="layoutSearchInList">
+        <property name="spacing">
+         <number>1</number>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>220</width>
-          <height>16777215</height>
-         </size>
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Search in list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows only entries containing the entered text in any column (case-insensitive).&lt;/p&gt;&lt;p&gt;This search works additionally to the filters on the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <property name="topMargin">
+         <number>0</number>
         </property>
-        <property name="placeholderText">
-         <string>Search...</string>
+        <property name="rightMargin">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btnClearSearchInList">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clear search text&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
-        <property name="text">
-         <string notr="true">✕</string>
-        </property>
-        <property name="autoRaise">
-         <bool>true</bool>
-        </property>
-       </widget>
+        <item>
+         <widget class="QLineEdit" name="ledSearchInList">
+          <property name="minimumSize">
+           <size>
+            <width>120</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>220</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Search in list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Shows only entries containing the entered text in any column (case-insensitive).&lt;/p&gt;&lt;p&gt;This search works additionally to the filters on the right.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="placeholderText">
+           <string>Search...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="btnClearSearchInList">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clear search text&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string notr="true">✕</string>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="Line" name="line_5">
