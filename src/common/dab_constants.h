@@ -153,6 +153,14 @@ struct SXPadUserApp // user application carried in the X-PAD of an audio service
   bool DataGroupsUsed = false; // MSC data groups are used to transport the user application
 };
 
+// user applications whose MSC data groups are collected from the X-PAD and handled like in a packet mode service
+enum class EXPadDataGroupApp : u8
+{
+  Journaline = 0,
+  Spi        = 1  // SPI (EPG) via MOT
+};
+constexpr usize cNumXPadDataGroupApps = 2;
+
 struct SAudioDataAddOns // "slower" addons
 {
   std::optional<i16> language = std::nullopt;

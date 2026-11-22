@@ -35,6 +35,7 @@
 #include "charsets.h"
 #include <cstring>
 #include <cstdint>
+#include <array>
 #include <atomic>
 #include <memory>
 #include <span>
@@ -44,7 +45,7 @@
 
 class DabRadio;
 class MotObject;
-class JournalineDataHandler;
+class VirtualDataHandler;
 
 class PadHandler : public QObject
 {
@@ -57,7 +58,7 @@ public:
   void process_PAD(const u8* iBuffer, i16 iLast, u8 iL1, u8 iL0);
 
 public slots:
-  void slot_set_xpad_journaline_app_type(i16 iXPadAppTy); // -1 disables Journaline in X-PAD
+  void slot_set_xpad_data_group_app_type(EXPadDataGroupApp iApp, i16 iXPadAppTy); // iXPadAppTy = -1 disables the application in the X-PAD
 
 private:
   DabRadio* const mpRadioInterface;
@@ -67,11 +68,11 @@ private:
   void _new_MSC_element(const std::vector<u8>&);
   void _add_MSC_element(const std::vector<u8>&);
   void _build_MSC_segment(const std::span<const u8>& iData);
-  void _handle_xpad_journaline(u8 iAppType, const std::vector<u8>&);
-  void _new_journaline_element(const std::vector<u8>&);
-  void _add_journaline_element(const std::vector<u8>&);
-  void _emit_journaline_data_group_if_complete();
-  void _slot_handle_journaline_data_group(const QByteArray& iDataGroup) const;
+  void _handle_xpad_data_group_app(u8 iAppType, const std::vector<u8>& iData, bool iContinuationOnly);
+  void _new_xpad_data_group_element(EXPadDataGroupApp iApp, const std::vector<u8>& iData);
+  void _add_xpad_data_group_element(EXPadDataGroupApp iApp, const std::vector<u8>& iData);
+  void _emit_xpad_data_group_if_complete(EXPadDataGroupApp iApp);
+  void _slot_handle_xpad_data_group(EXPadDataGroupApp iApp, const QByteArray& iDataGroup) const;
   bool _pad_crc(const u8*, i16);
   void _reset_charset_change();
   void _check_charset_change();
@@ -97,15 +98,20 @@ private:
   bool mIsLastSegment = false;
   bool mMoreXPad = false;
 
-  // Journaline carried in the X-PAD (signalled via FIG 0/13 of the audio service component)
-  std::atomic<i16> mJournalineXPadAppTy{-1}; // X-PAD AppTy for the start of a Journaline data group, continuation is +1
-  std::vector<u8> mJournalineDataGroupBuffer;
-  i32 mJournalineDataGroupLength = 0;
-  std::unique_ptr<JournalineDataHandler> mpJournalineDataHandler; // only accessed in the GUI thread
+  // User applications carried as MSC data groups in the X-PAD (signalled via FIG 0/13 of the audio service component),
+  // the collected data groups are given to the same data handlers as used for packet mode services
+  struct SXPadDataGroupApp
+  {
+    std::atomic<i16> XPadAppTy{-1}; // X-PAD AppTy for the start of a data group, continuation is +1
+    std::vector<u8> dataGroupBuffer; // only accessed in the backend thread
+    i32 dataGroupLength = 0;
+    std::unique_ptr<VirtualDataHandler> pDataHandler; // only accessed in the GUI thread
+  };
+  std::array<SXPadDataGroupApp, cNumXPadDataGroupApps> mXPadDataGroupApps; // index EXPadDataGroupApp
 
 signals:
   void signal_show_label(const QString&);
   void signal_show_mot_handling();  // triggers MOT indicator to "green" for a while
-  void signal_journaline_data_group(const QByteArray&);
+  void signal_xpad_data_group(EXPadDataGroupApp oApp, const QByteArray& oDataGroup);
 };
 
