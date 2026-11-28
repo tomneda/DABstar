@@ -33,6 +33,7 @@
 #include "dab_constants.h"
 #include "frame_processor.h"
 #include "ringbuffer.h"
+#include "mp4processor.h"
 #include <vector>
 #include <memory>
 
@@ -45,8 +46,10 @@ public:
   ~BackendDriver() = default;
 
   void add_to_frame(const std::vector<u8>& outData) const;
+  // DAB+: iterative decoding of superframes with RS errors
+  virtual void setFrameRedecoder(FrameRedecoder *redecoder);
 
 private:
   std::unique_ptr<FrameProcessor> mpFrameProcessor;
+  Mp4Processor *superframeFilter = nullptr;   // decoder, if DAB+
 };
-

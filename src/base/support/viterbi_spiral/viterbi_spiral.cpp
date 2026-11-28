@@ -77,6 +77,26 @@ ViterbiSpiral::~ViterbiSpiral()
   free(decisions);
 }
 
+// Known bit: the new state's lowest bit is the input bit (BFLY writes the
+// states 2i and 2i+1). States with the other bit get the best metric of
+// the allowed states plus a penalty, larger than any difference of the
+// metrics within the constraint length (at most 6 * 1020), so no path
+// through them survives. Not added up, so that several known bits in a row
+// don't overflow the metrics.
+static const COMPUTETYPE knownBitPenalty = 2000;//was 16000
+
+static inline void excludeOtherBit(COMPUTETYPE* X, int bit)
+{
+  COMPUTETYPE best = X[bit];
+  for (int i = bit; i < NUMSTATES; i += 2)
+  {
+    if (X[i] < best)
+      best = X[i];
+  }
+  for (int i = 1 - bit; i < NUMSTATES; i += 2)
+    X[i] = best + knownBitPenalty;
+}
+
 i32 ViterbiSpiral::parity(i32 x)
 {
   /* Fold down to one byte */
@@ -92,7 +112,7 @@ v ^= v >> 4;
 v &= 0xf;
 return (0x6996 >> v) & 1;*/
 
-void ViterbiSpiral::deconvolve(const i16* const input, u8* const output)
+void ViterbiSpiral::deconvolve(const i16* const input, u8* const output, const i8 *known)
 {
   /* Initialize Viterbi decoder for start of new frame */
   for (i32 i = 0; i < NUMSTATES; i++)
@@ -101,6 +121,7 @@ void ViterbiSpiral::deconvolve(const i16* const input, u8* const output)
   metrics1[0] = 0; /* Bias known start state */
 
   u32 nbits = mFrameBits + (K - 1);
+  u32 framebits = mFrameBits;
 
 #if defined(HAVE_VITERBI_AVX2)
   #include "viterbi_16way.h"
@@ -113,7 +134,6 @@ void ViterbiSpiral::deconvolve(const i16* const input, u8* const output)
 
   /* Do Viterbi chainback */
   u32 endstate = 0; /* Terminal encoder state */
-  u32 framebits = mFrameBits;
   decision_t* dec = decisions;
 
   dec += (K - 1); /* Look past tail */

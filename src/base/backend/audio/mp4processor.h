@@ -37,6 +37,7 @@
 #include "firecode_checker.h"
 #include "reed_solomon.h"
 #include "pad_handler.h"
+#include "frame_processor.h"
 #include <QObject>
 #include <span>
 #include <vector>
@@ -45,9 +46,7 @@
 #ifdef  __WITH_FDK_AAC__
 #include "fdk_aac.h"
 #else
-
 #include "faad_decoder.h"
-
 #endif
 
 class DabRadio;
@@ -60,6 +59,7 @@ public:
   ~Mp4Processor() override = default;
 
   void add_to_frame(const std::vector<u8>&) override;
+  void SetFrameRedecoder(FrameRedecoder *redecoder) { this->redecoder = redecoder; }
 
 private:
   DabRadio* const mpRadioInterface;
@@ -68,8 +68,8 @@ private:
   RingBuffer<u8>* const mpFrameBuffer;
   const i16 mRsDims;
   ReedSolomon mRsDecoder;
+  SStreamParms streamParameters;
 
-  i16 mSuperFrameSize;
   i16 mBlockFillIndex = 0;
   i16 mBlocksInBuffer = 0;
   i16 mFrameCount = 0;
@@ -79,29 +79,44 @@ private:
   i16 mAacErrors = 0;
   i16 mAacFrames = 0;
   i16 mSuccessFrames = 0;
-  i32 mSuperFrameSync = 0;
   i32 mGoodFrames = 0;
   i32 mTotalCorrections = 0;
   i32 mSumFrameCount = 0;
   i32 mSumFrameErrors = 0;
   i32 mSumFcErrors = 0;
-  i32 mSumFcCorrections = 0;
   i32 mSumRsErrors = 0;
   i32 mSumCorrections = 0;
   i32 mSumCrcErrors = 0;
   i32 mSum_good_crcs = 0;
+  i32 mSumFcCorrections = 0;
+  i32 mNumAUs = 0;
+
   std::vector<u8> mFrameByteVec;
   std::vector<u8> mOutVec;
   std::array<i16, 10> mAuStartArr;
   FirecodeChecker mFireCode;
+
+  // Iterative decoding: a superframe with uncorrectable RS codewords is
+  // decoded again by the Viterbi decoder, with the bytes of the correct
+  // codewords as known bits
+  FrameRedecoder *redecoder = nullptr;
+  // Logical frames since the last superframe with a correct fire code,
+  // -1 before the first one or when the alignment is lost
+  i32 frames_since_sync = -1;
+  i32 sync_frames = 0;
+  std::vector<bool> codeword_ok;
+  std::vector<u8> known_bytes;
+  void Redecode(i32& total_corr_count, i32& uncorr_errors);
+
 #ifdef  __WITH_FDK_AAC__
   std::unique_ptr<FdkAAC> mpAacDecoder;
 #else
   std::unique_ptr<FaadDecoder> mpAacDecoder;
 #endif
 
-  bool _process_reed_solomon_frame(const u8* ipFrameBytes, i16 iBase);
-  bool _process_super_frame(const u8[], i16);
+  bool _check_reed_solomon_frame(bool aligned);
+  void _process_reed_solomon_frame(const u8* ipFrameBytes, i16 iBase, i32& total_corr_count, i32& uncorr_errors, std::vector<bool> *codeword_ok = nullptr);
+  void _process_super_frame();
   i32 _build_aac_stream(const SStreamParms* iSp, const std::span<const u8>& iAacFrame, std::vector<u8>& oFileBuffer) const;
 
 signals:
@@ -112,5 +127,3 @@ signals:
   void signal_new_aac_frame();
   void signal_show_rs_corrections(i32, i32);
 };
-
-

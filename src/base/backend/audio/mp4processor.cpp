@@ -30,12 +30,12 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  ************************************************************************
- *	may 15 2015. A real improvement on the code
- *	is the addition from Stefan Poeschel to create a
- *	header for the aac that matches, really a big help!!!!
+ *  may 15 2015. A real improvement on the code
+ *  is the addition from Stefan Poeschel to create a
+ *  header for the aac that matches, really a big help!!!!
  *
- *	(2019:)Furthermore, the code in the "build_aacFile" function is
- *	his as well. Chapeau!
+ *  (2019:)Furthermore, the code in the "build_aacFile" function is
+ *  his as well. Chapeau!
  ************************************************************************
  */
 #include "mp4processor.h"
@@ -49,10 +49,15 @@
 
 // #define SHOW_ERROR_STATISTICS
 
+// Iterative decoding: passes of Viterbi and RS decoding per superframe
+static const i32 max_redecode_passes = 3;
+// Superframes without a correct fire code until the alignment is lost
+static const i32 max_superframes_without_sync = 10;
+
 /**
-  *	\class mp4Processor is the main handler for the aac frames
-  *	the class proper processes input and extracts the aac frames
-  *	that are processed by the "faadDecoder" class
+  * \class mp4Processor is the main handler for the aac frames
+  * the class proper processes input and extracts the aac frames
+  * that are processed by the "faadDecoder" class
   */
 Mp4Processor::Mp4Processor(DabRadio* iRI, const i16 iBitRate, RingBuffer<i16>* const iopAudioBuffer, RingBuffer<u8>* const iopFrameBuffer)
   : mpRadioInterface(iRI)
@@ -77,26 +82,27 @@ Mp4Processor::Mp4Processor(DabRadio* iRI, const i16 iBitRate, RingBuffer<i16>* c
   mpAacDecoder = std::make_unique<FaadDecoder>(iRI, iopAudioBuffer);
 #endif
 
-  mSuperFrameSize = 110 * (iBitRate / 8);
   mFrameByteVec.resize(mRsDims * 120);  // input
-  mOutVec.resize(mRsDims * 110);
+  mOutVec.resize(mRsDims * 120);
+  codeword_ok.resize(mRsDims);
 }
 
 /**
-  *	\brief addtoFrame
+  * \brief addtoFrame
   *
-  *	a DAB+ superframe consists of 5 consecutive DAB frames
-  *	we add vector for vector to the superframe. Once we have
-  *	5 lengths of "old" frames, we check.
-  *	Note that the packing in the entry vector is still one bit
-  *	per Byte, nbits is the number of Bits (i.e. containing bytes)
-  *	the function adds nbits bits, packed in bytes, to the frame.
+  * a DAB+ superframe consists of 5 consecutive DAB frames
+  * we add vector for vector to the superframe. Once we have
+  * 5 lengths of "old" frames, we check.
+  * Note that the packing in the entry vector is still one bit
+  * per Byte, nbits is the number of Bits (i.e. containing bytes)
+  * the function adds nbits bits, packed in bytes, to the frame.
   */
 void Mp4Processor::add_to_frame(const std::vector<u8>& iV)
 {
   const i16 numBits = 24 * mBitRate;
   const i16 numBytes = numBits / 8;
-  i32 displayedErrors = mSumCorrections;
+  i32 corrected_errors = 0;
+  i32 uncorr_errors;
 
   // convert input bit-stream in iV to a byte-stream in mFrameByteVec
   for (i16 i = 0; i < numBytes; i++)
@@ -113,81 +119,95 @@ void Mp4Processor::add_to_frame(const std::vector<u8>& iV)
   mBlockFillIndex = (mBlockFillIndex + 1) % 5;
   mSumFrameCount++;
 
+  if(frames_since_sync >= 0)
+    frames_since_sync++;
+
   // we take the last five blocks to look at
-  if (mBlocksInBuffer >= 5)
+  if (mBlocksInBuffer < 5)
+    return;
+
+  // first, we show the "successrate"
+  if (++mFrameCount >= 25)
   {
-    // first, we show the "successrate"
-    if (++mFrameCount >= 25)
-    {
-      mFrameCount = 0;
-      emit signal_show_frame_errors(mFrameErrors);
-      mFrameErrors = 0;
-    }
-    /**
-      *	starting for real: check the fire code
-      *	if the firecode is OK, we handle the frame
-      *	and adjust the buffer here for the next round
-      */
-    if (mSuperFrameSync == 0)
-    {
-      if (mFireCode.check(&mFrameByteVec[mBlockFillIndex * numBytes]))
-      {
-        mSuperFrameSync = 4;
-      }
-      else
-      {
-        mBlocksInBuffer = 4;
-      }
-    }
-    // since we processed a full cycle of 5 blocks, we just start a
-    // new sequence, beginning with block blockFillIndex
-    if (mSuperFrameSync)
-    {
-      mBlocksInBuffer = 0;
-
-      if (_process_super_frame(mFrameByteVec.data(), mBlockFillIndex * numBytes))
-      {
-        mSuperFrameSync = 4;
-
-        if (++mSuccessFrames > 25)
-        {
-          emit signal_show_rs_errors(mRsErrors);
-          mSuccessFrames = 0;
-          mRsErrors = 0;
-        }
-      }
-      else
-      {
-        mSuperFrameSync--;
-        if (mSuperFrameSync == 0)
-        {
-          // we were wrong, virtual shift to left in block sizes
-          mBlocksInBuffer = 4;
-          mFrameErrors++;
-          mSumFrameErrors++;
-        }
-      }
-    }
+    mFrameCount = 0;
+    emit signal_show_frame_errors(mFrameErrors);
+    mFrameErrors = 0;
   }
 
-  if (mSumCorrections > displayedErrors)
+  _process_reed_solomon_frame(mFrameByteVec.data(), mBlockFillIndex * numBytes, corrected_errors, uncorr_errors, &codeword_ok);
+
+  // A superframe starts 5 frames after the last correct one (or a
+  // multiple of 5: a broken one is followed by 4 shifted attempts)
+  const bool aligned = frames_since_sync > 0 && frames_since_sync % 5 == 0;
+  if(aligned && uncorr_errors && redecoder)
+    Redecode(corrected_errors, uncorr_errors);
+
+  if (!_check_reed_solomon_frame(aligned))
+  {
+    mBlocksInBuffer = 4;
+    if(frames_since_sync >= 5 * max_superframes_without_sync)
+    {
+      frames_since_sync = -1;
+      mSumFrameErrors++;
+    }
+    else
+      if (frames_since_sync > 0 && frames_since_sync % 5 == 0)
+      {
+        mSumFcErrors++;
+        mSumCorrections += corrected_errors;
+        mSumRsErrors += uncorr_errors;
+      }
+
+    if(sync_frames == 0)
+    {
+      fprintf(stderr, "SuperframeFilter: Superframe sync started...\n");
+    }
+    sync_frames++;
+    return;
+  }
+
+  if(sync_frames)
+  {
+    fprintf(stderr, "SuperframeFilter: Superframe sync succeeded after %d frame(s)\n", sync_frames);
+    sync_frames = 0;
+  }
+
+  frames_since_sync = 0;
+  mBlocksInBuffer = 0;
+
+  if (++mSuccessFrames > 25)
+  {
+    emit signal_show_rs_errors(mRsErrors);
+    mSuccessFrames = 0;
+    mRsErrors = 0;
+  }
+
+  mSumCorrections += corrected_errors;
+  mSumRsErrors += uncorr_errors;
+  if (corrected_errors || uncorr_errors)
   {
 #ifdef SHOW_ERROR_STATISTICS
-    fprintf(stderr, "Frames=%d, Frame Resyncs=%d, FC Errors=%d, FC Corr=%d, RS Errors=%d, RS Corr=%d, CRC Errors=%d, CRC ok=%d\n",
-            mSumFrameCount * mRsDims / 5, mSumFrameErrors, mSumFcErrors, mSumFcCorrections, mSumRsErrors, mSumCorrections, mSumCrcErrors, mSum_good_crcs);
+    const i32 SumRsFrames = mSumFrameCount * mRsDims / 5;
+    const i32 SumCrcBlocks = mSumFrameCount * mNumAUs / 5;
+    fprintf(stderr, "Frames=%d, Resyncs=%d, FC Errors=%d, FC Corr=%d, RS Errors=%d, RS Corr=%d, CRC Blocks=%d, CRC Errors=%d, CRC ok=%d\n",
+            SumRsFrames, mSumFrameErrors, mSumFcErrors, mSumFcCorrections, mSumRsErrors, mSumCorrections, SumCrcBlocks, mSumCrcErrors, mSum_good_crcs);
 #endif
-    displayedErrors = mSumCorrections;
   }
+  _process_super_frame();
 }
 
-bool Mp4Processor::_process_reed_solomon_frame(const u8* const ipFrameBytes, const i16 iBase)
+void Mp4Processor::_process_reed_solomon_frame(const u8* const ipFrameBytes, const i16 iBase, i32& corrected_errors, i32& uncorr_errors, std::vector<bool> *codeword_ok)
 {
   /**
-    *	apply reed-solomon error repair
-    *	OK, what we now have is a vector with RSDims * 120 u8's
-    *	the superframe, containing parity bytes for error repair
-    *	take into account the interleaving that is applied.
+    *   apply reed-solomon error repair
+    *   OK, what we now have is a vector with RSDims * 120 u8's
+    *   the superframe, containing parity bytes for error repair
+    *   take into account the interleaving that is applied.
     */
+  uncorr_errors = 0;
+  if(codeword_ok)
+    codeword_ok->assign(mRsDims, false);
+
   for (i16 j = 0; j < mRsDims; j++)
   {
     std::array<u8, 120> rsIn;
@@ -197,19 +217,18 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8* const ipFrameBytes, con
       rsIn[k] = ipFrameBytes[(iBase + j + k * mRsDims) % (mRsDims * 120)];
     }
 
-    std::array<u8, 110> rsOut;
+    std::array<u8, 120> rsOut;
 
     const i16 ler = mRsDecoder.dec(rsIn.data(), rsOut.data(), 135);  // i7-6700K: ~28us
 
     if (ler < 0)
     {
-      mRsErrors++;
-      mSumRsErrors ++;
+      uncorr_errors++;
     }
     else
     {
+      corrected_errors += ler;
       mTotalCorrections += ler;
-      mSumCorrections += ler;
       mGoodFrames++;
       if (mGoodFrames >= 100)
       {
@@ -219,39 +238,45 @@ bool Mp4Processor::_process_reed_solomon_frame(const u8* const ipFrameBytes, con
         mCrcErrors = 0;
       }
     }
+    if(codeword_ok && ler != -1)
+      (*codeword_ok)[j] = true;
 
-    for (i16 k = 0; k < 110; k++)
+    for (i16 k = 0; k < 120; k++)
     {
       mOutVec[j + k * mRsDims] = rsOut[k];
     }
   }
-  //if (mFireCode.check(mOutVec.data()))
-  if (mFireCode.check_and_correct_6bits(mOutVec.data()))
-  {
-    if(memcmp(mOutVec.data(), &ipFrameBytes[iBase], 11))
-      mSumFcCorrections++;
-  }
-  else
-  {
-    mSumFcErrors++;
-    return false;
-  }
-  return true;
 }
 
-/**
-  *	\brief processSuperframe
-  *
-  *	First, we know the firecode checker gave green light
-  *	We correct the errors using RS
-  */
-bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase)
+bool Mp4Processor::_check_reed_solomon_frame(bool aligned)
 {
   // When RS/firecode fails the entire superframe is unrecoverable: numAUs and sbrFlag are
   // unknown so we cannot call conceal_lost_frame() with the right sizes.  The decoder's
   // previous-frame decay will naturally apply on the next CRC-fail path once sync resumes.
-  if (!_process_reed_solomon_frame(ipFrameBytes, iBase)) return false; // fills mOutVec
 
+  // abort, if mAuStartArr is kind of zero (prevent sync on complete zero array)
+  if(mOutVec[3] == 0x00 && mOutVec[4] == 0x00)
+    return false;
+
+  if (mFireCode.check(mOutVec.data()))
+    return true;
+
+  if (aligned && mFireCode.check_and_correct_6bits(mOutVec.data()))
+  {
+    mSumFcCorrections++;
+    return true;
+  }
+
+  return false;
+}
+
+/**
+  * \brief processSuperframe
+  *
+  * First, we know the firecode checker gave green light
+  */
+void Mp4Processor::_process_super_frame()
+{
   // bits 0 .. 15 is firecode
   // bit 16 is unused
   SStreamParms streamParameters;
@@ -268,41 +293,37 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
   streamParameters.ExtensionSrIndex = streamParameters.dacRate ? 3 : 5;
 
   u8 numAUs;
+  mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
 
   switch (2 * streamParameters.dacRate + streamParameters.sbrFlag)
   {
   case 0: numAUs = 4;
     mAuStartArr[0] = 8;
-    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
     mAuStartArr[3] = mOutVec[6] * 16 + (mOutVec[7] >> 4);
-    mAuStartArr[4] = 110 * (mBitRate / 8);
     break;
   //
   case 1: numAUs = 2;
     mAuStartArr[0] = 5;
-    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
-    mAuStartArr[2] = 110 * (mBitRate / 8);
     break;
   //
   case 2: numAUs = 6;
     mAuStartArr[0] = 11;
-    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
     mAuStartArr[3] = mOutVec[6] * 16 + (mOutVec[7] >> 4);
     mAuStartArr[4] = (mOutVec[7] & 0xf) * 256 + mOutVec[8];
     mAuStartArr[5] = mOutVec[9] * 16 + (mOutVec[10] >> 4);
-    mAuStartArr[6] = 110 * (mBitRate / 8);
     break;
   //
   case 3: numAUs = 3;
     mAuStartArr[0] = 6;
-    mAuStartArr[1] = mOutVec[3] * 16 + (mOutVec[4] >> 4);
     mAuStartArr[2] = (mOutVec[4] & 0xf) * 256 + mOutVec[5];
-    mAuStartArr[3] = 110 * (mBitRate / 8);
     break;
   default: assert(false);
   }
+  mAuStartArr[numAUs] = 110 * (mBitRate / 8);
+  mNumAUs = numAUs;
+
   /**
     * OK, the result is N * 110 * 8 bits (still single bit per byte!!!)
     * extract the AU's, and prepare a buffer,  with the sufficient
@@ -328,11 +349,11 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
       // Conceal this AU and continue rather than abandoning all remaining AUs.
       if (concealDropouts) mpAacDecoder->conceal_lost_frame(numConcealSamples);
     }
-    //	but first the crc check
+    //  but first the crc check
     else if (const std::span<const u8> auWithCrc = std::span(mOutVec).subspan(mAuStartArr[auIdx], aacFrameLen + 2);
              check_crc_bytes(auWithCrc))
     {
-      //	first prepare dumping
+      //    first prepare dumping
       std::vector<u8> aacStreamBuffer;
       const i32 segmentSize = _build_aac_stream(&streamParameters, auWithCrc.first(aacFrameLen), aacStreamBuffer);
 
@@ -352,7 +373,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
         mPadhandler.process_PAD(buffer, count - 3, L1, L0);
       }
 
-      //	then handle the audio
+      //    then handle the audio
 #ifdef  __WITH_FDK_AAC__
       const i32 aacErr = mpAacDecoder->convert_mp4_to_pcm(&streamParameters, aacStreamBuffer);
 #else
@@ -387,9 +408,7 @@ bool Mp4Processor::_process_super_frame(const u8 ipFrameBytes[], const i16 iBase
       mAacErrors = 0;
       mAacFrames = 0;
     }
-    //	TODO: what would happen if the errors were in the 10 parity bytes	rather than in the 110 payload bytes?
   }
-  return true;
 }
 
 i32 Mp4Processor::_build_aac_stream(const SStreamParms* const iSp, const std::span<const u8>& iAacFrame, std::vector<u8>& oFileBuffer) const
@@ -399,10 +418,10 @@ i32 Mp4Processor::_build_aac_stream(const SStreamParms* const iSp, const std::sp
 
   au_bw.AddBits(0x2B7, 11);  // syncword
   au_bw.AddBits(0, 13);  // audioMuxLengthBytes - written later
-  //	AudioMuxElement(1)
+  //    AudioMuxElement(1)
 
   au_bw.AddBits(0, 1);  // useSameStreamMux
-  //	StreamMuxConfig()
+  //    StreamMuxConfig()
 
   au_bw.AddBits(0, 1);  // audioMuxVersion
   au_bw.AddBits(1, 1);  // allStreamsSameTimeFraming
@@ -432,7 +451,7 @@ i32 Mp4Processor::_build_aac_stream(const SStreamParms* const iSp, const std::sp
   au_bw.AddBits(0, 1);  // otherDataPresent
   au_bw.AddBits(0, 1);  // crcCheckPresent
 
-  //	PayloadLengthInfo()
+  //    PayloadLengthInfo()
   for (size_t i = 0; i < (size_t)(iAacFrameLen / 255); i++)
   {
     au_bw.AddBits(0xFF, 8);
@@ -443,4 +462,45 @@ i32 Mp4Processor::_build_aac_stream(const SStreamParms* const iSp, const std::sp
   au_bw.WriteAudioMuxLengthBytes();
 
   return oFileBuffer.size();
+}
+
+// Decodes the 5 frames of the superframe again with the bytes of the correct
+// RS codewords as known bits: they split the error bursts of the Viterbi
+// decoder, so that more codewords become correctable, which gives more
+// known bytes for the next pass
+void Mp4Processor::Redecode(i32& corrected_errors, i32& uncorr_errors)
+{
+  const i32 codewords = mRsDims;
+  const i32 sf_len = mRsDims * 120;
+  const i32 frame_len = sf_len / 5;
+  known_bytes.resize(frame_len);
+
+  for(i32 pass = 0; pass < max_redecode_passes; pass++)
+  {
+    const i32 correct_before = std::count(codeword_ok.begin(), codeword_ok.end(), true);
+    if(correct_before == 0)
+       return;
+
+    for(i32 f = 0; f < 5; f++)
+    {
+      for(i32 i = 0; i < frame_len; i++)
+      {
+        const i32 pos = f * frame_len + i;
+        // byte pos of the superframe is in RS codeword pos % codewords
+        known_bytes[i] = codeword_ok[pos % codewords];
+      }
+      if(!redecoder->redecodeFrame(4 - f, known_bytes.data(), &mOutVec[f * frame_len]))
+        return;
+    }
+    memcpy(mFrameByteVec.data(), mOutVec.data(), sf_len);
+
+    _process_reed_solomon_frame(mFrameByteVec.data(), 0, corrected_errors, uncorr_errors, &codeword_ok);
+#ifdef SHOW_ERROR_STATISTICS
+    fprintf(stderr, "Redecode: pass=%d, len=%d, RS Errors=%d, RS Corr=%d\n", pass, sf_len, uncorr_errors, corrected_errors);
+#endif
+
+    const i32 correct = std::count(codeword_ok.begin(), codeword_ok.end(), true);
+    if(!uncorr_errors || correct <= correct_before)
+      return;
+  }
 }

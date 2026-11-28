@@ -7,12 +7,12 @@
  */
 
 #define BFLY(i) {\
-	i32 decision0, decision1;\
-	COMPUTETYPE m_metric, metric, m0, m1, m2, m3;\
+    i32 decision0, decision1;\
+    COMPUTETYPE m_metric, metric, m0, m1, m2, m3;\
 \
     /* Form branch metrics */\
-	metric = (Branchtab[i] ^ sym0) + (Branchtab[32+i] ^ sym1)\
-		+ (Branchtab[64+i] ^ sym2) + (Branchtab[96+i] ^ sym3);\
+    metric = (Branchtab[i] ^ sym0) + (Branchtab[32+i] ^ sym1)\
+        + (Branchtab[64+i] ^ sym2) + (Branchtab[96+i] ^ sym3);\
     m_metric = 1020 - metric;\
 \
     /* Add branch metrics to path metrics */\
@@ -32,63 +32,69 @@
 }
 
 #define limit_min_max(sym) {\
-	i16 tmp = *syms++;\
+    i16 tmp = *syms++;\
     tmp += 127;\
     if (tmp < 0) tmp = 0;\
     else if (tmp > 255) tmp = 255;\
     sym = tmp;\
 }
 
-	u64* d = (u64*)decisions;
-	memset(d, 0, nbits*sizeof(u64));
+    u64* d = (u64*)decisions;
+    memset(d, 0, nbits*sizeof(u64));
     COMPUTETYPE* old_metrics = metrics1;
     COMPUTETYPE* new_metrics = metrics2;
     const COMPUTETYPE* Branchtab = Branchtable;
     const i16* syms = input;
 
-	while(nbits--)
+    for (u32 s = 0; s < nbits; s++)
     {
-		COMPUTETYPE sym0, sym1, sym2, sym3;
-		limit_min_max(sym0);
-		limit_min_max(sym1);
-		limit_min_max(sym2);
-		limit_min_max(sym3);
-		BFLY(0);
-		BFLY(1);
-		BFLY(2);
-		BFLY(3);
-		BFLY(4);
-		BFLY(5);
-		BFLY(6);
-		BFLY(7);
-		BFLY(8);
-		BFLY(9);
-		BFLY(10);
-		BFLY(11);
-		BFLY(12);
-		BFLY(13);
-		BFLY(14);
-		BFLY(15);
-		BFLY(16);
-		BFLY(17);
-		BFLY(18);
-		BFLY(19);
-		BFLY(20);
-		BFLY(21);
-		BFLY(22);
-		BFLY(23);
-		BFLY(24);
-		BFLY(25);
-		BFLY(26);
-		BFLY(27);
-		BFLY(28);
-		BFLY(29);
-		BFLY(30);
-		BFLY(31);
+        COMPUTETYPE sym0, sym1, sym2, sym3;
+        limit_min_max(sym0);
+        limit_min_max(sym1);
+        limit_min_max(sym2);
+        limit_min_max(sym3);
+        BFLY(0);
+        BFLY(1);
+        BFLY(2);
+        BFLY(3);
+        BFLY(4);
+        BFLY(5);
+        BFLY(6);
+        BFLY(7);
+        BFLY(8);
+        BFLY(9);
+        BFLY(10);
+        BFLY(11);
+        BFLY(12);
+        BFLY(13);
+        BFLY(14);
+        BFLY(15);
+        BFLY(16);
+        BFLY(17);
+        BFLY(18);
+        BFLY(19);
+        BFLY(20);
+        BFLY(21);
+        BFLY(22);
+        BFLY(23);
+        BFLY(24);
+        BFLY(25);
+        BFLY(26);
+        BFLY(27);
+        BFLY(28);
+        BFLY(29);
+        BFLY(30);
+        BFLY(31);
         d++;
 
-		// Swap pointers to old and new metrics
-		COMPUTETYPE* temp = new_metrics;
-		new_metrics = old_metrics;
-		old_metrics = temp;
+        if (known && s < framebits && known[s] >= 0)
+        {
+            excludeOtherBit(new_metrics, known[s]);
+        }
+
+        // Swap pointers to old and new metrics
+        COMPUTETYPE* temp = new_metrics;
+        new_metrics = old_metrics;
+        old_metrics = temp;
     }
+

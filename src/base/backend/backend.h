@@ -50,7 +50,7 @@ class Backend : public QThread
 {
 #else
 
-class Backend
+class Backend : public FrameRedecoder
 {
 #endif
 
@@ -61,6 +61,9 @@ public:
   i32 process(const std::span<const i16>& iV);
   void process_eti(const std::span<const u8>& iData); // already decoded sub-channel data of one CIF from an ETI frame
   void stop_running();
+
+  // FrameRedecoder: the soft bits of the last frames are kept
+  bool redecodeFrame(i32 age, const u8 *known, u8 *bytes);
 
   // we need sometimes to access the key parameters for decoding
   u32 serviceId;
@@ -96,4 +99,14 @@ private:
   i32 countforInterleaver;
   i32 interleaverIndex;
   std::vector<u8> disperseVector;
+
+  // Input of the Viterbi decoder of the last frames (a DAB+ superframe
+  // has 5), for redecodeFrame()
+  static const int historyFrames = 5;
+  std::vector<i16> history[historyFrames];
+  i32 historyNext = 0;
+  i32 historyCount = 0;
+  std::vector<i8> knownBits;
+  std::vector<u8> redecodedBits;
+  bool driver_exist = false;
 };

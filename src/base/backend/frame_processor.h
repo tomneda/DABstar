@@ -33,6 +33,20 @@
 #include <vector>
 #include <cstdio>
 
+// Decodes one of the last logical frames of a subchannel again, with
+// known bytes (iterative DAB+ decoding: the bytes of the correct
+// Reed-Solomon codewords help the Viterbi decoder with the others)
+class FrameRedecoder
+{
+  public:
+    virtual ~FrameRedecoder() = default;
+    // age: 0 = the last frame given to addtoFrame(), 1 = the one before.
+    // known: per byte of the frame 1 if bytes[i] is known.
+    // bytes: in: the known bytes, out: the frame decoded again.
+    // false if the frame is not available any more.
+    virtual bool redecodeFrame(i32 age, const u8 *known, u8 *bytes) = 0;
+};
+
 // Virtual class, just for providing a common base for the real decoder classes
 class FrameProcessor
 {
@@ -44,4 +58,7 @@ public:
   {
     fprintf(stderr, "missing overridden method in FrameProcessor\n");
   }
+
+  // For decoders that can use it (DAB+)
+  virtual void setFrameRedecoder(FrameRedecoder *) {}
 };

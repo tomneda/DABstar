@@ -45,7 +45,9 @@ BackendDriver::BackendDriver(DabRadio* ipDR, const SDescriptorType* ipDT, RingBu
     }
     else // if (((AudioData *)d)->ASCTy == 077)
     {
-      mpFrameProcessor = std::make_unique<Mp4Processor>(ipDR, ipDT->bitRate, ipAudioBuffer, ipFrameBuffer);
+      auto filter = std::make_unique<Mp4Processor>(ipDR, ipDT->bitRate, ipAudioBuffer, ipFrameBuffer);
+      superframeFilter = filter.get();
+      mpFrameProcessor = std::move(filter);
     }
   }
   else if (ipDT->TMId == ETMId::PacketModeData)
@@ -61,5 +63,13 @@ BackendDriver::BackendDriver(DabRadio* ipDR, const SDescriptorType* ipDT, RingBu
 void BackendDriver::add_to_frame(const std::vector<u8>& iData) const
 {
   mpFrameProcessor->add_to_frame(iData);
+}
+
+void BackendDriver::setFrameRedecoder(FrameRedecoder *redecoder)
+{
+  if (superframeFilter)
+  {
+    superframeFilter->SetFrameRedecoder(redecoder);
+  }
 }
 

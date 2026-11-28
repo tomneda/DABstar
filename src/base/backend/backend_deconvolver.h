@@ -41,8 +41,8 @@ public:
   explicit BackendDeconvolver(const SDescriptorType* d);
   ~BackendDeconvolver();
 
-  void deconvolve(const std::span<const i16>& iRawBits, u8* opOutData) const;
-  
+  void deconvolve(const std::span<const i16>& iRawBits, u8* opOutData, const i8 *known = nullptr) const;
+
 private:
   std::unique_ptr<Protection> mpProtectionHandler;
 };

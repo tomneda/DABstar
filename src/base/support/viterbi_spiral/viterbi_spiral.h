@@ -1,6 +1,6 @@
 #pragma once
 /*
- * 	Viterbi.h according to the SPIRAL project
+ *  Viterbi.h according to the SPIRAL project
  */
 #include "dab_constants.h"
 
@@ -17,7 +17,7 @@ public:
   explicit ViterbiSpiral(const i32 iWordlength, const bool iSpiralMode = false);
   virtual ~ViterbiSpiral();
 
-  void deconvolve(const i16* const input, u8* const output);
+  void deconvolve(const i16* const input, u8* const output, const i8 *known = nullptr);
   void calculate_BER(const i16* const input, u8* punctureTable,
                      u8 const* output, i32& bits, i32& errors);
 
