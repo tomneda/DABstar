@@ -44,7 +44,7 @@ Protection::Protection(const i32 iBitRate) :
   viterbiBlockAddresses.reserve(outSize * 4 + 24);
 }
 
-bool Protection::deconvolve(const std::span<const i16>& iV, u8* oOutBuffer)
+bool Protection::deconvolve(const std::span<const i16>& iV, u8* oOutBuffer, const int8_t *known)
 {
   assert(iV.size() >= viterbiBlockAddresses.size());
   const i16* const pV = iV.data();
@@ -56,7 +56,7 @@ bool Protection::deconvolve(const std::span<const i16>& iV, u8* oOutBuffer)
     *addr = pV[inputCounter++];  // the addresses map to the viterbiBlock vector
   }
 
-  ViterbiSpiral::deconvolve(viterbiBlock.data(), oOutBuffer);
+  ViterbiSpiral::deconvolve(viterbiBlock.data(), oOutBuffer, known);
 
   return true;
 }

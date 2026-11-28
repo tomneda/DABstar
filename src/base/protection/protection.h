@@ -27,7 +27,7 @@
  *    along with Qt-DAB; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *	Simple base class for combining uep and eep deconvolvers
+ *  Simple base class for combining uep and eep deconvolvers
  */
 #pragma once
 
@@ -42,8 +42,8 @@ public:
   explicit Protection(i32);
   ~Protection() override = default;
 
-  virtual bool deconvolve(const std::span<const i16>& iV, u8* oOutBuffer);
-  
+  virtual bool deconvolve(const std::span<const i16>& iV, u8* oOutBuffer, const int8_t *known = nullptr);
+
 protected:
   i32 bitRate;
   i32 outSize;
